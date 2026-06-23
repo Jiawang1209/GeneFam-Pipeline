@@ -73,6 +73,19 @@ HMMER evidence can be filtered by:
 
 Domain coverage is calculated from HMM coordinates as `(hmm_to - hmm_from + 1) / hmm_length`.
 
+## Chromosome Locations
+
+`bin/genefam/extract_chromosome_locations.py` extracts family member coordinates from GFF3 `gene` features. It reads gene IDs from `ID`, `gene_id`, or `Name` attributes and writes:
+
+```text
+species_id
+gene_id
+seqid
+start
+end
+strand
+```
+
 ## Discovery Rules
 
 - Folder name is the default species ID.

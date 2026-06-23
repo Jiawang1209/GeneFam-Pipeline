@@ -482,9 +482,46 @@ Verification:
 - Ran a command-line smoke test with family/background duplicate type TSV files; `retention_enrichment.py` produced fold enrichment and p-value columns.
 
 Commit:
-- hash: not created in this session
+- hash: 288474dc1a10e48678e3deec3208e1e16ba3ffc4
 - message: feat: add retention enrichment helper
 - files: retention enrichment helper, tests, docs
 
 Next:
 - Add chromosome location extraction from GFF3 so family members can be plotted on chromosomes.
+
+## 2026-06-23 - Add chromosome location extraction helper
+
+Context:
+- The workflow needs a chromosome localization table before R plotting can place family members on chromosomes.
+
+Decisions:
+- Extract coordinates from GFF3 `gene` features.
+- Resolve gene IDs from `ID`, `gene_id`, or `Name` attributes.
+- Keep output as a simple report-ready TSV with species, gene, sequence ID, start, end, and strand.
+
+Added:
+- `bin/genefam/extract_chromosome_locations.py`
+- `tests/test_extract_chromosome_locations.py`
+
+Modified:
+- `HISTORY.md`
+- `docs/input_contract.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_extract_chromosome_locations.py -q` first failed because `bin.genefam.extract_chromosome_locations` did not exist.
+- Implemented `extract_chromosome_locations.py`.
+- `python -m pytest tests/test_extract_chromosome_locations.py -q` passed.
+- `python -m pytest tests -q` passed with 33 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- Ran a command-line smoke test against the Arabidopsis fixture GFF3 and extracted `AT1G01010` at `Chr1:100-500`.
+
+Commit:
+- hash: not created in this session
+- message: feat: add chromosome location extraction
+- files: chromosome location helper, tests, input contract docs
+
+Next:
+- Add expression matrix integration helper so RNA-seq expression tables can be subset to family members.
