@@ -1036,7 +1036,51 @@ Verification:
 - Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`.
 
 Commit:
-- pending
+- hash: ba6b295826b3d1fe5717c3145d9cefcfed79aae8
+- message: feat: add family duplicate join helper
+- files: family duplicate join helper, tests, report contract, input docs, history
 
 Next:
 - Add a duplication/retention table integrator that combines family duplicate classifications with WGD layer or event labels for gamma/beta/alpha/theta-oriented retention summaries.
+
+## 2026-06-24 - Add family WGD event membership helper
+
+Context:
+- The workflow can now classify Ks pairs into anonymous WGD layers and map configured layers to named events such as `gamma`, `beta`, `alpha`, and `theta`.
+- The family-level retention path still needed a gene-level evidence table connecting family members, duplicate types, WGD layers, named event labels, partners, and Ks values.
+- `HISTORY.md` also needed the actual commit hash for the previous family duplicate join helper checkpoint.
+
+Decisions:
+- Add a family WGD event membership helper that emits one row per family gene and supporting classified duplicated pair.
+- Keep the output gene-level rather than only summary-level so later reports can audit which pair supports each event label.
+- Preserve anonymous `wgd_layer` and configured `event_name` together to keep the inference chain explicit.
+
+Added:
+- `bin/genefam/annotate_family_wgd_events.py`
+- `tests/test_annotate_family_wgd_events.py`
+
+Modified:
+- `HISTORY.md`
+- `docs/input_contract.md`
+- `bin/genefam/run_mock_mvp.py`
+- `tests/test_run_mock_mvp.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_annotate_family_wgd_events.py -q` first failed because `bin.genefam.annotate_family_wgd_events` did not exist.
+- Implemented `annotate_family_wgd_events.py`.
+- `python -m pytest tests/test_annotate_family_wgd_events.py -q` passed.
+- `python -m pytest tests/test_annotate_family_wgd_events.py tests/test_classify_wgd_layers.py tests/test_build_wgd_event_evidence.py tests/test_run_mock_mvp.py -q` passed with 10 tests.
+- `python -m pytest tests -q` passed with 58 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- Ran a command-line smoke test that annotated `AT1G01010` as `WGD_layer_1` / `alpha` with partner `AT1G01020`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` marked `family_wgd_event_membership` as `not_available` in the report index.
+- Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`.
+
+Commit:
+- pending
+
+Next:
+- Add a family event retention summary that counts family genes by duplicate type and named WGD event for report-ready gamma/beta/alpha/theta tables.

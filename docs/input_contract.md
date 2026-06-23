@@ -166,6 +166,28 @@ raw_duplicate_type
 
 This family-specific table is the direct input for `bin/genefam/retention_enrichment.py`, while the full normalized duplicate table is used as the background.
 
+## Family WGD Event Membership
+
+`bin/genefam/annotate_family_wgd_events.py` joins family duplicate classifications with classified Ks/WGD pairs. It reads:
+
+- family duplicate classification table from `bin/genefam/join_family_duplicates.py`
+- WGD-classified pair table from `bin/genefam/classify_wgd_layers.py`
+
+It writes one row per family gene and supporting duplicated pair:
+
+```text
+species_id
+gene_id
+duplicate_type
+wgd_layer
+event_name
+partner_gene
+ks
+confidence
+```
+
+`event_name` remains `unannotated` until the user configures named events such as `gamma`, `beta`, `alpha`, or `theta`. This keeps the workflow honest: Ks and synteny define anonymous WGD layers first, and YAML/literature metadata maps those layers to biological event names later.
+
 ## Ka/Ks Pairs
 
 `bin/genefam/prepare_kaks_pairs.py` prepares pairwise CDS FASTA files from syntenic pairs and CDS FASTA inputs. It writes a manifest with:

@@ -97,6 +97,7 @@ def test_run_mock_mvp_writes_core_outputs(tmp_path):
     assert by_key["summary_report"]["status"] == "available"
     assert by_key["report_index"]["status"] == "available"
     assert by_key["wgd_event_evidence"]["status"] == "not_available"
+    assert by_key["family_wgd_event_membership"]["status"] == "not_available"
 
 
 def test_run_mock_mvp_cli_works_when_invoked_by_script_path(tmp_path):

@@ -123,6 +123,7 @@ def _build_report_index_rows(outputs: dict[str, Path], outdir: Path) -> list[dic
         ("chromosome_locations", "Family member chromosome locations"),
         ("wgd_layers", "Anonymous WGD layer assignments"),
         ("wgd_event_evidence", "Configured WGD event evidence table"),
+        ("family_wgd_event_membership", "Family members annotated with WGD layer and named event evidence"),
         ("retention_enrichment", "Duplicate-type retention enrichment"),
         ("family_expression", "Family member expression matrix"),
         ("summary_report", "Markdown run summary"),
