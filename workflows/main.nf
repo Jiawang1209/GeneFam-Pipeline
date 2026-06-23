@@ -6,6 +6,7 @@ include { HMMER_SEARCH } from './modules/hmmer_search.nf'
 include { DIAMOND_SEARCH } from './modules/diamond_search.nf'
 include { DOMAIN_FILTER; CONCAT_FAMILY_CANDIDATES } from './modules/domain_filter.nf'
 include { FAMILY_SUMMARY } from './modules/family_summary.nf'
+include { EXTRACT_FAMILY_SEQUENCES; BUILD_STANDARD_REPORT_INDEX } from './modules/standard_postprocess.nf'
 include { MOCK_MVP } from './modules/mock_mvp.nf'
 include { ASSEMBLE_REPORT } from './modules/report.nf'
 include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
@@ -76,6 +77,11 @@ workflow {
             .map { row -> tuple(row.species_id, file(row.pep), file(row.reference_peptides)) }
 
         final_rule_ch = Channel.value(params.final_rule)
+        family_name_ch = Channel.value(params.gene_family)
+        aligner_ch = Channel.value(params.aligner)
+        tree_builder_ch = Channel.value(params.tree_builder)
+        alignment_outdir_ch = Channel.value("${params.outdir}/alignment")
+        phylogeny_outdir_ch = Channel.value("${params.outdir}/phylogeny")
 
         HMMER_SEARCH(hmmer_inputs_ch)
         DIAMOND_SEARCH(diamond_inputs_ch)
@@ -88,11 +94,25 @@ workflow {
         candidate_tables_ch = DOMAIN_FILTER.out.map { species_id, candidates -> candidates }
         CONCAT_FAMILY_CANDIDATES(candidate_tables_ch.collect())
         FAMILY_SUMMARY(CONCAT_FAMILY_CANDIDATES.out)
+        EXTRACT_FAMILY_SEQUENCES(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
+        PREPARE_ALIGNMENT_INPUTS(family_name_ch, EXTRACT_FAMILY_SEQUENCES.out, aligner_ch, alignment_outdir_ch)
+        PREPARE_PHYLOGENY_INPUTS(PREPARE_ALIGNMENT_INPUTS.out, tree_builder_ch, phylogeny_outdir_ch)
         PLOT_FAMILY_COUNTS(FAMILY_SUMMARY.out)
+        BUILD_PLOT_MANIFEST()
+        BUILD_STANDARD_REPORT_INDEX(
+            PREPARE_SPECIES.out,
+            CONCAT_FAMILY_CANDIDATES.out,
+            FAMILY_SUMMARY.out,
+            EXTRACT_FAMILY_SEQUENCES.out,
+            PREPARE_ALIGNMENT_INPUTS.out,
+            PREPARE_PHYLOGENY_INPUTS.out,
+            BUILD_PLOT_MANIFEST.out
+        )
 
         PREPARE_SPECIES.out.view { manifest -> "Species manifest: ${manifest}" }
         CONCAT_FAMILY_CANDIDATES.out.view { candidates -> "Family candidates: ${candidates}" }
         FAMILY_SUMMARY.out.view { counts -> "Family counts: ${counts}" }
+        BUILD_STANDARD_REPORT_INDEX.out.view { report_index -> "Report index: ${report_index}" }
     } else {
         PREPARE_SPECIES(config_ch, groups_ch)
 

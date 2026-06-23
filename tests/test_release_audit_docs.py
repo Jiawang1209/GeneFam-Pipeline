@@ -49,6 +49,8 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "release_checks.tsv" in text
     assert "runtime_bootstrap_plan.md" in text
     assert "build_identification_inputs.py" in text
+    assert "extract_family_sequences.py" in text
+    assert "build_standard_report_index.py" in text
     assert "--run_identification true" in text
     assert "nextflow" in text
     assert "docker" in text

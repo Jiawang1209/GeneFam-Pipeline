@@ -70,3 +70,5 @@ def test_readme_documents_explicit_standard_identification_branch():
     assert "Standard Identification Branch" in readme
     assert "--run_identification true" in readme
     assert "HMMER and DIAMOND input tables" in readme
+    assert "family_members.faa" in readme
+    assert "standard report index" in readme

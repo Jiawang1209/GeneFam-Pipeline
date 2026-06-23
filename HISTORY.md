@@ -1705,7 +1705,66 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because readiness audit failed, but pytest, config validation, mock MVP, and runtime bootstrap plan passed.
 
 Commit:
-- pending
+- hash: fcf84488fe763f626334a96e2b349220a03c8e12
+- message: feat: wire standard identification branch
+- files: identification input builder, TSV concatenation helper, Nextflow identification branch, example reference fixture, docs, tests, history
 
 Next:
 - Run full repository verification and release checks; when runtime tools are available, verify `nextflow run workflows/main.nf -c workflows/nextflow.config --config configs/example.config.yaml --run_identification true`.
+
+## 2026-06-24 - Add standard branch postprocessing manifests
+
+Context:
+- The standard identification branch could produce candidate tables and family counts, but it did not yet bridge candidates into downstream FASTA, alignment/phylogeny manifests, or a standard report index.
+- Existing helpers prepared alignment and phylogeny manifests from a family FASTA, so the missing piece was candidate-to-FASTA extraction plus report-index assembly.
+- Full alignment/tree execution still depends on external runtime tools, but manifest generation can be tested without MAFFT or IQ-TREE.
+
+Decisions:
+- Add `extract_family_sequences.py` to extract cross-species family member peptide sequences from `family_candidates.tsv` and `species_manifest.tsv`.
+- Add `build_standard_report_index.py` to describe standard branch outputs in the same report-index format used by reports.
+- Add `workflows/modules/standard_postprocess.nf` with `EXTRACT_FAMILY_SEQUENCES` and `BUILD_STANDARD_REPORT_INDEX`.
+- Wire the explicit `--run_identification true` branch through family FASTA extraction, alignment manifest preparation, phylogeny manifest preparation, plot manifest generation, and standard report-index generation.
+- Keep actual MAFFT/IQ-TREE execution separate from manifest preparation until runtime tools are installed and verified.
+
+Added:
+- `bin/genefam/extract_family_sequences.py`
+- `bin/genefam/build_standard_report_index.py`
+- `workflows/modules/standard_postprocess.nf`
+- `tests/test_extract_family_sequences.py`
+- `tests/test_standard_branch_report_index.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/nextflow.config`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_extract_family_sequences.py -q` first failed because `bin.genefam.extract_family_sequences` did not exist.
+- Implemented `extract_family_sequences.py`.
+- `python -m pytest tests/test_extract_family_sequences.py -q` passed with 2 tests.
+- `python -m pytest tests/test_standard_branch_report_index.py -q` first failed because `bin.genefam.build_standard_report_index` did not exist.
+- Implemented `build_standard_report_index.py`.
+- `python -m pytest tests/test_standard_branch_report_index.py -q` passed with 2 tests.
+- `python -m pytest tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q` first failed because `standard_postprocess.nf` and main workflow wiring were missing.
+- Added the standard postprocess module and wired the standard branch.
+- `python -m pytest tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q` passed with 2 tests.
+- `python -m pytest tests/test_extract_family_sequences.py tests/test_standard_branch_report_index.py tests/test_workflow_modules.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py -q` passed with 26 tests.
+- A Python smoke chain generated `family_members.faa`, `alignment_manifest.tsv`, `phylogeny_manifest.tsv`, and `report_index.tsv` under `results/standard_postprocess_smoke`.
+- `python -m pytest tests -q` passed with 112 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/advanced_modules.example.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because readiness audit failed, but pytest, config validation, mock MVP, and runtime bootstrap plan passed.
+
+Commit:
+- pending
+
+Next:
+- Commit this standard postprocessing layer, then continue toward runtime installation and real Nextflow/container smoke tests.

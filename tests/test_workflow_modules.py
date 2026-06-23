@@ -38,10 +38,27 @@ def test_domain_filter_module_can_concatenate_species_candidate_tables():
     assert "--out family_candidates.tsv" in module
 
 
+def test_standard_postprocess_module_extracts_family_sequences_and_report_index():
+    module = Path("workflows/modules/standard_postprocess.nf").read_text(encoding="utf-8")
+
+    assert "process EXTRACT_FAMILY_SEQUENCES" in module
+    assert "extract_family_sequences.py" in module
+    assert "--family-candidates ${family_candidates}" in module
+    assert "--species-manifest ${species_manifest}" in module
+    assert "--out family_members.faa" in module
+
+    assert "process BUILD_STANDARD_REPORT_INDEX" in module
+    assert "build_standard_report_index.py" in module
+    assert "--family-members-faa ${family_members_faa}" in module
+    assert "--phylogeny-manifest ${phylogeny_manifest}" in module
+    assert "--out report_index.tsv" in module
+
+
 def test_main_workflow_wires_standard_identification_branch():
     workflow = Path("workflows/main.nf").read_text(encoding="utf-8")
 
     assert "include { BUILD_IDENTIFICATION_INPUTS } from './modules/identification_inputs.nf'" in workflow
+    assert "include { EXTRACT_FAMILY_SEQUENCES; BUILD_STANDARD_REPORT_INDEX } from './modules/standard_postprocess.nf'" in workflow
     assert "include { HMMER_SEARCH } from './modules/hmmer_search.nf'" in workflow
     assert "include { DIAMOND_SEARCH } from './modules/diamond_search.nf'" in workflow
     assert "include { DOMAIN_FILTER; CONCAT_FAMILY_CANDIDATES } from './modules/domain_filter.nf'" in workflow
@@ -53,7 +70,12 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "DOMAIN_FILTER(joined_evidence_ch, final_rule_ch)" in workflow
     assert "CONCAT_FAMILY_CANDIDATES(candidate_tables_ch.collect())" in workflow
     assert "FAMILY_SUMMARY(CONCAT_FAMILY_CANDIDATES.out)" in workflow
+    assert "EXTRACT_FAMILY_SEQUENCES(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)" in workflow
+    assert "PREPARE_ALIGNMENT_INPUTS(family_name_ch, EXTRACT_FAMILY_SEQUENCES.out, aligner_ch, alignment_outdir_ch)" in workflow
+    assert "PREPARE_PHYLOGENY_INPUTS(PREPARE_ALIGNMENT_INPUTS.out, tree_builder_ch, phylogeny_outdir_ch)" in workflow
     assert "PLOT_FAMILY_COUNTS(FAMILY_SUMMARY.out)" in workflow
+    assert "BUILD_PLOT_MANIFEST()" in workflow
+    assert "BUILD_STANDARD_REPORT_INDEX(" in workflow
 
 
 def test_duplication_retention_module_exposes_wgd_helper_processes():
