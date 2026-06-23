@@ -13,6 +13,7 @@ The first implementation target is a YAML-driven workflow that scans a large spe
 - Motif and gene structure analysis.
 - Chromosome localization.
 - Synteny, duplication classification, WGD-layer inference, and retention enrichment.
+- Evidence-backed WGD event interpretation for gamma, beta, alpha, theta, and other configured events.
 - Ka/Ks and selection-pressure analysis.
 - RNA-seq expression integration.
 - Reproducible reports.
@@ -44,6 +45,7 @@ The species ID defaults to the folder name. A run can analyze all species, a man
 - `HISTORY.md`: single-file development diary.
 - `configs/example.config.yaml`: example analysis configuration.
 - `docs/input_contract.md`: input format contract.
+- `docs/wgd_event_evidence.md`: WGD layer and named-event evidence contract.
 - `docs/superpowers/plans/2026-06-23-genefam-pipeline.md`: implementation plan.
 
 ## Runtime Convention

@@ -37,6 +37,7 @@ Planned outputs:
 ```text
 tables/duplicate_gene_classification.tsv
 tables/wgd_layers.tsv
+tables/wgd_event_evidence.tsv
 tables/retention_enrichment.tsv
 plots/ks_density.pdf
 plots/duplication_type_barplot.pdf
@@ -49,3 +50,5 @@ The report should separate observation from interpretation:
 - Observation: this family is enriched for WGD/segmental duplicates.
 - Inference: this family has multiple Ks-supported WGD layers.
 - Named interpretation: this layer is alpha or theta only when configured evidence supports it.
+
+See `docs/wgd_event_evidence.md` for the concrete event evidence table contract.

@@ -402,9 +402,50 @@ Verification:
 - `command -v nextflow` returned no path, so Nextflow module execution remains pending.
 
 Commit:
-- hash: not created in this session
+- hash: 7f7ee25022f61f32cd6627c19a02c554cbd2938d
 - message: feat: add hmmer domain filtering
 - files: domain filter helper, parser fields, config/schema/docs, workflow module
 
 Next:
 - Start adding downstream evolutionary-analysis mock tables for duplication/WGD event evidence, so gamma/beta/alpha/theta interpretation can be represented in reports before full MCScanX/KaKs integration.
+
+## 2026-06-23 - Add WGD event evidence table builder
+
+Context:
+- The long project goal requires gamma, beta, alpha, theta, and other WGD event names to be represented as evidence-backed interpretations, not automatic labels.
+- The existing WGD helper classified pairs into anonymous WGD layers but did not produce a layer-level evidence table.
+
+Decisions:
+- Add a `build_wgd_event_evidence.py` helper that summarizes classified duplicated pairs by WGD layer.
+- Keep unnamed layers neutral with `interpretation_status: inferred_layer_only`.
+- Only attach event metadata when a configured named event is present and found in an event configuration file.
+- Document the observed/inferred/interpreted evidence split in a dedicated WGD evidence document.
+
+Added:
+- `bin/genefam/build_wgd_event_evidence.py`
+- `tests/test_build_wgd_event_evidence.py`
+- `docs/wgd_event_evidence.md`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/duplication_retention_design.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_wgd_event_evidence.py -q` first failed because `bin.genefam.build_wgd_event_evidence` did not exist.
+- Implemented `build_wgd_event_evidence.py`.
+- `python -m pytest tests/test_build_wgd_event_evidence.py -q` passed with 3 tests.
+- `python -m pytest tests -q` passed with 30 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- Ran a WGD command-line smoke test with three duplicated pairs, `classify_wgd_layers.py`, and `build_wgd_event_evidence.py`; the output mapped `WGD_layer_1=alpha`, `WGD_layer_2=beta`, and `WGD_layer_3=gamma` using `configs/wgd_events.brassicaceae.yaml`.
+
+Commit:
+- hash: not created in this session
+- message: feat: add wgd event evidence builder
+- files: WGD evidence builder, tests, docs
+
+Next:
+- Add duplicate type and retention enrichment helpers so WGD retained family members can be summarized before full MCScanX integration.
