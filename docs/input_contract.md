@@ -128,6 +128,26 @@ pair_evalue
 
 This table is the first bridge from MCScanX output into duplicate type, Ks, and WGD-layer analyses.
 
+## Duplicate Classification
+
+`bin/genefam/normalize_duplicate_types.py` normalizes prepared duplicate type tables into:
+
+```text
+gene_id
+duplicate_type
+raw_duplicate_type
+```
+
+Accepted canonical `duplicate_type` values:
+
+- `WGD/segmental`
+- `tandem`
+- `proximal`
+- `dispersed`
+- `singleton`
+
+These normalized tables can be used directly by `bin/genefam/retention_enrichment.py`.
+
 ## Ka/Ks Pairs
 
 `bin/genefam/prepare_kaks_pairs.py` prepares pairwise CDS FASTA files from syntenic pairs and CDS FASTA inputs. It writes a manifest with:

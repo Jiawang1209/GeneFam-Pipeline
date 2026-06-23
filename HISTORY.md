@@ -948,9 +948,54 @@ Verification:
 - Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`.
 
 Commit:
-- hash: not created in this session
+- hash: 449a4731997b03f3ac3105fc54eccf5b62534dfa
 - message: feat: add kaks pair preparation
 - files: Ka/Ks pair preparation helper, tests, report contract, input docs, history
 
 Next:
 - Add duplicate type parser/normalizer so MCScanX duplicate classifications can feed retention enrichment without hand-prepared tables.
+
+## 2026-06-24 - Add duplicate type normalizer
+
+Context:
+- Retention enrichment requires normalized duplicate type labels.
+- Upstream duplicate classification outputs can use different labels such as `WGD`, `segmental`, `whole_genome`, or mixed-case labels.
+- `HISTORY.md` also needed the actual commit hash for the previous Ka/Ks pair preparation checkpoint.
+
+Decisions:
+- Add a duplicate type normalization helper that accepts common aliases and emits canonical labels.
+- Canonical labels are `WGD/segmental`, `tandem`, `proximal`, `dispersed`, and `singleton`.
+- Preserve the original label in `raw_duplicate_type`.
+- Add `duplicate_classification` to the mock MVP report index as a pending downstream output until real duplicate classifications are supplied.
+
+Added:
+- `bin/genefam/normalize_duplicate_types.py`
+- `tests/test_normalize_duplicate_types.py`
+
+Modified:
+- `HISTORY.md`
+- `docs/input_contract.md`
+- `bin/genefam/run_mock_mvp.py`
+- `tests/test_run_mock_mvp.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_normalize_duplicate_types.py -q` first failed because `bin.genefam.normalize_duplicate_types` did not exist.
+- Implemented `normalize_duplicate_types.py`.
+- `python -m pytest tests/test_normalize_duplicate_types.py -q` passed.
+- `python -m pytest tests/test_normalize_duplicate_types.py tests/test_retention_enrichment.py tests/test_run_mock_mvp.py -q` passed with 6 tests.
+- `python -m pytest tests -q` passed with 52 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- Ran a command-line smoke test that normalized `WGD` to `WGD/segmental` and `Tandem` to `tandem`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` marked `duplicate_classification` as `not_available` in the report index.
+- Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`.
+
+Commit:
+- hash: not created in this session
+- message: feat: add duplicate type normalizer
+- files: duplicate type normalizer, tests, report contract, input docs, history
+
+Next:
+- Add a family duplicate join helper that intersects family members with normalized duplicate classifications before retention enrichment.

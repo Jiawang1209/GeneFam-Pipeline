@@ -116,6 +116,7 @@ def _build_report_index_rows(outputs: dict[str, Path], outdir: Path) -> list[dic
         ("phylogeny_manifest", "Phylogeny input manifest for IQ-TREE or FastTree"),
         ("motif_summary", "MEME motif summary table"),
         ("syntenic_pairs", "MCScanX syntenic gene pairs"),
+        ("duplicate_classification", "Normalized duplicate type classification"),
         ("kaks_pair_manifest", "CDS pair FASTA manifest for Ka/Ks calculation"),
         ("kaks_pairs", "Ka/Ks pairwise selection pressure table"),
         ("chromosome_locations", "Family member chromosome locations"),
