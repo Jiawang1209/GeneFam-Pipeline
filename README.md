@@ -14,6 +14,7 @@ The first implementation target is a YAML-driven workflow that scans a large spe
 - Chromosome localization.
 - Synteny, duplication classification, WGD-layer inference, and retention enrichment.
 - Evidence-backed WGD event interpretation for gamma, beta, alpha, theta, and other configured events.
+- Duplicate-type retention enrichment for WGD-retained family members.
 - Ka/Ks and selection-pressure analysis.
 - RNA-seq expression integration.
 - Reproducible reports.

@@ -52,3 +52,28 @@ The report should separate observation from interpretation:
 - Named interpretation: this layer is alpha or theta only when configured evidence supports it.
 
 See `docs/wgd_event_evidence.md` for the concrete event evidence table contract.
+
+## Retention Enrichment
+
+`bin/genefam/retention_enrichment.py` compares the duplicate type distribution of family members against a whole-genome duplicate classification background.
+
+Inputs:
+
+- family duplicate table with `duplicate_type`
+- background duplicate table with `duplicate_type`
+
+Output:
+
+```text
+tables/retention_enrichment.tsv
+```
+
+Columns:
+
+- `duplicate_type`
+- `family_count`
+- `family_total`
+- `background_count`
+- `background_total`
+- `fold_enrichment`
+- `p_value`

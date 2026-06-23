@@ -443,9 +443,48 @@ Verification:
 - Ran a WGD command-line smoke test with three duplicated pairs, `classify_wgd_layers.py`, and `build_wgd_event_evidence.py`; the output mapped `WGD_layer_1=alpha`, `WGD_layer_2=beta`, and `WGD_layer_3=gamma` using `configs/wgd_events.brassicaceae.yaml`.
 
 Commit:
-- hash: not created in this session
+- hash: 6041cf5c79a6389e18878ed1e0930a4502ddf6f9
 - message: feat: add wgd event evidence builder
 - files: WGD evidence builder, tests, docs
 
 Next:
 - Add duplicate type and retention enrichment helpers so WGD retained family members can be summarized before full MCScanX integration.
+
+## 2026-06-23 - Add duplicate-type retention enrichment helper
+
+Context:
+- The pipeline needs an entry point for the preferential retention analysis described in the reference papers.
+- Full MCScanX integration is still pending, but duplicate-type enrichment can be implemented against prepared classification tables.
+
+Decisions:
+- Use a standard-library hypergeometric right-tail calculation to avoid adding scipy as a hard dependency.
+- Compare target family duplicate type counts against whole-genome background duplicate type counts.
+- Report fold enrichment and p-value per duplicate type.
+
+Added:
+- `bin/genefam/retention_enrichment.py`
+- `tests/test_retention_enrichment.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/duplication_retention_design.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_retention_enrichment.py -q` first failed because `bin.genefam.retention_enrichment` did not exist.
+- Implemented `retention_enrichment.py`.
+- `python -m pytest tests/test_retention_enrichment.py -q` passed.
+- `python -m pytest tests -q` passed with 31 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- Ran a command-line smoke test with family/background duplicate type TSV files; `retention_enrichment.py` produced fold enrichment and p-value columns.
+
+Commit:
+- hash: not created in this session
+- message: feat: add retention enrichment helper
+- files: retention enrichment helper, tests, docs
+
+Next:
+- Add chromosome location extraction from GFF3 so family members can be plotted on chromosomes.
