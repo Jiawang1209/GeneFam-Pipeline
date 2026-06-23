@@ -19,6 +19,7 @@ except ImportError:  # pragma: no cover
     yaml = None
 
 from bin.genefam.discover_species import _select_species, discover_species, write_manifest
+from bin.genefam.assemble_report import assemble_report, write_report
 from bin.genefam.extract_sequences import extract_fasta_records
 from bin.genefam.merge_identification_evidence import merge_evidence, read_tsv, write_tsv
 from bin.genefam.prepare_alignment_inputs import prepare_alignment_manifest, write_tsv as write_alignment_tsv
@@ -128,12 +129,17 @@ def _build_report_index_rows(outputs: dict[str, Path], outdir: Path) -> list[dic
         ("retention_enrichment", "Duplicate-type retention enrichment"),
         ("family_expression", "Family member expression matrix"),
         ("summary_report", "Markdown run summary"),
+        ("final_report", "Final Markdown report"),
         ("report_index", "Report input availability index"),
     ]
     rows: list[dict[str, str]] = []
     for key, description in expected_outputs:
         path = outputs.get(key)
-        status = "available" if path and (path.exists() or key in {"summary_report", "report_index"}) else "not_available"
+        status = (
+            "available"
+            if path and (path.exists() or key in {"summary_report", "final_report", "report_index"})
+            else "not_available"
+        )
         relative_path = path.relative_to(outdir).as_posix() if path else ""
         rows.append({"key": key, "path": relative_path, "status": status, "description": description})
     return rows
@@ -178,6 +184,7 @@ def run_mock_mvp(
         "phylogeny_manifest": tables_dir / "phylogeny_manifest.tsv",
         "family_members_faa": sequences_dir / "family_members.faa",
         "summary_report": report_dir / "summary.md",
+        "final_report": report_dir / "final_report.md",
         "report_index": report_dir / "report_index.tsv",
     }
 
@@ -205,6 +212,16 @@ def run_mock_mvp(
     report_index_rows = _build_report_index_rows(outputs, Path(outdir))
     _write_report_index(report_index_rows, outputs["report_index"])
     _write_summary_report(outputs["summary_report"], config, manifest_rows, candidates, family_counts, report_index_rows)
+    project = config.get("project", {}) or {}
+    gene_family = config.get("gene_family", {}) or {}
+    write_report(
+        assemble_report(
+            project_name=project.get("name", "unnamed"),
+            gene_family=gene_family.get("name", "unnamed"),
+            report_index_rows=report_index_rows,
+        ),
+        outputs["final_report"],
+    )
     return outputs
 
 

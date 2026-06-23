@@ -45,6 +45,7 @@ def test_run_mock_mvp_writes_core_outputs(tmp_path):
     assert outputs["phylogeny_manifest"] == outdir / "tables" / "phylogeny_manifest.tsv"
     assert outputs["summary_report"] == outdir / "report" / "summary.md"
     assert outputs["report_index"] == outdir / "report" / "report_index.tsv"
+    assert outputs["final_report"] == outdir / "report" / "final_report.md"
 
     candidates = read_tsv(outputs["family_candidates"])
     assert [row["gene_id"] for row in candidates] == ["AT1G01010", "BraA010001"]
@@ -80,6 +81,13 @@ def test_run_mock_mvp_writes_core_outputs(tmp_path):
     assert "## Pending Outputs" in report_text
     assert "- `wgd_event_evidence`: Configured WGD event evidence table" in report_text
 
+    final_report_text = outputs["final_report"].read_text(encoding="utf-8")
+    assert "# GeneFam-Pipeline Final Report" in final_report_text
+    assert "Project: GDSL_demo" in final_report_text
+    assert "Gene family: GDSL" in final_report_text
+    assert "## Output Availability" in final_report_text
+    assert "## WGD Event Evidence" in final_report_text
+
     report_index = read_tsv(outputs["report_index"])
     by_key = {row["key"]: row for row in report_index}
     assert by_key["family_candidates"]["status"] == "available"
@@ -95,6 +103,7 @@ def test_run_mock_mvp_writes_core_outputs(tmp_path):
     assert by_key["kaks_pair_manifest"]["status"] == "not_available"
     assert by_key["kaks_pairs"]["status"] == "not_available"
     assert by_key["summary_report"]["status"] == "available"
+    assert by_key["final_report"]["status"] == "available"
     assert by_key["report_index"]["status"] == "available"
     assert by_key["wgd_event_evidence"]["status"] == "not_available"
     assert by_key["family_wgd_event_membership"]["status"] == "not_available"

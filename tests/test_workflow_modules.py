@@ -71,3 +71,20 @@ def test_main_workflow_includes_duplication_retention_processes():
     assert "ANNOTATE_FAMILY_WGD_EVENTS" in workflow
     assert "SUMMARIZE_FAMILY_EVENT_RETENTION" in workflow
     assert "RETENTION_ENRICHMENT" in workflow
+
+
+def test_report_module_assembles_final_markdown():
+    module = Path("workflows/modules/report.nf").read_text(encoding="utf-8")
+
+    assert "process ASSEMBLE_REPORT" in module
+    assert "assemble_report.py" in module
+    assert "--project-name ${project_name}" in module
+    assert "--gene-family ${gene_family}" in module
+    assert "--report-index ${report_index}" in module
+    assert "--out final_report.md" in module
+
+
+def test_main_workflow_includes_report_process():
+    workflow = Path("workflows/main.nf").read_text(encoding="utf-8")
+
+    assert "include { ASSEMBLE_REPORT } from './modules/report.nf'" in workflow

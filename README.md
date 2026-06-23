@@ -96,6 +96,7 @@ It writes:
 - `results/mock_mvp/tables/phylogeny_manifest.tsv`
 - `results/mock_mvp/sequences/family_members.faa`
 - `results/mock_mvp/report/summary.md`
+- `results/mock_mvp/report/final_report.md`
 - `results/mock_mvp/report/report_index.tsv`
 
 When Nextflow is available, the same mock runner is exposed through:

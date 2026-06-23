@@ -1168,7 +1168,59 @@ Verification:
 - Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`; real Nextflow/container execution was therefore not verified in this environment.
 
 Commit:
-- pending
+- hash: ff4c3c5bb198b91f95f209868e92eec21899acb2
+- message: feat: wire duplication retention workflow branch
+- files: Nextflow duplication-retention module, main workflow branch, runtime params, README command, workflow tests, history
 
 Next:
 - Add a lightweight report assembly layer that collects report-index outputs and WGD/retention tables into a final Markdown report skeleton.
+
+## 2026-06-24 - Add reusable final report assembler
+
+Context:
+- The workflow had many stable TSV outputs and a mock summary, but no reusable final report assembler shared by mock mode and future full Nextflow runs.
+- The project objective requires a final report that can include standard gene-family outputs plus WGD/retention interpretation tables.
+- `HISTORY.md` also needed the actual commit hash for the previous Nextflow duplication-retention branch checkpoint.
+
+Decisions:
+- Add a Python Markdown report assembler that reads `report_index.tsv` and optional WGD/retention tables.
+- Add `final_report.md` to mock MVP outputs and the report index.
+- Add a Nextflow `ASSEMBLE_REPORT` process that calls the same Python report assembler.
+- Keep the report text explicit that named WGD events are metadata-backed interpretations of synteny/Ks layers.
+
+Added:
+- `bin/genefam/assemble_report.py`
+- `tests/test_assemble_report.py`
+- `workflows/modules/report.nf`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/run_mock_mvp.py`
+- `tests/test_run_mock_mvp.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_assemble_report.py -q` first failed because `bin.genefam.assemble_report` did not exist.
+- Implemented `assemble_report.py`.
+- `python -m pytest tests/test_assemble_report.py -q` passed.
+- `python -m pytest tests/test_run_mock_mvp.py -q` first failed because mock MVP did not return `final_report`.
+- Added `final_report.md` generation to mock MVP.
+- `python -m pytest tests/test_workflow_modules.py -q` first failed because `workflows/modules/report.nf` did not exist.
+- Added `workflows/modules/report.nf` and included `ASSEMBLE_REPORT` from `workflows/main.nf`.
+- `python -m pytest tests/test_run_mock_mvp.py -q` passed.
+- `python -m pytest tests/test_workflow_modules.py -q` passed.
+- `python -m pytest tests -q` passed with 66 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` wrote `results/mock_mvp/report/final_report.md` and marked `final_report` as `available` in the report index.
+- Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`; real Nextflow/container execution was therefore not verified in this environment.
+
+Commit:
+- pending
+
+Next:
+- Add plot-generation workflow processes that call `/usr/local/bin/R` for family counts, Ka/Ks, and expression heatmap outputs, then reference those plots from the final report layer.
