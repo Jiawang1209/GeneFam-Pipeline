@@ -1496,7 +1496,50 @@ Verification:
 - `python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv` still exited `1` because local external runtime commands remain missing; the TSV showed conda and `/usr/local/bin/R` as available and Nextflow/container/bioinformatics tools as missing.
 
 Commit:
-- pending
+- hash: 882eca25fd2a9e1ab3a44ae5efd33653ce31286b
+- message: docs: add advanced module config examples
+- files: advanced module example config, advanced module docs, README links, example validation tests, history
 
 Next:
 - Add a final release audit document that maps each original goal requirement to current evidence, known gaps, and the command that verifies it.
+
+## 2026-06-24 - Add release audit requirement map
+
+Context:
+- The repository now has broad workflow modules, helpers, configs, reports, readiness audit, and advanced examples.
+- The full objective still cannot be marked complete on this machine because readiness audit shows missing external runtime commands.
+- A requirement-to-evidence release audit was needed so the remaining status is explicit and auditable rather than conversational.
+- `HISTORY.md` also needed the actual commit hash for the previous advanced module example checkpoint.
+
+Decisions:
+- Add `docs/release_audit.md` mapping each major goal requirement to repository evidence and verification commands.
+- Explicitly classify the current state as repository-ready but runtime-blocked on this machine.
+- Link the release audit from README.
+- Add a static documentation test to keep the audit covering key goal phrases and commands.
+
+Added:
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because `docs/release_audit.md` did not exist.
+- Added `docs/release_audit.md` and README link.
+- `python -m pytest tests/test_release_audit_docs.py -q` passed.
+- `python -m pytest tests -q` passed with 89 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/advanced_modules.example.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` wrote a non-empty final report and included `run_plan` as available.
+- `python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv` still exited `1`; the TSV showed conda and `/usr/local/bin/R` available and Nextflow/container/bioinformatics tools missing.
+
+Commit:
+- pending
+
+Next:
+- Continue repository-level polish while the full-runtime blocker remains, or install/activate the missing runtime commands and run the actual Nextflow/container smoke tests.

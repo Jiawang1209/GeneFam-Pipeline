@@ -1,0 +1,86 @@
+# Release Audit
+
+This document maps the original GeneFam-Pipeline goal to current repository evidence, verification commands, and known gaps.
+
+## Verification Commands
+
+Repository-level checks:
+
+```bash
+python -m pytest tests -q
+python bin/genefam/validate_config.py configs/example.config.yaml
+python bin/genefam/validate_config.py configs/advanced_modules.example.yaml
+python bin/genefam/run_mock_mvp.py \
+  --config configs/example.config.yaml \
+  --groups configs/species_groups.yaml \
+  --mock-evidence-dir tests/fixtures/mock_evidence \
+  --outdir results/mock_mvp
+python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv
+```
+
+The readiness audit may exit non-zero when runtime commands are missing; inspect the TSV for exact missing tools.
+
+## Requirement Audit
+
+| Requirement | Evidence | Verification |
+|---|---|---|
+| Nextflow DSL2 workflow | `workflows/main.nf`; modules under `workflows/modules/` | `python -m pytest tests/test_workflow_modules.py -q` |
+| YAML-driven parameters | `configs/example.config.yaml`; `configs/advanced_modules.example.yaml`; `bin/genefam/build_run_plan.py` | `python bin/genefam/build_run_plan.py --config configs/example.config.yaml --out results/mock_mvp/tables/run_plan.tsv` |
+| GeneFamilyFlow runtime | `envs/GeneFamilyFlow.conda.yaml`; `workflows/nextflow.config`; `Dockerfile` | `python -m pytest tests/test_runtime_environment_files.py -q` |
+| `/usr/local/bin/R` plotting and reporting convention | `workflows/modules/plots.nf`; `scripts/plot_family_counts.R`; `scripts/plot_kaks.R`; `scripts/plot_expression_heatmap.R` | `python -m pytest tests/test_workflow_modules.py tests/test_runtime_environment_files.py -q` |
+| Docker/Conda reproducible running | `Dockerfile`; `envs/GeneFamilyFlow.conda.yaml`; `workflows/nextflow.config` profiles `local`, `docker`, `apptainer` | `python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv` |
+| species bank input model | `docs/input_contract.md`; `bin/genefam/discover_species.py`; `tests/fixtures/species_bank` | `python -m pytest tests/test_discover_species.py -q` |
+| target species selection | `configs/species_groups.yaml`; `species.include`; `species.exclude`; `run.species_group` | `python -m pytest tests/test_discover_species.py tests/test_build_run_plan.py -q` |
+| HMMER family identification | `workflows/modules/hmmer_search.nf`; `bin/genefam/parse_hmmer_domtbl.py`; `bin/genefam/filter_hmmer_domains.py` | `python -m pytest tests/test_parse_hmmer_domtbl.py tests/test_filter_hmmer_domains.py -q` |
+| DIAMOND confirmation | `workflows/modules/diamond_search.nf`; `bin/genefam/parse_diamond_outfmt6.py` | `python -m pytest tests/test_parse_diamond_outfmt6.py -q` |
+| domain filtering | `bin/genefam/filter_hmmer_domains.py`; `workflows/modules/domain_filter.nf` | `python -m pytest tests/test_filter_hmmer_domains.py tests/test_merge_identification_evidence.py -q` |
+| family member summary | `bin/genefam/summarize_family.py`; `workflows/modules/family_summary.nf` | `python -m pytest tests/test_summarize_family.py -q` |
+| alignment | `bin/genefam/prepare_alignment_inputs.py`; `workflows/modules/alignment_phylogeny.nf` | `python -m pytest tests/test_prepare_alignment_inputs.py tests/test_workflow_modules.py -q` |
+| phylogeny | `bin/genefam/prepare_phylogeny_inputs.py`; `workflows/modules/alignment_phylogeny.nf` | `python -m pytest tests/test_prepare_phylogeny_inputs.py tests/test_workflow_modules.py -q` |
+| motif | `bin/genefam/parse_meme_motifs.py`; `workflows/modules/alignment_phylogeny.nf` | `python -m pytest tests/test_parse_meme_motifs.py tests/test_workflow_modules.py -q` |
+| synteny | `bin/genefam/parse_mcscanx_collinearity.py`; `workflows/modules/duplication_retention.nf` prepared-table branch | `python -m pytest tests/test_parse_mcscanx_collinearity.py tests/test_workflow_modules.py -q` |
+| duplication retention | `bin/genefam/normalize_duplicate_types.py`; `bin/genefam/join_family_duplicates.py`; `bin/genefam/retention_enrichment.py` | `python -m pytest tests/test_normalize_duplicate_types.py tests/test_join_family_duplicates.py tests/test_retention_enrichment.py -q` |
+| WGD layer and named event model | `bin/genefam/classify_wgd_layers.py`; `bin/genefam/build_wgd_event_evidence.py`; `configs/wgd_events.brassicaceae.yaml` | `python -m pytest tests/test_classify_wgd_layers.py tests/test_build_wgd_event_evidence.py -q` |
+| gamma beta alpha theta interpretation | `configs/wgd_events.brassicaceae.yaml`; `docs/wgd_event_evidence.md`; `docs/duplication_retention_design.md` | `python -m pytest tests/test_build_wgd_event_evidence.py -q` |
+| Ka/Ks selection pressure | `bin/genefam/prepare_kaks_pairs.py`; `bin/genefam/parse_kaks_results.py`; `workflows/modules/duplication_retention.nf` | `python -m pytest tests/test_prepare_kaks_pairs.py tests/test_parse_kaks_results.py -q` |
+| chromosome location | `bin/genefam/extract_chromosome_locations.py`; `workflows/modules/annotation_integration.nf` | `python -m pytest tests/test_extract_chromosome_locations.py tests/test_workflow_modules.py -q` |
+| expression integration | `bin/genefam/subset_expression_matrix.py`; `workflows/modules/annotation_integration.nf`; `workflows/modules/plots.nf` | `python -m pytest tests/test_subset_expression_matrix.py tests/test_workflow_modules.py -q` |
+| final report | `bin/genefam/assemble_report.py`; `workflows/modules/report.nf`; `results/mock_mvp/report/final_report.md` | `python -m pytest tests/test_assemble_report.py tests/test_run_mock_mvp.py -q` |
+| HISTORY.md development diary | `HISTORY.md` records dated development entries and commit hashes | `git log --oneline -6` and inspect `HISTORY.md` |
+| Reference/ read-only source material | `.dockerignore`; `docs/input_contract.md`; `README.md`; untracked `Reference/` files are not staged | `git status --short --untracked-files=all` |
+
+## Known Gap
+
+The repository-level implementation and tests are in place, but this machine does not currently prove full end-to-end runtime execution.
+
+Recent readiness audits found:
+
+- available: `conda`, `/usr/local/bin/R`
+- missing: `nextflow`, `docker`, `apptainer`, `hmmsearch`, `diamond`, `mafft`, `iqtree2`, `meme`
+
+This means:
+
+- Mock MVP and Python/R/report helpers can be validated locally.
+- Full Nextflow local execution needs `nextflow` and the GeneFamilyFlow command-line tools on `PATH`.
+- Docker profile execution needs Docker plus the `genefam-pipeline:latest` image.
+- Apptainer profile execution needs Apptainer and access to the Docker image.
+- External HMMER, DIAMOND, MAFFT, IQ-TREE, MEME, and related bioinformatics commands must be installed through Conda or container profiles before true end-to-end execution can be claimed.
+
+## Release Decision
+
+Current status is repository-ready but runtime-blocked on this machine.
+
+Do not mark the full objective complete until at least one real runtime route is verified:
+
+```bash
+nextflow run workflows/main.nf -c workflows/nextflow.config --config configs/example.config.yaml --mock_mvp true
+```
+
+or:
+
+```bash
+docker build -t genefam-pipeline:latest .
+nextflow run workflows/main.nf -c workflows/nextflow.config -profile docker --config configs/example.config.yaml --mock_mvp true
+```
+
+or an equivalent Apptainer run after the missing runtime commands are available.
