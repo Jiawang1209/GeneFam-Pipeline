@@ -34,6 +34,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
 
     required_commands = [
         "python -m pytest tests -q",
+        "python bin/genefam/run_release_checks.py --outdir results/release_checks",
         "python bin/genefam/validate_config.py configs/example.config.yaml",
         "python bin/genefam/validate_config.py configs/advanced_modules.example.yaml",
         "python bin/genefam/run_mock_mvp.py",
@@ -43,6 +44,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
         assert command in text
 
     assert "Known Gap" in text
+    assert "release_checks.tsv" in text
     assert "nextflow" in text
     assert "docker" in text
     assert "mafft" in text

@@ -1539,7 +1539,53 @@ Verification:
 - `python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv` still exited `1`; the TSV showed conda and `/usr/local/bin/R` available and Nextflow/container/bioinformatics tools missing.
 
 Commit:
-- pending
+- hash: 0e8c3235f78cc4fb09be15c6b4e823e8b4167c21
+- message: docs: add release audit map
+- files: release audit docs, README link, release audit documentation test, history
 
 Next:
 - Continue repository-level polish while the full-runtime blocker remains, or install/activate the missing runtime commands and run the actual Nextflow/container smoke tests.
+
+## 2026-06-24 - Add release checks runner
+
+Context:
+- The release audit listed the verification commands, but the repository still needed one command that runs the main checks and writes a durable summary.
+- The full objective remains runtime-blocked on this machine until Nextflow/container and bioinformatics commands are installed or activated.
+
+Decisions:
+- Add a release check runner that executes tests, both YAML validators, the mock MVP, and the readiness audit.
+- Write both TSV and Markdown summaries so the run can be inspected by scripts and by humans.
+- Return a non-zero exit code when any required check fails, including readiness failures from missing external runtime tools.
+- Escape pipe characters in Markdown table cells so command output cannot break the release report table.
+
+Added:
+- `bin/genefam/run_release_checks.py`
+- `tests/test_run_release_checks.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/release_audit.md`
+- `docs/readiness_checklist.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_release_checks.py -q` first failed the new Markdown escaping test because pipe characters were not escaped.
+- Implemented Markdown table-cell escaping.
+- `python -m pytest tests/test_run_release_checks.py -q` passed with 4 tests.
+- `python -m pytest tests/test_release_audit_docs.py tests/test_runtime_environment_files.py -q` passed with 6 tests.
+- `python -m pytest tests -q` passed with 93 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/advanced_modules.example.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` wrote `release_checks.tsv` and `release_checks.md`; pytest, config validation, and mock MVP passed, while readiness audit failed.
+- `results/readiness/command_readiness.tsv` showed conda and `/usr/local/bin/R` available, with nextflow, docker, apptainer, hmmsearch, diamond, mafft, iqtree2, and meme missing.
+
+Commit:
+- pending
+
+Next:
+- Install or activate missing runtime commands, then rerun `python bin/genefam/run_release_checks.py --outdir results/release_checks` and actual Nextflow/container smoke tests.

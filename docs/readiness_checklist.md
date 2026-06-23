@@ -7,6 +7,7 @@ This checklist separates repository-level readiness from machine-level runtime r
 Run these commands before considering a development checkpoint usable:
 
 ```bash
+python bin/genefam/run_release_checks.py --outdir results/release_checks
 python -m pytest tests -q
 python bin/genefam/validate_config.py configs/example.config.yaml
 python bin/genefam/run_mock_mvp.py \

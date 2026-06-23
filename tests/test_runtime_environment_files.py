@@ -41,6 +41,7 @@ def test_readiness_checklist_documents_command_audit():
     text = checklist.read_text(encoding="utf-8")
 
     assert "python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv" in text
+    assert "python bin/genefam/run_release_checks.py --outdir results/release_checks" in text
     assert "nextflow" in text
     assert "/usr/local/bin/R" in text
     assert "mafft" in text

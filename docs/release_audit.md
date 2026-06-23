@@ -7,6 +7,7 @@ This document maps the original GeneFam-Pipeline goal to current repository evid
 Repository-level checks:
 
 ```bash
+python bin/genefam/run_release_checks.py --outdir results/release_checks
 python -m pytest tests -q
 python bin/genefam/validate_config.py configs/example.config.yaml
 python bin/genefam/validate_config.py configs/advanced_modules.example.yaml
@@ -19,6 +20,11 @@ python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.
 ```
 
 The readiness audit may exit non-zero when runtime commands are missing; inspect the TSV for exact missing tools.
+
+The release checks runner writes:
+
+- `results/release_checks/release_checks.tsv`
+- `results/release_checks/release_checks.md`
 
 ## Requirement Audit
 
