@@ -21,6 +21,7 @@ except ImportError:  # pragma: no cover
 from bin.genefam.discover_species import _select_species, discover_species, write_manifest
 from bin.genefam.extract_sequences import extract_fasta_records
 from bin.genefam.merge_identification_evidence import merge_evidence, read_tsv, write_tsv
+from bin.genefam.prepare_alignment_inputs import prepare_alignment_manifest, write_tsv as write_alignment_tsv
 from bin.genefam.summarize_family import summarize_candidates, write_tsv as write_summary_tsv
 
 
@@ -110,6 +111,7 @@ def _build_report_index_rows(outputs: dict[str, Path], outdir: Path) -> list[dic
         ("family_candidates", "Merged HMMER and DIAMOND candidate table"),
         ("family_counts", "Per-species gene family member counts"),
         ("family_members_faa", "Family member protein FASTA"),
+        ("alignment_manifest", "Alignment input manifest for MAFFT or MUSCLE"),
         ("chromosome_locations", "Family member chromosome locations"),
         ("wgd_layers", "Anonymous WGD layer assignments"),
         ("wgd_event_evidence", "Configured WGD event evidence table"),
@@ -162,6 +164,7 @@ def run_mock_mvp(
         "species_manifest": tables_dir / "species_manifest.tsv",
         "family_candidates": tables_dir / "family_candidates.tsv",
         "family_counts": tables_dir / "family_counts.tsv",
+        "alignment_manifest": tables_dir / "alignment_manifest.tsv",
         "family_members_faa": sequences_dir / "family_members.faa",
         "summary_report": report_dir / "summary.md",
         "report_index": report_dir / "report_index.tsv",
@@ -177,6 +180,15 @@ def run_mock_mvp(
     family_counts = summarize_candidates(candidates)
     write_summary_tsv(family_counts, outputs["family_counts"])
     _write_family_fasta(candidates, manifest_rows, outputs["family_members_faa"])
+    write_alignment_tsv(
+        prepare_alignment_manifest(
+            family_name=(config.get("gene_family", {}) or {}).get("name", "family"),
+            fasta_path=outputs["family_members_faa"],
+            outdir=Path(outdir) / "alignment",
+            aligner="mafft",
+        ),
+        outputs["alignment_manifest"],
+    )
     report_index_rows = _build_report_index_rows(outputs, Path(outdir))
     _write_report_index(report_index_rows, outputs["report_index"])
     _write_summary_report(outputs["summary_report"], config, manifest_rows, candidates, family_counts, report_index_rows)

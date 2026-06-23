@@ -636,9 +636,52 @@ Verification:
 - `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` produced a `summary.md` with correct available and pending output sections.
 
 Commit:
-- hash: not created in this session
+- hash: 2706669308e28e5e620b0e2d7fd8aaf2131b2264
 - message: feat: render report output status
 - files: mock summary rendering, tests, history
 
 Next:
 - Add alignment preparation outputs so family FASTA can feed MAFFT/MUSCLE and phylogeny modules.
+
+## 2026-06-24 - Add alignment input manifest
+
+Context:
+- The workflow needs a stable bridge from identified family protein FASTA to later MAFFT/MUSCLE and phylogeny modules.
+
+Decisions:
+- Add an alignment input manifest instead of invoking MAFFT immediately, because external tool availability is still not guaranteed locally.
+- Require at least two family member sequences before creating an alignment manifest.
+- Add the alignment manifest to the mock MVP and report index so downstream availability is visible.
+
+Added:
+- `bin/genefam/prepare_alignment_inputs.py`
+- `tests/test_prepare_alignment_inputs.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/run_mock_mvp.py`
+- `tests/test_run_mock_mvp.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_prepare_alignment_inputs.py -q` first failed because `bin.genefam.prepare_alignment_inputs` did not exist.
+- Implemented `prepare_alignment_inputs.py`.
+- `python -m pytest tests/test_prepare_alignment_inputs.py -q` passed.
+- `python -m pytest tests/test_run_mock_mvp.py::test_run_mock_mvp_writes_core_outputs -q` then failed because `alignment_manifest` was not yet produced by the mock MVP.
+- Added `alignment_manifest.tsv` generation to `bin/genefam/run_mock_mvp.py`.
+- `python -m pytest tests/test_run_mock_mvp.py tests/test_prepare_alignment_inputs.py -q` passed.
+- `python -m pytest tests -q` passed with 37 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` produced `tables/alignment_manifest.tsv` and marked it available in `report/report_index.tsv`.
+- `command -v nextflow` returned no path, so Nextflow execution remains pending.
+
+Commit:
+- hash: not created in this session
+- message: feat: add alignment input manifest
+- files: alignment manifest helper, mock MVP integration, tests, docs, history
+
+Next:
+- Add tree/phylogeny manifest preparation so alignments can feed IQ-TREE/FastTree when external tools are available.
