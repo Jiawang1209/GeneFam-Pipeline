@@ -88,6 +88,7 @@ def test_run_mock_mvp_writes_core_outputs(tmp_path):
     assert by_key["alignment_manifest"]["path"] == "tables/alignment_manifest.tsv"
     assert by_key["phylogeny_manifest"]["status"] == "available"
     assert by_key["phylogeny_manifest"]["path"] == "tables/phylogeny_manifest.tsv"
+    assert by_key["motif_summary"]["status"] == "not_available"
     assert by_key["summary_report"]["status"] == "available"
     assert by_key["report_index"]["status"] == "available"
     assert by_key["wgd_event_evidence"]["status"] == "not_available"

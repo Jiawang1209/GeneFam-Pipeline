@@ -769,9 +769,54 @@ Verification:
 - Runtime availability check did not find `nextflow`, `docker`, or `apptainer` in PATH, so full Nextflow/container execution remains pending on this machine.
 
 Commit:
-- hash: not created in this session
+- hash: fc6922c2f4805cae50aa7b40e9d8102bb54129a9
 - message: chore: add genefamilyflow runtime profiles
 - files: conda environment, Dockerfile, Nextflow profiles, runtime docs, tests, history
 
 Next:
 - Add motif input manifest or MEME output parser so motif analysis can join the same report contract.
+
+## 2026-06-24 - Add MEME motif summary parser
+
+Context:
+- Motif analysis is part of the final workflow objective.
+- The workflow needed a stable parser for MEME text output before motif plots and report integration can be wired.
+- `HISTORY.md` also needed the actual commit hash for the previous runtime profile checkpoint.
+
+Decisions:
+- Parse the stable `MOTIF` and `letter-probability matrix` lines from MEME text output.
+- Output a compact motif summary table with family name, motif ID, motif name, width, site count, and E-value.
+- Add `motif_summary` to the mock MVP report index as a pending output until real MEME output is supplied.
+
+Added:
+- `bin/genefam/parse_meme_motifs.py`
+- `tests/test_parse_meme_motifs.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/input_contract.md`
+- `bin/genefam/run_mock_mvp.py`
+- `tests/test_run_mock_mvp.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_parse_meme_motifs.py -q` first failed because `bin.genefam.parse_meme_motifs` did not exist.
+- Implemented `parse_meme_motifs.py`.
+- `python -m pytest tests/test_parse_meme_motifs.py -q` passed.
+- `python -m pytest tests/test_parse_meme_motifs.py tests/test_run_mock_mvp.py tests/test_runtime_environment_files.py -q` passed with 7 tests.
+- `python -m pytest tests -q` passed with 44 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- Ran a command-line smoke test that parsed a one-motif MEME text file into `motifs.tsv`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` marked `motif_summary` as `not_available` in the report index.
+- Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`.
+
+Commit:
+- hash: not created in this session
+- message: feat: add meme motif parser
+- files: MEME parser, tests, report contract, docs, history
+
+Next:
+- Add synteny/MCScanX collinearity parser so duplicate pairs and WGD-related analyses can consume real MCScanX outputs.

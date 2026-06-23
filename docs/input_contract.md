@@ -97,6 +97,21 @@ AT1G01010 1.0 3.0 2.5
 
 It subsets the matrix to family member IDs before heatmap plotting.
 
+## Motif Summary
+
+`bin/genefam/parse_meme_motifs.py` parses MEME text output into:
+
+```text
+family_name
+motif_id
+motif_name
+width
+sites
+evalue
+```
+
+This table is intended for motif architecture plotting and report integration.
+
 ## Discovery Rules
 
 - Folder name is the default species ID.
