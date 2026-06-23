@@ -124,3 +124,60 @@ def test_main_workflow_includes_plot_processes():
     assert "PLOT_KAKS" in workflow
     assert "PLOT_EXPRESSION_HEATMAP" in workflow
     assert "BUILD_PLOT_MANIFEST" in workflow
+
+
+def test_alignment_phylogeny_module_covers_alignment_tree_and_motif_steps():
+    module = Path("workflows/modules/alignment_phylogeny.nf").read_text(encoding="utf-8")
+
+    assert "process PREPARE_ALIGNMENT_INPUTS" in module
+    assert "prepare_alignment_inputs.py" in module
+    assert "--family-name ${family_name}" in module
+    assert "--fasta ${family_members_faa}" in module
+    assert "--aligner ${aligner}" in module
+    assert "--out alignment_manifest.tsv" in module
+
+    assert "process RUN_ALIGNMENT" in module
+    assert "mafft --auto ${family_members_faa} > raw_alignment.faa" in module
+    assert 'path "raw_alignment.faa"' in module
+
+    assert "process PREPARE_PHYLOGENY_INPUTS" in module
+    assert "prepare_phylogeny_inputs.py" in module
+    assert "--tree-builder ${tree_builder}" in module
+    assert "--out phylogeny_manifest.tsv" in module
+
+    assert "process RUN_PHYLOGENY" in module
+    assert "iqtree2 -s ${alignment} -m MFP -bb 1000 -nt AUTO" in module
+    assert 'path "treefile.nwk"' in module
+
+    assert "process PARSE_MEME_MOTIFS" in module
+    assert "parse_meme_motifs.py" in module
+    assert "--meme-txt ${meme_txt}" in module
+    assert "--out motif_summary.tsv" in module
+
+
+def test_annotation_integration_module_covers_chromosome_and_expression_steps():
+    module = Path("workflows/modules/annotation_integration.nf").read_text(encoding="utf-8")
+
+    assert "process EXTRACT_CHROMOSOME_LOCATIONS" in module
+    assert "extract_chromosome_locations.py" in module
+    assert "--family-members ${family_members}" in module
+    assert "--gff3 ${gff3}" in module
+    assert "--out chromosome_locations.tsv" in module
+
+    assert "process SUBSET_EXPRESSION_MATRIX" in module
+    assert "subset_expression_matrix.py" in module
+    assert "--family-members ${family_members}" in module
+    assert "--expression ${expression_matrix}" in module
+    assert "--out family_expression.tsv" in module
+
+
+def test_main_workflow_includes_remaining_standard_analysis_processes():
+    workflow = Path("workflows/main.nf").read_text(encoding="utf-8")
+
+    assert "PREPARE_ALIGNMENT_INPUTS" in workflow
+    assert "RUN_ALIGNMENT" in workflow
+    assert "PREPARE_PHYLOGENY_INPUTS" in workflow
+    assert "RUN_PHYLOGENY" in workflow
+    assert "PARSE_MEME_MOTIFS" in workflow
+    assert "EXTRACT_CHROMOSOME_LOCATIONS" in workflow
+    assert "SUBSET_EXPRESSION_MATRIX" in workflow

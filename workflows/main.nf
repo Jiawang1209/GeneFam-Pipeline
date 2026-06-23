@@ -5,6 +5,17 @@ include { MOCK_MVP } from './modules/mock_mvp.nf'
 include { ASSEMBLE_REPORT } from './modules/report.nf'
 include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
 include {
+    PREPARE_ALIGNMENT_INPUTS;
+    RUN_ALIGNMENT;
+    PREPARE_PHYLOGENY_INPUTS;
+    RUN_PHYLOGENY;
+    PARSE_MEME_MOTIFS
+} from './modules/alignment_phylogeny.nf'
+include {
+    EXTRACT_CHROMOSOME_LOCATIONS;
+    SUBSET_EXPRESSION_MATRIX
+} from './modules/annotation_integration.nf'
+include {
     NORMALIZE_DUPLICATE_TYPES;
     JOIN_FAMILY_DUPLICATES;
     CLASSIFY_WGD_LAYERS;

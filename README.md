@@ -137,4 +137,5 @@ This branch produces normalized duplicate classifications, family duplicate clas
 - Offline mock MVP runner is implemented and tested.
 - Report index generation is implemented for stable downstream reporting.
 - Duplication, WGD-event, and retention helper processes are wired as a prepared-table Nextflow branch.
+- Alignment, phylogeny, motif parsing, chromosome location, and expression-subset processes are represented as Nextflow DSL2 modules.
 - Full external-tool workflow wiring is still under development.

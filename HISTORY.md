@@ -1271,7 +1271,50 @@ Verification:
 - Runtime availability check found `/usr/local/bin/R` and `/Users/liuyue/miniforge3/bin/conda`; it did not find `nextflow`, `docker`, or `apptainer`.
 
 Commit:
-- pending
+- hash: 5f9620392212e673f9c384f002f871014aa2f5d8
+- message: feat: wire R plotting workflow outputs
+- files: R plotting Nextflow module, plot manifest helper, final report plot section, workflow tests, history
 
 Next:
 - Add workflow/documentation coverage for alignment, phylogeny, motif, chromosome, and expression modules so the remaining standard gene-family analysis surface is represented consistently in Nextflow.
+
+## 2026-06-24 - Add standard analysis workflow modules
+
+Context:
+- Core helper scripts already existed for alignment manifests, phylogeny manifests, motif parsing, chromosome locations, and expression subsetting.
+- The Nextflow DSL2 surface still did not represent several standard gene-family analysis modules from the project objective.
+- `HISTORY.md` also needed the actual commit hash for the previous R plotting workflow checkpoint.
+
+Decisions:
+- Add `alignment_phylogeny.nf` for alignment input preparation, MAFFT alignment, phylogeny input preparation, IQ-TREE execution, and MEME motif parsing.
+- Add `annotation_integration.nf` for chromosome location extraction and family expression matrix subsetting.
+- Include these processes from `workflows/main.nf` without forcing them into the default species-discovery or mock-MVP branches.
+- Keep the current modules as command-ready workflow surfaces; full external-tool execution still depends on installed tools such as MAFFT, IQ-TREE, MEME, and Nextflow.
+
+Added:
+- `workflows/modules/alignment_phylogeny.nf`
+- `workflows/modules/annotation_integration.nf`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_workflow_modules.py -q` first failed because `workflows/modules/alignment_phylogeny.nf` and `workflows/modules/annotation_integration.nf` did not exist and `workflows/main.nf` did not include the related process names.
+- Implemented the two DSL2 modules and included them from `workflows/main.nf`.
+- `python -m pytest tests/test_workflow_modules.py -q` passed with 11 tests.
+- `python -m pytest tests -q` passed with 73 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` preserved alignment and phylogeny manifests as available, while motif summary, chromosome locations, and family expression remained explicit pending outputs in the report index and final report.
+- Runtime availability check found `/usr/local/bin/R` and `/Users/liuyue/miniforge3/bin/conda`; it did not find `nextflow`, `docker`, `apptainer`, `mafft`, `iqtree2`, or `meme`.
+
+Commit:
+- pending
+
+Next:
+- Add a documented end-to-end readiness checklist and command audit so remaining gaps toward a truly runnable final release are explicit and testable.
