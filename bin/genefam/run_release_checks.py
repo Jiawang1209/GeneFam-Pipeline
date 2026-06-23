@@ -47,6 +47,21 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "standard branch smoke",
+            [
+                python,
+                "bin/genefam/run_standard_smoke.py",
+                "--config",
+                "configs/example.config.yaml",
+                "--groups",
+                "configs/species_groups.yaml",
+                "--mock-evidence-dir",
+                "tests/fixtures/mock_evidence",
+                "--outdir",
+                "results/standard_smoke",
+            ],
+        ),
+        CheckSpec(
             "readiness audit",
             [python, "bin/genefam/audit_readiness.py", "--out", "results/readiness/command_readiness.tsv"],
         ),

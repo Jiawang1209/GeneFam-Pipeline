@@ -141,6 +141,18 @@ nextflow run workflows/main.nf \
 
 This branch builds HMMER and DIAMOND input tables from the YAML config and species manifest, runs evidence detection per species, merges candidate evidence, concatenates family candidate tables, summarizes copy numbers, extracts `family_members.faa`, prepares alignment and phylogeny manifests, creates the family-count plot, writes a standard report index, and assembles `final_report.md`.
 
+The offline standard-branch smoke check exercises the same post-identification reporting chain without requiring HMMER, DIAMOND, MAFFT, or IQ-TREE:
+
+```bash
+python bin/genefam/run_standard_smoke.py \
+  --config configs/example.config.yaml \
+  --groups configs/species_groups.yaml \
+  --mock-evidence-dir tests/fixtures/mock_evidence \
+  --outdir results/standard_smoke
+```
+
+It writes `results/standard_smoke/report/final_report.md` and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+
 ## Duplication And WGD Event Branch
 
 The duplication-retention helper chain is available as a Nextflow branch for prepared intermediate tables:

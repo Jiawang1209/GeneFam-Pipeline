@@ -1815,7 +1815,58 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because readiness audit failed, but pytest, config validation, mock MVP, and runtime bootstrap plan passed.
 
 Commit:
+- hash: 9d300e99629ad6dad3027a3567e5d08d3f74956a
+- message: feat: assemble standard branch report
+- files: standard report Nextflow process, workflow wiring, report docs, assemble report test, history
+
+Next:
+- Continue toward runtime installation and real Nextflow/container smoke tests; then verify the standard report-producing branch through Nextflow rather than Python smoke commands.
+
+## 2026-06-24 - Add standard branch smoke release check
+
+Context:
+- The standard identification branch had a Python smoke path and could assemble `final_report.md`, but this proof was not part of the durable release checks.
+- Release checks should prove both the mock MVP and the standard branch post-identification/reporting chain before reporting repository readiness.
+- Full Nextflow runtime is still blocked by missing external commands, so the standard smoke intentionally avoids HMMER, DIAMOND, MAFFT, and IQ-TREE while exercising the same downstream helpers.
+
+Decisions:
+- Add `run_standard_smoke.py` to produce standard branch outputs from example config, species groups, and prepared mock evidence.
+- Include standard branch smoke in `run_release_checks.py` before readiness audit.
+- Document the smoke command and `results/standard_smoke/report/final_report.md` in README and release audit.
+
+Added:
+- `bin/genefam/run_standard_smoke.py`
+- `tests/test_run_standard_smoke.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_standard_smoke.py -q` first failed because `bin/genefam/run_standard_smoke.py` did not exist.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_standard_branch_smoke_before_readiness -q` first failed because release checks did not include standard branch smoke.
+- Implemented `run_standard_smoke.py`; the first run failed because direct CLI execution lacked the repository root on `sys.path`.
+- Added the repository root import guard and cleaned the report-index constant access.
+- `python -m pytest tests/test_run_standard_smoke.py -q` passed.
+- Added standard branch smoke to release checks.
+- `python -m pytest tests/test_run_release_checks.py tests/test_run_standard_smoke.py -q` passed with 7 tests.
+- `python -m pytest tests/test_release_audit_docs.py tests/test_runtime_environment_files.py tests/test_run_release_checks.py tests/test_run_standard_smoke.py -q` passed with 14 tests.
+- `python bin/genefam/run_standard_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/standard_smoke` wrote `results/standard_smoke/report/final_report.md`.
+- `python -m pytest tests -q` passed with 115 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/advanced_modules.example.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because readiness audit failed, but pytest, config validation, mock MVP, standard branch smoke, and runtime bootstrap plan passed.
+
+Commit:
 - pending
 
 Next:
-- Commit this standard final report layer, then continue toward runtime installation and real Nextflow/container smoke tests.
+- Commit the standard smoke release-check layer, then continue toward real Nextflow/container runtime verification.

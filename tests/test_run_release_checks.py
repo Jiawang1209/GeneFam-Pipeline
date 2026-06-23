@@ -102,3 +102,12 @@ def test_default_checks_generate_runtime_bootstrap_after_readiness_audit():
     bootstrap = next(check for check in default_checks() if check.name == "runtime bootstrap plan")
     assert "bin/genefam/plan_runtime_bootstrap.py" in " ".join(bootstrap.command)
     assert "--readiness results/readiness/command_readiness.tsv" in " ".join(bootstrap.command)
+
+
+def test_default_checks_include_standard_branch_smoke_before_readiness():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("standard branch smoke") < names.index("readiness audit")
+    smoke = next(check for check in default_checks() if check.name == "standard branch smoke")
+    assert "bin/genefam/run_standard_smoke.py" in " ".join(smoke.command)
+    assert "--outdir results/standard_smoke" in " ".join(smoke.command)
