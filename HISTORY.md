@@ -993,9 +993,50 @@ Verification:
 - Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`.
 
 Commit:
-- hash: not created in this session
+- hash: d037a9a9d5b01e01ad6941a8b30db52ed3f773ad
 - message: feat: add duplicate type normalizer
 - files: duplicate type normalizer, tests, report contract, input docs, history
 
 Next:
 - Add a family duplicate join helper that intersects family members with normalized duplicate classifications before retention enrichment.
+
+## 2026-06-24 - Add family duplicate join helper
+
+Context:
+- Retention enrichment should use family-specific duplicate classifications instead of a hand-prepared family duplicate table.
+- The previous checkpoint added normalized duplicate type labels, but the pipeline still needed a bridge from identified family members to those classifications.
+- `HISTORY.md` already carried the actual hash for the previous duplicate type normalizer commit.
+
+Decisions:
+- Add a small TSV join helper between `family_candidates.tsv`-style member tables and normalized duplicate classifications.
+- Fail loudly if any family member is missing a duplicate classification, because partial retention enrichment would silently bias downstream interpretation.
+- Keep `duplicate_classification` as the background table and add `family_duplicate_classification` as the family-specific retention-enrichment input.
+
+Added:
+- `bin/genefam/join_family_duplicates.py`
+- `tests/test_join_family_duplicates.py`
+
+Modified:
+- `HISTORY.md`
+- `docs/input_contract.md`
+- `bin/genefam/run_mock_mvp.py`
+- `tests/test_run_mock_mvp.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_join_family_duplicates.py -q` first failed because `bin.genefam.join_family_duplicates` did not exist.
+- Implemented `join_family_duplicates.py`.
+- `python -m pytest tests/test_join_family_duplicates.py -q` passed.
+- `python -m pytest tests/test_join_family_duplicates.py tests/test_retention_enrichment.py tests/test_run_mock_mvp.py -q` passed with 6 tests.
+- `python -m pytest tests -q` passed with 55 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` marked `family_duplicate_classification` and `retention_enrichment` as `not_available` in the report index.
+- Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`.
+
+Commit:
+- pending
+
+Next:
+- Add a duplication/retention table integrator that combines family duplicate classifications with WGD layer or event labels for gamma/beta/alpha/theta-oriented retention summaries.

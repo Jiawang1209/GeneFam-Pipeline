@@ -117,6 +117,7 @@ def _build_report_index_rows(outputs: dict[str, Path], outdir: Path) -> list[dic
         ("motif_summary", "MEME motif summary table"),
         ("syntenic_pairs", "MCScanX syntenic gene pairs"),
         ("duplicate_classification", "Normalized duplicate type classification"),
+        ("family_duplicate_classification", "Family members joined with duplicate type classifications"),
         ("kaks_pair_manifest", "CDS pair FASTA manifest for Ka/Ks calculation"),
         ("kaks_pairs", "Ka/Ks pairwise selection pressure table"),
         ("chromosome_locations", "Family member chromosome locations"),

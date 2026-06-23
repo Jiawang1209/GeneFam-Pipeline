@@ -148,6 +148,24 @@ Accepted canonical `duplicate_type` values:
 
 These normalized tables can be used directly by `bin/genefam/retention_enrichment.py`.
 
+## Family Duplicate Classification
+
+`bin/genefam/join_family_duplicates.py` joins identified family members with normalized duplicate type classifications. It reads:
+
+- family member table with `species_id` and `gene_id`
+- normalized duplicate type table with `gene_id`, `duplicate_type`, and `raw_duplicate_type`
+
+It writes:
+
+```text
+species_id
+gene_id
+duplicate_type
+raw_duplicate_type
+```
+
+This family-specific table is the direct input for `bin/genefam/retention_enrichment.py`, while the full normalized duplicate table is used as the background.
+
 ## Ka/Ks Pairs
 
 `bin/genefam/prepare_kaks_pairs.py` prepares pairwise CDS FASTA files from syntenic pairs and CDS FASTA inputs. It writes a manifest with:
