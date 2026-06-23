@@ -6,7 +6,7 @@ include { HMMER_SEARCH } from './modules/hmmer_search.nf'
 include { DIAMOND_SEARCH } from './modules/diamond_search.nf'
 include { DOMAIN_FILTER; CONCAT_FAMILY_CANDIDATES } from './modules/domain_filter.nf'
 include { FAMILY_SUMMARY } from './modules/family_summary.nf'
-include { EXTRACT_FAMILY_SEQUENCES; BUILD_STANDARD_REPORT_INDEX } from './modules/standard_postprocess.nf'
+include { EXTRACT_FAMILY_SEQUENCES; BUILD_STANDARD_REPORT_INDEX; ASSEMBLE_STANDARD_REPORT } from './modules/standard_postprocess.nf'
 include { MOCK_MVP } from './modules/mock_mvp.nf'
 include { ASSEMBLE_REPORT } from './modules/report.nf'
 include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
@@ -78,6 +78,7 @@ workflow {
 
         final_rule_ch = Channel.value(params.final_rule)
         family_name_ch = Channel.value(params.gene_family)
+        project_name_ch = Channel.value(params.project_name)
         aligner_ch = Channel.value(params.aligner)
         tree_builder_ch = Channel.value(params.tree_builder)
         alignment_outdir_ch = Channel.value("${params.outdir}/alignment")
@@ -108,11 +109,13 @@ workflow {
             PREPARE_PHYLOGENY_INPUTS.out,
             BUILD_PLOT_MANIFEST.out
         )
+        ASSEMBLE_STANDARD_REPORT(project_name_ch, family_name_ch, BUILD_STANDARD_REPORT_INDEX.out, BUILD_PLOT_MANIFEST.out)
 
         PREPARE_SPECIES.out.view { manifest -> "Species manifest: ${manifest}" }
         CONCAT_FAMILY_CANDIDATES.out.view { candidates -> "Family candidates: ${candidates}" }
         FAMILY_SUMMARY.out.view { counts -> "Family counts: ${counts}" }
         BUILD_STANDARD_REPORT_INDEX.out.view { report_index -> "Report index: ${report_index}" }
+        ASSEMBLE_STANDARD_REPORT.out.view { report -> "Final report: ${report}" }
     } else {
         PREPARE_SPECIES(config_ch, groups_ch)
 

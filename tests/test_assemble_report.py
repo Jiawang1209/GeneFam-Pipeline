@@ -137,3 +137,44 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
     assert "# GeneFam-Pipeline Final Report" in text
     assert "| WGD_layer_1 | alpha | 12 | 0.1800 | configured_named_event | Brassicaceae |" in text
     assert "| family_counts | plots/family_counts.pdf | Family counts |" in text
+
+
+def test_assemble_report_cli_supports_standard_branch_without_wgd_tables(tmp_path):
+    report_index = tmp_path / "report_index.tsv"
+    plot_manifest = tmp_path / "plot_manifest.tsv"
+    out_path = tmp_path / "final_report.md"
+    report_index.write_text(
+        "key\tpath\tstatus\tdescription\n"
+        "family_members_faa\tfamily_members.faa\tavailable\tFamily member peptide FASTA\n",
+        encoding="utf-8",
+    )
+    plot_manifest.write_text(
+        "plot_key\tpath\tdescription\nfamily_counts\tplots/family_counts.pdf\tFamily counts\n",
+        encoding="utf-8",
+    )
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "bin/genefam/assemble_report.py",
+            "--project-name",
+            "GDSL demo",
+            "--gene-family",
+            "GDSL",
+            "--report-index",
+            str(report_index),
+            "--plot-manifest",
+            str(plot_manifest),
+            "--out",
+            str(out_path),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    text = out_path.read_text(encoding="utf-8")
+    assert "Project: GDSL demo" in text
+    assert "| family_members_faa | available | family_members.faa | Family member peptide FASTA |" in text
+    assert "No WGD event evidence table was available for this run." in text

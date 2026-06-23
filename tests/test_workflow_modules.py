@@ -53,12 +53,20 @@ def test_standard_postprocess_module_extracts_family_sequences_and_report_index(
     assert "--phylogeny-manifest ${phylogeny_manifest}" in module
     assert "--out report_index.tsv" in module
 
+    assert "process ASSEMBLE_STANDARD_REPORT" in module
+    assert "assemble_report.py" in module
+    assert "--project-name ${project_name}" in module
+    assert "--gene-family ${gene_family}" in module
+    assert "--report-index ${report_index}" in module
+    assert "--plot-manifest ${plot_manifest}" in module
+    assert "--out final_report.md" in module
+
 
 def test_main_workflow_wires_standard_identification_branch():
     workflow = Path("workflows/main.nf").read_text(encoding="utf-8")
 
     assert "include { BUILD_IDENTIFICATION_INPUTS } from './modules/identification_inputs.nf'" in workflow
-    assert "include { EXTRACT_FAMILY_SEQUENCES; BUILD_STANDARD_REPORT_INDEX } from './modules/standard_postprocess.nf'" in workflow
+    assert "include { EXTRACT_FAMILY_SEQUENCES; BUILD_STANDARD_REPORT_INDEX; ASSEMBLE_STANDARD_REPORT } from './modules/standard_postprocess.nf'" in workflow
     assert "include { HMMER_SEARCH } from './modules/hmmer_search.nf'" in workflow
     assert "include { DIAMOND_SEARCH } from './modules/diamond_search.nf'" in workflow
     assert "include { DOMAIN_FILTER; CONCAT_FAMILY_CANDIDATES } from './modules/domain_filter.nf'" in workflow
@@ -76,6 +84,7 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "PLOT_FAMILY_COUNTS(FAMILY_SUMMARY.out)" in workflow
     assert "BUILD_PLOT_MANIFEST()" in workflow
     assert "BUILD_STANDARD_REPORT_INDEX(" in workflow
+    assert "ASSEMBLE_STANDARD_REPORT(project_name_ch, family_name_ch, BUILD_STANDARD_REPORT_INDEX.out, BUILD_PLOT_MANIFEST.out)" in workflow
 
 
 def test_duplication_retention_module_exposes_wgd_helper_processes():

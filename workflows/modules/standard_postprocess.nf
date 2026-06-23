@@ -45,3 +45,26 @@ process BUILD_STANDARD_REPORT_INDEX {
       --out report_index.tsv
     """
 }
+
+process ASSEMBLE_STANDARD_REPORT {
+    tag "standard final report"
+
+    input:
+    val project_name
+    val gene_family
+    path report_index
+    path plot_manifest
+
+    output:
+    path "final_report.md"
+
+    script:
+    """
+    python ${projectDir}/bin/genefam/assemble_report.py \\
+      --project-name ${project_name} \\
+      --gene-family ${gene_family} \\
+      --report-index ${report_index} \\
+      --plot-manifest ${plot_manifest} \\
+      --out final_report.md
+    """
+}

@@ -139,7 +139,7 @@ nextflow run workflows/main.nf \
   --final_rule intersection
 ```
 
-This branch builds HMMER and DIAMOND input tables from the YAML config and species manifest, runs evidence detection per species, merges candidate evidence, concatenates family candidate tables, summarizes copy numbers, extracts `family_members.faa`, prepares alignment and phylogeny manifests, creates the family-count plot, and writes a standard report index.
+This branch builds HMMER and DIAMOND input tables from the YAML config and species manifest, runs evidence detection per species, merges candidate evidence, concatenates family candidate tables, summarizes copy numbers, extracts `family_members.faa`, prepares alignment and phylogeny manifests, creates the family-count plot, writes a standard report index, and assembles `final_report.md`.
 
 ## Duplication And WGD Event Branch
 

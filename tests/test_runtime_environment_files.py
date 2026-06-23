@@ -72,3 +72,4 @@ def test_readme_documents_explicit_standard_identification_branch():
     assert "HMMER and DIAMOND input tables" in readme
     assert "family_members.faa" in readme
     assert "standard report index" in readme
+    assert "final_report.md" in readme

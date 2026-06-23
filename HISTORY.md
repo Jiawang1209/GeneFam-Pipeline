@@ -1764,7 +1764,58 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because readiness audit failed, but pytest, config validation, mock MVP, and runtime bootstrap plan passed.
 
 Commit:
+- hash: 8b34fec00c15bf009a355eb93da367800ba168a7
+- message: feat: add standard branch postprocessing
+- files: family sequence extraction, standard report index builder, standard postprocess Nextflow module, workflow wiring, docs, tests, history
+
+Next:
+- Continue toward runtime installation and real Nextflow/container smoke tests, then wire actual MAFFT/IQ-TREE execution once tools are available.
+
+## 2026-06-24 - Add standard branch final report assembly
+
+Context:
+- The standard identification branch could generate a report index, but it still did not assemble a standard `final_report.md`.
+- `assemble_report.py` already supported report-index-only runs with optional WGD and retention tables, so the missing piece was a Nextflow process that invokes it for the standard branch.
+- The existing `ASSEMBLE_REPORT` process is designed for WGD/retention paths, so the standard branch needed a lighter wrapper that only requires `report_index` and `plot_manifest`.
+
+Decisions:
+- Add `ASSEMBLE_STANDARD_REPORT` to `workflows/modules/standard_postprocess.nf`.
+- Wire `--run_identification true` through `ASSEMBLE_STANDARD_REPORT` after `BUILD_STANDARD_REPORT_INDEX` and `BUILD_PLOT_MANIFEST`.
+- Add `params.project_name` to `workflows/nextflow.config` for the standard report title.
+- Document that the standard identification branch assembles `final_report.md`.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/release_audit.md`
+- `tests/test_assemble_report.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/nextflow.config`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q` first failed because `ASSEMBLE_STANDARD_REPORT` and main workflow wiring were missing.
+- Added `ASSEMBLE_STANDARD_REPORT` and wired it into the standard branch.
+- `python -m pytest tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q` passed with 2 tests.
+- `python -m pytest tests/test_assemble_report.py::test_assemble_report_cli_supports_standard_branch_without_wgd_tables -q` passed.
+- `python -m pytest tests/test_assemble_report.py tests/test_workflow_modules.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py -q` passed with 25 tests.
+- A standard report smoke initially failed because the smoke command passed a report index as the plot manifest; after generating a real `plot_manifest.tsv`, `python bin/genefam/assemble_report.py --project-name GDSL_demo --gene-family GDSL --report-index results/standard_postprocess_smoke/report_index.tsv --plot-manifest results/standard_postprocess_smoke/plot_manifest.tsv --out results/standard_postprocess_smoke/final_report.md` wrote `final_report.md` with output availability, empty WGD sections, plots, and the WGD interpretation note.
+- `python -m pytest tests -q` passed with 113 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/advanced_modules.example.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because readiness audit failed, but pytest, config validation, mock MVP, and runtime bootstrap plan passed.
+
+Commit:
 - pending
 
 Next:
-- Commit this standard postprocessing layer, then continue toward runtime installation and real Nextflow/container smoke tests.
+- Commit this standard final report layer, then continue toward runtime installation and real Nextflow/container smoke tests.
