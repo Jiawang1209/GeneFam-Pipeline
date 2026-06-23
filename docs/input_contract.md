@@ -130,6 +130,15 @@ This table is the first bridge from MCScanX output into duplicate type, Ks, and 
 
 ## Ka/Ks Pairs
 
+`bin/genefam/prepare_kaks_pairs.py` prepares pairwise CDS FASTA files from syntenic pairs and CDS FASTA inputs. It writes a manifest with:
+
+```text
+gene_a
+gene_b
+pair_fasta
+expected_kaks
+```
+
 `bin/genefam/parse_kaks_results.py` parses KaKs_Calculator-style output into:
 
 ```text

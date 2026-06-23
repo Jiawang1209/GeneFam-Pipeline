@@ -904,9 +904,53 @@ Verification:
 - Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`.
 
 Commit:
-- hash: not created in this session
+- hash: 863a86f970e8097cd498a00f15ee9d5f843675db
 - message: feat: add kaks result parser
 - files: Ka/Ks parser, tests, report contract, docs, history
 
 Next:
 - Add a CDS pair extraction/preparation helper so syntenic gene pairs can be passed to KaKs_Calculator once CDS FASTA files are available.
+
+## 2026-06-24 - Add CDS pair preparation for Ka/Ks
+
+Context:
+- Ka/Ks parsing is available, but the pipeline also needs a stable way to prepare pairwise CDS FASTA inputs for KaKs_Calculator from syntenic pairs.
+- `HISTORY.md` also needed the actual commit hash for the previous Ka/Ks parser checkpoint.
+
+Decisions:
+- Add a helper that reads syntenic pair rows plus two CDS FASTA files.
+- Write one pair FASTA per gene pair.
+- Write a manifest with `gene_a`, `gene_b`, `pair_fasta`, and `expected_kaks`.
+- Add `kaks_pair_manifest` to the mock MVP report index as a pending downstream output until real CDS pair preparation is run.
+
+Added:
+- `bin/genefam/prepare_kaks_pairs.py`
+- `tests/test_prepare_kaks_pairs.py`
+
+Modified:
+- `HISTORY.md`
+- `docs/input_contract.md`
+- `bin/genefam/run_mock_mvp.py`
+- `tests/test_run_mock_mvp.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_prepare_kaks_pairs.py -q` first failed because `bin.genefam.prepare_kaks_pairs` did not exist.
+- Implemented `prepare_kaks_pairs.py`.
+- `python -m pytest tests/test_prepare_kaks_pairs.py -q` passed.
+- `python -m pytest tests/test_prepare_kaks_pairs.py tests/test_parse_kaks_results.py tests/test_run_mock_mvp.py -q` passed with 6 tests.
+- `python -m pytest tests -q` passed with 49 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- Ran a command-line smoke test that created one pair CDS FASTA and a Ka/Ks manifest row from a syntenic pair.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` marked `kaks_pair_manifest` and `kaks_pairs` as `not_available` in the report index.
+- Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`.
+
+Commit:
+- hash: not created in this session
+- message: feat: add kaks pair preparation
+- files: Ka/Ks pair preparation helper, tests, report contract, input docs, history
+
+Next:
+- Add duplicate type parser/normalizer so MCScanX duplicate classifications can feed retention enrichment without hand-prepared tables.

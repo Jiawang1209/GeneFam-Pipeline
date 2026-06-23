@@ -90,6 +90,7 @@ def test_run_mock_mvp_writes_core_outputs(tmp_path):
     assert by_key["phylogeny_manifest"]["path"] == "tables/phylogeny_manifest.tsv"
     assert by_key["motif_summary"]["status"] == "not_available"
     assert by_key["syntenic_pairs"]["status"] == "not_available"
+    assert by_key["kaks_pair_manifest"]["status"] == "not_available"
     assert by_key["kaks_pairs"]["status"] == "not_available"
     assert by_key["summary_report"]["status"] == "available"
     assert by_key["report_index"]["status"] == "available"
