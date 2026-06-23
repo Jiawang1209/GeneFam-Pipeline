@@ -152,7 +152,9 @@ python bin/genefam/run_standard_smoke.py \
   --outdir results/standard_smoke
 ```
 
-It writes `results/standard_smoke/tables/chromosome_locations.tsv`, records `family_expression` as missing when no expression matrix is supplied, writes `results/standard_smoke/report/final_report.md`, and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+Add `--expression-matrix path/to/expression.tsv` to subset RNA-seq expression rows to the identified family members during the same smoke.
+
+It writes `results/standard_smoke/tables/chromosome_locations.tsv`, records `family_expression` as missing when no expression matrix is supplied or available when `--expression-matrix` is provided, writes `results/standard_smoke/report/final_report.md`, and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
 
 ## Duplication And WGD Event Branch
 

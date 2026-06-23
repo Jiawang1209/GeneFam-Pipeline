@@ -2029,7 +2029,52 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because Nextflow mock MVP smoke failed with `missing_nextflow` and readiness audit failed, but pytest, config validation, mock MVP, standard branch smoke, WGD event smoke, and runtime bootstrap plan passed.
 
 Commit:
-- pending
+- hash: 005448c2a30f3fc2eddc6d4c0dbf5d75afcc2513
+- message: feat: wire annotation outputs into standard branch
+- files: multi-species chromosome extraction, family-candidate expression interface, standard report index contract, Nextflow standard branch wiring, README/release audit docs, tests, history
 
 Next:
 - Continue wiring optional expression plotting and full Nextflow runtime verification after Nextflow/GeneFamilyFlow tools are available.
+
+## 2026-06-24 - Add expression matrix smoke path for standard branch
+
+Context:
+- The standard branch now records `family_expression` in the report index, but the offline smoke could only demonstrate the missing-expression case.
+- RNA-seq expression integration needs a quick local verification path that does not require Nextflow or external bioinformatics tools.
+
+Decisions:
+- Add an optional `--expression-matrix` argument to `run_standard_smoke.py`.
+- When supplied, subset the expression matrix to genes in `family_candidates.tsv`, write `tables/family_expression.tsv`, and mark `family_expression` available in `report_index.tsv`.
+- Document the `--expression-matrix` smoke option in README.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/run_standard_smoke.py`
+- `tests/test_run_standard_smoke.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_standard_smoke.py::test_run_standard_smoke_writes_family_expression_when_matrix_is_provided -q` first failed because `run_standard_smoke.py` did not accept `--expression-matrix`.
+- Implemented optional expression subsetting in `run_standard_smoke.py`.
+- `python -m pytest tests/test_run_standard_smoke.py -q` passed with 2 tests.
+- `python -m pytest tests/test_runtime_environment_files.py::test_readme_documents_explicit_standard_identification_branch -q` first failed because README did not document `--expression-matrix`.
+- Updated README.
+- `python -m pytest tests/test_run_standard_smoke.py tests/test_runtime_environment_files.py -q` passed with 8 tests.
+- Ran `python bin/genefam/run_standard_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --expression-matrix <tmp_expr> --outdir results/standard_expression_smoke`; it wrote `tables/family_expression.tsv` with `AT1G01010` and `BraA010001`, and `report_index.tsv` marked `family_expression` available.
+- `python -m pytest tests -q` passed with 123 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/advanced_modules.example.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because Nextflow mock MVP smoke failed with `missing_nextflow` and readiness audit failed, but pytest, config validation, mock MVP, standard branch smoke, WGD event smoke, and runtime bootstrap plan passed.
+
+Commit:
+- pending
+
+Next:
+- Add a plotted expression smoke/report path or move to installing/activating the Nextflow and GeneFamilyFlow runtime to close the remaining release gate.

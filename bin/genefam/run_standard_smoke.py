@@ -23,6 +23,12 @@ from bin.genefam.prepare_alignment_inputs import prepare_alignment_manifest, wri
 from bin.genefam.prepare_phylogeny_inputs import prepare_phylogeny_manifest, write_tsv as write_phylogeny_tsv
 from bin.genefam.summarize_family import summarize_candidates, write_tsv as write_summary_tsv
 from bin.genefam.run_mock_mvp import _load_yaml
+from bin.genefam.subset_expression_matrix import (
+    gene_ids_from_family_candidates,
+    read_tsv as read_expression_tsv,
+    subset_expression,
+    write_tsv as write_expression_tsv,
+)
 
 
 def _print_outputs(outputs: dict[str, Path]) -> None:
@@ -32,7 +38,13 @@ def _print_outputs(outputs: dict[str, Path]) -> None:
         writer.writerow([key, outputs[key]])
 
 
-def run_standard_smoke(config_path: Path, groups_path: Path, mock_evidence_dir: Path, outdir: Path) -> dict[str, Path]:
+def run_standard_smoke(
+    config_path: Path,
+    groups_path: Path,
+    mock_evidence_dir: Path,
+    outdir: Path,
+    expression_matrix: Path | None = None,
+) -> dict[str, Path]:
     config = _load_yaml(config_path)
     groups = _load_yaml(groups_path) if groups_path and groups_path.exists() else {}
     include, exclude = _select_species(config, groups)
@@ -63,6 +75,8 @@ def run_standard_smoke(config_path: Path, groups_path: Path, mock_evidence_dir: 
         "report_index": report_dir / "report_index.tsv",
         "standard_final_report": report_dir / "final_report.md",
     }
+    if expression_matrix is not None:
+        outputs["family_expression"] = tables_dir / "family_expression.tsv"
 
     write_manifest(manifest_rows, outputs["species_manifest"])
     candidates = merge_evidence(
@@ -85,6 +99,11 @@ def run_standard_smoke(config_path: Path, groups_path: Path, mock_evidence_dir: 
         outputs["phylogeny_manifest"],
     )
     write_locations_tsv(extract_locations_for_manifest(candidates, manifest_rows), outputs["chromosome_locations"])
+    if expression_matrix is not None:
+        write_expression_tsv(
+            subset_expression(read_expression_tsv(expression_matrix), gene_ids_from_family_candidates(candidates)),
+            outputs["family_expression"],
+        )
     write_plot_manifest_tsv(
         build_plot_manifest([("family_counts", "plots/family_counts.pdf", "Family member counts by species")]),
         outputs["plot_manifest"],
@@ -110,9 +129,12 @@ def main() -> None:
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--groups", required=True, type=Path)
     parser.add_argument("--mock-evidence-dir", required=True, type=Path)
+    parser.add_argument("--expression-matrix", type=Path)
     parser.add_argument("--outdir", required=True, type=Path)
     args = parser.parse_args()
-    _print_outputs(run_standard_smoke(args.config, args.groups, args.mock_evidence_dir, args.outdir))
+    _print_outputs(
+        run_standard_smoke(args.config, args.groups, args.mock_evidence_dir, args.outdir, args.expression_matrix)
+    )
 
 
 if __name__ == "__main__":
