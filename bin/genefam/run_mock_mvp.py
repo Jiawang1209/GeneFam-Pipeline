@@ -124,6 +124,7 @@ def _build_report_index_rows(outputs: dict[str, Path], outdir: Path) -> list[dic
         ("wgd_layers", "Anonymous WGD layer assignments"),
         ("wgd_event_evidence", "Configured WGD event evidence table"),
         ("family_wgd_event_membership", "Family members annotated with WGD layer and named event evidence"),
+        ("family_event_retention_summary", "Family gene counts by duplicate type and WGD event"),
         ("retention_enrichment", "Duplicate-type retention enrichment"),
         ("family_expression", "Family member expression matrix"),
         ("summary_report", "Markdown run summary"),

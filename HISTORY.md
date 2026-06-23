@@ -1080,7 +1080,51 @@ Verification:
 - Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`.
 
 Commit:
-- pending
+- hash: cec8c9b7ae487ddcc92591db4274c8a553560585
+- message: feat: add family WGD event membership
+- files: family WGD event membership helper, tests, report contract, input docs, history
 
 Next:
 - Add a family event retention summary that counts family genes by duplicate type and named WGD event for report-ready gamma/beta/alpha/theta tables.
+
+## 2026-06-24 - Add family event retention summary helper
+
+Context:
+- The previous step produced gene-level WGD event membership rows for family members.
+- Reports also need a compact table that counts family genes by WGD layer, named event, and duplicate type.
+- `HISTORY.md` also needed the actual commit hash for the previous family WGD event membership checkpoint.
+
+Decisions:
+- Add a summary helper that groups by `wgd_layer`, `event_name`, and `duplicate_type`.
+- Count unique family genes separately from supporting duplicated-pair evidence rows.
+- Keep `gene_ids` in the summary table for quick auditability in small to medium gene families.
+
+Added:
+- `bin/genefam/summarize_family_event_retention.py`
+- `tests/test_summarize_family_event_retention.py`
+
+Modified:
+- `HISTORY.md`
+- `docs/input_contract.md`
+- `bin/genefam/run_mock_mvp.py`
+- `tests/test_run_mock_mvp.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_summarize_family_event_retention.py -q` first failed because `bin.genefam.summarize_family_event_retention` did not exist.
+- Implemented `summarize_family_event_retention.py`.
+- `python -m pytest tests/test_summarize_family_event_retention.py -q` passed.
+- `python -m pytest tests/test_summarize_family_event_retention.py tests/test_annotate_family_wgd_events.py tests/test_run_mock_mvp.py -q` passed with 7 tests.
+- `python -m pytest tests -q` passed with 60 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- Ran a command-line smoke test where `AT1` had two `alpha` pair evidence rows; the summary counted `family_gene_count=1` and `pair_evidence_count=2`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` marked `family_event_retention_summary` as `not_available` in the report index.
+- Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`.
+
+Commit:
+- pending
+
+Next:
+- Wire the duplication/WGD helper chain into Nextflow DSL2 modules so these evidence tables can be produced by the workflow rather than only as standalone Python tools.

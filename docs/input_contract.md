@@ -188,6 +188,21 @@ confidence
 
 `event_name` remains `unannotated` until the user configures named events such as `gamma`, `beta`, `alpha`, or `theta`. This keeps the workflow honest: Ks and synteny define anonymous WGD layers first, and YAML/literature metadata maps those layers to biological event names later.
 
+## Family Event Retention Summary
+
+`bin/genefam/summarize_family_event_retention.py` summarizes the family WGD event membership table into report-ready counts:
+
+```text
+wgd_layer
+event_name
+duplicate_type
+family_gene_count
+pair_evidence_count
+gene_ids
+```
+
+`family_gene_count` counts unique family genes per `wgd_layer` / `event_name` / `duplicate_type`, while `pair_evidence_count` counts all supporting duplicated-pair rows. This table is intended for gamma/beta/alpha/theta retention summaries and should be interpreted alongside the layer-level `wgd_event_evidence` table.
+
 ## Ka/Ks Pairs
 
 `bin/genefam/prepare_kaks_pairs.py` prepares pairwise CDS FASTA files from syntenic pairs and CDS FASTA inputs. It writes a manifest with:
