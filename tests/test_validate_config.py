@@ -104,3 +104,22 @@ def test_validate_config_reports_mock_mode_without_evidence_dir():
     )
 
     assert "dev.mock_evidence_dir is required when dev.mock_external_tools is true" in errors
+
+
+def test_validate_config_reports_invalid_domain_filtering_thresholds():
+    errors = validate_config(
+        {
+            "project": {},
+            "runtime": {"environment": "GeneFamilyFlow", "r_bin": "/usr/local/bin/R"},
+            "input": {"mode": "auto"},
+            "species": {},
+            "gene_family": {},
+            "identification": {"final_rule": "intersection"},
+            "domain_filtering": {"hmmer_min_bitscore": -1, "hmmer_min_domain_coverage": 1.5},
+            "plotting": {"reuse_policy": "adapt_not_modify"},
+            "modules": {},
+        }
+    )
+
+    assert "domain_filtering.hmmer_min_bitscore must be non-negative" in errors
+    assert "domain_filtering.hmmer_min_domain_coverage must be between 0 and 1" in errors

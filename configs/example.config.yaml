@@ -58,6 +58,11 @@ identification:
   diamond_evalue: 1.0e-10
   final_rule: intersection
 
+domain_filtering:
+  hmmer_max_evalue: 1.0e-10
+  hmmer_min_bitscore: 50.0
+  hmmer_min_domain_coverage: 0.35
+
 wgd_events:
   named_event_annotation: false
   event_map: null

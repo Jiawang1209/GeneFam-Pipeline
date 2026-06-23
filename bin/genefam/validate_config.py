@@ -50,6 +50,14 @@ def validate_config(config: dict[str, Any]) -> list[str]:
     if dev.get("mock_external_tools") is True and not dev.get("mock_evidence_dir"):
         errors.append("dev.mock_evidence_dir is required when dev.mock_external_tools is true")
 
+    domain_filtering = config.get("domain_filtering", {}) or {}
+    min_bitscore = domain_filtering.get("hmmer_min_bitscore")
+    if min_bitscore is not None and float(min_bitscore) < 0:
+        errors.append("domain_filtering.hmmer_min_bitscore must be non-negative")
+    min_domain_coverage = domain_filtering.get("hmmer_min_domain_coverage")
+    if min_domain_coverage is not None and not 0 <= float(min_domain_coverage) <= 1:
+        errors.append("domain_filtering.hmmer_min_domain_coverage must be between 0 and 1")
+
     final_rule = (config.get("identification", {}) or {}).get("final_rule")
     if final_rule not in {"intersection", "union", "hmmer_only"}:
         errors.append("identification.final_rule must be intersection, union, or hmmer_only")

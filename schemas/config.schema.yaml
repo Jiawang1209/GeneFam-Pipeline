@@ -21,6 +21,9 @@ fields:
   gene_family.name: string
   gene_family.hmm_profiles: list of id/path objects
   identification.final_rule: intersection, union, or hmmer_only
+  domain_filtering.hmmer_max_evalue: maximum accepted HMMER e-value
+  domain_filtering.hmmer_min_bitscore: minimum accepted HMMER bitscore
+  domain_filtering.hmmer_min_domain_coverage: minimum HMM coordinate coverage from 0 to 1
   wgd_events.named_event_annotation: boolean
   plotting.reuse_reference_scripts: boolean
   plotting.reference_script_roots: list of Reference directories containing reusable plotting scripts

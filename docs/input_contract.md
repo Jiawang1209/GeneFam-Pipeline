@@ -63,6 +63,16 @@ For offline development, `dev.mock_external_tools: true` can point to a director
 
 These files use the same normalized columns as the parser and evidence merger. The fixture directory `tests/fixtures/mock_evidence/` demonstrates the required format.
 
+## Domain Filtering
+
+HMMER evidence can be filtered by:
+
+- `domain_filtering.hmmer_max_evalue`
+- `domain_filtering.hmmer_min_bitscore`
+- `domain_filtering.hmmer_min_domain_coverage`
+
+Domain coverage is calculated from HMM coordinates as `(hmm_to - hmm_from + 1) / hmm_length`.
+
 ## Discovery Rules
 
 - Folder name is the default species ID.

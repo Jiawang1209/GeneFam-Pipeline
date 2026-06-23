@@ -18,8 +18,12 @@ def test_parse_domtblout_normalizes_hits(tmp_path):
             "species_id": "Arabidopsis_thaliana",
             "gene_id": "AT1G01010",
             "hmm_id": "PF00657",
+            "hmm_length": "200",
+            "hmm_from": "5",
+            "hmm_to": "80",
             "ali_from": "10",
             "ali_to": "90",
+            "domain_coverage": "0.3800",
             "evalue": "1e-40",
             "bitscore": "100.0",
         }

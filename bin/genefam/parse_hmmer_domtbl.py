@@ -8,7 +8,19 @@ import csv
 from pathlib import Path
 
 
-FIELDNAMES = ["species_id", "gene_id", "hmm_id", "ali_from", "ali_to", "evalue", "bitscore"]
+FIELDNAMES = [
+    "species_id",
+    "gene_id",
+    "hmm_id",
+    "hmm_length",
+    "hmm_from",
+    "hmm_to",
+    "ali_from",
+    "ali_to",
+    "domain_coverage",
+    "evalue",
+    "bitscore",
+]
 
 
 def parse_domtblout(path: Path, species_id: str) -> list[dict[str, str]]:
@@ -20,13 +32,21 @@ def parse_domtblout(path: Path, species_id: str) -> list[dict[str, str]]:
             parts = line.rstrip("\n").split()
             if len(parts) < 19:
                 raise ValueError(f"domtblout line has fewer than 19 columns: {line.rstrip()}")
+            hmm_length = int(parts[5])
+            hmm_from = int(parts[15])
+            hmm_to = int(parts[16])
+            domain_coverage = (hmm_to - hmm_from + 1) / hmm_length if hmm_length > 0 else 0.0
             rows.append(
                 {
                     "species_id": species_id,
                     "gene_id": parts[0],
                     "hmm_id": parts[3],
+                    "hmm_length": parts[5],
+                    "hmm_from": parts[15],
+                    "hmm_to": parts[16],
                     "ali_from": parts[17],
                     "ali_to": parts[18],
+                    "domain_coverage": f"{domain_coverage:.4f}",
                     "evalue": parts[6],
                     "bitscore": parts[7],
                 }

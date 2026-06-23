@@ -348,10 +348,63 @@ Verification:
 - `command -v nextflow` returned no path, so Nextflow module execution remains pending.
 
 Commit:
-- hash: not created in this session
+- hash: efaa7402dbacb881a064341c5943c31d7a377d90
 - message: feat: normalize search evidence outputs
 - files: DIAMOND parser, parser tests, workflow module normalization
 
 Next:
 - Add domain filtering thresholds to normalized HMMER evidence.
 - Continue toward combining per-species HMMER/DIAMOND outputs inside the full Nextflow graph when Nextflow becomes available.
+
+## 2026-06-23 - Add HMMER domain filtering thresholds
+
+Context:
+- The pipeline needed a real domain filtering layer after normalized HMMER evidence parsing.
+- Domain filtering should be configurable and testable without relying on external HMMER execution.
+
+Decisions:
+- Extend parsed HMMER evidence with HMM length, HMM coordinates, and domain coverage.
+- Compute domain coverage as `(hmm_to - hmm_from + 1) / hmm_length`.
+- Add an independent HMMER evidence filter helper using e-value, bitscore, and domain coverage thresholds.
+- Add domain filtering thresholds to the example YAML and schema.
+- Update the HMMER Nextflow module so raw domtblout becomes normalized raw TSV, then filtered normalized TSV.
+
+Added:
+- `bin/genefam/filter_hmmer_domains.py`
+- `tests/test_filter_hmmer_domains.py`
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/parse_hmmer_domtbl.py`
+- `bin/genefam/validate_config.py`
+- `configs/example.config.yaml`
+- `schemas/config.schema.yaml`
+- `docs/input_contract.md`
+- `tests/test_parse_hmmer_domtbl.py`
+- `tests/test_validate_config.py`
+- `tests/test_workflow_modules.py`
+- `workflows/nextflow.config`
+- `workflows/modules/hmmer_search.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_parse_hmmer_domtbl.py tests/test_filter_hmmer_domains.py -q` first failed because `bin.genefam.filter_hmmer_domains` did not exist.
+- Implemented `filter_hmmer_domains.py` and extended `parse_hmmer_domtbl.py`.
+- `python -m pytest tests/test_filter_hmmer_domains.py::test_filter_domains_cli_works_when_invoked_by_script_path -q` first failed with `ModuleNotFoundError: No module named 'bin'`.
+- Added a repo-root `sys.path` guard to `filter_hmmer_domains.py`.
+- `python -m pytest tests/test_filter_hmmer_domains.py -q` passed.
+- `python -m pytest tests/test_parse_hmmer_domtbl.py tests/test_filter_hmmer_domains.py tests/test_workflow_modules.py tests/test_validate_config.py -q` passed with 12 tests.
+- `python -m pytest tests -q` passed with 27 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` produced the expected output index.
+- `command -v nextflow` returned no path, so Nextflow module execution remains pending.
+
+Commit:
+- hash: not created in this session
+- message: feat: add hmmer domain filtering
+- files: domain filter helper, parser fields, config/schema/docs, workflow module
+
+Next:
+- Start adding downstream evolutionary-analysis mock tables for duplication/WGD event evidence, so gamma/beta/alpha/theta interpretation can be represented in reports before full MCScanX/KaKs integration.
