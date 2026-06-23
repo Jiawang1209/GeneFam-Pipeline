@@ -115,6 +115,7 @@ def _build_report_index_rows(outputs: dict[str, Path], outdir: Path) -> list[dic
         ("alignment_manifest", "Alignment input manifest for MAFFT or MUSCLE"),
         ("phylogeny_manifest", "Phylogeny input manifest for IQ-TREE or FastTree"),
         ("motif_summary", "MEME motif summary table"),
+        ("syntenic_pairs", "MCScanX syntenic gene pairs"),
         ("chromosome_locations", "Family member chromosome locations"),
         ("wgd_layers", "Anonymous WGD layer assignments"),
         ("wgd_event_evidence", "Configured WGD event evidence table"),

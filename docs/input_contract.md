@@ -112,6 +112,22 @@ evalue
 
 This table is intended for motif architecture plotting and report integration.
 
+## Syntenic Pairs
+
+`bin/genefam/parse_mcscanx_collinearity.py` parses MCScanX `.collinearity` output into:
+
+```text
+block_id
+block_score
+block_evalue
+block_pair_count
+gene_a
+gene_b
+pair_evalue
+```
+
+This table is the first bridge from MCScanX output into duplicate type, Ks, and WGD-layer analyses.
+
 ## Discovery Rules
 
 - Folder name is the default species ID.

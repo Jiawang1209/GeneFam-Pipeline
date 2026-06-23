@@ -814,9 +814,53 @@ Verification:
 - Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`.
 
 Commit:
-- hash: not created in this session
+- hash: a1fb6edb991b728e1a4ad0302bd30fd5b27c8973
 - message: feat: add meme motif parser
 - files: MEME parser, tests, report contract, docs, history
 
 Next:
 - Add synteny/MCScanX collinearity parser so duplicate pairs and WGD-related analyses can consume real MCScanX outputs.
+
+## 2026-06-24 - Add MCScanX collinearity parser
+
+Context:
+- Synteny and WGD analyses need a bridge from MCScanX `.collinearity` output into normalized pipeline tables.
+- `HISTORY.md` also needed the actual commit hash for the previous MEME motif parser checkpoint.
+
+Decisions:
+- Parse MCScanX block headers and gene pair rows into a stable `syntenic_pairs` table.
+- Preserve block score, block e-value, block pair count, gene pair IDs, and pair e-value.
+- Add `syntenic_pairs` to the mock MVP report index as a pending downstream output until real MCScanX output is supplied.
+
+Added:
+- `bin/genefam/parse_mcscanx_collinearity.py`
+- `tests/test_parse_mcscanx_collinearity.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/input_contract.md`
+- `bin/genefam/run_mock_mvp.py`
+- `tests/test_run_mock_mvp.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_parse_mcscanx_collinearity.py -q` first failed because `bin.genefam.parse_mcscanx_collinearity` did not exist.
+- Implemented `parse_mcscanx_collinearity.py`.
+- `python -m pytest tests/test_parse_mcscanx_collinearity.py -q` passed.
+- `python -m pytest tests/test_parse_mcscanx_collinearity.py tests/test_run_mock_mvp.py -q` passed with 3 tests.
+- `python -m pytest tests -q` passed with 45 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- Ran a command-line smoke test that parsed a one-pair MCScanX `.collinearity` file into `syntenic_pairs.tsv`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` marked `syntenic_pairs` as `not_available` in the report index.
+- Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`.
+
+Commit:
+- hash: not created in this session
+- message: feat: add mcscanx collinearity parser
+- files: MCScanX parser, tests, report contract, docs, history
+
+Next:
+- Add Ka/Ks pair table preparation or parser so syntenic pairs can flow into selection pressure and WGD layer modules.
