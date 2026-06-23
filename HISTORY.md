@@ -722,9 +722,56 @@ Verification:
 - `command -v nextflow` returned no path, so Nextflow execution remains pending.
 
 Commit:
-- hash: not created in this session
+- hash: 991ab94cc8d527f4dedc99353bc375707afedff6
 - message: feat: add phylogeny input manifest
 - files: phylogeny manifest helper, mock MVP integration, tests, docs, history
 
 Next:
 - Add a motif input manifest or MEME output parser so motif analysis can join the same report contract.
+
+## 2026-06-24 - Add GeneFamilyFlow runtime and container profiles
+
+Context:
+- The long goal requires a reproducible runtime using the shared environment name `GeneFamilyFlow`.
+- The workflow also needs Docker and Apptainer/Singularity-ready execution paths in addition to local conda execution.
+- `HISTORY.md` needed the actual commit hash for the previous phylogeny manifest checkpoint.
+
+Decisions:
+- Add a project conda environment file at `envs/GeneFamilyFlow.conda.yaml`.
+- Add a Dockerfile based on micromamba that creates `GeneFamilyFlow` and exposes `/usr/local/bin/R`.
+- Add `.dockerignore` to keep `Reference/`, results, work directories, and caches out of container build context.
+- Add `local`, `docker`, and `apptainer` profiles to `workflows/nextflow.config`.
+- Disable conda in container profiles to avoid mixing conda and container runtime modes.
+
+Added:
+- `envs/GeneFamilyFlow.conda.yaml`
+- `Dockerfile`
+- `.dockerignore`
+- `docs/runtime_environment.md`
+- `tests/test_runtime_environment_files.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `workflows/nextflow.config`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_runtime_environment_files.py -q` first failed because the conda environment file, Dockerfile, and Nextflow container profiles did not exist.
+- Added the runtime files and profiles.
+- `python -m pytest tests/test_runtime_environment_files.py -q` passed.
+- `python -m pytest tests -q` passed with 42 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` produced the expected mock output index.
+- Runtime availability check found `/Users/liuyue/miniforge3/bin/conda`.
+- Runtime availability check did not find `nextflow`, `docker`, or `apptainer` in PATH, so full Nextflow/container execution remains pending on this machine.
+
+Commit:
+- hash: not created in this session
+- message: chore: add genefamilyflow runtime profiles
+- files: conda environment, Dockerfile, Nextflow profiles, runtime docs, tests, history
+
+Next:
+- Add motif input manifest or MEME output parser so motif analysis can join the same report contract.

@@ -1,0 +1,33 @@
+name: GeneFamilyFlow
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python>=3.11
+  - pyyaml
+  - biopython
+  - pandas
+  - numpy
+  - scipy
+  - hmmer
+  - diamond
+  - blast
+  - seqkit
+  - mafft
+  - muscle
+  - trimal
+  - iqtree
+  - fasttree
+  - meme
+  - mcscanx
+  - jcvi
+  - kaks_calculator
+  - r-base
+  - r-ggplot2
+  - r-pheatmap
+  - r-data.table
+  - r-optparse
+  - r-yaml
+  - quarto
+  - pytest

@@ -47,6 +47,7 @@ The species ID defaults to the folder name. A run can analyze all species, a man
 - `configs/example.config.yaml`: example analysis configuration.
 - `docs/input_contract.md`: input format contract.
 - `docs/wgd_event_evidence.md`: WGD layer and named-event evidence contract.
+- `docs/runtime_environment.md`: Conda, Docker, and Nextflow profile runtime notes.
 - `docs/superpowers/plans/2026-06-23-genefam-pipeline.md`: implementation plan.
 
 ## Runtime Convention
@@ -55,6 +56,12 @@ The species ID defaults to the folder name. A run can analyze all species, a man
 - R binary: `/usr/local/bin/R`
 
 Nextflow defaults are recorded in `workflows/nextflow.config`. R scripts should be executed through `/usr/local/bin/R` rather than relying on the shell-default `R` or `Rscript`.
+
+Runtime files:
+
+- `envs/GeneFamilyFlow.conda.yaml`
+- `Dockerfile`
+- `workflows/nextflow.config` profiles: `local`, `docker`, `apptainer`
 
 ## Reference Plotting Scripts
 
