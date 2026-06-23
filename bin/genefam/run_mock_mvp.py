@@ -95,6 +95,30 @@ def _write_summary_report(
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def _write_report_index(outputs: dict[str, Path], outdir: Path, out_path: Path) -> None:
+    expected_outputs = [
+        ("species_manifest", "Selected species manifest"),
+        ("family_candidates", "Merged HMMER and DIAMOND candidate table"),
+        ("family_counts", "Per-species gene family member counts"),
+        ("family_members_faa", "Family member protein FASTA"),
+        ("chromosome_locations", "Family member chromosome locations"),
+        ("wgd_layers", "Anonymous WGD layer assignments"),
+        ("wgd_event_evidence", "Configured WGD event evidence table"),
+        ("retention_enrichment", "Duplicate-type retention enrichment"),
+        ("family_expression", "Family member expression matrix"),
+        ("summary_report", "Markdown run summary"),
+    ]
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with out_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["key", "path", "status", "description"], delimiter="\t")
+        writer.writeheader()
+        for key, description in expected_outputs:
+            path = outputs.get(key)
+            status = "available" if path and path.exists() else "not_available"
+            relative_path = path.relative_to(outdir).as_posix() if path else ""
+            writer.writerow({"key": key, "path": relative_path, "status": status, "description": description})
+
+
 def run_mock_mvp(
     config_path: Path,
     groups_path: Path,
@@ -124,6 +148,7 @@ def run_mock_mvp(
         "family_counts": tables_dir / "family_counts.tsv",
         "family_members_faa": sequences_dir / "family_members.faa",
         "summary_report": report_dir / "summary.md",
+        "report_index": report_dir / "report_index.tsv",
     }
 
     write_manifest(manifest_rows, outputs["species_manifest"])
@@ -137,6 +162,7 @@ def run_mock_mvp(
     write_summary_tsv(family_counts, outputs["family_counts"])
     _write_family_fasta(candidates, manifest_rows, outputs["family_members_faa"])
     _write_summary_report(outputs["summary_report"], config, manifest_rows, candidates, family_counts)
+    _write_report_index(outputs, Path(outdir), outputs["report_index"])
     return outputs
 
 

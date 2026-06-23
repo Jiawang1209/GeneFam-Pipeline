@@ -9,6 +9,8 @@ format:
 
 This report summarizes one GeneFam-Pipeline run.
 
+The report input index is `report/report_index.tsv`. It records which tables and sequence outputs are available for this run, so disabled or not-yet-run modules stay explicit.
+
 # Species Included
 
 The selected species are listed in `metadata/species_manifest.tsv`.

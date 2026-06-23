@@ -87,6 +87,7 @@ It writes:
 - `results/mock_mvp/tables/family_counts.tsv`
 - `results/mock_mvp/sequences/family_members.faa`
 - `results/mock_mvp/report/summary.md`
+- `results/mock_mvp/report/report_index.tsv`
 
 When Nextflow is available, the same mock runner is exposed through:
 
@@ -105,4 +106,5 @@ nextflow run workflows/main.nf \
 - YAML config and schema draft are in place.
 - Species discovery helper is implemented and tested.
 - Offline mock MVP runner is implemented and tested.
+- Report index generation is implemented for stable downstream reporting.
 - Full external-tool workflow wiring is still under development.

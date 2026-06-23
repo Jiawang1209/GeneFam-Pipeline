@@ -556,9 +556,50 @@ Verification:
 - Ran a command-line smoke test that subset a two-gene expression matrix to `AT1G01010`.
 
 Commit:
-- hash: not created in this session
+- hash: 4da397cfd72a2f364d9753290ea0c24dce95cc1a
 - message: feat: add expression matrix subsetting
 - files: expression subset helper, tests, input contract docs
 
 Next:
 - Add report input aggregation so the mock MVP can include available downstream tables in a single report index.
+
+## 2026-06-24 - Add report index aggregation for mock MVP
+
+Context:
+- The mock MVP generated multiple report-ready files, but report templates needed a single stable index listing available and unavailable outputs.
+- `HISTORY.md` also needed the actual commit hash for the previous expression matrix subsetting checkpoint.
+
+Decisions:
+- Add `report/report_index.tsv` to the mock MVP output contract.
+- Use `available` and `not_available` statuses so downstream reports can show disabled or pending modules explicitly.
+- Include placeholders for downstream outputs such as chromosome locations, WGD layers, WGD event evidence, retention enrichment, and expression matrix.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/run_mock_mvp.py`
+- `report/template.qmd`
+- `tests/test_run_mock_mvp.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_mock_mvp.py -q` first failed because `report_index` was missing from `run_mock_mvp` outputs and no `report/report_index.tsv` file was written.
+- Implemented report index writing in `bin/genefam/run_mock_mvp.py`.
+- `python -m pytest tests/test_run_mock_mvp.py -q` passed.
+- `python -m pytest tests -q` passed with 35 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` produced `report/report_index.tsv` with available core outputs and not-available downstream placeholders.
+- `command -v nextflow` returned no path, so Nextflow mock execution remains pending.
+
+Commit:
+- hash: not created in this session
+- message: feat: add report index aggregation
+- files: mock report index, tests, README, report template, history
+
+Next:
+- Add lightweight report rendering from `report_index.tsv` into `summary.md` sections for available and unavailable modules.

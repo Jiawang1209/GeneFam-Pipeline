@@ -42,6 +42,7 @@ def test_run_mock_mvp_writes_core_outputs(tmp_path):
     assert outputs["family_counts"] == outdir / "tables" / "family_counts.tsv"
     assert outputs["family_members_faa"] == outdir / "sequences" / "family_members.faa"
     assert outputs["summary_report"] == outdir / "report" / "summary.md"
+    assert outputs["report_index"] == outdir / "report" / "report_index.tsv"
 
     candidates = read_tsv(outputs["family_candidates"])
     assert [row["gene_id"] for row in candidates] == ["AT1G01010", "BraA010001"]
@@ -73,6 +74,12 @@ def test_run_mock_mvp_writes_core_outputs(tmp_path):
     assert "# GeneFam-Pipeline Mock MVP Summary" in report_text
     assert "Final rule: intersection" in report_text
 
+    report_index = read_tsv(outputs["report_index"])
+    by_key = {row["key"]: row for row in report_index}
+    assert by_key["family_candidates"]["status"] == "available"
+    assert by_key["family_candidates"]["path"] == "tables/family_candidates.tsv"
+    assert by_key["wgd_event_evidence"]["status"] == "not_available"
+
 
 def test_run_mock_mvp_cli_works_when_invoked_by_script_path(tmp_path):
     outdir = tmp_path / "cli_results"
@@ -97,4 +104,5 @@ def test_run_mock_mvp_cli_works_when_invoked_by_script_path(tmp_path):
 
     assert completed.returncode == 0, completed.stderr
     assert (outdir / "tables" / "family_candidates.tsv").exists()
+    assert (outdir / "report" / "report_index.tsv").exists()
     assert "family_counts" in completed.stdout
