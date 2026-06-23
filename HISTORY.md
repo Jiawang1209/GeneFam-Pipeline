@@ -1585,7 +1585,61 @@ Verification:
 - `results/readiness/command_readiness.tsv` showed conda and `/usr/local/bin/R` available, with nextflow, docker, apptainer, hmmsearch, diamond, mafft, iqtree2, and meme missing.
 
 Commit:
-- pending
+- hash: 737b510079e873656a4fcbecfb0d122e60879d5b
+- message: feat: add release checks runner
+- files: release check runner, release check tests, README/docs release-check commands, readiness checklist, history
 
 Next:
 - Install or activate missing runtime commands, then rerun `python bin/genefam/run_release_checks.py --outdir results/release_checks` and actual Nextflow/container smoke tests.
+
+## 2026-06-24 - Add runtime bootstrap planner
+
+Context:
+- The readiness audit could report missing runtime commands, but it did not yet turn that evidence into a machine-specific recovery plan.
+- The Conda environment file also needed to carry the workflow engine route itself, not only downstream bioinformatics tools.
+- The full objective remains runtime-blocked until at least one Nextflow/container route is actually executable on this machine.
+
+Decisions:
+- Add a bootstrap planner that reads `results/readiness/command_readiness.tsv` and writes a Markdown plan plus executable shell script.
+- Include `openjdk` and `nextflow` in `envs/GeneFamilyFlow.conda.yaml` so the local Conda route can provide the workflow engine.
+- Integrate the bootstrap planner into the release checks runner after readiness audit, so a failed readiness check still leaves actionable next-step files.
+- Document the bootstrap planner in README, runtime environment notes, readiness checklist, and release audit.
+
+Added:
+- `bin/genefam/plan_runtime_bootstrap.py`
+- `tests/test_plan_runtime_bootstrap.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/run_release_checks.py`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `docs/runtime_environment.md`
+- `envs/GeneFamilyFlow.conda.yaml`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_plan_runtime_bootstrap.py -q` first failed because `bin.genefam.plan_runtime_bootstrap` did not exist.
+- Implemented `plan_runtime_bootstrap.py` and added `openjdk` plus `nextflow` to the `GeneFamilyFlow` Conda environment.
+- `python -m pytest tests/test_plan_runtime_bootstrap.py -q` passed with 3 tests.
+- `python -m pytest tests/test_runtime_environment_files.py tests/test_run_release_checks.py -q` then failed because docs and release checks did not yet include the bootstrap planner.
+- Integrated the bootstrap planner into release checks and readiness docs.
+- `python -m pytest tests/test_runtime_environment_files.py tests/test_run_release_checks.py tests/test_plan_runtime_bootstrap.py -q` passed with 13 tests.
+- `python -m pytest tests/test_plan_runtime_bootstrap.py tests/test_runtime_environment_files.py tests/test_run_release_checks.py tests/test_release_audit_docs.py -q` passed with 14 tests.
+- `python -m pytest tests -q` passed with 97 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/advanced_modules.example.yaml` returned `Configuration OK`.
+- `python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv` still exited `1`; `python bin/genefam/plan_runtime_bootstrap.py --readiness results/readiness/command_readiness.tsv --outdir results/readiness` wrote `runtime_bootstrap_plan.md` and `runtime_bootstrap.sh`.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because readiness audit failed, but pytest, config validation, mock MVP, and runtime bootstrap plan passed.
+
+Commit:
+- pending
+
+Next:
+- Commit this runtime bootstrap layer, then use `results/readiness/runtime_bootstrap.sh` or the Markdown plan to install/activate the missing runtime route.

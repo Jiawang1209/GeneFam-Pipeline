@@ -35,9 +35,17 @@ Run:
 
 ```bash
 python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv
+python bin/genefam/plan_runtime_bootstrap.py \
+  --readiness results/readiness/command_readiness.tsv \
+  --outdir results/readiness
 ```
 
 The command exits with status `0` only when all checked commands are available. It exits with status `1` when at least one command is missing and still writes the TSV report.
+
+The bootstrap planner reads the TSV and writes:
+
+- `results/readiness/runtime_bootstrap_plan.md`
+- `results/readiness/runtime_bootstrap.sh`
 
 Default audited commands:
 

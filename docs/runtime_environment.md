@@ -22,6 +22,27 @@ conda activate GeneFamilyFlow
 ```
 
 The environment file includes Python, R, workflow dependencies, and common bioinformatics tools used by the pipeline modules.
+It also includes `openjdk` and `nextflow` so the local Conda route can run the workflow engine from the same `GeneFamilyFlow` environment.
+
+Update an existing environment with:
+
+```bash
+conda env update -n GeneFamilyFlow -f envs/GeneFamilyFlow.conda.yaml --prune
+```
+
+Generate a machine-specific bootstrap plan from the readiness TSV:
+
+```bash
+python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv
+python bin/genefam/plan_runtime_bootstrap.py \
+  --readiness results/readiness/command_readiness.tsv \
+  --outdir results/readiness
+```
+
+This writes:
+
+- `results/readiness/runtime_bootstrap_plan.md`
+- `results/readiness/runtime_bootstrap.sh`
 
 ## Docker
 

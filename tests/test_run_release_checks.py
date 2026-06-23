@@ -1,7 +1,7 @@
 import subprocess
 import sys
 
-from bin.genefam.run_release_checks import CheckSpec, run_checks, summarize_checks, write_markdown
+from bin.genefam.run_release_checks import CheckSpec, default_checks, run_checks, summarize_checks, write_markdown
 
 
 def test_run_checks_records_pass_and_fail_statuses():
@@ -93,3 +93,12 @@ def test_write_markdown_escapes_pipe_characters_in_table_cells(tmp_path):
     write_markdown(rows, out_path)
 
     assert "path \\| final_report" in out_path.read_text(encoding="utf-8")
+
+
+def test_default_checks_generate_runtime_bootstrap_after_readiness_audit():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("runtime bootstrap plan") > names.index("readiness audit")
+    bootstrap = next(check for check in default_checks() if check.name == "runtime bootstrap plan")
+    assert "bin/genefam/plan_runtime_bootstrap.py" in " ".join(bootstrap.command)
+    assert "--readiness results/readiness/command_readiness.tsv" in " ".join(bootstrap.command)

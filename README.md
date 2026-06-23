@@ -72,9 +72,12 @@ Readiness audit:
 ```bash
 python bin/genefam/run_release_checks.py --outdir results/release_checks
 python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv
+python bin/genefam/plan_runtime_bootstrap.py \
+  --readiness results/readiness/command_readiness.tsv \
+  --outdir results/readiness
 ```
 
-The release checks runner writes TSV and Markdown summaries. The readiness audit writes a TSV report and exits non-zero when required runtime commands are missing.
+The release checks runner writes TSV and Markdown summaries. The readiness audit writes a TSV report and exits non-zero when required runtime commands are missing. The bootstrap planner converts the TSV into `results/readiness/runtime_bootstrap_plan.md` and `results/readiness/runtime_bootstrap.sh`.
 
 ## Reference Plotting Scripts
 

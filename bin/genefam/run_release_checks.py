@@ -50,6 +50,17 @@ def default_checks() -> list[CheckSpec]:
             "readiness audit",
             [python, "bin/genefam/audit_readiness.py", "--out", "results/readiness/command_readiness.tsv"],
         ),
+        CheckSpec(
+            "runtime bootstrap plan",
+            [
+                python,
+                "bin/genefam/plan_runtime_bootstrap.py",
+                "--readiness",
+                "results/readiness/command_readiness.tsv",
+                "--outdir",
+                "results/readiness",
+            ],
+        ),
     ]
 
 

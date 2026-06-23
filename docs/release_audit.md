@@ -17,14 +17,19 @@ python bin/genefam/run_mock_mvp.py \
   --mock-evidence-dir tests/fixtures/mock_evidence \
   --outdir results/mock_mvp
 python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv
+python bin/genefam/plan_runtime_bootstrap.py \
+  --readiness results/readiness/command_readiness.tsv \
+  --outdir results/readiness
 ```
 
-The readiness audit may exit non-zero when runtime commands are missing; inspect the TSV for exact missing tools.
+The readiness audit may exit non-zero when runtime commands are missing; inspect the TSV for exact missing tools and use the bootstrap planner to generate next-step commands.
 
 The release checks runner writes:
 
 - `results/release_checks/release_checks.tsv`
 - `results/release_checks/release_checks.md`
+- `results/readiness/runtime_bootstrap_plan.md`
+- `results/readiness/runtime_bootstrap.sh`
 
 ## Requirement Audit
 
@@ -34,7 +39,7 @@ The release checks runner writes:
 | YAML-driven parameters | `configs/example.config.yaml`; `configs/advanced_modules.example.yaml`; `bin/genefam/build_run_plan.py` | `python bin/genefam/build_run_plan.py --config configs/example.config.yaml --out results/mock_mvp/tables/run_plan.tsv` |
 | GeneFamilyFlow runtime | `envs/GeneFamilyFlow.conda.yaml`; `workflows/nextflow.config`; `Dockerfile` | `python -m pytest tests/test_runtime_environment_files.py -q` |
 | `/usr/local/bin/R` plotting and reporting convention | `workflows/modules/plots.nf`; `scripts/plot_family_counts.R`; `scripts/plot_kaks.R`; `scripts/plot_expression_heatmap.R` | `python -m pytest tests/test_workflow_modules.py tests/test_runtime_environment_files.py -q` |
-| Docker/Conda reproducible running | `Dockerfile`; `envs/GeneFamilyFlow.conda.yaml`; `workflows/nextflow.config` profiles `local`, `docker`, `apptainer` | `python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv` |
+| Docker/Conda reproducible running | `Dockerfile`; `envs/GeneFamilyFlow.conda.yaml`; `bin/genefam/plan_runtime_bootstrap.py`; `workflows/nextflow.config` profiles `local`, `docker`, `apptainer` | `python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv` and `python bin/genefam/plan_runtime_bootstrap.py --readiness results/readiness/command_readiness.tsv --outdir results/readiness` |
 | species bank input model | `docs/input_contract.md`; `bin/genefam/discover_species.py`; `tests/fixtures/species_bank` | `python -m pytest tests/test_discover_species.py -q` |
 | target species selection | `configs/species_groups.yaml`; `species.include`; `species.exclude`; `run.species_group` | `python -m pytest tests/test_discover_species.py tests/test_build_run_plan.py -q` |
 | HMMER family identification | `workflows/modules/hmmer_search.nf`; `bin/genefam/parse_hmmer_domtbl.py`; `bin/genefam/filter_hmmer_domains.py` | `python -m pytest tests/test_parse_hmmer_domtbl.py tests/test_filter_hmmer_domains.py -q` |
@@ -67,10 +72,11 @@ Recent readiness audits found:
 This means:
 
 - Mock MVP and Python/R/report helpers can be validated locally.
-- Full Nextflow local execution needs `nextflow` and the GeneFamilyFlow command-line tools on `PATH`.
+- Full Nextflow local execution needs `nextflow` and the GeneFamilyFlow command-line tools on `PATH`; `envs/GeneFamilyFlow.conda.yaml` now includes `openjdk` and `nextflow` for the Conda route.
 - Docker profile execution needs Docker plus the `genefam-pipeline:latest` image.
 - Apptainer profile execution needs Apptainer and access to the Docker image.
 - External HMMER, DIAMOND, MAFFT, IQ-TREE, MEME, and related bioinformatics commands must be installed through Conda or container profiles before true end-to-end execution can be claimed.
+- `python bin/genefam/plan_runtime_bootstrap.py --readiness results/readiness/command_readiness.tsv --outdir results/readiness` writes a Markdown plan and shell script for the current machine gap.
 
 ## Release Decision
 

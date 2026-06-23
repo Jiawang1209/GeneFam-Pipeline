@@ -8,6 +8,8 @@ def test_conda_environment_file_defines_genefamilyflow_runtime():
     text = environment.read_text(encoding="utf-8")
     assert "name: GeneFamilyFlow" in text
     assert "bioconda" in text
+    assert "openjdk" in text
+    assert "nextflow" in text
     assert "hmmer" in text
     assert "diamond" in text
     assert "mafft" in text
@@ -42,6 +44,7 @@ def test_readiness_checklist_documents_command_audit():
 
     assert "python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv" in text
     assert "python bin/genefam/run_release_checks.py --outdir results/release_checks" in text
+    assert "python bin/genefam/plan_runtime_bootstrap.py" in text
     assert "nextflow" in text
     assert "/usr/local/bin/R" in text
     assert "mafft" in text
