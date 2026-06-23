@@ -679,9 +679,52 @@ Verification:
 - `command -v nextflow` returned no path, so Nextflow execution remains pending.
 
 Commit:
-- hash: not created in this session
+- hash: c5ad5a01544241dfdd5074735a54f7d36a0ebdb4
 - message: feat: add alignment input manifest
 - files: alignment manifest helper, mock MVP integration, tests, docs, history
 
 Next:
 - Add tree/phylogeny manifest preparation so alignments can feed IQ-TREE/FastTree when external tools are available.
+
+## 2026-06-24 - Add phylogeny input manifest
+
+Context:
+- The workflow needs a stable bridge from alignment outputs to IQ-TREE or FastTree execution.
+
+Decisions:
+- Add a phylogeny manifest helper that prefers trimmed alignments and falls back to raw alignments.
+- Keep tree-building itself as an external-tool module to be wired later.
+- Add the phylogeny manifest to the mock MVP and report index so the downstream contract is visible now.
+
+Added:
+- `bin/genefam/prepare_phylogeny_inputs.py`
+- `tests/test_prepare_phylogeny_inputs.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/run_mock_mvp.py`
+- `tests/test_run_mock_mvp.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_prepare_phylogeny_inputs.py -q` first failed because `bin.genefam.prepare_phylogeny_inputs` did not exist.
+- Implemented `prepare_phylogeny_inputs.py`.
+- `python -m pytest tests/test_prepare_phylogeny_inputs.py -q` passed.
+- `python -m pytest tests/test_run_mock_mvp.py::test_run_mock_mvp_writes_core_outputs -q` then failed because `phylogeny_manifest` was not yet produced by the mock MVP.
+- Added `phylogeny_manifest.tsv` generation to `bin/genefam/run_mock_mvp.py`.
+- `python -m pytest tests/test_run_mock_mvp.py tests/test_prepare_phylogeny_inputs.py -q` passed.
+- `python -m pytest tests -q` passed with 39 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` produced `tables/phylogeny_manifest.tsv` and marked it available in the report index.
+- `command -v nextflow` returned no path, so Nextflow execution remains pending.
+
+Commit:
+- hash: not created in this session
+- message: feat: add phylogeny input manifest
+- files: phylogeny manifest helper, mock MVP integration, tests, docs, history
+
+Next:
+- Add a motif input manifest or MEME output parser so motif analysis can join the same report contract.

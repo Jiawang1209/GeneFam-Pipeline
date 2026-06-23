@@ -42,6 +42,7 @@ def test_run_mock_mvp_writes_core_outputs(tmp_path):
     assert outputs["family_counts"] == outdir / "tables" / "family_counts.tsv"
     assert outputs["family_members_faa"] == outdir / "sequences" / "family_members.faa"
     assert outputs["alignment_manifest"] == outdir / "tables" / "alignment_manifest.tsv"
+    assert outputs["phylogeny_manifest"] == outdir / "tables" / "phylogeny_manifest.tsv"
     assert outputs["summary_report"] == outdir / "report" / "summary.md"
     assert outputs["report_index"] == outdir / "report" / "report_index.tsv"
 
@@ -85,6 +86,8 @@ def test_run_mock_mvp_writes_core_outputs(tmp_path):
     assert by_key["family_candidates"]["path"] == "tables/family_candidates.tsv"
     assert by_key["alignment_manifest"]["status"] == "available"
     assert by_key["alignment_manifest"]["path"] == "tables/alignment_manifest.tsv"
+    assert by_key["phylogeny_manifest"]["status"] == "available"
+    assert by_key["phylogeny_manifest"]["path"] == "tables/phylogeny_manifest.tsv"
     assert by_key["summary_report"]["status"] == "available"
     assert by_key["report_index"]["status"] == "available"
     assert by_key["wgd_event_evidence"]["status"] == "not_available"

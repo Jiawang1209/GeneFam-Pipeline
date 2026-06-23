@@ -22,6 +22,7 @@ from bin.genefam.discover_species import _select_species, discover_species, writ
 from bin.genefam.extract_sequences import extract_fasta_records
 from bin.genefam.merge_identification_evidence import merge_evidence, read_tsv, write_tsv
 from bin.genefam.prepare_alignment_inputs import prepare_alignment_manifest, write_tsv as write_alignment_tsv
+from bin.genefam.prepare_phylogeny_inputs import prepare_phylogeny_manifest, write_tsv as write_phylogeny_tsv
 from bin.genefam.summarize_family import summarize_candidates, write_tsv as write_summary_tsv
 
 
@@ -112,6 +113,7 @@ def _build_report_index_rows(outputs: dict[str, Path], outdir: Path) -> list[dic
         ("family_counts", "Per-species gene family member counts"),
         ("family_members_faa", "Family member protein FASTA"),
         ("alignment_manifest", "Alignment input manifest for MAFFT or MUSCLE"),
+        ("phylogeny_manifest", "Phylogeny input manifest for IQ-TREE or FastTree"),
         ("chromosome_locations", "Family member chromosome locations"),
         ("wgd_layers", "Anonymous WGD layer assignments"),
         ("wgd_event_evidence", "Configured WGD event evidence table"),
@@ -165,6 +167,7 @@ def run_mock_mvp(
         "family_candidates": tables_dir / "family_candidates.tsv",
         "family_counts": tables_dir / "family_counts.tsv",
         "alignment_manifest": tables_dir / "alignment_manifest.tsv",
+        "phylogeny_manifest": tables_dir / "phylogeny_manifest.tsv",
         "family_members_faa": sequences_dir / "family_members.faa",
         "summary_report": report_dir / "summary.md",
         "report_index": report_dir / "report_index.tsv",
@@ -180,14 +183,16 @@ def run_mock_mvp(
     family_counts = summarize_candidates(candidates)
     write_summary_tsv(family_counts, outputs["family_counts"])
     _write_family_fasta(candidates, manifest_rows, outputs["family_members_faa"])
-    write_alignment_tsv(
-        prepare_alignment_manifest(
-            family_name=(config.get("gene_family", {}) or {}).get("name", "family"),
-            fasta_path=outputs["family_members_faa"],
-            outdir=Path(outdir) / "alignment",
-            aligner="mafft",
-        ),
-        outputs["alignment_manifest"],
+    alignment_rows = prepare_alignment_manifest(
+        family_name=(config.get("gene_family", {}) or {}).get("name", "family"),
+        fasta_path=outputs["family_members_faa"],
+        outdir=Path(outdir) / "alignment",
+        aligner="mafft",
+    )
+    write_alignment_tsv(alignment_rows, outputs["alignment_manifest"])
+    write_phylogeny_tsv(
+        prepare_phylogeny_manifest(alignment_rows, outdir=Path(outdir) / "phylogeny", tree_builder="iqtree"),
+        outputs["phylogeny_manifest"],
     )
     report_index_rows = _build_report_index_rows(outputs, Path(outdir))
     _write_report_index(report_index_rows, outputs["report_index"])

@@ -86,6 +86,7 @@ It writes:
 - `results/mock_mvp/tables/family_candidates.tsv`
 - `results/mock_mvp/tables/family_counts.tsv`
 - `results/mock_mvp/tables/alignment_manifest.tsv`
+- `results/mock_mvp/tables/phylogeny_manifest.tsv`
 - `results/mock_mvp/sequences/family_members.faa`
 - `results/mock_mvp/report/summary.md`
 - `results/mock_mvp/report/report_index.tsv`
