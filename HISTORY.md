@@ -519,9 +519,46 @@ Verification:
 - Ran a command-line smoke test against the Arabidopsis fixture GFF3 and extracted `AT1G01010` at `Chr1:100-500`.
 
 Commit:
-- hash: not created in this session
+- hash: 8398e8121be22b3c5168ee8b91f507b60ae7aa91
 - message: feat: add chromosome location extraction
 - files: chromosome location helper, tests, input contract docs
 
 Next:
 - Add expression matrix integration helper so RNA-seq expression tables can be subset to family members.
+
+## 2026-06-23 - Add expression matrix subsetting helper
+
+Context:
+- The workflow needs an RNA-seq expression integration entry point before heatmap plotting.
+
+Decisions:
+- Use a simple TSV contract where the first column is `gene_id` and all remaining columns are sample names.
+- Fail fast if requested family member IDs are missing from the expression matrix.
+- Preserve expression matrix row order from the input file.
+
+Added:
+- `bin/genefam/subset_expression_matrix.py`
+- `tests/test_subset_expression_matrix.py`
+
+Modified:
+- `HISTORY.md`
+- `docs/input_contract.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_subset_expression_matrix.py -q` first failed because `bin.genefam.subset_expression_matrix` did not exist.
+- Implemented `subset_expression_matrix.py`.
+- `python -m pytest tests/test_subset_expression_matrix.py -q` passed.
+- `python -m pytest tests -q` passed with 35 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- Ran a command-line smoke test that subset a two-gene expression matrix to `AT1G01010`.
+
+Commit:
+- hash: not created in this session
+- message: feat: add expression matrix subsetting
+- files: expression subset helper, tests, input contract docs
+
+Next:
+- Add report input aggregation so the mock MVP can include available downstream tables in a single report index.

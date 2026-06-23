@@ -86,6 +86,17 @@ end
 strand
 ```
 
+## Expression Matrix
+
+`bin/genefam/subset_expression_matrix.py` expects a tab-separated expression matrix where the first column is `gene_id` and all remaining columns are sample names:
+
+```text
+gene_id cold_0h cold_3h cold_24h
+AT1G01010 1.0 3.0 2.5
+```
+
+It subsets the matrix to family member IDs before heatmap plotting.
+
 ## Discovery Rules
 
 - Folder name is the default species ID.
