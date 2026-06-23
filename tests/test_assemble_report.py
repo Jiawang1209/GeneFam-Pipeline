@@ -61,6 +61,10 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
             "p_value": "0.001",
         }
     ]
+    plot_manifest = [
+        {"plot_key": "family_counts", "path": "plots/family_counts.pdf", "description": "Family counts"},
+        {"plot_key": "kaks", "path": "plots/ks_distribution.pdf", "description": "Ks distribution"},
+    ]
 
     report = assemble_report(
         project_name="GeneFam demo",
@@ -69,6 +73,7 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
         wgd_event_evidence=wgd_event_evidence,
         family_event_retention=family_event_retention,
         retention_enrichment=retention_enrichment,
+        plot_manifest=plot_manifest,
     )
 
     assert "# GeneFam-Pipeline Final Report" in report
@@ -81,11 +86,14 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
     assert "| WGD_layer_1 | alpha | WGD/segmental | 4 | 6 | AT1,AT2,AT3,AT4 |" in report
     assert "## Duplicate-Type Retention Enrichment" in report
     assert "| WGD/segmental | 4 | 5 | 4.0000 | 0.001 |" in report
+    assert "## Plots" in report
+    assert "| family_counts | plots/family_counts.pdf | Family counts |" in report
 
 
 def test_assemble_report_cli_writes_markdown(tmp_path):
     report_index = tmp_path / "report_index.tsv"
     wgd_events = tmp_path / "wgd_event_evidence.tsv"
+    plot_manifest = tmp_path / "plot_manifest.tsv"
     out_path = tmp_path / "final_report.md"
     report_index.write_text(
         "key\tpath\tstatus\tdescription\n"
@@ -95,6 +103,10 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
     wgd_events.write_text(
         "wgd_layer\tpair_count\tks_min\tks_median\tks_max\tevent_name\tinterpretation_status\tevidence_source\tspecies_scope\texpected_relative_age\n"
         "WGD_layer_1\t12\t0.1000\t0.1800\t0.3000\talpha\tconfigured_named_event\tliterature\tBrassicaceae\trecent\n",
+        encoding="utf-8",
+    )
+    plot_manifest.write_text(
+        "plot_key\tpath\tdescription\nfamily_counts\tplots/family_counts.pdf\tFamily counts\n",
         encoding="utf-8",
     )
 
@@ -110,6 +122,8 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
             str(report_index),
             "--wgd-event-evidence",
             str(wgd_events),
+            "--plot-manifest",
+            str(plot_manifest),
             "--out",
             str(out_path),
         ],
@@ -122,3 +136,4 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
     text = out_path.read_text(encoding="utf-8")
     assert "# GeneFam-Pipeline Final Report" in text
     assert "| WGD_layer_1 | alpha | 12 | 0.1800 | configured_named_event | Brassicaceae |" in text
+    assert "| family_counts | plots/family_counts.pdf | Family counts |" in text

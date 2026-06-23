@@ -3,6 +3,7 @@ nextflow.enable.dsl = 2
 include { PREPARE_SPECIES } from './modules/prepare_species.nf'
 include { MOCK_MVP } from './modules/mock_mvp.nf'
 include { ASSEMBLE_REPORT } from './modules/report.nf'
+include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
 include {
     NORMALIZE_DUPLICATE_TYPES;
     JOIN_FAMILY_DUPLICATES;

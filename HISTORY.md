@@ -1220,7 +1220,58 @@ Verification:
 - Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`; real Nextflow/container execution was therefore not verified in this environment.
 
 Commit:
-- pending
+- hash: bf99fde230ba664726bc7518496abd0f97b50cb9
+- message: feat: add final report assembler
+- files: final report assembler, mock MVP final report output, report Nextflow module, README output list, tests, history
 
 Next:
 - Add plot-generation workflow processes that call `/usr/local/bin/R` for family counts, Ka/Ks, and expression heatmap outputs, then reference those plots from the final report layer.
+
+## 2026-06-24 - Wire R plotting processes and plot manifest reporting
+
+Context:
+- R plotting scripts existed for family counts, Ka/Ks, and expression heatmaps, but they were not exposed as Nextflow processes.
+- The final report assembler could summarize tables, but it could not yet reference generated plot artifacts.
+- `HISTORY.md` also needed the actual commit hash for the previous final report assembler checkpoint.
+
+Decisions:
+- Add a dedicated `plots.nf` module that runs all R plotting scripts through `${params.r_bin}`.
+- Preserve the project rule that R steps use `/usr/local/bin/R` via Nextflow config rather than shell-default `R`.
+- Add a small plot manifest helper so generated plot paths can be listed in final reports.
+- Extend the final report assembler with a `Plots` section driven by `plot_manifest.tsv`.
+
+Added:
+- `bin/genefam/build_plot_manifest.py`
+- `tests/test_build_plot_manifest.py`
+- `workflows/modules/plots.nf`
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/assemble_report.py`
+- `tests/test_assemble_report.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_workflow_modules.py -q` first failed because `workflows/modules/plots.nf` did not exist and `workflows/main.nf` did not include plot processes.
+- `python -m pytest tests/test_assemble_report.py -q` first failed because `assemble_report()` did not accept `plot_manifest` and the CLI did not recognize `--plot-manifest`.
+- Implemented `workflows/modules/plots.nf` and extended `assemble_report.py`.
+- `python -m pytest tests/test_workflow_modules.py -q` passed.
+- `python -m pytest tests/test_assemble_report.py -q` passed.
+- `python -m pytest tests/test_build_plot_manifest.py -q` first failed because `bin.genefam.build_plot_manifest` did not exist.
+- Implemented `build_plot_manifest.py`.
+- `python -m pytest tests/test_build_plot_manifest.py -q` passed.
+- `python -m pytest tests/test_workflow_modules.py tests/test_assemble_report.py tests/test_build_plot_manifest.py -q` passed with 12 tests.
+- `python -m pytest tests -q` passed with 70 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` preserved final report generation and wrote a `Plots` section with the expected no-manifest message.
+- Runtime availability check found `/usr/local/bin/R` and `/Users/liuyue/miniforge3/bin/conda`; it did not find `nextflow`, `docker`, or `apptainer`.
+
+Commit:
+- pending
+
+Next:
+- Add workflow/documentation coverage for alignment, phylogeny, motif, chromosome, and expression modules so the remaining standard gene-family analysis surface is represented consistently in Nextflow.

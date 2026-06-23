@@ -31,6 +31,7 @@ def assemble_report(
     wgd_event_evidence: list[dict[str, str]] | None = None,
     family_event_retention: list[dict[str, str]] | None = None,
     retention_enrichment: list[dict[str, str]] | None = None,
+    plot_manifest: list[dict[str, str]] | None = None,
 ) -> str:
     lines = [
         "# GeneFam-Pipeline Final Report",
@@ -105,6 +106,17 @@ def assemble_report(
         )
     )
     lines.extend(
+        _section_or_empty(
+            "Plots",
+            ["plot_key", "path", "description"],
+            [
+                [row["plot_key"], row.get("path", ""), row.get("description", "")]
+                for row in (plot_manifest or [])
+            ],
+            "No plot manifest was available for this run.",
+        )
+    )
+    lines.extend(
         [
             "## Interpretation Note",
             "",
@@ -135,6 +147,7 @@ def main() -> None:
     parser.add_argument("--wgd-event-evidence", default=None, type=Path)
     parser.add_argument("--family-event-retention", default=None, type=Path)
     parser.add_argument("--retention-enrichment", default=None, type=Path)
+    parser.add_argument("--plot-manifest", default=None, type=Path)
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
     write_report(
@@ -145,6 +158,7 @@ def main() -> None:
             wgd_event_evidence=read_tsv(args.wgd_event_evidence),
             family_event_retention=read_tsv(args.family_event_retention),
             retention_enrichment=read_tsv(args.retention_enrichment),
+            plot_manifest=read_tsv(args.plot_manifest),
         ),
         args.out,
     )

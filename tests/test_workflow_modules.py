@@ -88,3 +88,39 @@ def test_main_workflow_includes_report_process():
     workflow = Path("workflows/main.nf").read_text(encoding="utf-8")
 
     assert "include { ASSEMBLE_REPORT } from './modules/report.nf'" in workflow
+
+
+def test_plot_module_runs_r_scripts_through_configured_r_bin():
+    module = Path("workflows/modules/plots.nf").read_text(encoding="utf-8")
+
+    assert "process PLOT_FAMILY_COUNTS" in module
+    assert "${params.r_bin} --vanilla --slave -f ${projectDir}/scripts/plot_family_counts.R" in module
+    assert "--args ${family_counts} plots" in module
+    assert 'path "plots/family_counts.pdf"' in module
+    assert 'path "plots/family_counts.png"' in module
+
+    assert "process PLOT_KAKS" in module
+    assert "${params.r_bin} --vanilla --slave -f ${projectDir}/scripts/plot_kaks.R" in module
+    assert "--args ${kaks_pairs} plots" in module
+    assert 'path "plots/ks_distribution.pdf"' in module
+
+    assert "process PLOT_EXPRESSION_HEATMAP" in module
+    assert "${params.r_bin} --vanilla --slave -f ${projectDir}/scripts/plot_expression_heatmap.R" in module
+    assert "--args ${expression_matrix} plots" in module
+    assert 'path "plots/expression_heatmap.pdf"' in module
+
+    assert "process BUILD_PLOT_MANIFEST" in module
+    assert "build_plot_manifest.py" in module
+    assert "--plot family_counts=plots/family_counts.pdf=Family member counts by species" in module
+    assert "--plot ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs" in module
+    assert "--plot expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap" in module
+    assert "--out plot_manifest.tsv" in module
+
+
+def test_main_workflow_includes_plot_processes():
+    workflow = Path("workflows/main.nf").read_text(encoding="utf-8")
+
+    assert "PLOT_FAMILY_COUNTS" in workflow
+    assert "PLOT_KAKS" in workflow
+    assert "PLOT_EXPRESSION_HEATMAP" in workflow
+    assert "BUILD_PLOT_MANIFEST" in workflow
