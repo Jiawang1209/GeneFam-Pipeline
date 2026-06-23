@@ -46,6 +46,14 @@ species:
 
 Named groups can be selected through `run.species_group` when present in `configs/species_groups.yaml`.
 
+## Runtime
+
+The default shared environment is `GeneFamilyFlow`. R-language steps should use `/usr/local/bin/R`.
+
+## Reference Plot Templates
+
+Plotting scripts under `Reference/` can be reused as templates for pipeline plots. The reusable implementation should live under `scripts/`, accept explicit input/output arguments, and avoid hard-coded reference-project paths.
+
 ## Discovery Rules
 
 - Folder name is the default species ID.

@@ -13,7 +13,7 @@ except ImportError:  # pragma: no cover
     yaml = None
 
 
-REQUIRED_SECTIONS = ("project", "input", "species", "gene_family", "identification", "modules")
+REQUIRED_SECTIONS = ("project", "runtime", "input", "species", "gene_family", "identification", "modules")
 
 
 def load_config(path: Path) -> dict[str, Any]:
@@ -35,6 +35,16 @@ def validate_config(config: dict[str, Any]) -> list[str]:
     input_mode = (config.get("input", {}) or {}).get("mode")
     if input_mode not in {"auto", "manifest"}:
         errors.append("input.mode must be 'auto' or 'manifest'")
+
+    runtime = config.get("runtime", {}) or {}
+    if runtime.get("environment") != "GeneFamilyFlow":
+        errors.append("runtime.environment must be GeneFamilyFlow")
+    if runtime.get("r_bin") != "/usr/local/bin/R":
+        errors.append("runtime.r_bin must be /usr/local/bin/R")
+
+    plotting = config.get("plotting", {}) or {}
+    if plotting.get("reuse_policy") not in {"adapt_not_modify"}:
+        errors.append("plotting.reuse_policy must be adapt_not_modify")
 
     final_rule = (config.get("identification", {}) or {}).get("final_rule")
     if final_rule not in {"intersection", "union", "hmmer_only"}:

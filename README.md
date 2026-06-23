@@ -46,6 +46,19 @@ The species ID defaults to the folder name. A run can analyze all species, a man
 - `docs/input_contract.md`: input format contract.
 - `docs/superpowers/plans/2026-06-23-genefam-pipeline.md`: implementation plan.
 
+## Runtime Convention
+
+- Shared environment name: `GeneFamilyFlow`
+- R binary: `/usr/local/bin/R`
+
+Nextflow defaults are recorded in `workflows/nextflow.config`. R scripts should be executed through `/usr/local/bin/R` rather than relying on the shell-default `R` or `Rscript`.
+
+## Reference Plotting Scripts
+
+The `Reference/` directory contains paper-derived plotting scripts and result examples. New reusable plots should inspect these scripts first, reuse their scientific plotting logic where appropriate, and then implement parameterized versions under `scripts/`.
+
+Reference files are source material: do not edit them unless explicitly requested.
+
 ## MVP Command
 
 The first runnable checkpoint generates a species manifest:

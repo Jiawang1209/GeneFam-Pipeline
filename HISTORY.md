@@ -164,10 +164,97 @@ Verification:
 - `Rscript` exists at `/usr/local/bin/Rscript`, but both the family-count plotting smoke test and `Rscript --version` failed to return promptly in this environment and were stopped.
 
 Commit:
-- hash: c3621758f608819296db602f9e5d6659e5bdbf80
+- hash: 66d4496a3f4ef1d3f2d0c3bb334404b1b8ec42f0
 - message: feat: scaffold genefam pipeline mvp
 - files: project scaffold, docs, Python helpers, tests, workflow modules, report scripts
 
 Next:
-- Install or expose Nextflow, HMMER, DIAMOND, and a responsive Rscript environment before full external-tool workflow verification.
+- Install or expose Nextflow, HMMER, DIAMOND, and a responsive `/usr/local/bin/R` environment before full external-tool workflow verification.
 - Wire parsed HMMER/DIAMOND outputs through the full Nextflow graph once Nextflow is available.
+
+## 2026-06-23 - Standardize runtime environment names
+
+Context:
+- The user clarified that all environments should use `GeneFamilyFlow`.
+- The user clarified that R-language execution should use `/usr/local/bin/R`.
+
+Decisions:
+- Add runtime configuration to `configs/example.config.yaml`.
+- Configure Nextflow to use `GeneFamilyFlow` as the default conda environment name.
+- Require `/usr/local/bin/R` in config validation.
+- Update R script usage messages to show `/usr/local/bin/R --vanilla --slave -f ... --args ...`.
+
+Added:
+- none
+
+Modified:
+- `AGENT.md`
+- `CLAUDE.md`
+- `README.md`
+- `HISTORY.md`
+- `configs/example.config.yaml`
+- `schemas/config.schema.yaml`
+- `workflows/nextflow.config`
+- `docs/input_contract.md`
+- `docs/superpowers/plans/2026-06-23-genefam-pipeline.md`
+- `bin/genefam/validate_config.py`
+- `tests/test_validate_config.py`
+- `scripts/plot_family_counts.R`
+- `scripts/plot_kaks.R`
+- `scripts/plot_expression_heatmap.R`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests -q` passed with 15 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `rg -n "Rscript|runtime|GeneFamilyFlow|/usr/local/bin/R|conda = params.env_name" ...` confirmed the new runtime constraints are present. Remaining `Rscript` mentions are historical notes or warnings not to rely on shell-default `Rscript`.
+
+Commit:
+- hash: not created in this session
+- message: docs: standardize runtime and plotting policies
+- files: runtime configuration and documentation updates
+
+Next:
+- Use `GeneFamilyFlow` for all workflow process environments.
+- Use `/usr/local/bin/R` for R-language execution when wiring report and plotting modules into Nextflow.
+
+## 2026-06-23 - Allow reuse of Reference plotting scripts
+
+Context:
+- The user clarified that plotting scripts can reuse scripts under the `Reference/` directory.
+
+Decisions:
+- Treat `Reference/` plotting scripts as templates and scientific examples.
+- Reuse plotting logic by adapting it into parameterized scripts under `scripts/`.
+- Do not edit `Reference/` scripts or preserve their hard-coded paths in reusable pipeline code unless explicitly requested.
+
+Added:
+- `docs/reference_plotting_reuse.md`
+
+Modified:
+- `AGENT.md`
+- `CLAUDE.md`
+- `README.md`
+- `HISTORY.md`
+- `configs/example.config.yaml`
+- `schemas/config.schema.yaml`
+- `docs/input_contract.md`
+- `docs/superpowers/plans/2026-06-23-genefam-pipeline.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests -q` passed with 16 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `rg -n "reuse_reference_scripts|adapt_not_modify|reference_plotting|Reference plotting|directly_modify_reference|Pending verification" ...` confirmed the reuse policy is present and the invalid policy is covered by tests.
+
+Commit:
+- hash: not created in this session
+- message: docs: standardize runtime and plotting policies
+- files: reference plotting reuse policy and config updates
+
+Next:
+- When improving `scripts/plot_*.R`, inspect the closest matching `Reference/` script first and port only reusable logic.

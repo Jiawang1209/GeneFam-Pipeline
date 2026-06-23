@@ -1,6 +1,6 @@
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) != 2) {
-  stop("Usage: Rscript plot_expression_heatmap.R <expression.tsv> <outdir>")
+  stop("Usage: /usr/local/bin/R --vanilla --slave -f plot_expression_heatmap.R --args <expression.tsv> <outdir>")
 }
 
 input <- args[[1]]

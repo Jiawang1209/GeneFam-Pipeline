@@ -1,6 +1,6 @@
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) != 2) {
-  stop("Usage: Rscript plot_family_counts.R <family_counts.tsv> <outdir>")
+  stop("Usage: /usr/local/bin/R --vanilla --slave -f plot_family_counts.R --args <family_counts.tsv> <outdir>")
 }
 
 input <- args[[1]]

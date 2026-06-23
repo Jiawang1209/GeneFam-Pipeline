@@ -6,6 +6,8 @@ This repository is building a reusable Nextflow-based pipeline for large-scale g
 
 - Main workflow engine: Nextflow DSL2.
 - Configuration style: YAML-driven parameters plus optional species manifests.
+- Shared runtime environment name: `GeneFamilyFlow`.
+- R binary: `/usr/local/bin/R`.
 - Runtime target: local workstation first, then HPC/server execution with Docker and Apptainer/Singularity support.
 - Default input model: one folder per species under a large species bank.
 - Core scientific scope:
@@ -33,8 +35,14 @@ This repository is building a reusable Nextflow-based pipeline for large-scale g
   - inferred WGD layers from Ks peaks.
   - named historical events supplied by a known event map or literature-backed configuration.
 - Prefer reproducible intermediate TSV files over opaque one-off plotting scripts.
+- Treat plotting scripts under `Reference/` as reusable scientific and visual templates.
+- When implementing new plotting scripts, inspect relevant `Reference/` scripts first, then adapt their plotting logic into parameterized scripts under `scripts/`.
+- Do not modify `Reference/` plotting scripts unless the user explicitly asks.
+- Do not copy hard-coded absolute paths, species-specific assumptions, or one-off filenames from reference plotting scripts into reusable pipeline code.
 - Make every module runnable and testable with a small example dataset.
 - Do not hard-code species-specific ID cleaning rules in workflow logic. Put them in configuration or small documented helper scripts.
+- Run workflow tools through the `GeneFamilyFlow` environment unless a task explicitly documents another requirement.
+- Use `/usr/local/bin/R` for R execution. Do not rely on the shell-default `R` or `Rscript`.
 
 ## Repository Practices
 

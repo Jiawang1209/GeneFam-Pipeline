@@ -2,6 +2,10 @@ project:
   name: GDSL_demo
   outdir: results/GDSL_demo
 
+runtime:
+  environment: GeneFamilyFlow
+  r_bin: /usr/local/bin/R
+
 input:
   mode: auto
   root: tests/fixtures/species_bank
@@ -57,6 +61,13 @@ identification:
 wgd_events:
   named_event_annotation: false
   event_map: null
+
+plotting:
+  reuse_reference_scripts: true
+  reference_script_roots:
+    - Reference/Long_Weixiong_20240323_1_GDSL/R
+    - Reference/Large-Scale Plant Genomic Identification and Analysis Uncover ASMT:COMT Copy Number Variation Driving Melatonin Dosage Balance./source_code
+  reuse_policy: adapt_not_modify
 
 modules:
   identification: true

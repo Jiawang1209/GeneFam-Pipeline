@@ -2,13 +2,17 @@ description: GeneFam-Pipeline configuration contract.
 required_sections:
   - project
   - input
+  - runtime
   - species
   - gene_family
   - identification
+  - plotting
   - modules
 fields:
   project.name: string
   project.outdir: path
+  runtime.environment: shared runtime environment name, default GeneFamilyFlow
+  runtime.r_bin: absolute R binary path, default /usr/local/bin/R
   input.mode: auto or manifest
   input.root: path to species bank when input.mode is auto
   species.include: all or list of species IDs
@@ -18,3 +22,6 @@ fields:
   gene_family.hmm_profiles: list of id/path objects
   identification.final_rule: intersection, union, or hmmer_only
   wgd_events.named_event_annotation: boolean
+  plotting.reuse_reference_scripts: boolean
+  plotting.reference_script_roots: list of Reference directories containing reusable plotting scripts
+  plotting.reuse_policy: adapt_not_modify

@@ -1,6 +1,6 @@
 args <- commandArgs(trailingOnly = TRUE)
 if (length(args) != 2) {
-  stop("Usage: Rscript plot_kaks.R <kaks.tsv> <outdir>")
+  stop("Usage: /usr/local/bin/R --vanilla --slave -f plot_kaks.R --args <kaks.tsv> <outdir>")
 }
 
 input <- args[[1]]

@@ -6,7 +6,7 @@
 
 **Architecture:** The project will separate a large species bank from run-specific analysis configuration. Nextflow DSL2 will orchestrate modules, while Python scripts handle stable TSV/FASTA/GFF transformations and R scripts generate publication-style figures. The first usable MVP will identify and summarize gene family members; later tasks add phylogeny, synteny, duplication retention, Ka/Ks, expression integration, and report generation.
 
-**Tech Stack:** Nextflow DSL2, YAML, Python 3, pytest, Biopython, PyYAML, pandas, HMMER, DIAMOND/BLAST, seqkit, MAFFT or MUSCLE, IQ-TREE/FastTree, MCScanX/JCVI, KaKs_Calculator, R, ggplot2, pheatmap, Quarto.
+**Tech Stack:** Nextflow DSL2, YAML, Python 3, pytest, Biopython, PyYAML, pandas, HMMER, DIAMOND/BLAST, seqkit, MAFFT or MUSCLE, IQ-TREE/FastTree, MCScanX/JCVI, KaKs_Calculator, R via `/usr/local/bin/R`, ggplot2, pheatmap, Quarto. Shared environment name: `GeneFamilyFlow`.
 
 ---
 
@@ -38,6 +38,7 @@
 - Create `scripts/plot_family_counts.R`: plot per-species copy number.
 - Create `scripts/plot_kaks.R`: plot Ka/Ks distributions.
 - Create `scripts/plot_expression_heatmap.R`: plot expression heatmaps.
+- Create `docs/reference_plotting_reuse.md`: document how to adapt plotting logic from `Reference/`.
 - Create `report/template.qmd`: final report template.
 - Create `tests/`: pytest tests and small fixture data.
 - Create `tests/fixtures/species_bank/`: tiny fake species bank with two species.
@@ -62,6 +63,10 @@ Create `configs/example.config.yaml` with this initial content:
 project:
   name: GDSL_demo
   outdir: results/GDSL_demo
+
+runtime:
+  environment: GeneFamilyFlow
+  r_bin: /usr/local/bin/R
 
 input:
   mode: auto
@@ -117,6 +122,13 @@ identification:
 wgd_events:
   named_event_annotation: false
   event_map: null
+
+plotting:
+  reuse_reference_scripts: true
+  reference_script_roots:
+    - Reference/Long_Weixiong_20240323_1_GDSL/R
+    - Reference/Large-Scale Plant Genomic Identification and Analysis Uncover ASMT:COMT Copy Number Variation Driving Melatonin Dosage Balance./source_code
+  reuse_policy: adapt_not_modify
 
 modules:
   identification: true
@@ -363,10 +375,17 @@ Create `workflows/nextflow.config`:
 ```groovy
 params.config = null
 params.groups = "configs/species_groups.yaml"
+params.env_name = "GeneFamilyFlow"
+params.r_bin = "/usr/local/bin/R"
+
+conda {
+  enabled = true
+}
 
 process {
   executor = "local"
   errorStrategy = "terminate"
+  conda = params.env_name
 }
 ```
 
@@ -521,15 +540,27 @@ git commit -m "feat: add family summary outputs"
 **Files:**
 - Create: `report/template.qmd`
 - Create: `scripts/plot_family_counts.R`
+- Create: `docs/reference_plotting_reuse.md`
 - Modify: `workflows/modules/family_summary.nf`
 - Modify: `README.md`
 - Modify: `HISTORY.md`
 
-- [ ] **Step 1: Create count plot script**
+- [ ] **Step 1: Inspect reference plotting scripts**
+
+Before implementing or revising report plots, inspect relevant scripts under:
+
+```text
+Reference/Long_Weixiong_20240323_1_GDSL/R/
+Reference/Large-Scale Plant Genomic Identification and Analysis Uncover ASMT:COMT Copy Number Variation Driving Melatonin Dosage Balance./source_code/
+```
+
+Use them as templates for chart types and biological interpretation, then write parameterized versions under `scripts/`.
+
+- [ ] **Step 2: Create count plot script**
 
 Create an R script that reads `family_counts.tsv` and writes `family_counts.pdf` and `family_counts.png`.
 
-- [ ] **Step 2: Create report template**
+- [ ] **Step 3: Create report template**
 
 Create a Quarto template with sections:
 
@@ -542,21 +573,21 @@ Candidate evidence table
 Limitations and disabled modules
 ```
 
-- [ ] **Step 3: Wire report generation**
+- [ ] **Step 4: Wire report generation**
 
 Add a Nextflow process that runs the plotting script and renders the Quarto template when Quarto is installed.
 
-- [ ] **Step 4: Verification**
+- [ ] **Step 5: Verification**
 
 Run:
 
 ```bash
-Rscript scripts/plot_family_counts.R results/GDSL_demo/tables/family_counts.tsv results/GDSL_demo/report
+/usr/local/bin/R --vanilla --slave -f scripts/plot_family_counts.R --args results/GDSL_demo/tables/family_counts.tsv results/GDSL_demo/report
 ```
 
 Expected: plot files are created. If R packages are missing, record exact package names in `HISTORY.md`.
 
-- [ ] **Step 5: Update history and commit**
+- [ ] **Step 6: Update history and commit**
 
 Run:
 
