@@ -1124,7 +1124,51 @@ Verification:
 - Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`.
 
 Commit:
-- pending
+- hash: f4db690adb697338aa8838a30114d39ed2b865e2
+- message: feat: add family event retention summary
+- files: family event retention summary helper, tests, report contract, input docs, history
 
 Next:
 - Wire the duplication/WGD helper chain into Nextflow DSL2 modules so these evidence tables can be produced by the workflow rather than only as standalone Python tools.
+
+## 2026-06-24 - Wire duplication and WGD helper chain into Nextflow
+
+Context:
+- Duplication, WGD layer, named-event evidence, family event membership, retention summary, and enrichment helpers were implemented as standalone Python tools.
+- The pipeline objective requires these analyses to be part of the Nextflow DSL2 workflow rather than only manual helper commands.
+- `HISTORY.md` also needed the actual commit hash for the previous family event retention summary checkpoint.
+
+Decisions:
+- Add a dedicated `duplication_retention.nf` DSL2 module for prepared-table duplication/WGD analysis.
+- Keep this as an optional branch behind `--run_duplication_retention true` so current species discovery and mock MVP behavior remain unchanged.
+- Wire the branch through normalized duplicate types, family duplicate classifications, WGD layer classification, WGD event evidence, family WGD event membership, family event retention summary, and retention enrichment.
+- Document the prepared-table Nextflow command in `README.md`.
+
+Added:
+- `workflows/modules/duplication_retention.nf`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `workflows/main.nf`
+- `workflows/nextflow.config`
+- `tests/test_workflow_modules.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_workflow_modules.py -q` first failed because `workflows/modules/duplication_retention.nf` did not exist and `workflows/main.nf` did not include the duplication/WGD processes.
+- Implemented `workflows/modules/duplication_retention.nf` and added optional branch wiring in `workflows/main.nf`.
+- `python -m pytest tests/test_workflow_modules.py -q` passed.
+- `python -m pytest tests/test_runtime_environment_files.py -q` passed.
+- `python -m pytest tests -q` passed with 62 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` preserved the expected report-index entries for family duplicate classification, family WGD event membership, and family event retention summary.
+- Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`; real Nextflow/container execution was therefore not verified in this environment.
+
+Commit:
+- pending
+
+Next:
+- Add a lightweight report assembly layer that collects report-index outputs and WGD/retention tables into a final Markdown report skeleton.

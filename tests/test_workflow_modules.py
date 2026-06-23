@@ -17,3 +17,57 @@ def test_diamond_module_writes_normalized_tsv():
     assert "parse_diamond_outfmt6.py" in module
     assert "--species-id ${species_id}" in module
     assert "--out ${species_id}.diamond.tsv" in module
+
+
+def test_duplication_retention_module_exposes_wgd_helper_processes():
+    module = Path("workflows/modules/duplication_retention.nf").read_text(encoding="utf-8")
+
+    assert "process NORMALIZE_DUPLICATE_TYPES" in module
+    assert "normalize_duplicate_types.py" in module
+    assert "--duplicates ${duplicates}" in module
+    assert "--out normalized_duplicate_types.tsv" in module
+
+    assert "process JOIN_FAMILY_DUPLICATES" in module
+    assert "join_family_duplicates.py" in module
+    assert "--family-members ${family_members}" in module
+    assert "--duplicates ${normalized_duplicates}" in module
+    assert "--out family_duplicate_classification.tsv" in module
+
+    assert "process CLASSIFY_WGD_LAYERS" in module
+    assert "classify_wgd_layers.py" in module
+    assert "--bins ${ks_bins}" in module
+    assert "--out wgd_layers.tsv" in module
+
+    assert "process BUILD_WGD_EVENT_EVIDENCE" in module
+    assert "build_wgd_event_evidence.py" in module
+    assert "--events-config ${events_config}" in module
+    assert "--out wgd_event_evidence.tsv" in module
+
+    assert "process ANNOTATE_FAMILY_WGD_EVENTS" in module
+    assert "annotate_family_wgd_events.py" in module
+    assert "--family-duplicates ${family_duplicates}" in module
+    assert "--classified-pairs ${classified_pairs}" in module
+    assert "--out family_wgd_event_membership.tsv" in module
+
+    assert "process SUMMARIZE_FAMILY_EVENT_RETENTION" in module
+    assert "summarize_family_event_retention.py" in module
+    assert "--family-wgd-events ${family_wgd_events}" in module
+    assert "--out family_event_retention_summary.tsv" in module
+
+    assert "process RETENTION_ENRICHMENT" in module
+    assert "retention_enrichment.py" in module
+    assert "--family-duplicates ${family_duplicates}" in module
+    assert "--background-duplicates ${background_duplicates}" in module
+    assert "--out retention_enrichment.tsv" in module
+
+
+def test_main_workflow_includes_duplication_retention_processes():
+    workflow = Path("workflows/main.nf").read_text(encoding="utf-8")
+
+    assert "NORMALIZE_DUPLICATE_TYPES" in workflow
+    assert "JOIN_FAMILY_DUPLICATES" in workflow
+    assert "CLASSIFY_WGD_LAYERS" in workflow
+    assert "BUILD_WGD_EVENT_EVIDENCE" in workflow
+    assert "ANNOTATE_FAMILY_WGD_EVENTS" in workflow
+    assert "SUMMARIZE_FAMILY_EVENT_RETENTION" in workflow
+    assert "RETENTION_ENRICHMENT" in workflow

@@ -109,6 +109,25 @@ nextflow run workflows/main.nf \
   --outdir results/mock_mvp
 ```
 
+## Duplication And WGD Event Branch
+
+The duplication-retention helper chain is available as a Nextflow branch for prepared intermediate tables:
+
+```bash
+nextflow run workflows/main.nf \
+  -c workflows/nextflow.config \
+  --config configs/example.config.yaml \
+  --run_duplication_retention true \
+  --duplicates path/to/duplicate_types.tsv \
+  --family_members path/to/family_candidates.tsv \
+  --kaks_pairs path/to/kaks_pairs.tsv \
+  --events_config configs/wgd_events.brassicaceae.yaml \
+  --ks_bins 0.3,0.8,1.5 \
+  --wgd_event_args "--event WGD_layer_1=alpha --event WGD_layer_2=beta --event WGD_layer_3=gamma --event WGD_layer_4=theta"
+```
+
+This branch produces normalized duplicate classifications, family duplicate classifications, WGD layer assignments, named-event evidence, family WGD event membership, family event retention summaries, and duplicate-type retention enrichment.
+
 ## Current Status
 
 - Project governance files are in place.
@@ -116,4 +135,5 @@ nextflow run workflows/main.nf \
 - Species discovery helper is implemented and tested.
 - Offline mock MVP runner is implemented and tested.
 - Report index generation is implemented for stable downstream reporting.
+- Duplication, WGD-event, and retention helper processes are wired as a prepared-table Nextflow branch.
 - Full external-tool workflow wiring is still under development.
