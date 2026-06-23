@@ -1407,7 +1407,49 @@ Verification:
 - `python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv` still exited `1` because local external runtime commands remain missing; the TSV showed conda and `/usr/local/bin/R` as available and Nextflow/container/bioinformatics tools as missing.
 
 Commit:
-- pending
+- hash: 826f373c5202dec108129ffa7e0029e5a9bb0c08
+- message: feat: add YAML run plan output
+- files: run plan helper, mock MVP run_plan output, README/readiness output docs, tests, history
 
 Next:
 - Tighten configuration validation around module dependencies, so enabling modules such as Ka/Ks, expression, chromosome, or duplication retention requires the corresponding input files and parameters.
+
+## 2026-06-24 - Validate module dependency rules
+
+Context:
+- YAML run plans now expose which modules are enabled, but config validation did not yet reject inconsistent module combinations.
+- Enabling modules such as Ka/Ks, expression, chromosome location, motif, phylogeny, or duplication retention without required inputs or prerequisites would fail later in the workflow.
+- `HISTORY.md` also needed the actual commit hash for the previous YAML run plan checkpoint.
+
+Decisions:
+- Add static validation rules for module dependencies at config-validation time.
+- Keep dependency errors explicit and tied to the exact config path the user should change.
+- Document the rules in both the config schema notes and the input contract.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/validate_config.py`
+- `docs/input_contract.md`
+- `schemas/config.schema.yaml`
+- `tests/test_validate_config.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_validate_config.py -q` first failed 5 new dependency-rule tests because validation did not yet enforce module prerequisites.
+- Implemented dependency checks in `validate_config.py`.
+- `python -m pytest tests/test_validate_config.py -q` passed with 12 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python -m pytest tests -q` passed with 85 tests.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` preserved `run_plan` and `final_report` outputs.
+- `python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv` still exited `1` because local external runtime commands remain missing; the TSV showed conda and `/usr/local/bin/R` as available and Nextflow/container/bioinformatics tools as missing.
+
+Commit:
+- pending
+
+Next:
+- Add user-facing examples for enabling advanced modules safely, including the minimal YAML changes required for Ka/Ks, expression, chromosome location, and duplication-retention runs.

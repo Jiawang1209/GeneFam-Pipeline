@@ -32,6 +32,17 @@ Later modules add more requirements:
 - CDS FASTA (`cds`) for Ka/Ks.
 - genome FASTA (`genome`) for promoter extraction and chromosome visualizations.
 
+## Module Dependency Validation
+
+`bin/genefam/validate_config.py` checks module dependencies before a run starts:
+
+- `modules.kaks: true` requires `input.required.cds: true`.
+- `modules.chromosome_location: true` requires `input.required.gff3: true`.
+- `modules.expression: true` requires `expression.matrix`.
+- `modules.phylogeny: true` requires `modules.family_summary: true`.
+- `modules.motif: true` requires `modules.family_summary: true`.
+- `modules.duplication_retention: true` requires both `modules.synteny: true` and `modules.kaks: true`.
+
 ## Species Selection
 
 The species bank can contain many species. Each run chooses a subset with YAML:

@@ -30,3 +30,10 @@ fields:
   plotting.reuse_policy: adapt_not_modify
   dev.mock_external_tools: boolean flag for offline MVP verification
   dev.mock_evidence_dir: directory containing hmmer.tsv and diamond.tsv when mock mode is enabled
+module_dependency_rules:
+  modules.kaks: requires input.required.cds true
+  modules.chromosome_location: requires input.required.gff3 true
+  modules.expression: requires expression.matrix
+  modules.phylogeny: requires modules.family_summary true
+  modules.motif: requires modules.family_summary true
+  modules.duplication_retention: requires modules.synteny true and modules.kaks true

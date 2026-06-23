@@ -62,6 +62,27 @@ def validate_config(config: dict[str, Any]) -> list[str]:
     if final_rule not in {"intersection", "union", "hmmer_only"}:
         errors.append("identification.final_rule must be intersection, union, or hmmer_only")
 
+    modules = config.get("modules", {}) or {}
+    input_required = (config.get("input", {}) or {}).get("required", {}) or {}
+    expression = config.get("expression", {}) or {}
+
+    if modules.get("kaks") is True and input_required.get("cds") is not True:
+        errors.append("modules.kaks requires input.required.cds: true")
+    if modules.get("chromosome_location") is True and input_required.get("gff3") is not True:
+        errors.append("modules.chromosome_location requires input.required.gff3: true")
+    if modules.get("expression") is True and not expression.get("matrix"):
+        errors.append("modules.expression requires expression.matrix")
+
+    if modules.get("phylogeny") is True and modules.get("family_summary") is not True:
+        errors.append("modules.phylogeny requires modules.family_summary: true")
+    if modules.get("motif") is True and modules.get("family_summary") is not True:
+        errors.append("modules.motif requires modules.family_summary: true")
+    if modules.get("duplication_retention") is True:
+        if modules.get("synteny") is not True:
+            errors.append("modules.duplication_retention requires modules.synteny: true")
+        if modules.get("kaks") is not True:
+            errors.append("modules.duplication_retention requires modules.kaks: true")
+
     return errors
 
 
