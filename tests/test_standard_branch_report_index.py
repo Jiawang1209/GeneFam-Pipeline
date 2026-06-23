@@ -13,6 +13,8 @@ def test_build_standard_report_index_marks_core_outputs_available():
             "family_members_faa": "sequences/family_members.faa",
             "alignment_manifest": "tables/alignment_manifest.tsv",
             "phylogeny_manifest": "tables/phylogeny_manifest.tsv",
+            "chromosome_locations": "tables/chromosome_locations.tsv",
+            "family_expression": "",
             "plot_manifest": "tables/plot_manifest.tsv",
         }
     )
@@ -23,7 +25,14 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "status": "available",
         "description": "Selected species and input files",
     }
-    assert {row["key"] for row in rows} >= {"family_members_faa", "alignment_manifest", "phylogeny_manifest"}
+    assert {row["key"] for row in rows} >= {
+        "family_members_faa",
+        "alignment_manifest",
+        "phylogeny_manifest",
+        "chromosome_locations",
+        "family_expression",
+    }
+    assert next(row for row in rows if row["key"] == "family_expression")["status"] == "missing"
 
 
 def test_build_standard_report_index_cli_writes_tsv(tmp_path):
@@ -45,6 +54,10 @@ def test_build_standard_report_index_cli_writes_tsv(tmp_path):
             "alignment_manifest.tsv",
             "--phylogeny-manifest",
             "phylogeny_manifest.tsv",
+            "--chromosome-locations",
+            "chromosome_locations.tsv",
+            "--family-expression",
+            "",
             "--plot-manifest",
             "plot_manifest.tsv",
             "--out",

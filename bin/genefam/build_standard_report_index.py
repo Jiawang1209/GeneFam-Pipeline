@@ -16,6 +16,8 @@ DESCRIPTIONS = {
     "family_members_faa": "Family member peptide FASTA",
     "alignment_manifest": "Alignment preparation manifest",
     "phylogeny_manifest": "Phylogeny preparation manifest",
+    "chromosome_locations": "Family member chromosome coordinates",
+    "family_expression": "Family member RNA-seq expression matrix",
     "plot_manifest": "Generated plot inventory",
 }
 

@@ -98,6 +98,13 @@ workflow {
         EXTRACT_FAMILY_SEQUENCES(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
         PREPARE_ALIGNMENT_INPUTS(family_name_ch, EXTRACT_FAMILY_SEQUENCES.out, aligner_ch, alignment_outdir_ch)
         PREPARE_PHYLOGENY_INPUTS(PREPARE_ALIGNMENT_INPUTS.out, tree_builder_ch, phylogeny_outdir_ch)
+        EXTRACT_CHROMOSOME_LOCATIONS(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
+        family_expression_report_ch = Channel.value("")
+        if (params.expression_matrix) {
+            expression_matrix_ch = Channel.value(file(params.expression_matrix))
+            SUBSET_EXPRESSION_MATRIX(CONCAT_FAMILY_CANDIDATES.out, expression_matrix_ch)
+            family_expression_report_ch = SUBSET_EXPRESSION_MATRIX.out
+        }
         PLOT_FAMILY_COUNTS(FAMILY_SUMMARY.out)
         BUILD_PLOT_MANIFEST()
         BUILD_STANDARD_REPORT_INDEX(
@@ -107,6 +114,8 @@ workflow {
             EXTRACT_FAMILY_SEQUENCES.out,
             PREPARE_ALIGNMENT_INPUTS.out,
             PREPARE_PHYLOGENY_INPUTS.out,
+            EXTRACT_CHROMOSOME_LOCATIONS.out,
+            family_expression_report_ch,
             BUILD_PLOT_MANIFEST.out
         )
         ASSEMBLE_STANDARD_REPORT(project_name_ch, family_name_ch, BUILD_STANDARD_REPORT_INDEX.out, BUILD_PLOT_MANIFEST.out)

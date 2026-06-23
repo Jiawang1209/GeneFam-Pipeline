@@ -140,7 +140,7 @@ nextflow run workflows/main.nf \
   --final_rule intersection
 ```
 
-This branch builds HMMER and DIAMOND input tables from the YAML config and species manifest, runs evidence detection per species, merges candidate evidence, concatenates family candidate tables, summarizes copy numbers, extracts `family_members.faa`, prepares alignment and phylogeny manifests, creates the family-count plot, writes a standard report index, and assembles `final_report.md`.
+This branch builds HMMER and DIAMOND input tables from the YAML config and species manifest, runs evidence detection per species, merges candidate evidence, concatenates family candidate tables, summarizes copy numbers, extracts `family_members.faa`, prepares alignment and phylogeny manifests, extracts `chromosome_locations.tsv` from the species-bank GFF3 files, optionally subsets a `family_expression` matrix when `--expression_matrix` is supplied, creates the family-count plot, writes a standard report index, and assembles `final_report.md`.
 
 The offline standard-branch smoke check exercises the same post-identification reporting chain without requiring HMMER, DIAMOND, MAFFT, or IQ-TREE:
 
@@ -152,7 +152,7 @@ python bin/genefam/run_standard_smoke.py \
   --outdir results/standard_smoke
 ```
 
-It writes `results/standard_smoke/report/final_report.md` and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+It writes `results/standard_smoke/tables/chromosome_locations.tsv`, records `family_expression` as missing when no expression matrix is supplied, writes `results/standard_smoke/report/final_report.md`, and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
 
 ## Duplication And WGD Event Branch
 
@@ -191,5 +191,5 @@ It writes `results/wgd_smoke/report/final_report.md` and is included in `python 
 - Offline mock MVP runner is implemented and tested.
 - Report index generation is implemented for stable downstream reporting.
 - Duplication, WGD-event, and retention helper processes are wired as a prepared-table Nextflow branch.
-- Alignment, phylogeny, motif parsing, chromosome location, and expression-subset processes are represented as Nextflow DSL2 modules.
+- Alignment, phylogeny, motif parsing, chromosome location, and optional expression-subset processes are represented as Nextflow DSL2 modules; chromosome location is wired into the standard identification report contract.
 - Full external-tool workflow wiring is still under development.

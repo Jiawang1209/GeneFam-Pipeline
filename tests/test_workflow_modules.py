@@ -228,13 +228,13 @@ def test_annotation_integration_module_covers_chromosome_and_expression_steps():
 
     assert "process EXTRACT_CHROMOSOME_LOCATIONS" in module
     assert "extract_chromosome_locations.py" in module
-    assert "--family-members ${family_members}" in module
-    assert "--gff3 ${gff3}" in module
+    assert "--family-candidates ${family_candidates}" in module
+    assert "--species-manifest ${species_manifest}" in module
     assert "--out chromosome_locations.tsv" in module
 
     assert "process SUBSET_EXPRESSION_MATRIX" in module
     assert "subset_expression_matrix.py" in module
-    assert "--family-members ${family_members}" in module
+    assert "--family-candidates ${family_candidates}" in module
     assert "--expression ${expression_matrix}" in module
     assert "--out family_expression.tsv" in module
 
@@ -249,3 +249,6 @@ def test_main_workflow_includes_remaining_standard_analysis_processes():
     assert "PARSE_MEME_MOTIFS" in workflow
     assert "EXTRACT_CHROMOSOME_LOCATIONS" in workflow
     assert "SUBSET_EXPRESSION_MATRIX" in workflow
+    assert "EXTRACT_CHROMOSOME_LOCATIONS(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)" in workflow
+    assert "BUILD_STANDARD_REPORT_INDEX(" in workflow
+    assert "EXTRACT_CHROMOSOME_LOCATIONS.out" in workflow

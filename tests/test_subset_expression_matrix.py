@@ -1,6 +1,6 @@
 import pytest
 
-from bin.genefam.subset_expression_matrix import subset_expression
+from bin.genefam.subset_expression_matrix import gene_ids_from_family_candidates, subset_expression
 
 
 def test_subset_expression_keeps_requested_genes_and_sample_columns():
@@ -23,3 +23,13 @@ def test_subset_expression_fails_for_missing_requested_genes():
 
     with pytest.raises(ValueError, match="Missing expression gene IDs: gene2"):
         subset_expression(rows, gene_ids={"gene2"})
+
+
+def test_gene_ids_from_family_candidates_collects_unique_ids():
+    candidates = [
+        {"species_id": "Species_a", "gene_id": "gene1"},
+        {"species_id": "Species_a", "gene_id": "gene1"},
+        {"species_id": "Species_b", "gene_id": "gene2"},
+    ]
+
+    assert gene_ids_from_family_candidates(candidates) == {"gene1", "gene2"}

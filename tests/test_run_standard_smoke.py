@@ -31,9 +31,14 @@ def test_run_standard_smoke_writes_standard_branch_outputs(tmp_path):
         "sequences/family_members.faa",
         "tables/alignment_manifest.tsv",
         "tables/phylogeny_manifest.tsv",
+        "tables/chromosome_locations.tsv",
         "report/report_index.tsv",
         "report/final_report.md",
     ]
     for relative_path in expected:
         assert (outdir / relative_path).exists(), relative_path
     assert "standard_final_report" in completed.stdout
+
+    report_index = (outdir / "report/report_index.tsv").read_text(encoding="utf-8")
+    assert "chromosome_locations" in report_index
+    assert "family_expression" in report_index

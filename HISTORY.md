@@ -1968,7 +1968,68 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because Nextflow mock MVP smoke failed with `missing_nextflow` and readiness audit failed, but pytest, config validation, mock MVP, standard branch smoke, WGD event smoke, and runtime bootstrap plan passed.
 
 Commit:
-- pending
+- hash: f0def0542965c77c7436462c5204d17be33d9fbf
+- message: feat: add Nextflow smoke gate
+- files: Nextflow smoke runner, release checks integration, README/release audit docs, tests, history
 
 Next:
 - Install or activate Nextflow and the GeneFamilyFlow runtime, then rerun `python bin/genefam/run_nextflow_smoke.py --outdir results/nextflow_smoke` and `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+
+## 2026-06-24 - Wire chromosome and expression report contract into standard branch
+
+Context:
+- The chromosome-location and expression-subset helper processes existed, but their Nextflow module arguments did not match the Python CLIs.
+- The standard identification branch did not yet route chromosome coordinates into the report index.
+- A species-bank workflow needs chromosome localization to work from `species_manifest.tsv` and `family_candidates.tsv`, not from hand-written per-species ID files.
+
+Decisions:
+- Extend `extract_chromosome_locations.py` with a multi-species `--family-candidates` plus `--species-manifest` interface while keeping the legacy single-GFF3 interface.
+- Extend `subset_expression_matrix.py` so expression subsetting can read gene IDs directly from `family_candidates.tsv`.
+- Add `chromosome_locations` and `family_expression` to the standard report index contract.
+- Wire `EXTRACT_CHROMOSOME_LOCATIONS` into the `run_identification` branch and make `family_expression` optional through `params.expression_matrix`.
+- Update README and release audit so the standard branch documents chromosome output and optional expression integration.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/extract_chromosome_locations.py`
+- `bin/genefam/run_standard_smoke.py`
+- `bin/genefam/subset_expression_matrix.py`
+- `docs/release_audit.md`
+- `tests/test_extract_chromosome_locations.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_standard_smoke.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_subset_expression_matrix.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/annotation_integration.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/nextflow.config`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_extract_chromosome_locations.py tests/test_subset_expression_matrix.py tests/test_standard_branch_report_index.py tests/test_run_standard_smoke.py tests/test_workflow_modules.py -q` first failed because `extract_locations_for_manifest` and `gene_ids_from_family_candidates` did not exist.
+- Implemented the multi-species chromosome interface, family-candidate expression interface, report-index keys, standard smoke chromosome output, and Nextflow wiring.
+- `python -m pytest tests/test_extract_chromosome_locations.py tests/test_subset_expression_matrix.py tests/test_standard_branch_report_index.py tests/test_run_standard_smoke.py tests/test_workflow_modules.py -q` passed with 24 tests.
+- `python -m pytest tests/test_runtime_environment_files.py::test_readme_documents_explicit_standard_identification_branch tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` first failed because README did not document `chromosome_locations.tsv`.
+- Updated README and release audit.
+- `python -m pytest tests/test_extract_chromosome_locations.py tests/test_subset_expression_matrix.py tests/test_standard_branch_report_index.py tests/test_run_standard_smoke.py tests/test_workflow_modules.py tests/test_runtime_environment_files.py tests/test_release_audit_docs.py -q` passed with 31 tests.
+- `python bin/genefam/run_standard_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/standard_smoke` wrote `results/standard_smoke/tables/chromosome_locations.tsv` for `Arabidopsis_thaliana` and `Brassica_rapa`; the report index marks `chromosome_locations` available and `family_expression` missing when no expression matrix is supplied.
+- `python -m pytest tests -q` passed with 122 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/advanced_modules.example.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because Nextflow mock MVP smoke failed with `missing_nextflow` and readiness audit failed, but pytest, config validation, mock MVP, standard branch smoke, WGD event smoke, and runtime bootstrap plan passed.
+
+Commit:
+- pending
+
+Next:
+- Continue wiring optional expression plotting and full Nextflow runtime verification after Nextflow/GeneFamilyFlow tools are available.

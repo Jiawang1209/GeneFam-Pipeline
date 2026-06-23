@@ -50,6 +50,8 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "runtime_bootstrap_plan.md" in text
     assert "build_identification_inputs.py" in text
     assert "extract_family_sequences.py" in text
+    assert "extract_chromosome_locations.py" in text
+    assert "subset_expression_matrix.py" in text
     assert "build_standard_report_index.py" in text
     assert "assemble_report.py" in text
     assert "run_standard_smoke.py" in text

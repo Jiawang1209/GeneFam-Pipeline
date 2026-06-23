@@ -17,6 +17,7 @@ from bin.genefam.build_plot_manifest import build_plot_manifest, write_tsv as wr
 from bin.genefam.build_standard_report_index import DESCRIPTIONS, build_report_index, write_tsv as write_report_index_tsv
 from bin.genefam.discover_species import _select_species, discover_species, write_manifest
 from bin.genefam.extract_family_sequences import extract_family_sequences, read_tsv as read_table, write_fasta
+from bin.genefam.extract_chromosome_locations import extract_locations_for_manifest, write_tsv as write_locations_tsv
 from bin.genefam.merge_identification_evidence import merge_evidence, read_tsv, write_tsv
 from bin.genefam.prepare_alignment_inputs import prepare_alignment_manifest, write_tsv as write_alignment_tsv
 from bin.genefam.prepare_phylogeny_inputs import prepare_phylogeny_manifest, write_tsv as write_phylogeny_tsv
@@ -57,6 +58,7 @@ def run_standard_smoke(config_path: Path, groups_path: Path, mock_evidence_dir: 
         "family_members_faa": sequences_dir / "family_members.faa",
         "alignment_manifest": tables_dir / "alignment_manifest.tsv",
         "phylogeny_manifest": tables_dir / "phylogeny_manifest.tsv",
+        "chromosome_locations": tables_dir / "chromosome_locations.tsv",
         "plot_manifest": report_dir / "plot_manifest.tsv",
         "report_index": report_dir / "report_index.tsv",
         "standard_final_report": report_dir / "final_report.md",
@@ -82,12 +84,13 @@ def run_standard_smoke(config_path: Path, groups_path: Path, mock_evidence_dir: 
         prepare_phylogeny_manifest(alignment_rows, outdir=outdir / "phylogeny", tree_builder="iqtree"),
         outputs["phylogeny_manifest"],
     )
+    write_locations_tsv(extract_locations_for_manifest(candidates, manifest_rows), outputs["chromosome_locations"])
     write_plot_manifest_tsv(
         build_plot_manifest([("family_counts", "plots/family_counts.pdf", "Family member counts by species")]),
         outputs["plot_manifest"],
     )
     write_report_index_tsv(
-        build_report_index({key: str(outputs[key]) for key in DESCRIPTIONS}),
+        build_report_index({key: str(outputs[key]) if key in outputs else "" for key in DESCRIPTIONS}),
         outputs["report_index"],
     )
     write_report(

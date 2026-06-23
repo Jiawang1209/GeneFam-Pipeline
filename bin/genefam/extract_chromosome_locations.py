@@ -51,6 +51,39 @@ def extract_locations(gff3_path: Path, species_id: str, gene_ids: set[str]) -> l
     return [found[gene_id] for gene_id in sorted(found)]
 
 
+def read_tsv(path: Path) -> list[dict[str, str]]:
+    with Path(path).open("r", encoding="utf-8", newline="") as handle:
+        return list(csv.DictReader(handle, delimiter="\t"))
+
+
+def _gene_ids_by_species(family_candidates: list[dict[str, str]]) -> dict[str, set[str]]:
+    gene_ids: dict[str, set[str]] = {}
+    for row in family_candidates:
+        species_id = row.get("species_id", "")
+        gene_id = row.get("gene_id", "")
+        if not species_id or not gene_id:
+            continue
+        gene_ids.setdefault(species_id, set()).add(gene_id)
+    return gene_ids
+
+
+def extract_locations_for_manifest(
+    family_candidates: list[dict[str, str]],
+    species_manifest: list[dict[str, str]],
+) -> list[dict[str, str]]:
+    manifest_by_species = {row["species_id"]: row for row in species_manifest}
+    rows: list[dict[str, str]] = []
+    for species_id, gene_ids in sorted(_gene_ids_by_species(family_candidates).items()):
+        manifest_row = manifest_by_species.get(species_id)
+        if not manifest_row:
+            raise ValueError(f"Missing species manifest row for {species_id}")
+        gff3 = manifest_row.get("gff3", "")
+        if not gff3:
+            raise ValueError(f"Missing GFF3 path for {species_id}")
+        rows.extend(extract_locations(Path(gff3), species_id, gene_ids))
+    return rows
+
+
 def write_tsv(rows: list[dict[str, str]], out_path: Path) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with Path(out_path).open("w", encoding="utf-8", newline="") as handle:
@@ -61,13 +94,23 @@ def write_tsv(rows: list[dict[str, str]], out_path: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--gff3", required=True, type=Path)
-    parser.add_argument("--species-id", required=True)
-    parser.add_argument("--ids", required=True, type=Path)
+    parser.add_argument("--family-candidates", type=Path)
+    parser.add_argument("--species-manifest", type=Path)
+    parser.add_argument("--gff3", type=Path)
+    parser.add_argument("--species-id")
+    parser.add_argument("--ids", type=Path)
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
-    gene_ids = {line.strip() for line in args.ids.read_text(encoding="utf-8").splitlines() if line.strip()}
-    write_tsv(extract_locations(args.gff3, args.species_id, gene_ids), args.out)
+    if args.family_candidates and args.species_manifest:
+        rows = extract_locations_for_manifest(read_tsv(args.family_candidates), read_tsv(args.species_manifest))
+    elif args.gff3 and args.species_id and args.ids:
+        gene_ids = {line.strip() for line in args.ids.read_text(encoding="utf-8").splitlines() if line.strip()}
+        rows = extract_locations(args.gff3, args.species_id, gene_ids)
+    else:
+        raise SystemExit(
+            "Provide either --family-candidates with --species-manifest or --gff3 with --species-id and --ids"
+        )
+    write_tsv(rows, args.out)
 
 
 if __name__ == "__main__":
