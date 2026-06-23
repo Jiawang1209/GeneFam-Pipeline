@@ -46,3 +46,15 @@ def test_readiness_checklist_documents_command_audit():
     assert "mafft" in text
     assert "iqtree2" in text
     assert "meme" in text
+
+
+def test_advanced_module_examples_document_safe_enablement():
+    text = Path("docs/advanced_module_examples.md").read_text(encoding="utf-8")
+    readme = Path("README.md").read_text(encoding="utf-8")
+
+    assert "configs/advanced_modules.example.yaml" in text
+    assert "python bin/genefam/validate_config.py configs/advanced_modules.example.yaml" in text
+    assert "python bin/genefam/build_run_plan.py" in text
+    assert "wgd_events.named_event_annotation: true" in text
+    assert "configs/advanced_modules.example.yaml" in readme
+    assert "docs/advanced_module_examples.md" in readme

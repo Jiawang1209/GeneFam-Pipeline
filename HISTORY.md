@@ -1449,7 +1449,54 @@ Verification:
 - `python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv` still exited `1` because local external runtime commands remain missing; the TSV showed conda and `/usr/local/bin/R` as available and Nextflow/container/bioinformatics tools as missing.
 
 Commit:
-- pending
+- hash: 95b5a6ded8c813a111a2e7ca168f39835e045814
+- message: feat: validate module dependencies
+- files: config validator dependency rules, config schema notes, input contract docs, validator tests, history
 
 Next:
 - Add user-facing examples for enabling advanced modules safely, including the minimal YAML changes required for Ka/Ks, expression, chromosome location, and duplication-retention runs.
+
+## 2026-06-24 - Add advanced module configuration examples
+
+Context:
+- Module dependency validation now rejects inconsistent advanced-module settings.
+- Users also need a passing example that shows the minimal YAML changes required to enable Ka/Ks, chromosome location, expression integration, synteny, duplication retention, named WGD events, phylogeny, and motif analysis.
+- `HISTORY.md` also needed the actual commit hash for the previous module dependency validation checkpoint.
+
+Decisions:
+- Add `configs/advanced_modules.example.yaml` as a validation-passing advanced configuration template with placeholder user-data paths.
+- Add `docs/advanced_module_examples.md` with validation, run-plan, and readiness commands.
+- Link the advanced config and docs from README.
+- Add tests so the advanced example remains synchronized with config validation rules.
+
+Added:
+- `configs/advanced_modules.example.yaml`
+- `docs/advanced_module_examples.md`
+- `tests/test_advanced_module_config_examples.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_advanced_module_config_examples.py -q` first failed because `configs/advanced_modules.example.yaml` did not exist.
+- Added the advanced module example config.
+- `python -m pytest tests/test_advanced_module_config_examples.py -q` passed.
+- `python bin/genefam/validate_config.py configs/advanced_modules.example.yaml` returned `Configuration OK`.
+- Added advanced module documentation and static documentation checks.
+- `python -m pytest tests -q` passed with 88 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/advanced_modules.example.yaml` returned `Configuration OK`.
+- `python bin/genefam/build_run_plan.py --config configs/advanced_modules.example.yaml --out results/GDSL_advanced_example/tables/run_plan.tsv` wrote a run plan showing `GeneFamilyFlow`, `duplication_retention enabled`, `expression enabled`, and `kaks enabled`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` wrote a non-empty final report.
+- `python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv` still exited `1` because local external runtime commands remain missing; the TSV showed conda and `/usr/local/bin/R` as available and Nextflow/container/bioinformatics tools as missing.
+
+Commit:
+- pending
+
+Next:
+- Add a final release audit document that maps each original goal requirement to current evidence, known gaps, and the command that verifies it.
