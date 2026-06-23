@@ -24,6 +24,7 @@ python bin/genefam/run_standard_smoke.py \
 python bin/genefam/run_wgd_smoke.py \
   --events-config configs/wgd_events.brassicaceae.yaml \
   --outdir results/wgd_smoke
+python bin/genefam/run_nextflow_smoke.py --outdir results/nextflow_smoke
 python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv
 python bin/genefam/plan_runtime_bootstrap.py \
   --readiness results/readiness/command_readiness.tsv \
@@ -43,7 +44,7 @@ The release checks runner writes:
 
 | Requirement | Evidence | Verification |
 |---|---|---|
-| Nextflow DSL2 workflow | `workflows/main.nf`; modules under `workflows/modules/` | `python -m pytest tests/test_workflow_modules.py -q` |
+| Nextflow DSL2 workflow | `workflows/main.nf`; modules under `workflows/modules/`; `bin/genefam/run_nextflow_smoke.py`; `results/nextflow_smoke/nextflow_smoke.md` | `python -m pytest tests/test_workflow_modules.py tests/test_run_nextflow_smoke.py -q` |
 | YAML-driven parameters | `configs/example.config.yaml`; `configs/advanced_modules.example.yaml`; `bin/genefam/build_run_plan.py` | `python bin/genefam/build_run_plan.py --config configs/example.config.yaml --out results/mock_mvp/tables/run_plan.tsv` |
 | GeneFamilyFlow runtime | `envs/GeneFamilyFlow.conda.yaml`; `workflows/nextflow.config`; `Dockerfile` | `python -m pytest tests/test_runtime_environment_files.py -q` |
 | `/usr/local/bin/R` plotting and reporting convention | `workflows/modules/plots.nf`; `scripts/plot_family_counts.R`; `scripts/plot_kaks.R`; `scripts/plot_expression_heatmap.R` | `python -m pytest tests/test_workflow_modules.py tests/test_runtime_environment_files.py -q` |

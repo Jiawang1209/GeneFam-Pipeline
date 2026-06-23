@@ -1917,7 +1917,58 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because readiness audit failed, but pytest, config validation, mock MVP, standard branch smoke, WGD event smoke, and runtime bootstrap plan passed.
 
 Commit:
+- hash: 7f3ab1bba538b608eb785ea845af633c01d1ea35
+- message: feat: add WGD smoke release check
+- files: WGD smoke runner, release checks integration, README/release audit docs, tests, history
+
+Next:
+- Continue toward real Nextflow/container runtime verification; release checks now prove mock MVP, standard branch smoke, and WGD named-event smoke before the runtime readiness gate.
+
+## 2026-06-24 - Add Nextflow smoke gate
+
+Context:
+- Repository-level Python smoke checks now cover mock MVP, standard branch reporting, and WGD named-event evidence.
+- The remaining core blocker is real Nextflow/container runtime verification.
+- The project needed a durable smoke gate that either runs the Nextflow mock MVP when Nextflow is installed or writes an explicit blocker report when Nextflow is missing.
+
+Decisions:
+- Add `run_nextflow_smoke.py` to run `nextflow run workflows/main.nf ... --mock_mvp true` when `nextflow` is available.
+- When Nextflow is missing, write `results/nextflow_smoke/nextflow_smoke.tsv` and `results/nextflow_smoke/nextflow_smoke.md` with `missing_nextflow` status and exit non-zero.
+- Add Nextflow mock MVP smoke to `run_release_checks.py` before readiness audit.
+- Document the Nextflow smoke command and blocker output in README and release audit.
+
+Added:
+- `bin/genefam/run_nextflow_smoke.py`
+- `tests/test_run_nextflow_smoke.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_nextflow_smoke.py -q` first failed because `bin.genefam.run_nextflow_smoke` did not exist.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_nextflow_smoke_before_readiness -q` first failed because release checks did not include Nextflow mock MVP smoke.
+- Implemented `run_nextflow_smoke.py`.
+- `python -m pytest tests/test_run_nextflow_smoke.py -q` passed with 2 tests.
+- Added Nextflow mock MVP smoke to release checks.
+- `python -m pytest tests/test_run_release_checks.py tests/test_run_nextflow_smoke.py -q` passed with 10 tests.
+- `python -m pytest tests/test_release_audit_docs.py tests/test_runtime_environment_files.py tests/test_run_nextflow_smoke.py tests/test_run_release_checks.py -q` passed with 17 tests.
+- `python bin/genefam/run_nextflow_smoke.py --outdir results/nextflow_smoke` exited `1` and wrote `missing_nextflow` reports because `nextflow` is not currently on `PATH`.
+- `python -m pytest tests -q` passed with 120 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/advanced_modules.example.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because Nextflow mock MVP smoke failed with `missing_nextflow` and readiness audit failed, but pytest, config validation, mock MVP, standard branch smoke, WGD event smoke, and runtime bootstrap plan passed.
+
+Commit:
 - pending
 
 Next:
-- Commit the WGD smoke release-check layer, then continue toward real Nextflow/container runtime verification.
+- Install or activate Nextflow and the GeneFamilyFlow runtime, then rerun `python bin/genefam/run_nextflow_smoke.py --outdir results/nextflow_smoke` and `python bin/genefam/run_release_checks.py --outdir results/release_checks`.

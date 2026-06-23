@@ -75,3 +75,4 @@ def test_readme_documents_explicit_standard_identification_branch():
     assert "final_report.md" in readme
     assert "run_standard_smoke.py" in readme
     assert "run_wgd_smoke.py" in readme
+    assert "run_nextflow_smoke.py" in readme

@@ -73,6 +73,15 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "Nextflow mock MVP smoke",
+            [
+                python,
+                "bin/genefam/run_nextflow_smoke.py",
+                "--outdir",
+                "results/nextflow_smoke",
+            ],
+        ),
+        CheckSpec(
             "readiness audit",
             [python, "bin/genefam/audit_readiness.py", "--out", "results/readiness/command_readiness.tsv"],
         ),

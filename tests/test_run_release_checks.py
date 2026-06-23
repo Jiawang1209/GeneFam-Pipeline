@@ -120,3 +120,12 @@ def test_default_checks_include_wgd_smoke_before_readiness():
     smoke = next(check for check in default_checks() if check.name == "WGD event smoke")
     assert "bin/genefam/run_wgd_smoke.py" in " ".join(smoke.command)
     assert "--outdir results/wgd_smoke" in " ".join(smoke.command)
+
+
+def test_default_checks_include_nextflow_smoke_before_readiness():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("Nextflow mock MVP smoke") < names.index("readiness audit")
+    smoke = next(check for check in default_checks() if check.name == "Nextflow mock MVP smoke")
+    assert "bin/genefam/run_nextflow_smoke.py" in " ".join(smoke.command)
+    assert "--outdir results/nextflow_smoke" in " ".join(smoke.command)
