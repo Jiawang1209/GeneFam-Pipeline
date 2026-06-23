@@ -48,6 +48,7 @@ The species ID defaults to the folder name. A run can analyze all species, a man
 - `docs/input_contract.md`: input format contract.
 - `docs/wgd_event_evidence.md`: WGD layer and named-event evidence contract.
 - `docs/runtime_environment.md`: Conda, Docker, and Nextflow profile runtime notes.
+- `docs/readiness_checklist.md`: repository and machine-level readiness checks.
 - `docs/superpowers/plans/2026-06-23-genefam-pipeline.md`: implementation plan.
 
 ## Runtime Convention
@@ -62,6 +63,14 @@ Runtime files:
 - `envs/GeneFamilyFlow.conda.yaml`
 - `Dockerfile`
 - `workflows/nextflow.config` profiles: `local`, `docker`, `apptainer`
+
+Readiness audit:
+
+```bash
+python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv
+```
+
+The audit writes a TSV report and exits non-zero when required runtime commands are missing.
 
 ## Reference Plotting Scripts
 

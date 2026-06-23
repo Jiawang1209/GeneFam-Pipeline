@@ -34,3 +34,15 @@ def test_nextflow_config_has_container_profiles():
     assert "docker" in config
     assert "apptainer" in config
     assert "genefam-pipeline:latest" in config
+
+
+def test_readiness_checklist_documents_command_audit():
+    checklist = Path("docs/readiness_checklist.md")
+    text = checklist.read_text(encoding="utf-8")
+
+    assert "python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv" in text
+    assert "nextflow" in text
+    assert "/usr/local/bin/R" in text
+    assert "mafft" in text
+    assert "iqtree2" in text
+    assert "meme" in text

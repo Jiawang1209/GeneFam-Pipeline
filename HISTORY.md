@@ -1314,7 +1314,54 @@ Verification:
 - Runtime availability check found `/usr/local/bin/R` and `/Users/liuyue/miniforge3/bin/conda`; it did not find `nextflow`, `docker`, `apptainer`, `mafft`, `iqtree2`, or `meme`.
 
 Commit:
-- pending
+- hash: 750dc76baf276c93803312c2107c76fec48819e7
+- message: feat: add standard analysis workflow modules
+- files: alignment/phylogeny/motif Nextflow module, annotation/expression Nextflow module, workflow includes, workflow tests, README status, history
 
 Next:
 - Add a documented end-to-end readiness checklist and command audit so remaining gaps toward a truly runnable final release are explicit and testable.
+
+## 2026-06-24 - Add end-to-end readiness audit
+
+Context:
+- The repository now has broad helper, module, mock, report, plotting, WGD, and retention coverage.
+- Full end-to-end execution still depends on machine-level commands such as Nextflow, Docker/Apptainer, HMMER, DIAMOND, MAFFT, IQ-TREE, and MEME.
+- The project needed a durable way to distinguish repository readiness from local runtime readiness.
+- `HISTORY.md` also needed the actual commit hash for the previous standard analysis workflow module checkpoint.
+
+Decisions:
+- Add a command readiness audit script that writes a TSV report and exits non-zero when any required runtime command is missing.
+- Document repository-level checks, mock MVP outputs, runtime command audit, and interpretation in `docs/readiness_checklist.md`.
+- Link the readiness checklist from `README.md`.
+
+Added:
+- `bin/genefam/audit_readiness.py`
+- `tests/test_audit_readiness.py`
+- `docs/readiness_checklist.md`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_readiness.py -q` first failed because `bin.genefam.audit_readiness` did not exist.
+- Implemented `audit_readiness.py`.
+- `python -m pytest tests/test_audit_readiness.py -q` passed.
+- Added readiness documentation and static coverage in `tests/test_runtime_environment_files.py`.
+- `python -m pytest tests -q` initially failed because the readiness checklist test referenced a `config` variable from another test scope.
+- Moved the `genefam-pipeline:latest` assertion back to the Nextflow config test.
+- `python -m pytest tests -q` passed with 77 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` wrote a non-empty `results/mock_mvp/report/final_report.md`.
+- `python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv` wrote the readiness TSV and exited `1`, as expected on this machine.
+- Readiness TSV showed `/Users/liuyue/miniforge3/bin/conda` and `/usr/local/bin/R` as available, and `nextflow`, `docker`, `apptainer`, `hmmsearch`, `diamond`, `mafft`, `iqtree2`, and `meme` as missing.
+
+Commit:
+- pending
+
+Next:
+- Use the readiness audit to guide the final release pass: either install/activate missing runtime tools for real Nextflow execution or keep documenting the exact external-state blocker while continuing repository-level improvements.
