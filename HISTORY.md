@@ -1639,7 +1639,73 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because readiness audit failed, but pytest, config validation, mock MVP, and runtime bootstrap plan passed.
 
 Commit:
+- hash: 9dfae0ff0bac393f07249aada7be8a2458bab962
+- message: feat: add runtime bootstrap planner
+- files: runtime bootstrap planner, GeneFamilyFlow environment update, release checks integration, runtime docs, tests, history
+
+Next:
+- Use `results/readiness/runtime_bootstrap.sh` or the Markdown plan to install/activate the missing runtime route, then rerun release checks and a real Nextflow/container smoke test.
+
+## 2026-06-24 - Wire standard identification branch
+
+Context:
+- The workflow contained HMMER, DIAMOND, domain filtering, family summary, and plotting modules, but the normal main workflow only prepared the species manifest.
+- A real standard analysis route needs YAML-derived HMMER/DIAMOND input tables, per-species evidence detection, candidate merging, cross-species candidate concatenation, family count summaries, and plotting.
+- The first wiring attempt made the default Nextflow branch too heavy; the project still needs a lightweight default species-manifest checkpoint, so real identification should be explicit.
+
+Decisions:
+- Add `build_identification_inputs.py` to turn a YAML config plus species manifest into HMMER and DIAMOND input TSV files.
+- Add `concat_tsv.py` and `CONCAT_FAMILY_CANDIDATES` so per-species candidate outputs can feed family-level summaries.
+- Add `workflows/modules/identification_inputs.nf`.
+- Wire an explicit `--run_identification true` branch in `workflows/main.nf` from species discovery through HMMER, DIAMOND, domain filtering, candidate concatenation, family summary, and family-count plotting.
+- Keep the default Nextflow branch as a lightweight species manifest run.
+- Add a small reference peptide fixture and point `configs/example.config.yaml` to it so the documented identification branch can build DIAMOND inputs.
+
+Added:
+- `bin/genefam/build_identification_inputs.py`
+- `bin/genefam/concat_tsv.py`
+- `workflows/modules/identification_inputs.nf`
+- `tests/fixtures/reference/GDSL_reference.pep.fa`
+- `tests/test_build_identification_inputs.py`
+- `tests/test_concat_tsv.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `configs/example.config.yaml`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/domain_filter.nf`
+- `workflows/nextflow.config`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_identification_inputs.py tests/test_concat_tsv.py -q` first failed because both helper modules were missing.
+- Implemented both helper modules.
+- `python -m pytest tests/test_build_identification_inputs.py tests/test_concat_tsv.py -q` passed with 5 tests.
+- `python -m pytest tests/test_workflow_modules.py -q` first failed because `identification_inputs.nf`, `CONCAT_FAMILY_CANDIDATES`, and main workflow wiring were missing.
+- Implemented the Nextflow module and workflow wiring.
+- `python -m pytest tests/test_workflow_modules.py -q` passed with 14 tests.
+- `python -m pytest tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q` then failed when the identification branch was not explicitly gated by `params.run_identification`.
+- Added `params.run_identification` and restored the lightweight default branch.
+- `python -m pytest tests/test_workflow_modules.py -q` passed with 14 tests.
+- `python -m pytest tests/test_build_identification_inputs.py::test_example_config_builds_diamond_inputs_for_identification_branch -q` first failed because `configs/example.config.yaml` had no reference peptide path.
+- Added `tests/fixtures/reference/GDSL_reference.pep.fa` and updated the example config.
+- `python -m pytest tests/test_build_identification_inputs.py::test_example_config_builds_diamond_inputs_for_identification_branch -q` passed.
+- `python -m pytest tests/test_release_audit_docs.py tests/test_runtime_environment_files.py tests/test_workflow_modules.py tests/test_build_identification_inputs.py tests/test_concat_tsv.py -q` passed with 26 tests.
+- `python bin/genefam/discover_species.py --config configs/example.config.yaml --groups configs/species_groups.yaml --out results/identification_inputs_smoke/species_manifest.tsv` and `python bin/genefam/build_identification_inputs.py --config configs/example.config.yaml --species-manifest results/identification_inputs_smoke/species_manifest.tsv --outdir results/identification_inputs_smoke` wrote HMMER and DIAMOND input rows for Arabidopsis_thaliana and Brassica_rapa.
+- `python -m pytest tests -q` passed with 107 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/advanced_modules.example.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because readiness audit failed, but pytest, config validation, mock MVP, and runtime bootstrap plan passed.
+
+Commit:
 - pending
 
 Next:
-- Commit this runtime bootstrap layer, then use `results/readiness/runtime_bootstrap.sh` or the Markdown plan to install/activate the missing runtime route.
+- Run full repository verification and release checks; when runtime tools are available, verify `nextflow run workflows/main.nf -c workflows/nextflow.config --config configs/example.config.yaml --run_identification true`.

@@ -47,7 +47,7 @@ gene_family:
   hmm_profiles:
     - id: PF00657
       path: Reference/Long_Weixiong_20240323_1_GDSL/PF00657.hmm
-  reference_peptides: null
+  reference_peptides: tests/fixtures/reference/GDSL_reference.pep.fa
   min_length: null
   max_length: null
 

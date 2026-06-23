@@ -127,6 +127,20 @@ nextflow run workflows/main.nf \
   --outdir results/mock_mvp
 ```
 
+## Standard Identification Branch
+
+When `GeneFamilyFlow` and external tools are available, run the HMMER/DIAMOND/domain-filter/family-summary branch explicitly:
+
+```bash
+nextflow run workflows/main.nf \
+  -c workflows/nextflow.config \
+  --config configs/example.config.yaml \
+  --run_identification true \
+  --final_rule intersection
+```
+
+This branch builds HMMER and DIAMOND input tables from the YAML config and species manifest, runs evidence detection per species, merges candidate evidence, concatenates family candidate tables, summarizes copy numbers, and creates the family-count plot.
+
 ## Duplication And WGD Event Branch
 
 The duplication-retention helper chain is available as a Nextflow branch for prepared intermediate tables:

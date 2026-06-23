@@ -19,6 +19,43 @@ def test_diamond_module_writes_normalized_tsv():
     assert "--out ${species_id}.diamond.tsv" in module
 
 
+def test_identification_inputs_module_builds_hmmer_and_diamond_tables():
+    module = Path("workflows/modules/identification_inputs.nf").read_text(encoding="utf-8")
+
+    assert "process BUILD_IDENTIFICATION_INPUTS" in module
+    assert "build_identification_inputs.py" in module
+    assert "--species-manifest ${species_manifest}" in module
+    assert 'path "identification_inputs/hmmer_inputs.tsv"' in module
+    assert 'path "identification_inputs/diamond_inputs.tsv"' in module
+
+
+def test_domain_filter_module_can_concatenate_species_candidate_tables():
+    module = Path("workflows/modules/domain_filter.nf").read_text(encoding="utf-8")
+
+    assert "process CONCAT_FAMILY_CANDIDATES" in module
+    assert "concat_tsv.py" in module
+    assert "--inputs ${candidate_tables}" in module
+    assert "--out family_candidates.tsv" in module
+
+
+def test_main_workflow_wires_standard_identification_branch():
+    workflow = Path("workflows/main.nf").read_text(encoding="utf-8")
+
+    assert "include { BUILD_IDENTIFICATION_INPUTS } from './modules/identification_inputs.nf'" in workflow
+    assert "include { HMMER_SEARCH } from './modules/hmmer_search.nf'" in workflow
+    assert "include { DIAMOND_SEARCH } from './modules/diamond_search.nf'" in workflow
+    assert "include { DOMAIN_FILTER; CONCAT_FAMILY_CANDIDATES } from './modules/domain_filter.nf'" in workflow
+    assert "include { FAMILY_SUMMARY } from './modules/family_summary.nf'" in workflow
+    assert "} else if (params.run_identification) {" in workflow
+    assert "BUILD_IDENTIFICATION_INPUTS(config_ch, PREPARE_SPECIES.out)" in workflow
+    assert "HMMER_SEARCH(hmmer_inputs_ch)" in workflow
+    assert "DIAMOND_SEARCH(diamond_inputs_ch)" in workflow
+    assert "DOMAIN_FILTER(joined_evidence_ch, final_rule_ch)" in workflow
+    assert "CONCAT_FAMILY_CANDIDATES(candidate_tables_ch.collect())" in workflow
+    assert "FAMILY_SUMMARY(CONCAT_FAMILY_CANDIDATES.out)" in workflow
+    assert "PLOT_FAMILY_COUNTS(FAMILY_SUMMARY.out)" in workflow
+
+
 def test_duplication_retention_module_exposes_wgd_helper_processes():
     module = Path("workflows/modules/duplication_retention.nf").read_text(encoding="utf-8")
 

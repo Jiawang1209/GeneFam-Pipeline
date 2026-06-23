@@ -1,6 +1,11 @@
 nextflow.enable.dsl = 2
 
 include { PREPARE_SPECIES } from './modules/prepare_species.nf'
+include { BUILD_IDENTIFICATION_INPUTS } from './modules/identification_inputs.nf'
+include { HMMER_SEARCH } from './modules/hmmer_search.nf'
+include { DIAMOND_SEARCH } from './modules/diamond_search.nf'
+include { DOMAIN_FILTER; CONCAT_FAMILY_CANDIDATES } from './modules/domain_filter.nf'
+include { FAMILY_SUMMARY } from './modules/family_summary.nf'
 include { MOCK_MVP } from './modules/mock_mvp.nf'
 include { ASSEMBLE_REPORT } from './modules/report.nf'
 include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
@@ -58,6 +63,36 @@ workflow {
         BUILD_WGD_EVENT_EVIDENCE.out.view { evidence -> "WGD event evidence: ${evidence}" }
         SUMMARIZE_FAMILY_EVENT_RETENTION.out.view { summary -> "Family event retention summary: ${summary}" }
         RETENTION_ENRICHMENT.out.view { enrichment -> "Retention enrichment: ${enrichment}" }
+    } else if (params.run_identification) {
+        PREPARE_SPECIES(config_ch, groups_ch)
+        BUILD_IDENTIFICATION_INPUTS(config_ch, PREPARE_SPECIES.out)
+
+        hmmer_inputs_ch = BUILD_IDENTIFICATION_INPUTS.out[0]
+            .splitCsv(header: true, sep: '\t')
+            .map { row -> tuple(row.species_id, file(row.pep), row.hmm_id, file(row.hmm_profile)) }
+
+        diamond_inputs_ch = BUILD_IDENTIFICATION_INPUTS.out[1]
+            .splitCsv(header: true, sep: '\t')
+            .map { row -> tuple(row.species_id, file(row.pep), file(row.reference_peptides)) }
+
+        final_rule_ch = Channel.value(params.final_rule)
+
+        HMMER_SEARCH(hmmer_inputs_ch)
+        DIAMOND_SEARCH(diamond_inputs_ch)
+
+        joined_evidence_ch = HMMER_SEARCH.out
+            .join(DIAMOND_SEARCH.out, by: 0)
+            .map { species_id, hmmer_tsv, diamond_tsv -> tuple(species_id, hmmer_tsv, diamond_tsv) }
+
+        DOMAIN_FILTER(joined_evidence_ch, final_rule_ch)
+        candidate_tables_ch = DOMAIN_FILTER.out.map { species_id, candidates -> candidates }
+        CONCAT_FAMILY_CANDIDATES(candidate_tables_ch.collect())
+        FAMILY_SUMMARY(CONCAT_FAMILY_CANDIDATES.out)
+        PLOT_FAMILY_COUNTS(FAMILY_SUMMARY.out)
+
+        PREPARE_SPECIES.out.view { manifest -> "Species manifest: ${manifest}" }
+        CONCAT_FAMILY_CANDIDATES.out.view { candidates -> "Family candidates: ${candidates}" }
+        FAMILY_SUMMARY.out.view { counts -> "Family counts: ${counts}" }
     } else {
         PREPARE_SPECIES(config_ch, groups_ch)
 

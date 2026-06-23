@@ -62,3 +62,11 @@ def test_advanced_module_examples_document_safe_enablement():
     assert "wgd_events.named_event_annotation: true" in text
     assert "configs/advanced_modules.example.yaml" in readme
     assert "docs/advanced_module_examples.md" in readme
+
+
+def test_readme_documents_explicit_standard_identification_branch():
+    readme = Path("README.md").read_text(encoding="utf-8")
+
+    assert "Standard Identification Branch" in readme
+    assert "--run_identification true" in readme
+    assert "HMMER and DIAMOND input tables" in readme

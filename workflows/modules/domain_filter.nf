@@ -17,3 +17,20 @@ process DOMAIN_FILTER {
       --out ${species_id}.family_candidates.tsv
     """
 }
+
+process CONCAT_FAMILY_CANDIDATES {
+    tag "concat family candidates"
+
+    input:
+    path candidate_tables
+
+    output:
+    path "family_candidates.tsv"
+
+    script:
+    """
+    python ${projectDir}/bin/genefam/concat_tsv.py \\
+      --inputs ${candidate_tables} \\
+      --out family_candidates.tsv
+    """
+}

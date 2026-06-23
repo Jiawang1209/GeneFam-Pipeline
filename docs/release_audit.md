@@ -42,6 +42,7 @@ The release checks runner writes:
 | Docker/Conda reproducible running | `Dockerfile`; `envs/GeneFamilyFlow.conda.yaml`; `bin/genefam/plan_runtime_bootstrap.py`; `workflows/nextflow.config` profiles `local`, `docker`, `apptainer` | `python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv` and `python bin/genefam/plan_runtime_bootstrap.py --readiness results/readiness/command_readiness.tsv --outdir results/readiness` |
 | species bank input model | `docs/input_contract.md`; `bin/genefam/discover_species.py`; `tests/fixtures/species_bank` | `python -m pytest tests/test_discover_species.py -q` |
 | target species selection | `configs/species_groups.yaml`; `species.include`; `species.exclude`; `run.species_group` | `python -m pytest tests/test_discover_species.py tests/test_build_run_plan.py -q` |
+| standard identification branch | `workflows/main.nf`; `workflows/modules/identification_inputs.nf`; `bin/genefam/build_identification_inputs.py`; `bin/genefam/concat_tsv.py` | `python -m pytest tests/test_build_identification_inputs.py tests/test_concat_tsv.py tests/test_workflow_modules.py -q` |
 | HMMER family identification | `workflows/modules/hmmer_search.nf`; `bin/genefam/parse_hmmer_domtbl.py`; `bin/genefam/filter_hmmer_domains.py` | `python -m pytest tests/test_parse_hmmer_domtbl.py tests/test_filter_hmmer_domains.py -q` |
 | DIAMOND confirmation | `workflows/modules/diamond_search.nf`; `bin/genefam/parse_diamond_outfmt6.py` | `python -m pytest tests/test_parse_diamond_outfmt6.py -q` |
 | domain filtering | `bin/genefam/filter_hmmer_domains.py`; `workflows/modules/domain_filter.nf` | `python -m pytest tests/test_filter_hmmer_domains.py tests/test_merge_identification_evidence.py -q` |
@@ -86,6 +87,15 @@ Do not mark the full objective complete until at least one real runtime route is
 
 ```bash
 nextflow run workflows/main.nf -c workflows/nextflow.config --config configs/example.config.yaml --mock_mvp true
+```
+
+and the explicit standard identification branch is verified:
+
+```bash
+nextflow run workflows/main.nf \
+  -c workflows/nextflow.config \
+  --config configs/example.config.yaml \
+  --run_identification true
 ```
 
 or:
