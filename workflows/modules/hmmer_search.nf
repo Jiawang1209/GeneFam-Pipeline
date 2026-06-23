@@ -5,7 +5,7 @@ process HMMER_SEARCH {
     tuple val(species_id), path(pep), val(hmm_id), path(hmm_profile)
 
     output:
-    tuple val(species_id), val(hmm_id), path("${species_id}.${hmm_id}.domtblout")
+    tuple val(species_id), path("${species_id}.${hmm_id}.hmmer.tsv")
 
     script:
     """
@@ -14,5 +14,10 @@ process HMMER_SEARCH {
       ${hmm_profile} \\
       ${pep} \\
       > ${species_id}.${hmm_id}.hmmout
+
+    python ${projectDir}/bin/genefam/parse_hmmer_domtbl.py \\
+      --input ${species_id}.${hmm_id}.domtblout \\
+      --species-id ${species_id} \\
+      --out ${species_id}.${hmm_id}.hmmer.tsv
     """
 }

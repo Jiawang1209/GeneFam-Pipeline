@@ -303,10 +303,55 @@ Verification:
 - `command -v nextflow` returned no path, so the Nextflow mock module was not executed locally.
 
 Commit:
-- hash: not created in this session
+- hash: 20ebda29293f4e4d5fe64711918f153f2d570ec8
 - message: feat: add offline mock mvp runner
 - files: mock MVP runner, fixtures, tests, config/docs, Nextflow mock module
 
 Next:
 - Install or expose Nextflow to verify `--mock_mvp true` through `workflows/main.nf`.
 - Continue wiring real external-tool HMMER/DIAMOND outputs into the same output contract.
+
+## 2026-06-23 - Normalize real-tool HMMER and DIAMOND outputs
+
+Context:
+- The offline MVP established the normalized evidence contract.
+- The real DIAMOND module still produced raw outfmt6, and the HMMER module still produced raw domtblout, which did not match the downstream evidence merger contract.
+
+Decisions:
+- Add a DIAMOND/BLAST outfmt6 parser that keeps the best reference hit per target gene by e-value, then bitscore.
+- Update the HMMER Nextflow module to parse domtblout into normalized TSV immediately after `hmmsearch`.
+- Update the DIAMOND Nextflow module to parse raw outfmt6 into normalized TSV immediately after `diamond blastp`.
+- Add lightweight workflow module contract tests because Nextflow is not installed locally.
+
+Added:
+- `bin/genefam/parse_diamond_outfmt6.py`
+- `tests/test_parse_diamond_outfmt6.py`
+- `tests/test_workflow_modules.py`
+
+Modified:
+- `HISTORY.md`
+- `workflows/modules/hmmer_search.nf`
+- `workflows/modules/diamond_search.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_parse_diamond_outfmt6.py -q` first failed because `bin.genefam.parse_diamond_outfmt6` did not exist.
+- Implemented the parser and confirmed `python -m pytest tests/test_parse_diamond_outfmt6.py -q` passed.
+- `python -m pytest tests/test_workflow_modules.py -q` first failed because HMMER and DIAMOND modules were still not invoking parser scripts.
+- Updated `workflows/modules/hmmer_search.nf` and `workflows/modules/diamond_search.nf`.
+- `python -m pytest tests/test_parse_diamond_outfmt6.py tests/test_workflow_modules.py -q` passed with 4 tests.
+- `python -m pytest tests -q` passed with 24 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` produced the expected output index.
+- `command -v nextflow` returned no path, so Nextflow module execution remains pending.
+
+Commit:
+- hash: not created in this session
+- message: feat: normalize search evidence outputs
+- files: DIAMOND parser, parser tests, workflow module normalization
+
+Next:
+- Add domain filtering thresholds to normalized HMMER evidence.
+- Continue toward combining per-species HMMER/DIAMOND outputs inside the full Nextflow graph when Nextflow becomes available.
