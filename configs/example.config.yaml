@@ -1,0 +1,72 @@
+project:
+  name: GDSL_demo
+  outdir: results/GDSL_demo
+
+input:
+  mode: auto
+  root: tests/fixtures/species_bank
+  required:
+    pep: true
+    gff3: true
+    cds: false
+    genome: false
+  patterns:
+    pep:
+      - "*.pep.fa"
+      - "*.pep.fasta"
+      - "*.protein.fa"
+      - "*.faa"
+    cds:
+      - "*.cds.fa"
+      - "*.cds.fasta"
+    genome:
+      - "*.genome.fa"
+      - "*.genome.fasta"
+      - "*.dna.fa"
+      - "*.dna.fasta"
+      - "*.fna"
+    gff3:
+      - "*.gff3"
+      - "*.gff"
+
+species:
+  include:
+    - Arabidopsis_thaliana
+    - Brassica_rapa
+  exclude: []
+
+run:
+  species_group: null
+
+gene_family:
+  name: GDSL
+  hmm_profiles:
+    - id: PF00657
+      path: Reference/Long_Weixiong_20240323_1_GDSL/PF00657.hmm
+  reference_peptides: null
+  min_length: null
+  max_length: null
+
+identification:
+  use_hmmer: true
+  use_diamond: true
+  hmm_evalue: 1.0e-10
+  diamond_evalue: 1.0e-10
+  final_rule: intersection
+
+wgd_events:
+  named_event_annotation: false
+  event_map: null
+
+modules:
+  identification: true
+  domain_filtering: true
+  family_summary: true
+  phylogeny: false
+  motif: false
+  synteny: false
+  duplication_retention: false
+  kaks: false
+  chromosome_location: false
+  expression: false
+  report: true

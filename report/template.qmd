@@ -1,0 +1,30 @@
+---
+title: "GeneFam-Pipeline Report"
+format:
+  html:
+    toc: true
+---
+
+# Run Configuration
+
+This report summarizes one GeneFam-Pipeline run.
+
+# Species Included
+
+The selected species are listed in `metadata/species_manifest.tsv`.
+
+# Gene Family Identification
+
+The MVP identifies candidate family members with HMMER and optional DIAMOND/BLAST evidence, then writes stable TSV and FASTA outputs for downstream analysis.
+
+# Family Member Counts
+
+The main summary table is `tables/family_counts.tsv`.
+
+# Duplication-Aware Analysis
+
+Named WGD events such as gamma, beta, alpha, and theta are reported only when evidence-backed configuration is provided. Otherwise, the report uses neutral labels such as `WGD_layer_1`.
+
+# Limitations
+
+Disabled modules are reported explicitly so downstream interpretation stays tied to observed outputs.

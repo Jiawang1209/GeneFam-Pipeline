@@ -1,0 +1,17 @@
+wgd_events:
+  - name: gamma
+    scope: core_eudicots
+    evidence: literature
+    expected_relative_age: ancient
+  - name: beta
+    scope: Brassicaceae
+    evidence: literature
+    expected_relative_age: intermediate
+  - name: alpha
+    scope: Arabidopsis_Brassicaceae
+    evidence: literature
+    expected_relative_age: recent
+  - name: theta
+    scope: Brassica_specific
+    evidence: literature
+    expected_relative_age: lineage_specific_recent

@@ -1,0 +1,20 @@
+description: GeneFam-Pipeline configuration contract.
+required_sections:
+  - project
+  - input
+  - species
+  - gene_family
+  - identification
+  - modules
+fields:
+  project.name: string
+  project.outdir: path
+  input.mode: auto or manifest
+  input.root: path to species bank when input.mode is auto
+  species.include: all or list of species IDs
+  species.exclude: list of species IDs
+  run.species_group: null or a key from configs/species_groups.yaml
+  gene_family.name: string
+  gene_family.hmm_profiles: list of id/path objects
+  identification.final_rule: intersection, union, or hmmer_only
+  wgd_events.named_event_annotation: boolean

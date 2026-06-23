@@ -1,0 +1,11 @@
+species_groups:
+  brassicaceae:
+    - Arabidopsis_thaliana
+    - Brassica_rapa
+    - Brassica_oleracea
+    - Brassica_napus
+  poaceae:
+    - Oryza_sativa
+    - Zea_mays
+    - Triticum_aestivum
+    - Hordeum_vulgare
