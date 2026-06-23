@@ -1866,7 +1866,58 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because readiness audit failed, but pytest, config validation, mock MVP, standard branch smoke, and runtime bootstrap plan passed.
 
 Commit:
+- hash: a2cb764e26eaa09d41a9c86090243b78c318def5
+- message: feat: add standard branch smoke check
+- files: standard smoke runner, release checks integration, README/release audit docs, tests, history
+
+Next:
+- Continue toward real Nextflow/container runtime verification; release checks now prove mock MVP and standard branch smoke before the runtime readiness gate.
+
+## 2026-06-24 - Add WGD named-event smoke check
+
+Context:
+- The release checks covered mock MVP and the standard branch smoke, but they did not yet prove the gamma, beta, alpha, theta WGD event evidence chain.
+- The project already had WGD layer classification, named-event evidence, family WGD membership, retention summary, and enrichment helpers.
+- A small offline WGD smoke can validate the biological interpretation chain without requiring external MCScanX or Ka/Ks tools.
+
+Decisions:
+- Add `run_wgd_smoke.py` with built-in miniature family members, duplicate classifications, and Ks pairs spanning alpha, beta, gamma, and theta.
+- Run the same helper chain used by the duplication-retention branch: duplicate normalization, family duplicate join, WGD layer classification, named-event evidence, family WGD annotation, retention summary, enrichment, report index, and final report.
+- Add WGD event smoke to `run_release_checks.py` before readiness audit.
+- Document the smoke command and `results/wgd_smoke/report/final_report.md` in README and release audit.
+
+Added:
+- `bin/genefam/run_wgd_smoke.py`
+- `tests/test_run_wgd_smoke.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_wgd_smoke.py -q` first failed because `bin/genefam/run_wgd_smoke.py` did not exist.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_wgd_smoke_before_readiness -q` first failed because release checks did not include WGD event smoke.
+- Implemented `run_wgd_smoke.py`.
+- `python -m pytest tests/test_run_wgd_smoke.py -q` passed.
+- Added WGD event smoke to release checks.
+- `python -m pytest tests/test_run_release_checks.py tests/test_run_wgd_smoke.py -q` passed with 8 tests.
+- `python -m pytest tests/test_release_audit_docs.py tests/test_runtime_environment_files.py tests/test_run_release_checks.py tests/test_run_wgd_smoke.py -q` passed with 15 tests.
+- `python bin/genefam/run_wgd_smoke.py --events-config configs/wgd_events.brassicaceae.yaml --outdir results/wgd_smoke` wrote `wgd_event_evidence.tsv` with alpha, beta, gamma, and theta configured named events plus `results/wgd_smoke/report/final_report.md`.
+- `python -m pytest tests -q` passed with 117 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/advanced_modules.example.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because readiness audit failed, but pytest, config validation, mock MVP, standard branch smoke, WGD event smoke, and runtime bootstrap plan passed.
+
+Commit:
 - pending
 
 Next:
-- Commit the standard smoke release-check layer, then continue toward real Nextflow/container runtime verification.
+- Commit the WGD smoke release-check layer, then continue toward real Nextflow/container runtime verification.

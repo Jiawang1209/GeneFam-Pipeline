@@ -21,6 +21,9 @@ python bin/genefam/run_standard_smoke.py \
   --groups configs/species_groups.yaml \
   --mock-evidence-dir tests/fixtures/mock_evidence \
   --outdir results/standard_smoke
+python bin/genefam/run_wgd_smoke.py \
+  --events-config configs/wgd_events.brassicaceae.yaml \
+  --outdir results/wgd_smoke
 python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv
 python bin/genefam/plan_runtime_bootstrap.py \
   --readiness results/readiness/command_readiness.tsv \
@@ -57,7 +60,7 @@ The release checks runner writes:
 | motif | `bin/genefam/parse_meme_motifs.py`; `workflows/modules/alignment_phylogeny.nf` | `python -m pytest tests/test_parse_meme_motifs.py tests/test_workflow_modules.py -q` |
 | synteny | `bin/genefam/parse_mcscanx_collinearity.py`; `workflows/modules/duplication_retention.nf` prepared-table branch | `python -m pytest tests/test_parse_mcscanx_collinearity.py tests/test_workflow_modules.py -q` |
 | duplication retention | `bin/genefam/normalize_duplicate_types.py`; `bin/genefam/join_family_duplicates.py`; `bin/genefam/retention_enrichment.py` | `python -m pytest tests/test_normalize_duplicate_types.py tests/test_join_family_duplicates.py tests/test_retention_enrichment.py -q` |
-| WGD layer and named event model | `bin/genefam/classify_wgd_layers.py`; `bin/genefam/build_wgd_event_evidence.py`; `configs/wgd_events.brassicaceae.yaml` | `python -m pytest tests/test_classify_wgd_layers.py tests/test_build_wgd_event_evidence.py -q` |
+| WGD layer and named event model | `bin/genefam/classify_wgd_layers.py`; `bin/genefam/build_wgd_event_evidence.py`; `bin/genefam/run_wgd_smoke.py`; `configs/wgd_events.brassicaceae.yaml`; `results/wgd_smoke/report/final_report.md` | `python -m pytest tests/test_classify_wgd_layers.py tests/test_build_wgd_event_evidence.py tests/test_run_wgd_smoke.py -q` |
 | gamma beta alpha theta interpretation | `configs/wgd_events.brassicaceae.yaml`; `docs/wgd_event_evidence.md`; `docs/duplication_retention_design.md` | `python -m pytest tests/test_build_wgd_event_evidence.py -q` |
 | Ka/Ks selection pressure | `bin/genefam/prepare_kaks_pairs.py`; `bin/genefam/parse_kaks_results.py`; `workflows/modules/duplication_retention.nf` | `python -m pytest tests/test_prepare_kaks_pairs.py tests/test_parse_kaks_results.py -q` |
 | chromosome location | `bin/genefam/extract_chromosome_locations.py`; `workflows/modules/annotation_integration.nf` | `python -m pytest tests/test_extract_chromosome_locations.py tests/test_workflow_modules.py -q` |

@@ -53,7 +53,9 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "build_standard_report_index.py" in text
     assert "assemble_report.py" in text
     assert "run_standard_smoke.py" in text
+    assert "run_wgd_smoke.py" in text
     assert "results/standard_smoke/report/final_report.md" in text
+    assert "results/wgd_smoke/report/final_report.md" in text
     assert "--run_identification true" in text
     assert "nextflow" in text
     assert "docker" in text

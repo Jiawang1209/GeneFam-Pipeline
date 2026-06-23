@@ -62,6 +62,17 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "WGD event smoke",
+            [
+                python,
+                "bin/genefam/run_wgd_smoke.py",
+                "--events-config",
+                "configs/wgd_events.brassicaceae.yaml",
+                "--outdir",
+                "results/wgd_smoke",
+            ],
+        ),
+        CheckSpec(
             "readiness audit",
             [python, "bin/genefam/audit_readiness.py", "--out", "results/readiness/command_readiness.tsv"],
         ),
