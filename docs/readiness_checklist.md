@@ -19,6 +19,7 @@ python bin/genefam/run_mock_mvp.py \
 Expected core mock outputs:
 
 - `results/mock_mvp/tables/species_manifest.tsv`
+- `results/mock_mvp/tables/run_plan.tsv`
 - `results/mock_mvp/tables/family_candidates.tsv`
 - `results/mock_mvp/tables/family_counts.tsv`
 - `results/mock_mvp/tables/alignment_manifest.tsv`

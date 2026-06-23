@@ -1361,7 +1361,53 @@ Verification:
 - Readiness TSV showed `/Users/liuyue/miniforge3/bin/conda` and `/usr/local/bin/R` as available, and `nextflow`, `docker`, `apptainer`, `hmmsearch`, `diamond`, `mafft`, `iqtree2`, and `meme` as missing.
 
 Commit:
-- pending
+- hash: 039232d2dd1ffe7c97d9fe1471049bfad6749c01
+- message: feat: add readiness audit
+- files: readiness audit script, readiness checklist docs, README link, runtime environment tests, history
 
 Next:
 - Use the readiness audit to guide the final release pass: either install/activate missing runtime tools for real Nextflow execution or keep documenting the exact external-state blocker while continuing repository-level improvements.
+
+## 2026-06-24 - Add YAML-driven run plan output
+
+Context:
+- The workflow is YAML-driven in configuration, but each run did not yet emit a concise machine-readable run plan showing project, runtime, species selection, mock mode, and enabled modules.
+- The final report could list output availability, but not the actual YAML-driven execution intent.
+- `HISTORY.md` also needed the actual commit hash for the previous readiness audit checkpoint.
+
+Decisions:
+- Add a run plan builder that turns the config into a stable `section/key/value` TSV.
+- Include runtime, species group/include/exclude, mock mode, and all module switches.
+- Add `run_plan.tsv` to mock MVP outputs and the final report index.
+- Document `run_plan.tsv` as an expected mock output in README and the readiness checklist.
+
+Added:
+- `bin/genefam/build_run_plan.py`
+- `tests/test_build_run_plan.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/readiness_checklist.md`
+- `bin/genefam/run_mock_mvp.py`
+- `tests/test_run_mock_mvp.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_run_plan.py -q` first failed because `bin.genefam.build_run_plan` did not exist.
+- Implemented `build_run_plan.py`.
+- `python -m pytest tests/test_build_run_plan.py -q` passed.
+- `python -m pytest tests/test_build_run_plan.py tests/test_run_mock_mvp.py -q` passed with 5 tests.
+- `python -m pytest tests -q` passed with 80 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` wrote `results/mock_mvp/tables/run_plan.tsv`, marked `run_plan` as `available` in `report_index.tsv`, and included it in `final_report.md`.
+- `results/mock_mvp/tables/run_plan.tsv` included `runtime/environment/GeneFamilyFlow` and `module/report/enabled`.
+- `python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv` still exited `1` because local external runtime commands remain missing; the TSV showed conda and `/usr/local/bin/R` as available and Nextflow/container/bioinformatics tools as missing.
+
+Commit:
+- pending
+
+Next:
+- Tighten configuration validation around module dependencies, so enabling modules such as Ka/Ks, expression, chromosome, or duplication retention requires the corresponding input files and parameters.

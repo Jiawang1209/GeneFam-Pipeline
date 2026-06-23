@@ -38,6 +38,7 @@ def test_run_mock_mvp_writes_core_outputs(tmp_path):
     )
 
     assert outputs["species_manifest"] == outdir / "tables" / "species_manifest.tsv"
+    assert outputs["run_plan"] == outdir / "tables" / "run_plan.tsv"
     assert outputs["family_candidates"] == outdir / "tables" / "family_candidates.tsv"
     assert outputs["family_counts"] == outdir / "tables" / "family_counts.tsv"
     assert outputs["family_members_faa"] == outdir / "sequences" / "family_members.faa"
@@ -46,6 +47,10 @@ def test_run_mock_mvp_writes_core_outputs(tmp_path):
     assert outputs["summary_report"] == outdir / "report" / "summary.md"
     assert outputs["report_index"] == outdir / "report" / "report_index.tsv"
     assert outputs["final_report"] == outdir / "report" / "final_report.md"
+
+    run_plan = read_tsv(outputs["run_plan"])
+    assert {"section": "runtime", "key": "environment", "value": "GeneFamilyFlow"} in run_plan
+    assert {"section": "module", "key": "report", "value": "enabled"} in run_plan
 
     candidates = read_tsv(outputs["family_candidates"])
     assert [row["gene_id"] for row in candidates] == ["AT1G01010", "BraA010001"]
@@ -92,6 +97,8 @@ def test_run_mock_mvp_writes_core_outputs(tmp_path):
     by_key = {row["key"]: row for row in report_index}
     assert by_key["family_candidates"]["status"] == "available"
     assert by_key["family_candidates"]["path"] == "tables/family_candidates.tsv"
+    assert by_key["run_plan"]["status"] == "available"
+    assert by_key["run_plan"]["path"] == "tables/run_plan.tsv"
     assert by_key["alignment_manifest"]["status"] == "available"
     assert by_key["alignment_manifest"]["path"] == "tables/alignment_manifest.tsv"
     assert by_key["phylogeny_manifest"]["status"] == "available"

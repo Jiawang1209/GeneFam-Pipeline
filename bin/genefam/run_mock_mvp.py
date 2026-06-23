@@ -20,6 +20,7 @@ except ImportError:  # pragma: no cover
 
 from bin.genefam.discover_species import _select_species, discover_species, write_manifest
 from bin.genefam.assemble_report import assemble_report, write_report
+from bin.genefam.build_run_plan import build_run_plan, write_tsv as write_run_plan_tsv
 from bin.genefam.extract_sequences import extract_fasta_records
 from bin.genefam.merge_identification_evidence import merge_evidence, read_tsv, write_tsv
 from bin.genefam.prepare_alignment_inputs import prepare_alignment_manifest, write_tsv as write_alignment_tsv
@@ -110,6 +111,7 @@ def _write_summary_report(
 def _build_report_index_rows(outputs: dict[str, Path], outdir: Path) -> list[dict[str, str]]:
     expected_outputs = [
         ("species_manifest", "Selected species manifest"),
+        ("run_plan", "YAML-driven run plan summary"),
         ("family_candidates", "Merged HMMER and DIAMOND candidate table"),
         ("family_counts", "Per-species gene family member counts"),
         ("family_members_faa", "Family member protein FASTA"),
@@ -178,6 +180,7 @@ def run_mock_mvp(
     report_dir = Path(outdir) / "report"
     outputs = {
         "species_manifest": tables_dir / "species_manifest.tsv",
+        "run_plan": tables_dir / "run_plan.tsv",
         "family_candidates": tables_dir / "family_candidates.tsv",
         "family_counts": tables_dir / "family_counts.tsv",
         "alignment_manifest": tables_dir / "alignment_manifest.tsv",
@@ -189,6 +192,7 @@ def run_mock_mvp(
     }
 
     write_manifest(manifest_rows, outputs["species_manifest"])
+    write_run_plan_tsv(build_run_plan(config), outputs["run_plan"])
     hmmer_rows = read_tsv(Path(mock_evidence_dir) / "hmmer.tsv")
     diamond_rows = read_tsv(Path(mock_evidence_dir) / "diamond.tsv")
     final_rule = (config.get("identification", {}) or {}).get("final_rule", "intersection")
