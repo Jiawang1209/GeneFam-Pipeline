@@ -858,9 +858,55 @@ Verification:
 - Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`.
 
 Commit:
-- hash: not created in this session
+- hash: 23d3cc1869a27bb48f0cfd35d5b9f327e6b6c91f
 - message: feat: add mcscanx collinearity parser
 - files: MCScanX parser, tests, report contract, docs, history
 
 Next:
 - Add Ka/Ks pair table preparation or parser so syntenic pairs can flow into selection pressure and WGD layer modules.
+
+## 2026-06-24 - Add Ka/Ks result parser
+
+Context:
+- Ka/Ks and selection pressure analysis are required by the long-term workflow objective.
+- MCScanX syntenic pairs now have a parser, but the pipeline still needed a normalized Ka/Ks pair table for selection pressure and WGD-layer analysis.
+- `HISTORY.md` also needed the actual commit hash for the previous MCScanX parser checkpoint.
+
+Decisions:
+- Add a KaKs_Calculator-style parser that accepts common `Sequence`, `Ka`, `Ks`, and `Ka/Ks` columns.
+- Split sequence pair IDs into `gene_a` and `gene_b`.
+- Derive `selection_category` from the Ka/Ks ratio: purifying, neutral, or positive.
+- Add `kaks_pairs` to the mock MVP report index as a pending downstream output until real Ka/Ks results are supplied.
+
+Added:
+- `bin/genefam/parse_kaks_results.py`
+- `tests/test_parse_kaks_results.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/input_contract.md`
+- `bin/genefam/run_mock_mvp.py`
+- `tests/test_run_mock_mvp.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_parse_kaks_results.py -q` first failed because `bin.genefam.parse_kaks_results` did not exist.
+- Implemented `parse_kaks_results.py`.
+- `python -m pytest tests/test_parse_kaks_results.py -q` passed.
+- `python -m pytest tests/test_parse_kaks_results.py tests/test_run_mock_mvp.py -q` passed with 4 tests.
+- `python -m pytest tests -q` passed with 47 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- Ran a command-line smoke test that parsed a one-row KaKs_Calculator-style table into normalized `kaks_pairs.tsv`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` marked `kaks_pairs` as `not_available` in the report index.
+- Runtime availability check found `/Users/liuyue/miniforge3/bin/conda` and did not find `nextflow`, `docker`, or `apptainer`.
+
+Commit:
+- hash: not created in this session
+- message: feat: add kaks result parser
+- files: Ka/Ks parser, tests, report contract, docs, history
+
+Next:
+- Add a CDS pair extraction/preparation helper so syntenic gene pairs can be passed to KaKs_Calculator once CDS FASTA files are available.

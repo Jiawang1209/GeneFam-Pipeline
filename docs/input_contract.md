@@ -128,6 +128,26 @@ pair_evalue
 
 This table is the first bridge from MCScanX output into duplicate type, Ks, and WGD-layer analyses.
 
+## Ka/Ks Pairs
+
+`bin/genefam/parse_kaks_results.py` parses KaKs_Calculator-style output into:
+
+```text
+gene_a
+gene_b
+ka
+ks
+ka_ks
+p_value
+selection_category
+```
+
+Selection category is derived from `Ka/Ks`:
+
+- `< 1`: `purifying`
+- `= 1`: `neutral`
+- `> 1`: `positive`
+
 ## Discovery Rules
 
 - Folder name is the default species ID.
