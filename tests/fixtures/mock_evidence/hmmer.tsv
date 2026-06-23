@@ -1,0 +1,4 @@
+species_id	gene_id	hmm_id	evalue
+Arabidopsis_thaliana	AT1G01010	PF00657	1e-40
+Arabidopsis_thaliana	AT1G01020	PF00657	1e-20
+Brassica_rapa	BraA010001	PF00657	1e-35

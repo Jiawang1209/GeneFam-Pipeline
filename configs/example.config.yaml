@@ -69,6 +69,10 @@ plotting:
     - Reference/Large-Scale Plant Genomic Identification and Analysis Uncover ASMT:COMT Copy Number Variation Driving Melatonin Dosage Balance./source_code
   reuse_policy: adapt_not_modify
 
+dev:
+  mock_external_tools: true
+  mock_evidence_dir: tests/fixtures/mock_evidence
+
 modules:
   identification: true
   domain_filtering: true

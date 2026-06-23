@@ -46,6 +46,10 @@ def validate_config(config: dict[str, Any]) -> list[str]:
     if plotting.get("reuse_policy") not in {"adapt_not_modify"}:
         errors.append("plotting.reuse_policy must be adapt_not_modify")
 
+    dev = config.get("dev", {}) or {}
+    if dev.get("mock_external_tools") is True and not dev.get("mock_evidence_dir"):
+        errors.append("dev.mock_evidence_dir is required when dev.mock_external_tools is true")
+
     final_rule = (config.get("identification", {}) or {}).get("final_rule")
     if final_rule not in {"intersection", "union", "hmmer_only"}:
         errors.append("identification.final_rule must be intersection, union, or hmmer_only")

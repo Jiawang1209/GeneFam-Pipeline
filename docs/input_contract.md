@@ -54,6 +54,15 @@ The default shared environment is `GeneFamilyFlow`. R-language steps should use 
 
 Plotting scripts under `Reference/` can be reused as templates for pipeline plots. The reusable implementation should live under `scripts/`, accept explicit input/output arguments, and avoid hard-coded reference-project paths.
 
+## Mock Evidence
+
+For offline development, `dev.mock_external_tools: true` can point to a directory containing:
+
+- `hmmer.tsv`
+- `diamond.tsv`
+
+These files use the same normalized columns as the parser and evidence merger. The fixture directory `tests/fixtures/mock_evidence/` demonstrates the required format.
+
 ## Discovery Rules
 
 - Folder name is the default species ID.

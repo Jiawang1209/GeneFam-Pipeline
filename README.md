@@ -66,3 +66,40 @@ The first runnable checkpoint generates a species manifest:
 ```bash
 nextflow run workflows/main.nf -c workflows/nextflow.config --config configs/example.config.yaml
 ```
+
+The offline mock MVP runs without HMMER, DIAMOND, or Nextflow:
+
+```bash
+python bin/genefam/run_mock_mvp.py \
+  --config configs/example.config.yaml \
+  --groups configs/species_groups.yaml \
+  --mock-evidence-dir tests/fixtures/mock_evidence \
+  --outdir results/mock_mvp
+```
+
+It writes:
+
+- `results/mock_mvp/tables/species_manifest.tsv`
+- `results/mock_mvp/tables/family_candidates.tsv`
+- `results/mock_mvp/tables/family_counts.tsv`
+- `results/mock_mvp/sequences/family_members.faa`
+- `results/mock_mvp/report/summary.md`
+
+When Nextflow is available, the same mock runner is exposed through:
+
+```bash
+nextflow run workflows/main.nf \
+  -c workflows/nextflow.config \
+  --config configs/example.config.yaml \
+  --mock_mvp true \
+  --mock_evidence_dir tests/fixtures/mock_evidence \
+  --outdir results/mock_mvp
+```
+
+## Current Status
+
+- Project governance files are in place.
+- YAML config and schema draft are in place.
+- Species discovery helper is implemented and tested.
+- Offline mock MVP runner is implemented and tested.
+- Full external-tool workflow wiring is still under development.

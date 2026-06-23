@@ -68,3 +68,39 @@ def test_validate_config_reports_wrong_plotting_reuse_policy():
     )
 
     assert "plotting.reuse_policy must be adapt_not_modify" in errors
+
+
+def test_validate_config_accepts_mock_mode_with_evidence_dir():
+    errors = validate_config(
+        {
+            "project": {},
+            "runtime": {"environment": "GeneFamilyFlow", "r_bin": "/usr/local/bin/R"},
+            "input": {"mode": "auto"},
+            "species": {},
+            "gene_family": {},
+            "identification": {"final_rule": "intersection"},
+            "plotting": {"reuse_policy": "adapt_not_modify"},
+            "dev": {"mock_external_tools": True, "mock_evidence_dir": "tests/fixtures/mock_evidence"},
+            "modules": {},
+        }
+    )
+
+    assert errors == []
+
+
+def test_validate_config_reports_mock_mode_without_evidence_dir():
+    errors = validate_config(
+        {
+            "project": {},
+            "runtime": {"environment": "GeneFamilyFlow", "r_bin": "/usr/local/bin/R"},
+            "input": {"mode": "auto"},
+            "species": {},
+            "gene_family": {},
+            "identification": {"final_rule": "intersection"},
+            "plotting": {"reuse_policy": "adapt_not_modify"},
+            "dev": {"mock_external_tools": True},
+            "modules": {},
+        }
+    )
+
+    assert "dev.mock_evidence_dir is required when dev.mock_external_tools is true" in errors

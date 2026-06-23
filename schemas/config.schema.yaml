@@ -25,3 +25,5 @@ fields:
   plotting.reuse_reference_scripts: boolean
   plotting.reference_script_roots: list of Reference directories containing reusable plotting scripts
   plotting.reuse_policy: adapt_not_modify
+  dev.mock_external_tools: boolean flag for offline MVP verification
+  dev.mock_evidence_dir: directory containing hmmer.tsv and diamond.tsv when mock mode is enabled

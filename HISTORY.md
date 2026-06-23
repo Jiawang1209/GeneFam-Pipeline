@@ -212,7 +212,7 @@ Verification:
 - `rg -n "Rscript|runtime|GeneFamilyFlow|/usr/local/bin/R|conda = params.env_name" ...` confirmed the new runtime constraints are present. Remaining `Rscript` mentions are historical notes or warnings not to rely on shell-default `Rscript`.
 
 Commit:
-- hash: not created in this session
+- hash: bcacc253ca99750e75eb10a8ff4c10aac6cc8d33
 - message: docs: standardize runtime and plotting policies
 - files: runtime configuration and documentation updates
 
@@ -252,9 +252,61 @@ Verification:
 - `rg -n "reuse_reference_scripts|adapt_not_modify|reference_plotting|Reference plotting|directly_modify_reference|Pending verification" ...` confirmed the reuse policy is present and the invalid policy is covered by tests.
 
 Commit:
-- hash: not created in this session
+- hash: bcacc253ca99750e75eb10a8ff4c10aac6cc8d33
 - message: docs: standardize runtime and plotting policies
 - files: reference plotting reuse policy and config updates
 
 Next:
 - When improving `scripts/plot_*.R`, inspect the closest matching `Reference/` script first and port only reusable logic.
+
+## 2026-06-23 - Add offline mock MVP runner
+
+Context:
+- The long `/goal` now targets a final reusable GeneFam-Pipeline workflow.
+- The next development checkpoint needed a runnable end-to-end MVP even before local HMMER, DIAMOND, and Nextflow are installed.
+
+Decisions:
+- Add a Python mock MVP runner that uses normalized prepared HMMER and DIAMOND evidence TSV files.
+- Keep the mock runner aligned with the future Nextflow output contract: `tables/`, `sequences/`, and `report/`.
+- Expose the same mock runner through a Nextflow DSL2 module for later workflow verification.
+- Keep generated `results/` ignored by git.
+
+Added:
+- `bin/genefam/run_mock_mvp.py`
+- `tests/test_run_mock_mvp.py`
+- `tests/fixtures/mock_evidence/hmmer.tsv`
+- `tests/fixtures/mock_evidence/diamond.tsv`
+- `workflows/modules/mock_mvp.nf`
+- Offline mock MVP command and output list in `README.md`.
+
+Modified:
+- `HISTORY.md`
+- `configs/example.config.yaml`
+- `schemas/config.schema.yaml`
+- `docs/input_contract.md`
+- `bin/genefam/validate_config.py`
+- `tests/test_validate_config.py`
+- `workflows/main.nf`
+- `workflows/nextflow.config`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_mock_mvp.py::test_run_mock_mvp_cli_works_when_invoked_by_script_path -q` first failed with `ModuleNotFoundError: No module named 'bin'`, confirming the direct script invocation bug.
+- Added a repo-root `sys.path` guard to `bin/genefam/run_mock_mvp.py`.
+- `python -m pytest tests/test_run_mock_mvp.py::test_run_mock_mvp_cli_works_when_invoked_by_script_path -q` passed.
+- `python -m pytest tests/test_run_mock_mvp.py -q` passed with 2 tests.
+- `python -m pytest tests -q` passed with 20 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` produced `species_manifest.tsv`, `family_candidates.tsv`, `family_counts.tsv`, `family_members.faa`, and `report/summary.md`.
+- `command -v nextflow` returned no path, so the Nextflow mock module was not executed locally.
+
+Commit:
+- hash: not created in this session
+- message: feat: add offline mock mvp runner
+- files: mock MVP runner, fixtures, tests, config/docs, Nextflow mock module
+
+Next:
+- Install or expose Nextflow to verify `--mock_mvp true` through `workflows/main.nf`.
+- Continue wiring real external-tool HMMER/DIAMOND outputs into the same output contract.
