@@ -58,6 +58,7 @@ def _write_summary_report(
     manifest_rows: list[dict[str, str]],
     candidates: list[dict[str, str]],
     family_counts: list[dict[str, int | str]],
+    report_index_rows: list[dict[str, str]],
 ) -> None:
     project = config.get("project", {}) or {}
     gene_family = config.get("gene_family", {}) or {}
@@ -84,6 +85,14 @@ def _write_summary_report(
                 **row
             )
         )
+    lines.extend(["", "## Available Outputs", ""])
+    for row in report_index_rows:
+        if row["status"] == "available":
+            lines.append(f"- `{row['key']}`: `{row['path']}`")
+    lines.extend(["", "## Pending Outputs", ""])
+    for row in report_index_rows:
+        if row["status"] != "available":
+            lines.append(f"- `{row['key']}`: {row['description']}")
     lines.extend(
         [
             "",
@@ -95,7 +104,7 @@ def _write_summary_report(
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
-def _write_report_index(outputs: dict[str, Path], outdir: Path, out_path: Path) -> None:
+def _build_report_index_rows(outputs: dict[str, Path], outdir: Path) -> list[dict[str, str]]:
     expected_outputs = [
         ("species_manifest", "Selected species manifest"),
         ("family_candidates", "Merged HMMER and DIAMOND candidate table"),
@@ -107,16 +116,23 @@ def _write_report_index(outputs: dict[str, Path], outdir: Path, out_path: Path) 
         ("retention_enrichment", "Duplicate-type retention enrichment"),
         ("family_expression", "Family member expression matrix"),
         ("summary_report", "Markdown run summary"),
+        ("report_index", "Report input availability index"),
     ]
+    rows: list[dict[str, str]] = []
+    for key, description in expected_outputs:
+        path = outputs.get(key)
+        status = "available" if path and (path.exists() or key in {"summary_report", "report_index"}) else "not_available"
+        relative_path = path.relative_to(outdir).as_posix() if path else ""
+        rows.append({"key": key, "path": relative_path, "status": status, "description": description})
+    return rows
+
+
+def _write_report_index(rows: list[dict[str, str]], out_path: Path) -> None:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=["key", "path", "status", "description"], delimiter="\t")
         writer.writeheader()
-        for key, description in expected_outputs:
-            path = outputs.get(key)
-            status = "available" if path and path.exists() else "not_available"
-            relative_path = path.relative_to(outdir).as_posix() if path else ""
-            writer.writerow({"key": key, "path": relative_path, "status": status, "description": description})
+        writer.writerows(rows)
 
 
 def run_mock_mvp(
@@ -161,8 +177,9 @@ def run_mock_mvp(
     family_counts = summarize_candidates(candidates)
     write_summary_tsv(family_counts, outputs["family_counts"])
     _write_family_fasta(candidates, manifest_rows, outputs["family_members_faa"])
-    _write_summary_report(outputs["summary_report"], config, manifest_rows, candidates, family_counts)
-    _write_report_index(outputs, Path(outdir), outputs["report_index"])
+    report_index_rows = _build_report_index_rows(outputs, Path(outdir))
+    _write_report_index(report_index_rows, outputs["report_index"])
+    _write_summary_report(outputs["summary_report"], config, manifest_rows, candidates, family_counts, report_index_rows)
     return outputs
 
 

@@ -73,11 +73,17 @@ def test_run_mock_mvp_writes_core_outputs(tmp_path):
     report_text = outputs["summary_report"].read_text(encoding="utf-8")
     assert "# GeneFam-Pipeline Mock MVP Summary" in report_text
     assert "Final rule: intersection" in report_text
+    assert "## Available Outputs" in report_text
+    assert "- `family_candidates`: `tables/family_candidates.tsv`" in report_text
+    assert "## Pending Outputs" in report_text
+    assert "- `wgd_event_evidence`: Configured WGD event evidence table" in report_text
 
     report_index = read_tsv(outputs["report_index"])
     by_key = {row["key"]: row for row in report_index}
     assert by_key["family_candidates"]["status"] == "available"
     assert by_key["family_candidates"]["path"] == "tables/family_candidates.tsv"
+    assert by_key["summary_report"]["status"] == "available"
+    assert by_key["report_index"]["status"] == "available"
     assert by_key["wgd_event_evidence"]["status"] == "not_available"
 
 

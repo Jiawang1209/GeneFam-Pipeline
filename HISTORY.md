@@ -597,9 +597,48 @@ Verification:
 - `command -v nextflow` returned no path, so Nextflow mock execution remains pending.
 
 Commit:
-- hash: not created in this session
+- hash: 1a943c8e43cae544b346a12f6f4684b2da5f6c70
 - message: feat: add report index aggregation
 - files: mock report index, tests, README, report template, history
 
 Next:
 - Add lightweight report rendering from `report_index.tsv` into `summary.md` sections for available and unavailable modules.
+
+## 2026-06-24 - Render available and pending outputs in mock summary
+
+Context:
+- `report_index.tsv` existed, but `summary.md` did not yet surface the available and pending output status for users.
+
+Decisions:
+- Generate `summary.md` from the same report index rows used to write `report/report_index.tsv`.
+- Mark planned outputs that are written during the same mock run, such as `summary_report` and `report_index`, as available.
+- Keep downstream modules explicit as pending until their tables are produced.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_mock_mvp.py`
+- `tests/test_run_mock_mvp.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_mock_mvp.py::test_run_mock_mvp_writes_core_outputs -q` first failed because `summary.md` did not include `Available Outputs` or `Pending Outputs`.
+- Implemented summary rendering from report index rows.
+- A second test run exposed that `summary_report` was marked `not_available` because it had not been written at index-build time.
+- Updated report index generation so `summary_report` and `report_index` are marked available for the current planned run.
+- `python -m pytest tests/test_run_mock_mvp.py -q` passed.
+- `python -m pytest tests -q` passed with 35 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_mock_mvp.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/mock_mvp` produced a `summary.md` with correct available and pending output sections.
+
+Commit:
+- hash: not created in this session
+- message: feat: render report output status
+- files: mock summary rendering, tests, history
+
+Next:
+- Add alignment preparation outputs so family FASTA can feed MAFFT/MUSCLE and phylogeny modules.
