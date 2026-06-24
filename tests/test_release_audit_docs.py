@@ -71,6 +71,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "build_run_config_snapshot.py" in text
     assert "extract_chromosome_locations.py" in text
     assert "run_chromosome_smoke.py" in text
+    assert "run_alignment_phylogeny_smoke.py" in text
     assert "subset_expression_matrix.py" in text
     assert "build_standard_report_index.py" in text
     assert "assemble_report.py" in text
@@ -93,6 +94,9 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/standard_smoke/tables/run_config_snapshot.tsv" in text
     assert "results/standard_smoke/tables/gene_structure_summary.tsv" in text
     assert "results/chromosome_smoke/tables/chromosome_locations.tsv" in text
+    assert "tests/fixtures/alignment/family_members.faa" in text
+    assert "results/alignment_phylogeny_smoke/tables/alignment_manifest.tsv" in text
+    assert "results/alignment_phylogeny_smoke/tables/phylogeny_manifest.tsv" in text
     assert "results/standard_smoke/tables/motif_summary.tsv" in text
     assert "tests/fixtures/mock_evidence/meme.txt" in text
     assert "results/motif_smoke/tables/motif_summary.tsv" in text

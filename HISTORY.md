@@ -4346,9 +4346,60 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports chromosome and expression integration achieved from `chromosome location smoke, standard branch, expression smoke, and quickstart outputs`; overall completion remains blocked only by missing `docker` and `apptainer`.
 
 Commit:
-- hash: pending
-- message: pending
-- files: pending
+- hash: d49f72b5b1620322adf7571bd8f044ea8a60f006
+- message: feat: add chromosome location smoke
+- files: chromosome location smoke helper, release gate, objective audit, README, release audit, tests, history
 
 Next:
 - Continue exposing standalone release evidence for modules that currently only appear inside larger branch outputs.
+
+## 2026-06-25 - Add alignment phylogeny release smoke
+
+Context:
+- Alignment and phylogeny manifests were generated inside the mock and standard branches, but the external aligner/tree-builder handoff did not yet have an independent release smoke artifact.
+- The long objective explicitly includes alignment and phylogenetic analysis, so release evidence should expose those manifests directly rather than only through larger branch outputs.
+
+Decisions:
+- Add `bin/genefam/run_alignment_phylogeny_smoke.py` to reuse the existing alignment and phylogeny manifest helpers on a small family FASTA fixture.
+- Write `results/alignment_phylogeny_smoke/tables/alignment_manifest.tsv`, `results/alignment_phylogeny_smoke/tables/phylogeny_manifest.tsv`, and a concise Markdown smoke summary.
+- Add `alignment phylogeny smoke` to the release gate after the expression smoke and before synteny/WGD checks.
+- Tighten the objective audit so the Nextflow DSL2 workflow requirement requires explicit alignment/phylogeny smoke evidence.
+- Document the smoke in README and the release audit matrix.
+
+Added:
+- `bin/genefam/run_alignment_phylogeny_smoke.py`
+- `tests/fixtures/alignment/family_members.faa`
+- `tests/test_run_alignment_phylogeny_smoke.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_alignment_phylogeny_smoke.py tests/test_run_release_checks.py::test_default_checks_include_alignment_phylogeny_smoke_before_synteny_smoke tests/test_audit_objective_completion.py::test_nextflow_dsl2_requires_alignment_phylogeny_smoke_evidence tests/test_release_audit_docs.py -q` first failed because `run_alignment_phylogeny_smoke.py` did not exist, `alignment phylogeny smoke` was not in release checks, the objective audit still accepted Nextflow DSL2 evidence without it, and release audit did not mention `run_alignment_phylogeny_smoke.py`.
+- The same command passed with 4 tests after adding the smoke, release check, objective-audit requirement, and documentation.
+- `python bin/genefam/run_alignment_phylogeny_smoke.py --family-name GDSL --fasta tests/fixtures/alignment/family_members.faa --aligner mafft --tree-builder iqtree --outdir results/alignment_phylogeny_smoke` exited `0` and printed `alignment_manifest`, `phylogeny_manifest`, and `summary` outputs.
+- `results/alignment_phylogeny_smoke/tables/alignment_manifest.tsv` contains one `GDSL	mafft	3` row with raw and trimmed alignment paths.
+- `results/alignment_phylogeny_smoke/tables/phylogeny_manifest.tsv` contains one `GDSL	iqtree` row with treefile and support paths.
+- `results/alignment_phylogeny_smoke/alignment_phylogeny_smoke.md` reports `Sequence count: 3`, `Aligner: mafft`, and `Tree builder: iqtree`.
+- `python -m pytest tests -q` passed with 229 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 21`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; `alignment phylogeny smoke` passed and lists both alignment and phylogeny manifests.
+- `results/objective_audit/objective_audit.md` reports `Nextflow DSL2 workflow` achieved with `Nextflow mock, standard, single-tool, WGD, and alignment phylogeny smoke checks`; overall completion remains blocked only by missing `docker` and `apptainer`.
+
+Commit:
+- hash: pending
+- message: feat: add alignment phylogeny smoke
+- files: alignment/phylogeny smoke helper, FASTA fixture, release gate, objective audit, README, release audit, tests, history
+
+Next:
+- Continue exposing standalone release evidence for any remaining major modules that are only visible inside larger branch outputs.

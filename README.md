@@ -204,6 +204,19 @@ Add `--expression-matrix path/to/expression.tsv` to subset RNA-seq expression ro
 
 It writes `results/standard_smoke/tables/run_config_snapshot.tsv`, `results/standard_smoke/tables/gene_structure_summary.tsv`, `results/standard_smoke/tables/chromosome_locations.tsv`, `results/standard_smoke/tables/motif_summary.tsv`, records `family_expression` as missing when no expression matrix is supplied or available when `--expression-matrix` is provided, writes `results/standard_smoke/report/final_report.md`, and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
 
+The alignment/phylogeny smoke validates report-ready manifests for the external aligner and tree-builder steps:
+
+```bash
+python bin/genefam/run_alignment_phylogeny_smoke.py \
+  --family-name GDSL \
+  --fasta tests/fixtures/alignment/family_members.faa \
+  --aligner mafft \
+  --tree-builder iqtree \
+  --outdir results/alignment_phylogeny_smoke
+```
+
+It writes `results/alignment_phylogeny_smoke/tables/alignment_manifest.tsv` and `results/alignment_phylogeny_smoke/tables/phylogeny_manifest.tsv`, then records those paths in `results/alignment_phylogeny_smoke/alignment_phylogeny_smoke.md`. This check is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+
 The chromosome-location smoke validates the species-bank GFF3 coordinate bridge for identified family candidates:
 
 ```bash

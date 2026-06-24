@@ -143,6 +143,23 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "alignment phylogeny smoke",
+            [
+                python,
+                "bin/genefam/run_alignment_phylogeny_smoke.py",
+                "--family-name",
+                "GDSL",
+                "--fasta",
+                "tests/fixtures/alignment/family_members.faa",
+                "--aligner",
+                "mafft",
+                "--tree-builder",
+                "iqtree",
+                "--outdir",
+                "results/alignment_phylogeny_smoke",
+            ],
+        ),
+        CheckSpec(
             "synteny parser smoke",
             [
                 python,

@@ -38,6 +38,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
         _release_row("motif parser smoke"),
         _release_row("standard branch smoke"),
         _release_row("chromosome location smoke"),
+        _release_row("alignment phylogeny smoke"),
         _release_row("synteny parser smoke"),
         _release_row("Ka/Ks parser smoke"),
         _release_row("WGD event smoke"),
@@ -199,6 +200,32 @@ def test_chromosome_and_expression_integration_requires_chromosome_smoke():
     assert "chromosome location smoke" in by_requirement["chromosome and expression integration"]["evidence"]
 
 
+def test_nextflow_dsl2_requires_alignment_phylogeny_smoke_evidence():
+    release_rows = [
+        _release_row("Nextflow mock MVP smoke"),
+        _release_row("Nextflow standard branch smoke"),
+        _release_row("Nextflow standard single-tool smoke"),
+        _release_row("Nextflow WGD event smoke"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["Nextflow DSL2 workflow"]["status"] == "missing"
+    assert "alignment phylogeny smoke" in by_requirement["Nextflow DSL2 workflow"]["evidence"]
+
+
 def test_nextflow_dsl2_requires_single_tool_smoke_evidence():
     release_rows = [
         _release_row("Nextflow mock MVP smoke"),
@@ -272,6 +299,7 @@ def test_audit_objective_completion_cli_writes_outputs(tmp_path):
         "motif parser smoke\ttrue\tpassed\t0\tmotif\t\n"
         "standard branch smoke\ttrue\tpassed\t0\tstandard\t\n"
         "chromosome location smoke\ttrue\tpassed\t0\tchromosome\t\n"
+        "alignment phylogeny smoke\ttrue\tpassed\t0\talignment\t\n"
         "synteny parser smoke\ttrue\tpassed\t0\tsynteny\t\n"
         "Ka/Ks parser smoke\ttrue\tpassed\t0\tkaks\t\n"
         "WGD event smoke\ttrue\tpassed\t0\twgd\t\n"

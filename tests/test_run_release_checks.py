@@ -345,6 +345,18 @@ def test_default_checks_include_chromosome_smoke_before_expression_smoke():
     assert "--outdir results/chromosome_smoke" in command
 
 
+def test_default_checks_include_alignment_phylogeny_smoke_before_synteny_smoke():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("alignment phylogeny smoke") < names.index("synteny parser smoke")
+    assert names.index("alignment phylogeny smoke") > names.index("standard branch expression smoke")
+    smoke = next(check for check in default_checks() if check.name == "alignment phylogeny smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_alignment_phylogeny_smoke.py" in command
+    assert "--fasta tests/fixtures/alignment/family_members.faa" in command
+    assert "--outdir results/alignment_phylogeny_smoke" in command
+
+
 def test_default_checks_include_synteny_parser_smoke_before_wgd_smoke():
     names = [check.name for check in default_checks()]
 
