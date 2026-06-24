@@ -74,6 +74,15 @@ For offline development, `dev.mock_external_tools: true` can point to a director
 
 These files use the same normalized columns as the parser and evidence merger. The fixture directory `tests/fixtures/mock_evidence/` demonstrates the required format.
 
+## Identification Tool Flags
+
+The standard identification branch can enable or disable external search input generation through:
+
+- `identification.use_hmmer`
+- `identification.use_diamond`
+
+Both default to enabled when omitted. When `modules.identification: true`, at least one of these flags must remain enabled so the branch has evidence to merge. Disabled tools still produce a header-only planning table, which keeps downstream file contracts stable while making the skipped evidence source explicit.
+
 ## Domain Filtering
 
 HMMER evidence can be filtered by:

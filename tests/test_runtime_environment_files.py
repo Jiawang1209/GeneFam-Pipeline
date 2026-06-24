@@ -72,6 +72,16 @@ def test_readiness_checklist_documents_command_audit():
     assert "first file to inspect" in text
 
 
+def test_input_contract_and_schema_document_identification_tool_flags():
+    contract = Path("docs/input_contract.md").read_text(encoding="utf-8")
+    schema = Path("schemas/config.schema.yaml").read_text(encoding="utf-8")
+
+    for text in (contract, schema):
+        assert "identification.use_hmmer" in text
+        assert "identification.use_diamond" in text
+        assert "at least one" in text
+
+
 def test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file():
     text = Path("docs/runtime_environment.md").read_text(encoding="utf-8")
 

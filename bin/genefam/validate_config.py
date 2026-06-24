@@ -63,6 +63,11 @@ def validate_config(config: dict[str, Any]) -> list[str]:
         errors.append("identification.final_rule must be intersection, union, or hmmer_only")
 
     modules = config.get("modules", {}) or {}
+    identification = config.get("identification", {}) or {}
+    if modules.get("identification") is True:
+        if identification.get("use_hmmer", True) is False and identification.get("use_diamond", True) is False:
+            errors.append("identification requires at least one enabled search tool: use_hmmer or use_diamond")
+
     input_required = (config.get("input", {}) or {}).get("required", {}) or {}
     expression = config.get("expression", {}) or {}
 

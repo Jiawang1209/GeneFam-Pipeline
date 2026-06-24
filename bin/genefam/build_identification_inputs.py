@@ -67,6 +67,8 @@ def resolve_input_paths(
 
 
 def build_hmmer_inputs(manifest_rows: list[dict[str, str]], config: dict[str, Any]) -> list[dict[str, str]]:
+    if (config.get("identification", {}) or {}).get("use_hmmer", True) is False:
+        return []
     profiles = (config.get("gene_family", {}) or {}).get("hmm_profiles", []) or []
     rows: list[dict[str, str]] = []
     for species in manifest_rows:
@@ -83,6 +85,8 @@ def build_hmmer_inputs(manifest_rows: list[dict[str, str]], config: dict[str, An
 
 
 def build_diamond_inputs(manifest_rows: list[dict[str, str]], config: dict[str, Any]) -> list[dict[str, str]]:
+    if (config.get("identification", {}) or {}).get("use_diamond", True) is False:
+        return []
     reference_peptides = (config.get("gene_family", {}) or {}).get("reference_peptides")
     if not reference_peptides:
         return []

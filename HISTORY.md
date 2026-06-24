@@ -3333,9 +3333,61 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
 
 Commit:
-- hash: pending
+- hash: bfeb55502503964c620c709cfba9ec72cf54624f
 - message: feat: prefer unblock handoff command
 - files: handoff next-command selection, handoff tests, history
+
+Next:
+- Keep the `Next Command` block aligned with the current handoff state: unblock command while blocked, release gate when clear.
+
+## 2026-06-25 - Respect identification tool flags
+
+Context:
+- `configs/example.config.yaml` and the schema expose `identification.use_hmmer` and `identification.use_diamond`.
+- `bin/genefam/build_identification_inputs.py` still generated both HMMER and DIAMOND input tables unconditionally, so YAML-driven tool selection was not fully true.
+- A standard identification run should not silently plan evidence sources that the YAML disabled.
+
+Decisions:
+- Make `build_hmmer_inputs()` return no rows when `identification.use_hmmer: false`.
+- Make `build_diamond_inputs()` return no rows when `identification.use_diamond: false`.
+- Keep header-only TSV outputs for disabled tools so downstream planning files remain stable.
+- Add config validation that rejects `modules.identification: true` when both search tools are disabled.
+- Document the two flags in the input contract and schema.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_identification_inputs.py`
+- `bin/genefam/validate_config.py`
+- `docs/input_contract.md`
+- `schemas/config.schema.yaml`
+- `tests/test_build_identification_inputs.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_validate_config.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_identification_inputs.py -q` first failed because disabled HMMER/DIAMOND flags were ignored.
+- After making the input builders respect the flags, `python -m pytest tests/test_build_identification_inputs.py -q` passed with 8 tests.
+- `python -m pytest tests/test_validate_config.py::test_validate_config_reports_identification_without_any_enabled_search_tool -q` first failed because config validation allowed both search tools to be disabled.
+- After adding validation, `python -m pytest tests/test_build_identification_inputs.py tests/test_validate_config.py -q` passed with 21 tests.
+- `python -m pytest tests/test_runtime_environment_files.py::test_input_contract_and_schema_document_identification_tool_flags -q` first failed because the schema and input contract did not mention the flags.
+- After documenting the flags, `python -m pytest tests/test_build_identification_inputs.py tests/test_validate_config.py tests/test_runtime_environment_files.py::test_input_contract_and_schema_document_identification_tool_flags -q` passed with 22 tests.
+- `python -m pytest tests -q` passed with 187 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 12`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
+- `results/handoff/handoff_report.md` still points the `Next Command` block to `bash results/readiness/runtime_bootstrap.sh`.
+- `results/handoff/handoff_summary.tsv` still contains `next_unblock_command	bash results/readiness/runtime_bootstrap.sh`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
+
+Commit:
+- hash: pending
+- message: feat: respect identification tool flags
+- files: identification input builders, config validation, input docs/schema, tests, history
 
 Next:
 - Run full tests and release checks, then commit and backfill the full commit hash.

@@ -35,6 +35,16 @@ def test_validate_config_reports_invalid_final_rule():
     assert "identification.final_rule must be intersection, union, or hmmer_only" in errors
 
 
+def test_validate_config_reports_identification_without_any_enabled_search_tool():
+    config = _valid_base_config()
+    config["identification"]["use_hmmer"] = False
+    config["identification"]["use_diamond"] = False
+
+    errors = validate_config(config)
+
+    assert "identification requires at least one enabled search tool: use_hmmer or use_diamond" in errors
+
+
 def test_validate_config_reports_wrong_runtime():
     errors = validate_config(
         {

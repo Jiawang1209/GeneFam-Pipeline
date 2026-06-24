@@ -20,6 +20,8 @@ fields:
   run.species_group: null or a key from configs/species_groups.yaml
   gene_family.name: string
   gene_family.hmm_profiles: list of id/path objects
+  identification.use_hmmer: boolean, default true; enables HMMER profile search input generation
+  identification.use_diamond: boolean, default true; enables DIAMOND/BLAST-like confirmation input generation
   identification.final_rule: intersection, union, or hmmer_only
   domain_filtering.hmmer_max_evalue: maximum accepted HMMER e-value
   domain_filtering.hmmer_min_bitscore: minimum accepted HMMER bitscore
@@ -31,6 +33,7 @@ fields:
   dev.mock_external_tools: boolean flag for offline MVP verification
   dev.mock_evidence_dir: directory containing hmmer.tsv and diamond.tsv when mock mode is enabled
 module_dependency_rules:
+  modules.identification: requires at least one enabled search tool, identification.use_hmmer or identification.use_diamond
   modules.kaks: requires input.required.cds true
   modules.chromosome_location: requires input.required.gff3 true
   modules.expression: requires expression.matrix
