@@ -81,6 +81,19 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "motif parser smoke",
+            [
+                python,
+                "bin/genefam/run_motif_smoke.py",
+                "--meme-txt",
+                "tests/fixtures/mock_evidence/meme.txt",
+                "--family-name",
+                "GDSL",
+                "--outdir",
+                "results/motif_smoke",
+            ],
+        ),
+        CheckSpec(
             "standard branch smoke",
             [
                 python,

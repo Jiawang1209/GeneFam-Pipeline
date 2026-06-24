@@ -4248,9 +4248,58 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports Ka/Ks and retention analysis achieved from `Ka/Ks parser smoke and WGD/retention smoke outputs`; overall completion remains blocked only by missing `docker` and `apptainer`.
 
 Commit:
+- hash: 10079bc39457a86a8dca05150729524c024ab6bf
+- message: feat: add kaks parser smoke
+- files: Ka/Ks parser smoke helper, KaKs_Calculator fixture, release gate, objective audit, docs, tests, history
+
+Next:
+- Keep Ka/Ks evidence traceable from calculator-style input through normalized selection categories and WGD retention summaries.
+
+## 2026-06-25 - Add motif parser release smoke
+
+Context:
+- Motif parsing was exercised inside the standard branch, but it did not yet have an independent release smoke artifact like domain filtering, synteny, and Ka/Ks.
+- The long objective explicitly includes motif analysis, so release evidence should expose the MEME parser output directly.
+
+Decisions:
+- Add `bin/genefam/run_motif_smoke.py` to parse the existing MEME fixture through `parse_meme_motifs.py`.
+- Write `results/motif_smoke/tables/motif_summary.tsv` plus a concise Markdown smoke summary.
+- Add `motif parser smoke` to the release gate after domain filtering and before the standard branch smoke.
+- Tighten the objective audit so the standard identification branch requires motif parser smoke evidence.
+- Document the smoke in README and release audit.
+
+Added:
+- `bin/genefam/run_motif_smoke.py`
+- `tests/test_run_motif_smoke.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_motif_smoke.py tests/test_run_release_checks.py::test_default_checks_include_motif_smoke_before_standard_branch_smoke tests/test_audit_objective_completion.py::test_standard_identification_branch_requires_motif_parser_smoke tests/test_release_audit_docs.py -q` first failed because `run_motif_smoke.py` did not exist, `motif parser smoke` was not in release checks, the standard identification audit still accepted evidence without it, and release audit did not mention `run_motif_smoke.py`.
+- The same command passed with 4 tests after adding the smoke, release check, objective-audit requirement, and documentation.
+- `python bin/genefam/run_motif_smoke.py --meme-txt tests/fixtures/mock_evidence/meme.txt --family-name GDSL --outdir results/motif_smoke` exited `0` and printed `motif_summary	results/motif_smoke/tables/motif_summary.tsv`.
+- `results/motif_smoke/tables/motif_summary.tsv` contains two parsed MEME motifs, `GDSL_motif_1` and `GDSL_motif_2`.
+- `results/motif_smoke/motif_smoke.md` reports `Parsed motifs: 2`.
+- `python -m pytest tests -q` passed with 223 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 19`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; `motif parser smoke` passed and lists `results/motif_smoke/tables/motif_summary.tsv`.
+- `results/objective_audit/objective_audit.md` reports the standard identification branch achieved from `domain filter smoke, motif parser smoke, Python standard branch, and Nextflow standard branch smoke checks`; overall completion remains blocked only by missing `docker` and `apptainer`.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Keep Ka/Ks evidence traceable from calculator-style input through normalized selection categories and WGD retention summaries.
+- Continue making each major objective module independently visible in the release gate, especially where a parser feeds a larger branch.

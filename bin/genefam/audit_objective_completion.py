@@ -101,10 +101,13 @@ def build_objective_audit(
             else "Missing container commands: " + ", ".join(missing_container_tools),
         ),
         _achieved_if(
-            _all_passed(release, ["domain filter smoke", "standard branch smoke", "Nextflow standard branch smoke"]),
+            _all_passed(
+                release,
+                ["domain filter smoke", "motif parser smoke", "standard branch smoke", "Nextflow standard branch smoke"],
+            ),
             "standard identification branch",
-            "domain filter smoke, Python standard branch, and Nextflow standard branch smoke checks",
-            "Domain-filtered evidence, species-bank candidates, chromosome locations, expression handoff, and final report are exercised.",
+            "domain filter smoke, motif parser smoke, Python standard branch, and Nextflow standard branch smoke checks",
+            "Domain-filtered evidence, motif summaries, species-bank candidates, chromosome locations, expression handoff, and final report are exercised.",
         ),
         _achieved_if(
             _all_passed(

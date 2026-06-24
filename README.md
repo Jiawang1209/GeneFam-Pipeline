@@ -179,6 +179,17 @@ python bin/genefam/run_domain_filter_smoke.py \
 
 It writes `results/domain_filter_smoke/tables/filtered_domains.tsv` and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
 
+The motif parser smoke validates MEME text parsing before standard report integration:
+
+```bash
+python bin/genefam/run_motif_smoke.py \
+  --meme-txt tests/fixtures/mock_evidence/meme.txt \
+  --family-name GDSL \
+  --outdir results/motif_smoke
+```
+
+It writes `results/motif_smoke/tables/motif_summary.tsv` and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+
 The offline standard-branch smoke check exercises the same post-identification reporting chain without requiring HMMER, DIAMOND, MAFFT, or IQ-TREE:
 
 ```bash

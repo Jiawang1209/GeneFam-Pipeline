@@ -308,6 +308,18 @@ def test_default_checks_include_domain_filter_smoke_before_standard_branch_smoke
     assert "--outdir results/domain_filter_smoke" in command
 
 
+def test_default_checks_include_motif_smoke_before_standard_branch_smoke():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("motif parser smoke") < names.index("standard branch smoke")
+    assert names.index("motif parser smoke") > names.index("domain filter smoke")
+    smoke = next(check for check in default_checks() if check.name == "motif parser smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_motif_smoke.py" in command
+    assert "--meme-txt tests/fixtures/mock_evidence/meme.txt" in command
+    assert "--outdir results/motif_smoke" in command
+
+
 def test_default_checks_include_standard_branch_expression_smoke_before_readiness():
     names = [check.name for check in default_checks()]
 
