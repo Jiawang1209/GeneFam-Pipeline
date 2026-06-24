@@ -42,6 +42,8 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
         "python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv",
         "python bin/genefam/plan_runtime_bootstrap.py",
         "python bin/genefam/audit_objective_completion.py",
+        "python bin/genefam/run_container_profile_smoke.py --profile docker",
+        "python bin/genefam/run_container_profile_smoke.py --profile apptainer",
     ]
     for command in required_commands:
         assert command in text
@@ -62,6 +64,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "run_standard_smoke.py" in text
     assert "run_wgd_smoke.py" in text
     assert "run_nextflow_smoke.py" in text
+    assert "run_container_profile_smoke.py" in text
     assert "run_nextflow_wgd_smoke.py" in text
     assert "run_prepared_wgd_handoff_example.py" in text
     assert "run_quickstart.py" in text

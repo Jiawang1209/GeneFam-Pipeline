@@ -2799,9 +2799,55 @@ Verification:
 - `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
 
 Commit:
-- hash: pending
+- hash: af142216f8b86658a89c63bab9a43e35e1cfb5db
 - message: feat: auto-write objective audit in release checks
 - files: release-check objective audit integration, release-check tests, quickstart docs, history
 
 Next:
 - Install or expose Docker/Apptainer to clear the remaining blocked objective, then rerun the single release-gate command and inspect the automatically generated objective audit.
+
+## 2026-06-24 - Add container profile smoke verifier
+
+Context:
+- Docker/Apptainer remain the only blocked objective in the current machine audit.
+- The repository had Docker and Apptainer profiles plus readiness checks, but it still lacked a focused command that directly verifies those container profiles once a runtime is available.
+- The final handoff benefits from a deterministic container-profile smoke report instead of an ad hoc copied Nextflow command.
+
+Decisions:
+- Add `bin/genefam/run_container_profile_smoke.py` for `docker` and `apptainer` Nextflow mock-MVP profile verification.
+- Report `missing_runtime` before checking Nextflow when Docker or Apptainer is unavailable, so the blocker remains precise.
+- Reuse existing Nextflow command construction from `run_nextflow_smoke.py`.
+- Document Docker and Apptainer smoke verifier commands in runtime and release-audit docs.
+
+Added:
+- `bin/genefam/run_container_profile_smoke.py`
+- `tests/test_run_container_profile_smoke.py`
+
+Modified:
+- `HISTORY.md`
+- `docs/release_audit.md`
+- `docs/runtime_environment.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_container_profile_smoke.py -q` first failed because `bin.genefam.run_container_profile_smoke` did not exist.
+- After adding the script, `python -m pytest tests/test_run_container_profile_smoke.py -q` passed with 5 tests.
+- `python -m pytest tests/test_runtime_environment_files.py::test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file tests/test_release_audit_docs.py -q` first failed because docs did not mention `run_container_profile_smoke.py`.
+- After updating runtime and release-audit docs, `python -m pytest tests/test_run_container_profile_smoke.py tests/test_runtime_environment_files.py::test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file tests/test_release_audit_docs.py -q` passed with 7 tests.
+- `python bin/genefam/run_container_profile_smoke.py --profile docker --conda-env GeneFamilyFlow --outdir results/container_profile_smoke` exited `1` and wrote `results/container_profile_smoke/container_profile_smoke.tsv` plus `.md`; the status is `missing_runtime` because `docker` is not installed.
+- `python -m pytest tests -q` passed with 169 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker and Apptainer are missing, but pytest, config validation, mock MVP, Python standard branch smoke, Python WGD event smoke, Nextflow mock MVP smoke, Nextflow standard branch smoke, Nextflow WGD event smoke, prepared WGD handoff example, quickstart handoff, and runtime bootstrap plan passed.
+- `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item is `Docker/Apptainer reproducibility`.
+
+Commit:
+- hash: pending
+- message: feat: add container profile smoke verifier
+- files: container profile smoke verifier, runtime/release docs, tests, history
+
+Next:
+- Once Docker or Apptainer is available, run the new container profile smoke verifier for the corresponding profile and rerun release checks/objective audit.

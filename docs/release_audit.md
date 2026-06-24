@@ -33,6 +33,12 @@ python bin/genefam/run_prepared_wgd_handoff_example.py \
 python bin/genefam/run_quickstart.py \
   --conda-env GeneFamilyFlow \
   --outdir results/quickstart
+python bin/genefam/run_container_profile_smoke.py --profile docker \
+  --conda-env GeneFamilyFlow \
+  --outdir results/container_profile_smoke
+python bin/genefam/run_container_profile_smoke.py --profile apptainer \
+  --conda-env GeneFamilyFlow \
+  --outdir results/container_profile_smoke
 PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH" nextflow run workflows/main.nf \
   -c workflows/nextflow.config \
   -profile activated \
@@ -75,6 +81,7 @@ The release checks runner writes:
 | GeneFamilyFlow runtime | `envs/GeneFamilyFlow.conda.yaml`; `workflows/nextflow.config`; `Dockerfile` | `python -m pytest tests/test_runtime_environment_files.py -q` |
 | `/usr/local/bin/R` plotting and reporting convention | `workflows/modules/plots.nf`; `scripts/plot_family_counts.R`; `scripts/plot_kaks.R`; `scripts/plot_expression_heatmap.R` | `python -m pytest tests/test_workflow_modules.py tests/test_runtime_environment_files.py -q` |
 | Docker/Conda reproducible running | `Dockerfile`; `envs/GeneFamilyFlow.conda.yaml`; `bin/genefam/plan_runtime_bootstrap.py`; `workflows/nextflow.config` profiles `local`, `docker`, `apptainer` | `python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv` and `python bin/genefam/plan_runtime_bootstrap.py --readiness results/readiness/command_readiness.tsv --outdir results/readiness` |
+| container profile smoke verification | `bin/genefam/run_container_profile_smoke.py`; `workflows/nextflow.config` profiles `docker`, `apptainer`; `results/container_profile_smoke/container_profile_smoke.md` | `python bin/genefam/run_container_profile_smoke.py --profile docker --conda-env GeneFamilyFlow --outdir results/container_profile_smoke` and `python bin/genefam/run_container_profile_smoke.py --profile apptainer --conda-env GeneFamilyFlow --outdir results/container_profile_smoke` |
 | long objective completion audit | `bin/genefam/audit_objective_completion.py`; `results/objective_audit/objective_audit.tsv`; `results/objective_audit/objective_audit.md` | `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` |
 | quickstart handoff for users | `bin/genefam/run_quickstart.py`; `docs/quickstart.md`; `README.md`; `results/quickstart/quickstart_summary.md`; `results/release_checks/release_checks.md`; `results/standard_smoke/report/final_report.md`; `results/example_prepared_wgd/report/final_report.md` | `python bin/genefam/run_quickstart.py --conda-env GeneFamilyFlow --outdir results/quickstart` and `python -m pytest tests/test_quickstart_docs.py tests/test_release_audit_docs.py -q` |
 | species bank input model | `docs/input_contract.md`; `bin/genefam/discover_species.py`; `tests/fixtures/species_bank` | `python -m pytest tests/test_discover_species.py -q` |

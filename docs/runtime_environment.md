@@ -91,6 +91,14 @@ nextflow run workflows/main.nf \
   --config configs/example.config.yaml
 ```
 
+Docker smoke verifier:
+
+```bash
+python bin/genefam/run_container_profile_smoke.py --profile docker \
+  --conda-env GeneFamilyFlow \
+  --outdir results/container_profile_smoke
+```
+
 Apptainer execution:
 
 ```bash
@@ -99,6 +107,19 @@ nextflow run workflows/main.nf \
   -profile apptainer \
   --config configs/example.config.yaml
 ```
+
+Apptainer smoke verifier:
+
+```bash
+python bin/genefam/run_container_profile_smoke.py --profile apptainer \
+  --conda-env GeneFamilyFlow \
+  --outdir results/container_profile_smoke
+```
+
+The container smoke verifier writes:
+
+- `results/container_profile_smoke/container_profile_smoke.tsv`
+- `results/container_profile_smoke/container_profile_smoke.md`
 
 ## Current Verification Boundary
 
