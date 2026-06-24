@@ -121,10 +121,10 @@ def build_objective_audit(
             "MCScanX collinearity parsing feeds named events interpreted from configured Ks-supported WGD layers.",
         ),
         _achieved_if(
-            _all_passed(release, ["WGD event smoke", "prepared WGD handoff example"]),
+            _all_passed(release, ["Ka/Ks parser smoke", "WGD event smoke", "prepared WGD handoff example"]),
             "Ka/Ks and retention analysis",
-            "WGD/retention smoke outputs",
-            "Ka/Ks, retention class, family-event membership, and retention summaries are generated from prepared evidence.",
+            "Ka/Ks parser smoke and WGD/retention smoke outputs",
+            "Ka/Ks selection categories, retention class, family-event membership, and retention summaries are generated from prepared evidence.",
         ),
         _achieved_if(
             _all_passed(release, ["standard branch smoke", "standard branch expression smoke", "quickstart handoff"]),

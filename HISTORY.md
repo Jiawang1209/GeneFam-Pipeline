@@ -4198,9 +4198,59 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports the standard identification branch achieved from `domain filter smoke, Python standard branch, and Nextflow standard branch smoke checks`; overall completion remains blocked only by missing `docker` and `apptainer`.
 
 Commit:
+- hash: 15551e455bd17e01acc41f7fbf5797fc8439383a
+- message: feat: add domain filter smoke
+- files: domain filter smoke helper, HMMER domain fixture, release gate, objective audit, docs, tests, history
+
+Next:
+- Keep standard-branch release evidence close to the actual decision points: domain filtering, candidate merging, summaries, plots, and reports.
+
+## 2026-06-25 - Add Ka/Ks parser release smoke
+
+Context:
+- Ka/Ks parsing and prepared WGD outputs existed, but the release gate did not yet produce a direct normalized Ka/Ks selection-pressure artifact.
+- The long objective explicitly requires Ka/Ks selection pressure analysis as part of the duplication/WGD evidence chain.
+
+Decisions:
+- Add a KaKs_Calculator-style fixture with purifying, neutral, and positive selection examples.
+- Add `bin/genefam/run_kaks_smoke.py` to normalize Ka/Ks rows through the existing parser and write `tables/normalized_kaks.tsv`.
+- Add `Ka/Ks parser smoke` to the release gate between synteny parsing and WGD event interpretation.
+- Tighten the objective audit so Ka/Ks and retention analysis requires the parser smoke as well as WGD/retention handoff evidence.
+- Document the smoke in README and release audit.
+
+Added:
+- `bin/genefam/run_kaks_smoke.py`
+- `tests/fixtures/kaks/kaks_calculator.tsv`
+- `tests/test_run_kaks_smoke.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_kaks_smoke.py tests/test_run_release_checks.py::test_default_checks_include_kaks_smoke_before_wgd_smoke tests/test_audit_objective_completion.py::test_kaks_and_retention_analysis_requires_kaks_parser_smoke tests/test_release_audit_docs.py -q` first failed because `run_kaks_smoke.py` did not exist, `Ka/Ks parser smoke` was not in release checks, the objective audit still accepted Ka/Ks/retention evidence without it, and release audit did not mention `run_kaks_smoke.py`.
+- The same command passed with 4 tests after adding the smoke, release check, objective-audit requirement, and documentation.
+- `python bin/genefam/run_kaks_smoke.py --kaks tests/fixtures/kaks/kaks_calculator.tsv --outdir results/kaks_smoke` exited `0` and printed `normalized_kaks	results/kaks_smoke/tables/normalized_kaks.tsv`.
+- `results/kaks_smoke/tables/normalized_kaks.tsv` contains purifying, neutral, and positive `selection_category` rows.
+- `results/kaks_smoke/kaks_smoke.md` reports `Input pairs: 3`, `purifying: 1`, `neutral: 1`, and `positive: 1`.
+- `python -m pytest tests -q` passed with 220 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 18`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; `Ka/Ks parser smoke` passed and lists `results/kaks_smoke/tables/normalized_kaks.tsv`.
+- `results/objective_audit/objective_audit.md` reports Ka/Ks and retention analysis achieved from `Ka/Ks parser smoke and WGD/retention smoke outputs`; overall completion remains blocked only by missing `docker` and `apptainer`.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Keep standard-branch release evidence close to the actual decision points: domain filtering, candidate merging, summaries, plots, and reports.
+- Keep Ka/Ks evidence traceable from calculator-style input through normalized selection categories and WGD retention summaries.

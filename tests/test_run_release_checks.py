@@ -333,6 +333,18 @@ def test_default_checks_include_synteny_parser_smoke_before_wgd_smoke():
     assert "--outdir results/synteny_smoke" in command
 
 
+def test_default_checks_include_kaks_smoke_before_wgd_smoke():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("Ka/Ks parser smoke") < names.index("WGD event smoke")
+    assert names.index("Ka/Ks parser smoke") > names.index("synteny parser smoke")
+    smoke = next(check for check in default_checks() if check.name == "Ka/Ks parser smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_kaks_smoke.py" in command
+    assert "--kaks tests/fixtures/kaks/kaks_calculator.tsv" in command
+    assert "--outdir results/kaks_smoke" in command
+
+
 def test_default_checks_include_wgd_smoke_before_readiness():
     names = [check.name for check in default_checks()]
 

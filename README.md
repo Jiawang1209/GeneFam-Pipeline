@@ -234,6 +234,16 @@ python bin/genefam/run_synteny_smoke.py \
 
 It writes `results/synteny_smoke/tables/syntenic_pairs.tsv` and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
 
+The Ka/Ks parser smoke validates KaKs_Calculator-style result normalization and selection-pressure categories before WGD retention summaries:
+
+```bash
+python bin/genefam/run_kaks_smoke.py \
+  --kaks tests/fixtures/kaks/kaks_calculator.tsv \
+  --outdir results/kaks_smoke
+```
+
+It writes `results/kaks_smoke/tables/normalized_kaks.tsv` and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+
 The offline WGD smoke check validates the gamma, beta, alpha, and theta named-event evidence path without external MCScanX or Ka/Ks tools:
 
 ```bash

@@ -126,6 +126,17 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "Ka/Ks parser smoke",
+            [
+                python,
+                "bin/genefam/run_kaks_smoke.py",
+                "--kaks",
+                "tests/fixtures/kaks/kaks_calculator.tsv",
+                "--outdir",
+                "results/kaks_smoke",
+            ],
+        ),
+        CheckSpec(
             "WGD event smoke",
             [
                 python,
