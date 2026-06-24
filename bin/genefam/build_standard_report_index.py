@@ -34,6 +34,21 @@ def build_report_index(paths: dict[str, str]) -> list[dict[str, str]]:
     ]
 
 
+def published_paths(published_outdir: str, family_expression_available: bool) -> dict[str, str]:
+    outdir = Path(published_outdir)
+    return {
+        "species_manifest": str(outdir / "tables/species_manifest.tsv"),
+        "family_candidates": str(outdir / "tables/family_candidates.tsv"),
+        "family_counts": str(outdir / "tables/family_counts.tsv"),
+        "family_members_faa": str(outdir / "sequences/family_members.faa"),
+        "alignment_manifest": str(outdir / "tables/alignment_manifest.tsv"),
+        "phylogeny_manifest": str(outdir / "tables/phylogeny_manifest.tsv"),
+        "chromosome_locations": str(outdir / "tables/chromosome_locations.tsv"),
+        "family_expression": str(outdir / "tables/family_expression.tsv") if family_expression_available else "",
+        "plot_manifest": str(outdir / "report/plot_manifest.tsv"),
+    }
+
+
 def read_tsv(path: Path) -> list[dict[str, str]]:
     with path.open("r", encoding="utf-8", newline="") as handle:
         return list(csv.DictReader(handle, delimiter="\t"))
@@ -51,9 +66,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     for key in DESCRIPTIONS:
         parser.add_argument(f"--{key.replace('_', '-')}", required=True)
+    parser.add_argument("--published-outdir", default=None)
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
     paths = {key: getattr(args, key) for key in DESCRIPTIONS}
+    if args.published_outdir:
+        paths = published_paths(args.published_outdir, family_expression_available=bool(paths["family_expression"]))
     write_tsv(build_report_index(paths), args.out)
 
 

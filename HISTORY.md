@@ -2319,8 +2319,52 @@ Verification:
 - `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
 
 Commit:
-- pending
+- hash: 579e6dd962940d530d427665dd156e60ba38c669
+- message: feat: publish Nextflow standard outputs
+- files: standard-branch Nextflow publishDir rules, published-output smoke verification, tests, history
 
 Next:
 - Improve report-index paths in the Nextflow standard branch so published reports point at published `results/...` paths instead of staged task-local filenames.
+- After container runtimes are installed or exposed, rerun release checks to verify Docker/Apptainer profiles.
+
+## 2026-06-24 - Point standard reports at published paths
+
+Context:
+- The standard Nextflow branch now publishes files under `results/nextflow_standard_smoke/standard`, but `report_index.tsv` and `final_report.md` still listed staged task-local filenames such as `family_candidates.tsv`.
+- User-facing reports should point at the stable published result tree.
+
+Decisions:
+- Add an optional `--published-outdir` mode to `build_standard_report_index.py`.
+- Keep the existing explicit path mode for Python smoke tests and ad hoc usage.
+- Pass `--published-outdir ${params.outdir}` from the Nextflow standard report-index process so reports list `results/.../tables`, `sequences`, and `report` paths.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_standard_report_index.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/modules/standard_postprocess.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_standard_branch_report_index.py::test_published_paths_map_standard_outputs_to_user_results_tree tests/test_standard_branch_report_index.py::test_build_standard_report_index_cli_can_write_published_paths tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index -q` first failed because `published_paths` did not exist.
+- After implementation, the same targeted test set passed with 3 tests.
+- `rm -rf results/nextflow_standard_smoke/standard && python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_standard_smoke` passed.
+- `results/nextflow_standard_smoke/standard/report/report_index.tsv` now lists published paths such as `results/nextflow_standard_smoke/standard/tables/family_candidates.tsv` and `results/nextflow_standard_smoke/standard/sequences/family_members.faa`.
+- `results/nextflow_standard_smoke/standard/report/final_report.md` now shows those same published paths in the Output Availability table.
+- `python -m pytest tests -q` passed with 142 tests.
+- `python -m py_compile bin/genefam/build_standard_report_index.py` passed.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker and Apptainer are missing, but pytest, config validation, mock MVP, Python standard branch smoke, WGD event smoke, Nextflow mock MVP smoke, Nextflow standard branch smoke, and runtime bootstrap plan passed.
+- `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
+
+Commit:
+- pending
+
+Next:
+- Wire more WGD/duplication published outputs into the main Nextflow report path so gamma/beta/alpha/theta evidence can be emitted from the same workflow run, not only the WGD smoke helper.
 - After container runtimes are installed or exposed, rerun release checks to verify Docker/Apptainer profiles.

@@ -1,7 +1,7 @@
 import subprocess
 import sys
 
-from bin.genefam.build_standard_report_index import build_report_index, read_tsv
+from bin.genefam.build_standard_report_index import build_report_index, published_paths, read_tsv
 
 
 def test_build_standard_report_index_marks_core_outputs_available():
@@ -33,6 +33,22 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "family_expression",
     }
     assert next(row for row in rows if row["key"] == "family_expression")["status"] == "missing"
+
+
+def test_published_paths_map_standard_outputs_to_user_results_tree():
+    paths = published_paths("results/nextflow_standard_smoke/standard", family_expression_available=False)
+
+    assert paths == {
+        "species_manifest": "results/nextflow_standard_smoke/standard/tables/species_manifest.tsv",
+        "family_candidates": "results/nextflow_standard_smoke/standard/tables/family_candidates.tsv",
+        "family_counts": "results/nextflow_standard_smoke/standard/tables/family_counts.tsv",
+        "family_members_faa": "results/nextflow_standard_smoke/standard/sequences/family_members.faa",
+        "alignment_manifest": "results/nextflow_standard_smoke/standard/tables/alignment_manifest.tsv",
+        "phylogeny_manifest": "results/nextflow_standard_smoke/standard/tables/phylogeny_manifest.tsv",
+        "chromosome_locations": "results/nextflow_standard_smoke/standard/tables/chromosome_locations.tsv",
+        "family_expression": "",
+        "plot_manifest": "results/nextflow_standard_smoke/standard/report/plot_manifest.tsv",
+    }
 
 
 def test_build_standard_report_index_cli_writes_tsv(tmp_path):
@@ -75,3 +91,45 @@ def test_build_standard_report_index_cli_writes_tsv(tmp_path):
         "status": "available",
         "description": "Generated plot inventory",
     }
+
+
+def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
+    out = tmp_path / "report_index.tsv"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "bin/genefam/build_standard_report_index.py",
+            "--species-manifest",
+            "species_manifest.tsv",
+            "--family-candidates",
+            "family_candidates.tsv",
+            "--family-counts",
+            "family_counts.tsv",
+            "--family-members-faa",
+            "family_members.faa",
+            "--alignment-manifest",
+            "alignment_manifest.tsv",
+            "--phylogeny-manifest",
+            "phylogeny_manifest.tsv",
+            "--chromosome-locations",
+            "chromosome_locations.tsv",
+            "--family-expression",
+            "",
+            "--plot-manifest",
+            "plot_manifest.tsv",
+            "--published-outdir",
+            "results/demo",
+            "--out",
+            str(out),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    rows = {row["key"]: row for row in read_tsv(out)}
+    assert rows["family_candidates"]["path"] == "results/demo/tables/family_candidates.tsv"
+    assert rows["family_members_faa"]["path"] == "results/demo/sequences/family_members.faa"
+    assert rows["plot_manifest"]["path"] == "results/demo/report/plot_manifest.tsv"

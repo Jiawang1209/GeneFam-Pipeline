@@ -48,6 +48,7 @@ process BUILD_STANDARD_REPORT_INDEX {
       --chromosome-locations ${chromosome_locations} \\
       --family-expression "${family_expression}" \\
       --plot-manifest ${plot_manifest} \\
+      --published-outdir ${params.outdir} \\
       --out report_index.tsv
     """
 }

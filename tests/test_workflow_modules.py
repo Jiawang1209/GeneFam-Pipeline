@@ -59,6 +59,7 @@ def test_standard_postprocess_module_extracts_family_sequences_and_report_index(
     assert "build_standard_report_index.py" in module
     assert "--family-members-faa ${family_members_faa}" in module
     assert "--phylogeny-manifest ${phylogeny_manifest}" in module
+    assert "--published-outdir ${params.outdir}" in module
     assert "--out report_index.tsv" in module
 
     assert "process ASSEMBLE_STANDARD_REPORT" in module
