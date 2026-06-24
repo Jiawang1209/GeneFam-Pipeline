@@ -37,6 +37,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
         _release_row("domain filter smoke"),
         _release_row("motif parser smoke"),
         _release_row("standard branch smoke"),
+        _release_row("chromosome location smoke"),
         _release_row("synteny parser smoke"),
         _release_row("Ka/Ks parser smoke"),
         _release_row("WGD event smoke"),
@@ -173,6 +174,31 @@ def test_kaks_and_retention_analysis_requires_kaks_parser_smoke():
     assert "Ka/Ks parser smoke" in by_requirement["Ka/Ks and retention analysis"]["evidence"]
 
 
+def test_chromosome_and_expression_integration_requires_chromosome_smoke():
+    release_rows = [
+        _release_row("standard branch smoke"),
+        _release_row("standard branch expression smoke"),
+        _release_row("quickstart handoff"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["chromosome and expression integration"]["status"] == "missing"
+    assert "chromosome location smoke" in by_requirement["chromosome and expression integration"]["evidence"]
+
+
 def test_nextflow_dsl2_requires_single_tool_smoke_evidence():
     release_rows = [
         _release_row("Nextflow mock MVP smoke"),
@@ -245,6 +271,7 @@ def test_audit_objective_completion_cli_writes_outputs(tmp_path):
         "domain filter smoke\ttrue\tpassed\t0\tdomain\t\n"
         "motif parser smoke\ttrue\tpassed\t0\tmotif\t\n"
         "standard branch smoke\ttrue\tpassed\t0\tstandard\t\n"
+        "chromosome location smoke\ttrue\tpassed\t0\tchromosome\t\n"
         "synteny parser smoke\ttrue\tpassed\t0\tsynteny\t\n"
         "Ka/Ks parser smoke\ttrue\tpassed\t0\tkaks\t\n"
         "WGD event smoke\ttrue\tpassed\t0\twgd\t\n"

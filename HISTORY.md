@@ -4297,9 +4297,58 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports the standard identification branch achieved from `domain filter smoke, motif parser smoke, Python standard branch, and Nextflow standard branch smoke checks`; overall completion remains blocked only by missing `docker` and `apptainer`.
 
 Commit:
+- hash: d44e2dd9dcf38e5b9abc05410c2d45c682d36b88
+- message: feat: add motif parser smoke
+- files: motif parser smoke helper, release gate, objective audit, README, release audit, tests, history
+
+Next:
+- Continue making each major objective module independently visible in the release gate, especially where a parser feeds a larger branch.
+
+## 2026-06-25 - Add chromosome location release smoke
+
+Context:
+- Chromosome locations were generated inside the standard branch, but the GFF3 coordinate extraction path did not yet have an independent release smoke artifact.
+- The long objective explicitly includes chromosome localization and RNA-seq expression integration, so the chromosome side of that evidence should be visible on its own.
+
+Decisions:
+- Add `bin/genefam/run_chromosome_smoke.py` to discover the configured species bank, merge mock family evidence, and extract GFF3 chromosome locations with the existing helper.
+- Write `results/chromosome_smoke/tables/species_manifest.tsv`, `family_candidates.tsv`, and `chromosome_locations.tsv`.
+- Add `chromosome location smoke` to the release gate between the standard branch smoke and expression smoke.
+- Tighten the objective audit so chromosome/expression integration requires chromosome location smoke evidence.
+- Document the smoke in README and release audit.
+
+Added:
+- `bin/genefam/run_chromosome_smoke.py`
+- `tests/test_run_chromosome_smoke.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_chromosome_smoke.py tests/test_run_release_checks.py::test_default_checks_include_chromosome_smoke_before_expression_smoke tests/test_audit_objective_completion.py::test_chromosome_and_expression_integration_requires_chromosome_smoke tests/test_release_audit_docs.py -q` first failed because `run_chromosome_smoke.py` did not exist, `chromosome location smoke` was not in release checks, chromosome/expression audit evidence did not require it, and release audit did not mention `run_chromosome_smoke.py`.
+- The same command passed with 4 tests after adding the smoke, release check, objective-audit requirement, and documentation.
+- `python bin/genefam/run_chromosome_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/chromosome_smoke` exited `0` and printed `chromosome_locations	results/chromosome_smoke/tables/chromosome_locations.tsv`.
+- `results/chromosome_smoke/tables/chromosome_locations.tsv` contains `Arabidopsis_thaliana	AT1G01010	Chr1	100	500	+` and `Brassica_rapa	BraA010001	A01	200	900	-`.
+- `results/chromosome_smoke/chromosome_smoke.md` reports `Located genes: 2` and `Species represented: 2`.
+- `python -m pytest tests -q` passed with 226 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 20`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; `chromosome location smoke` passed and lists `results/chromosome_smoke/tables/chromosome_locations.tsv`.
+- `results/objective_audit/objective_audit.md` reports chromosome and expression integration achieved from `chromosome location smoke, standard branch, expression smoke, and quickstart outputs`; overall completion remains blocked only by missing `docker` and `apptainer`.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Continue making each major objective module independently visible in the release gate, especially where a parser feeds a larger branch.
+- Continue exposing standalone release evidence for modules that currently only appear inside larger branch outputs.

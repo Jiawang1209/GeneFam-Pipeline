@@ -333,6 +333,18 @@ def test_default_checks_include_standard_branch_expression_smoke_before_readines
     assert "--outdir results/standard_expression_smoke" in command
 
 
+def test_default_checks_include_chromosome_smoke_before_expression_smoke():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("chromosome location smoke") < names.index("standard branch expression smoke")
+    assert names.index("chromosome location smoke") > names.index("standard branch smoke")
+    smoke = next(check for check in default_checks() if check.name == "chromosome location smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_chromosome_smoke.py" in command
+    assert "--config configs/example.config.yaml" in command
+    assert "--outdir results/chromosome_smoke" in command
+
+
 def test_default_checks_include_synteny_parser_smoke_before_wgd_smoke():
     names = [check.name for check in default_checks()]
 
