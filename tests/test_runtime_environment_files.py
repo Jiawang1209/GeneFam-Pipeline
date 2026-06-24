@@ -148,6 +148,10 @@ def test_readme_current_status_matches_release_evidence():
     assert "standard identification branch" in readme
     assert "prepared-table WGD branch" in readme
     assert "results/handoff/handoff_summary.tsv" in readme
+    assert "run_nextflow_single_tool_smoke.py" in readme
+    assert "bash results/readiness/runtime_bootstrap.sh" in readme
+    assert "params.container_image" in readme
+    assert "params.apptainer_image" in readme
 
 
 def test_standard_to_wgd_handoff_doc_links_identification_and_wgd_branches():

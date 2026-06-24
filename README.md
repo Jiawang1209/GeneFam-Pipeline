@@ -81,6 +81,19 @@ python bin/genefam/plan_runtime_bootstrap.py \
 
 The release checks runner writes TSV and Markdown summaries. The Nextflow smoke writes `results/nextflow_smoke/nextflow_smoke.md`; it runs the mock MVP through Nextflow when Nextflow is installed and otherwise records a `missing_nextflow` blocker. The readiness audit writes a TSV report and exits non-zero when required runtime commands are missing. The bootstrap planner converts the TSV into `results/readiness/runtime_bootstrap_plan.md` and `results/readiness/runtime_bootstrap.sh`.
 
+When Docker and Apptainer are available, run the generated bootstrap script to build the local Docker image, build the local Apptainer SIF, smoke-test both container profiles, and rerun the release gate:
+
+```bash
+bash results/readiness/runtime_bootstrap.sh
+```
+
+Container image defaults are configurable from Nextflow:
+
+```text
+params.container_image = "genefam-pipeline:latest"
+params.apptainer_image = "genefam-pipeline_latest.sif"
+```
+
 After `python bin/genefam/run_release_checks.py --outdir results/release_checks`, the first file to inspect is:
 
 - `results/handoff/handoff_report.md`
@@ -164,6 +177,16 @@ Add `--expression-matrix path/to/expression.tsv` to subset RNA-seq expression ro
 
 It writes `results/standard_smoke/tables/chromosome_locations.tsv`, records `family_expression` as missing when no expression matrix is supplied or available when `--expression-matrix` is provided, writes `results/standard_smoke/report/final_report.md`, and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
 
+The focused Nextflow single-tool smoke validates true HMMER-only and DIAMOND-only routing through `GeneFamilyFlow` without using mock evidence:
+
+```bash
+python bin/genefam/run_nextflow_single_tool_smoke.py \
+  --conda-env GeneFamilyFlow \
+  --outdir results/nextflow_single_tool_smoke
+```
+
+It records `nextflow_standard_hmmer_only` and `nextflow_standard_diamond_only` in `results/nextflow_single_tool_smoke/nextflow_single_tool_smoke.tsv` and is part of the release gate.
+
 ## Duplication And WGD Event Branch
 
 The duplication-retention helper chain is available as a Nextflow branch for prepared intermediate tables:
@@ -208,6 +231,8 @@ It writes `results/wgd_smoke/report/final_report.md` and is included in `python 
 - The repository is repository-ready but runtime-blocked on this machine until Docker/Apptainer reproducibility can be verified.
 - YAML-driven species-bank discovery, manual species selection, named species groups, and run-plan generation are implemented and tested.
 - The standard identification branch is wired through Nextflow DSL2 for HMMER, DIAMOND, domain filtering, family summaries, family FASTA extraction, alignment and phylogeny manifests, chromosome locations, optional RNA-seq expression handoff, plotting, and final report assembly.
+- `run_nextflow_single_tool_smoke.py` verifies HMMER-only and DIAMOND-only standard routing through Nextflow with `mock_external_tools: false`.
 - The prepared-table WGD branch is wired through Nextflow DSL2 for duplicate classification, Ka/Ks-supported WGD layers, gamma/beta/alpha/theta named-event evidence, family event membership, retention summaries, retention enrichment, and final report assembly.
 - The local `GeneFamilyFlow` runtime verifies Nextflow, HMMER, DIAMOND, MAFFT, IQ-TREE, MEME, and `/usr/local/bin/R`; Docker/Apptainer remain the current machine-level blocker.
+- Docker/Apptainer unblock is documented through `bash results/readiness/runtime_bootstrap.sh`, using `params.container_image` and `params.apptainer_image`.
 - The top-level delivery status is written to `results/handoff/handoff_report.md` for humans and `results/handoff/handoff_summary.tsv` for scripts after each release-gate run.

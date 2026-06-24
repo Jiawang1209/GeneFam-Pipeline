@@ -3581,9 +3581,54 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
 
 Commit:
+- hash: 2c2a2f55e8d05ca2d4554777f5439b81dfa89762
+- message: feat: parameterize container runtime images
+- files: container image params, bootstrap Docker/Apptainer commands, runtime docs, tests, history
+
+Next:
+- Once Docker and Apptainer are installed on the machine, run `bash results/readiness/runtime_bootstrap.sh` to build the local Docker image, build the Apptainer SIF, verify both profiles, and rerun the release gate.
+
+## 2026-06-25 - Document final smoke and container unblock entrypoints
+
+Context:
+- README and quickstart still did not expose the new Nextflow single-tool smoke as a first-class verification command.
+- The container image parameterization and `bash results/readiness/runtime_bootstrap.sh` unblock path were implemented, but the shortest user-facing entrypoints were not fully reflected in top-level docs.
+- The final workflow should be easy to resume from docs without reading implementation history.
+
+Decisions:
+- Add the generated runtime bootstrap script to README as the Docker/Apptainer unblock command.
+- Document `params.container_image` and `params.apptainer_image` in README.
+- Add the focused Nextflow single-tool smoke command to README and quickstart.
+- List `nextflow_standard_hmmer_only` and `nextflow_standard_diamond_only` as quickstart evidence rows.
+- Keep the current status explicit: repository-ready but runtime-blocked until Docker/Apptainer are installed.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/quickstart.md`
+- `tests/test_quickstart_docs.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_quickstart_docs.py tests/test_runtime_environment_files.py::test_readme_current_status_matches_release_evidence -q` first failed because README and quickstart did not mention `run_nextflow_single_tool_smoke.py`, `bash results/readiness/runtime_bootstrap.sh`, or the container image params.
+- After updating README and quickstart, the same command passed with 3 tests.
+- `python -m pytest tests/test_quickstart_docs.py tests/test_runtime_environment_files.py tests/test_release_audit_docs.py -q` passed with 15 tests.
+- `python -m pytest tests -q` passed with 195 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 13`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
+- `results/handoff/handoff_summary.tsv` still contains `next_unblock_command	bash results/readiness/runtime_bootstrap.sh`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Once Docker and Apptainer are installed on the machine, run `bash results/readiness/runtime_bootstrap.sh` to build the local Docker image, build the Apptainer SIF, verify both profiles, and rerun the release gate.
+- Keep the docs, handoff report, and release gate aligned while Docker/Apptainer remain the only machine-level blocker.

@@ -18,10 +18,18 @@ python bin/genefam/run_release_checks.py --outdir results/release_checks
 
 Expected on the current Mac development machine:
 
-- Python tests, config validation, mock MVP, standard smoke, WGD smoke, Nextflow mock MVP, Nextflow standard smoke, Nextflow WGD smoke, and prepared WGD handoff example should pass through `GeneFamilyFlow`.
+- Python tests, config validation, mock MVP, standard smoke, WGD smoke, Nextflow mock MVP, Nextflow standard smoke, Nextflow standard single-tool smoke, Nextflow WGD smoke, and prepared WGD handoff example should pass through `GeneFamilyFlow`.
 - The readiness audit may fail while `docker` and `apptainer` are unavailable.
 - `results/release_checks/release_checks.md` separates `Required failed` from `Optional failed`, so optional container-profile smoke failures do not obscure the required readiness blocker.
 - Inspect `results/release_checks/release_checks.md` and `results/readiness/command_readiness.tsv` for exact evidence.
+
+When Docker and Apptainer are installed, use the generated unblock script:
+
+```bash
+bash results/readiness/runtime_bootstrap.sh
+```
+
+It builds `genefam-pipeline:latest`, builds `genefam-pipeline_latest.sif`, runs Docker and Apptainer profile smokes, and reruns the release gate.
 
 ## 2. Run The Quickstart Handoff
 
@@ -98,7 +106,25 @@ Key outputs:
 
 The example verifies configured `alpha`, `beta`, `gamma`, and `theta` WGD event labels. These labels are interpreted from Ks-supported WGD layers and the configured event mapping; they are not raw MCScanX or Ka/Ks outputs.
 
-## 6. What To Read Next
+## 6. Run The Nextflow Single-Tool Smoke
+
+This checks real Nextflow routing for HMMER-only and DIAMOND-only standard identification paths through `GeneFamilyFlow`.
+
+```bash
+python bin/genefam/run_nextflow_single_tool_smoke.py \
+  --conda-env GeneFamilyFlow \
+  --config configs/example.config.yaml \
+  --groups configs/species_groups.yaml \
+  --mock-evidence-dir tests/fixtures/mock_evidence \
+  --outdir results/nextflow_single_tool_smoke
+```
+
+Key checks in `results/nextflow_single_tool_smoke/nextflow_single_tool_smoke.tsv`:
+
+- `nextflow_standard_hmmer_only`
+- `nextflow_standard_diamond_only`
+
+## 7. What To Read Next
 
 - `docs/input_contract.md`: species bank, YAML, and prepared-table contracts.
 - `docs/standard_to_wgd_handoff.md`: how standard branch outputs connect to WGD evidence.
