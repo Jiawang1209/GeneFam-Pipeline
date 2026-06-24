@@ -33,6 +33,39 @@ def read_tsv(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle, delimiter="\t"))
 
 
+def _rebase_path(value: str, base_dir: Path | None) -> str:
+    if not value or not base_dir:
+        return value
+    path = Path(value)
+    if path.is_absolute():
+        return value
+    return str(Path(base_dir) / path)
+
+
+def resolve_input_paths(
+    manifest_rows: list[dict[str, str]],
+    config: dict[str, Any],
+    base_dir: Path | None,
+) -> tuple[list[dict[str, str]], dict[str, Any]]:
+    resolved_manifest = []
+    for row in manifest_rows:
+        resolved = dict(row)
+        for key in ("pep", "gff3", "cds", "genome"):
+            resolved[key] = _rebase_path(resolved.get(key, ""), base_dir)
+        resolved_manifest.append(resolved)
+
+    resolved_config = dict(config)
+    gene_family = dict((config.get("gene_family", {}) or {}))
+    gene_family["hmm_profiles"] = [
+        {**profile, "path": _rebase_path(str(profile.get("path", "")), base_dir)}
+        for profile in gene_family.get("hmm_profiles", []) or []
+    ]
+    if gene_family.get("reference_peptides"):
+        gene_family["reference_peptides"] = _rebase_path(str(gene_family["reference_peptides"]), base_dir)
+    resolved_config["gene_family"] = gene_family
+    return resolved_manifest, resolved_config
+
+
 def build_hmmer_inputs(manifest_rows: list[dict[str, str]], config: dict[str, Any]) -> list[dict[str, str]]:
     profiles = (config.get("gene_family", {}) or {}).get("hmm_profiles", []) or []
     rows: list[dict[str, str]] = []
@@ -76,9 +109,11 @@ def main() -> None:
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--species-manifest", required=True, type=Path)
     parser.add_argument("--outdir", required=True, type=Path)
+    parser.add_argument("--base-dir", default=None, type=Path)
     args = parser.parse_args()
     config = load_yaml(args.config)
     manifest_rows = read_tsv(args.species_manifest)
+    manifest_rows, config = resolve_input_paths(manifest_rows, config, args.base_dir)
     write_tsv(build_hmmer_inputs(manifest_rows, config), HMMER_FIELDNAMES, args.outdir / "hmmer_inputs.tsv")
     write_tsv(build_diamond_inputs(manifest_rows, config), DIAMOND_FIELDNAMES, args.outdir / "diamond_inputs.tsv")
 

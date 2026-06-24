@@ -53,9 +53,9 @@ process BUILD_PLOT_MANIFEST {
     script:
     """
     python ${projectDir}/../bin/genefam/build_plot_manifest.py \\
-      --plot family_counts=plots/family_counts.pdf=Family member counts by species \\
-      --plot ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs \\
-      --plot expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap \\
+      --plot "family_counts=plots/family_counts.pdf=Family member counts by species" \\
+      --plot "ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs" \\
+      --plot "expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap" \\
       --out plot_manifest.tsv
     """
 }

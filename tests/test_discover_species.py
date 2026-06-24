@@ -43,6 +43,25 @@ def test_discover_species_supports_all_with_exclude():
     assert [row["species_id"] for row in rows] == ["Arabidopsis_thaliana"]
 
 
+def test_discover_species_resolves_relative_root_against_base_dir(tmp_path):
+    species_dir = tmp_path / "species_bank" / "Demo_species"
+    species_dir.mkdir(parents=True)
+    (species_dir / "Demo_species.pep.fa").write_text(">gene1\nMSSS\n", encoding="utf-8")
+    (species_dir / "Demo_species.gff3").write_text("##gff-version 3\n", encoding="utf-8")
+
+    rows = discover_species(
+        root=Path("species_bank"),
+        include="all",
+        exclude=[],
+        patterns=PATTERNS,
+        required=REQUIRED,
+        base_dir=tmp_path,
+    )
+
+    assert rows[0]["pep"] == str(species_dir / "Demo_species.pep.fa")
+    assert rows[0]["gff3"] == str(species_dir / "Demo_species.gff3")
+
+
 def test_discover_species_fails_for_missing_required_file(tmp_path):
     species_dir = tmp_path / "Missing_gff"
     species_dir.mkdir()

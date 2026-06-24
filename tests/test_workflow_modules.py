@@ -32,6 +32,11 @@ def test_identification_inputs_module_builds_hmmer_and_diamond_tables():
 def test_domain_filter_module_can_concatenate_species_candidate_tables():
     module = Path("workflows/modules/domain_filter.nf").read_text(encoding="utf-8")
 
+    assert "process MOCK_IDENTIFICATION_EVIDENCE" in module
+    assert "${mock_evidence_dir}/hmmer.tsv" in module
+    assert "${mock_evidence_dir}/diamond.tsv" in module
+    assert 'tuple val("mock"), path("hmmer.tsv"), path("diamond.tsv")' in module
+
     assert "process CONCAT_FAMILY_CANDIDATES" in module
     assert "concat_tsv.py" in module
     assert "--inputs ${candidate_tables}" in module
@@ -69,12 +74,15 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "include { EXTRACT_FAMILY_SEQUENCES; BUILD_STANDARD_REPORT_INDEX; ASSEMBLE_STANDARD_REPORT } from './modules/standard_postprocess.nf'" in workflow
     assert "include { HMMER_SEARCH } from './modules/hmmer_search.nf'" in workflow
     assert "include { DIAMOND_SEARCH } from './modules/diamond_search.nf'" in workflow
-    assert "include { DOMAIN_FILTER; CONCAT_FAMILY_CANDIDATES } from './modules/domain_filter.nf'" in workflow
+    assert "include { DOMAIN_FILTER; CONCAT_FAMILY_CANDIDATES; MOCK_IDENTIFICATION_EVIDENCE } from './modules/domain_filter.nf'" in workflow
     assert "include { FAMILY_SUMMARY } from './modules/family_summary.nf'" in workflow
     assert "} else if (params.run_identification) {" in workflow
     assert "BUILD_IDENTIFICATION_INPUTS(config_ch, PREPARE_SPECIES.out)" in workflow
     assert "HMMER_SEARCH(hmmer_inputs_ch)" in workflow
     assert "DIAMOND_SEARCH(diamond_inputs_ch)" in workflow
+    assert "if (params.mock_external_tools)" in workflow
+    assert "MOCK_IDENTIFICATION_EVIDENCE(mock_evidence_ch)" in workflow
+    assert "joined_evidence_ch = MOCK_IDENTIFICATION_EVIDENCE.out" in workflow
     assert "DOMAIN_FILTER(joined_evidence_ch, final_rule_ch)" in workflow
     assert "CONCAT_FAMILY_CANDIDATES(candidate_tables_ch.collect())" in workflow
     assert "FAMILY_SUMMARY(CONCAT_FAMILY_CANDIDATES.out)" in workflow
@@ -179,9 +187,9 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
 
     assert "process BUILD_PLOT_MANIFEST" in module
     assert "build_plot_manifest.py" in module
-    assert "--plot family_counts=plots/family_counts.pdf=Family member counts by species" in module
-    assert "--plot ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs" in module
-    assert "--plot expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap" in module
+    assert '--plot "family_counts=plots/family_counts.pdf=Family member counts by species"' in module
+    assert '--plot "ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs"' in module
+    assert '--plot "expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap"' in module
     assert "--out plot_manifest.tsv" in module
 
 

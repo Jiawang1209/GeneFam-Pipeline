@@ -84,6 +84,17 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "Nextflow standard branch smoke",
+            [
+                python,
+                "bin/genefam/run_nextflow_standard_smoke.py",
+                "--conda-env",
+                "GeneFamilyFlow",
+                "--outdir",
+                "results/nextflow_standard_smoke",
+            ],
+        ),
+        CheckSpec(
             "readiness audit",
             [
                 python,

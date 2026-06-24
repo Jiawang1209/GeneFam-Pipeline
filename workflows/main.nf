@@ -4,7 +4,7 @@ include { PREPARE_SPECIES } from './modules/prepare_species.nf'
 include { BUILD_IDENTIFICATION_INPUTS } from './modules/identification_inputs.nf'
 include { HMMER_SEARCH } from './modules/hmmer_search.nf'
 include { DIAMOND_SEARCH } from './modules/diamond_search.nf'
-include { DOMAIN_FILTER; CONCAT_FAMILY_CANDIDATES } from './modules/domain_filter.nf'
+include { DOMAIN_FILTER; CONCAT_FAMILY_CANDIDATES; MOCK_IDENTIFICATION_EVIDENCE } from './modules/domain_filter.nf'
 include { FAMILY_SUMMARY } from './modules/family_summary.nf'
 include { EXTRACT_FAMILY_SEQUENCES; BUILD_STANDARD_REPORT_INDEX; ASSEMBLE_STANDARD_REPORT } from './modules/standard_postprocess.nf'
 include { MOCK_MVP } from './modules/mock_mvp.nf'
@@ -66,15 +66,6 @@ workflow {
         RETENTION_ENRICHMENT.out.view { enrichment -> "Retention enrichment: ${enrichment}" }
     } else if (params.run_identification) {
         PREPARE_SPECIES(config_ch, groups_ch)
-        BUILD_IDENTIFICATION_INPUTS(config_ch, PREPARE_SPECIES.out)
-
-        hmmer_inputs_ch = BUILD_IDENTIFICATION_INPUTS.out[0]
-            .splitCsv(header: true, sep: '\t')
-            .map { row -> tuple(row.species_id, file(row.pep), row.hmm_id, file(row.hmm_profile)) }
-
-        diamond_inputs_ch = BUILD_IDENTIFICATION_INPUTS.out[1]
-            .splitCsv(header: true, sep: '\t')
-            .map { row -> tuple(row.species_id, file(row.pep), file(row.reference_peptides)) }
 
         final_rule_ch = Channel.value(params.final_rule)
         family_name_ch = Channel.value(params.gene_family)
@@ -84,12 +75,28 @@ workflow {
         alignment_outdir_ch = Channel.value("${params.outdir}/alignment")
         phylogeny_outdir_ch = Channel.value("${params.outdir}/phylogeny")
 
-        HMMER_SEARCH(hmmer_inputs_ch)
-        DIAMOND_SEARCH(diamond_inputs_ch)
+        if (params.mock_external_tools) {
+            mock_evidence_ch = Channel.value(file(params.mock_evidence_dir))
+            MOCK_IDENTIFICATION_EVIDENCE(mock_evidence_ch)
+            joined_evidence_ch = MOCK_IDENTIFICATION_EVIDENCE.out
+        } else {
+            BUILD_IDENTIFICATION_INPUTS(config_ch, PREPARE_SPECIES.out)
 
-        joined_evidence_ch = HMMER_SEARCH.out
-            .join(DIAMOND_SEARCH.out, by: 0)
-            .map { species_id, hmmer_tsv, diamond_tsv -> tuple(species_id, hmmer_tsv, diamond_tsv) }
+            hmmer_inputs_ch = BUILD_IDENTIFICATION_INPUTS.out[0]
+                .splitCsv(header: true, sep: '\t')
+                .map { row -> tuple(row.species_id, file(row.pep), row.hmm_id, file(row.hmm_profile)) }
+
+            diamond_inputs_ch = BUILD_IDENTIFICATION_INPUTS.out[1]
+                .splitCsv(header: true, sep: '\t')
+                .map { row -> tuple(row.species_id, file(row.pep), file(row.reference_peptides)) }
+
+            HMMER_SEARCH(hmmer_inputs_ch)
+            DIAMOND_SEARCH(diamond_inputs_ch)
+
+            joined_evidence_ch = HMMER_SEARCH.out
+                .join(DIAMOND_SEARCH.out, by: 0)
+                .map { species_id, hmmer_tsv, diamond_tsv -> tuple(species_id, hmmer_tsv, diamond_tsv) }
+        }
 
         DOMAIN_FILTER(joined_evidence_ch, final_rule_ch)
         candidate_tables_ch = DOMAIN_FILTER.out.map { species_id, candidates -> candidates }

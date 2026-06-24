@@ -54,10 +54,13 @@ def discover_species(
     exclude: list[str] | tuple[str, ...] | None,
     patterns: dict[str, list[str]],
     required: dict[str, bool],
+    base_dir: Path | None = None,
 ) -> list[dict[str, str]]:
     """Return sorted species manifest rows discovered under root."""
 
     root = Path(root)
+    if base_dir and not root.is_absolute():
+        root = Path(base_dir) / root
     if not root.exists():
         raise ValueError(f"Species bank root does not exist: {root}")
     if not root.is_dir():
@@ -118,6 +121,7 @@ def main() -> None:
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--groups", default=None, type=Path)
     parser.add_argument("--out", required=True, type=Path)
+    parser.add_argument("--base-dir", default=None, type=Path)
     args = parser.parse_args()
 
     config = _load_yaml(args.config)
@@ -130,6 +134,7 @@ def main() -> None:
         exclude=exclude,
         patterns=input_config.get("patterns", {}),
         required=input_config.get("required", {}),
+        base_dir=args.base_dir,
     )
     write_manifest(rows, args.out)
 

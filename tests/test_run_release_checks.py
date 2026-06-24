@@ -132,6 +132,17 @@ def test_default_checks_include_nextflow_smoke_before_readiness():
     assert "--outdir results/nextflow_smoke" in " ".join(smoke.command)
 
 
+def test_default_checks_include_nextflow_standard_smoke_before_readiness():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("Nextflow standard branch smoke") < names.index("readiness audit")
+    assert names.index("Nextflow standard branch smoke") > names.index("Nextflow mock MVP smoke")
+    smoke = next(check for check in default_checks() if check.name == "Nextflow standard branch smoke")
+    assert "bin/genefam/run_nextflow_standard_smoke.py" in " ".join(smoke.command)
+    assert "--conda-env GeneFamilyFlow" in " ".join(smoke.command)
+    assert "--outdir results/nextflow_standard_smoke" in " ".join(smoke.command)
+
+
 def test_default_readiness_check_audits_genefamilyflow_conda_env():
     readiness = next(check for check in default_checks() if check.name == "readiness audit")
 

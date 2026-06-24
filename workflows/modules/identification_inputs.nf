@@ -14,6 +14,7 @@ process BUILD_IDENTIFICATION_INPUTS {
     python ${projectDir}/../bin/genefam/build_identification_inputs.py \\
       --config ${config_file} \\
       --species-manifest ${species_manifest} \\
+      --base-dir ${projectDir}/.. \\
       --outdir identification_inputs
     """
 }

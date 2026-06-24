@@ -2215,7 +2215,64 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because Docker and Apptainer are missing, but pytest, config validation, mock MVP, standard branch smoke, WGD event smoke, Nextflow mock MVP smoke, and runtime bootstrap plan passed.
 
 Commit:
-- pending
+- hash: 633986f14e7ab3cd89b77ed4a19ac9f83d6bb05b
+- message: feat: run Nextflow smoke through GeneFamilyFlow
+- files: split local/Linux runtime environments, Dockerfile, Nextflow activated profile, module script path fixes, mock MVP base-dir support, Nextflow smoke runner, readiness/bootstrap docs, tests, history
 
 Next:
 - Install or expose Docker or Apptainer to verify container profiles; otherwise continue wiring the standard external-tool branch beyond the mock MVP using the now-working `GeneFamilyFlow` local environment.
+
+## 2026-06-24 - Add Nextflow standard branch smoke
+
+Context:
+- The previous Nextflow verification only exercised the mock MVP wrapper branch.
+- The real `run_identification` branch still needed a stable smoke path that enters the standard DSL2 graph without depending on toy proteins matching the real PF00657 HMM profile.
+- A first real standard-branch Nextflow run failed in `BUILD_PLOT_MANIFEST` because unquoted plot descriptions with spaces were split by the shell.
+
+Decisions:
+- Add `params.mock_external_tools` for development and CI smoke runs so the standard branch can inject fixture HMMER/DIAMOND evidence while still exercising species discovery, domain filtering, family summary, sequence extraction, annotation integration, plotting manifest, and report assembly wiring.
+- Keep the real HMMER/DIAMOND path as the default when `mock_external_tools` is false.
+- Add `--base-dir ${projectDir}/..` to species discovery and identification input generation so staged Nextflow config files can resolve repository-relative species banks, HMM profiles, and reference peptides.
+- Quote all `BUILD_PLOT_MANIFEST --plot` values because their descriptions contain spaces.
+- Add a dedicated `run_nextflow_standard_smoke.py` release gate after the mock MVP Nextflow smoke.
+
+Added:
+- `bin/genefam/run_nextflow_standard_smoke.py`
+- `tests/test_run_nextflow_standard_smoke.py`
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_identification_inputs.py`
+- `bin/genefam/discover_species.py`
+- `bin/genefam/run_release_checks.py`
+- `tests/test_build_identification_inputs.py`
+- `tests/test_discover_species.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/domain_filter.nf`
+- `workflows/modules/identification_inputs.nf`
+- `workflows/modules/plots.nf`
+- `workflows/modules/prepare_species.nf`
+- `workflows/nextflow.config`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_discover_species.py::test_discover_species_resolves_relative_root_against_base_dir tests/test_build_identification_inputs.py::test_resolve_input_paths_rebases_relative_manifest_and_family_paths tests/test_workflow_modules.py::test_domain_filter_module_can_concatenate_species_candidate_tables tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_run_nextflow_standard_smoke.py tests/test_run_release_checks.py::test_default_checks_include_nextflow_standard_smoke_before_readiness -q` first failed because `resolve_input_paths` and `run_nextflow_standard_smoke.py` did not exist.
+- After implementation, the same targeted test set passed with 8 tests.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_standard_smoke` first failed in `BUILD_PLOT_MANIFEST` because plot descriptions were unquoted.
+- `python -m pytest tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin -q` first failed until `--plot` arguments were quoted.
+- `python -m pytest tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin -q` passed with 1 test.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_standard_smoke` passed and wrote `results/nextflow_standard_smoke/nextflow_standard_smoke.tsv`.
+- `python -m pytest tests -q` passed with 138 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker and Apptainer are missing, but pytest, config validation, mock MVP, Python standard branch smoke, WGD event smoke, Nextflow mock MVP smoke, Nextflow standard branch smoke, and runtime bootstrap plan passed.
+- `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
+
+Commit:
+- pending
+
+Next:
+- Add `publishDir` or a report copy-out strategy for the standard Nextflow branch so completed process outputs land in `results/nextflow_standard_smoke/standard` instead of remaining only in Nextflow work directories.
+- After container runtimes are installed or exposed, rerun release checks to verify Docker/Apptainer profiles.

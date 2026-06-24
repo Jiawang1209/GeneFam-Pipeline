@@ -1,3 +1,19 @@
+process MOCK_IDENTIFICATION_EVIDENCE {
+    tag "mock identification evidence"
+
+    input:
+    path mock_evidence_dir
+
+    output:
+    tuple val("mock"), path("hmmer.tsv"), path("diamond.tsv")
+
+    script:
+    """
+    cp ${mock_evidence_dir}/hmmer.tsv hmmer.tsv
+    cp ${mock_evidence_dir}/diamond.tsv diamond.tsv
+    """
+}
+
 process DOMAIN_FILTER {
     tag "${species_id}"
 

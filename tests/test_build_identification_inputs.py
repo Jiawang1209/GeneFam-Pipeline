@@ -7,6 +7,7 @@ from bin.genefam.build_identification_inputs import (
     build_diamond_inputs,
     build_hmmer_inputs,
     read_tsv,
+    resolve_input_paths,
 )
 
 
@@ -49,6 +50,23 @@ def test_build_diamond_inputs_uses_reference_peptides_when_configured():
     assert build_diamond_inputs(manifest_rows, config) == [
         {"species_id": "Arabidopsis_thaliana", "pep": "ath.pep.fa", "reference_peptides": "reference.fa"}
     ]
+
+
+def test_resolve_input_paths_rebases_relative_manifest_and_family_paths(tmp_path):
+    base_dir = tmp_path / "repo"
+    manifest_rows = [{"species_id": "Arabidopsis_thaliana", "pep": "tests/ath.pep.fa"}]
+    config = {
+        "gene_family": {
+            "hmm_profiles": [{"id": "PF00657", "path": "Reference/PF00657.hmm"}],
+            "reference_peptides": "tests/reference.fa",
+        }
+    }
+
+    resolved_manifest, resolved_config = resolve_input_paths(manifest_rows, config, base_dir)
+
+    assert resolved_manifest[0]["pep"] == str(base_dir / "tests/ath.pep.fa")
+    assert resolved_config["gene_family"]["hmm_profiles"][0]["path"] == str(base_dir / "Reference/PF00657.hmm")
+    assert resolved_config["gene_family"]["reference_peptides"] == str(base_dir / "tests/reference.fa")
 
 
 def test_build_identification_inputs_cli_writes_hmmer_and_diamond_tables(tmp_path):
