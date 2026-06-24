@@ -4546,12 +4546,52 @@ Verification:
 - `results/delivery_bundle/delivery_manifest.tsv` was refreshed by the release runner after objective-audit generation.
 
 Commit:
-- hash: pending
+- hash: 9f1d4020bb21f8f8d2d8a49b1ab022129e0442c3
 - message: feat: add delivery bundle index
 - files: delivery bundle helper, release runner, README, quickstart, release audit, tests, history
 
 Next:
 - Commit the delivery bundle index work, then continue toward the final objective while preserving Docker/Apptainer as the remaining external blocker.
+
+## 2026-06-25 - Refresh delivery bundle in local acceptance
+
+Context:
+- `run_release_checks.py` now writes `results/delivery_bundle/`, but `scripts/run_local_acceptance.sh` reruns the quickstart handoff after the release gate.
+- That meant local acceptance could leave `results/quickstart/quickstart_summary.tsv` newer than the delivery bundle even though README promised both are refreshed.
+
+Decisions:
+- Add `DELIVERY_OUTDIR`, defaulting to `results/delivery_bundle`.
+- Run `bin/genefam/run_delivery_bundle.py` after the quickstart handoff so the final delivery manifest reads the latest quickstart summary.
+- Print delivery bundle paths in the primary handoff file list.
+- Preserve release-gate exit semantics: release failure remains the first returned status, then quickstart status, then delivery-bundle status.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `scripts/run_local_acceptance.sh`
+- `tests/test_local_acceptance_script.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_local_acceptance_script.py -q` first failed because `scripts/run_local_acceptance.sh` did not define `DELIVERY_OUTDIR`, did not call `run_delivery_bundle.py`, and did not print delivery bundle outputs.
+- The same command passed with 2 tests after updating the acceptance script.
+- `python -m pytest tests -q` passed with 240 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 24`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; the embedded pytest check reports `240 passed`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+- `results/delivery_bundle/delivery_manifest.tsv` still lists standard and WGD final reports, alpha/beta/gamma/theta event evidence, GeneFamilyFlow, `/usr/local/bin/R`, and missing `docker`/`apptainer`.
+
+Commit:
+- hash: pending
+- message: fix: refresh delivery bundle in local acceptance
+- files: local acceptance script, acceptance tests, history
+
+Next:
+- Commit the local acceptance refresh, then continue toward the final objective while Docker/Apptainer remains the external runtime blocker.
 
 ## 2026-06-25 - Add species selection release smoke
 

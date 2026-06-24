@@ -11,10 +11,17 @@ def test_local_acceptance_script_runs_release_gate_and_quickstart():
     assert "CONDA_ENV=${CONDA_ENV:-GeneFamilyFlow}" in text
     assert "RELEASE_OUTDIR=${RELEASE_OUTDIR:-results/release_checks}" in text
     assert "QUICKSTART_OUTDIR=${QUICKSTART_OUTDIR:-results/quickstart}" in text
+    assert "DELIVERY_OUTDIR=${DELIVERY_OUTDIR:-results/delivery_bundle}" in text
     assert "bin/genefam/run_release_checks.py" in text
     assert "bin/genefam/run_quickstart.py" in text
+    assert "bin/genefam/run_delivery_bundle.py" in text
     assert "--conda-env \"$CONDA_ENV\"" in text
+    assert "--quickstart \"$QUICKSTART_OUTDIR/quickstart_summary.tsv\"" in text
+    assert "--outdir \"$DELIVERY_OUTDIR\"" in text
+    assert text.index("bin/genefam/run_quickstart.py") < text.index("bin/genefam/run_delivery_bundle.py")
     assert "results/handoff/handoff_report.md" in text
+    assert "${DELIVERY_OUTDIR}/delivery_manifest.tsv" in text
+    assert "${DELIVERY_OUTDIR}/delivery_bundle.md" in text
 
 
 def test_quickstart_mentions_local_acceptance_script():
