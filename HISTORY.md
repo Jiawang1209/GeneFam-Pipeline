@@ -2074,7 +2074,62 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because Nextflow mock MVP smoke failed with `missing_nextflow` and readiness audit failed, but pytest, config validation, mock MVP, standard branch smoke, WGD event smoke, and runtime bootstrap plan passed.
 
 Commit:
-- pending
+- hash: 055a36abce4a80b31c6c451781e7d868b8d7e09e
+- message: feat: add standard expression smoke path
+- files: standard smoke expression option, README docs, tests, history
 
 Next:
 - Add a plotted expression smoke/report path or move to installing/activating the Nextflow and GeneFamilyFlow runtime to close the remaining release gate.
+
+## 2026-06-24 - Make readiness audit GeneFamilyFlow-aware
+
+Context:
+- The `GeneFamilyFlow` Conda environment exists on this machine, but the active shell is `base`, so PATH-only readiness audits marked all Conda-contained bioinformatics tools as missing.
+- Direct probing showed `hmmsearch` is available inside `GeneFamilyFlow`, while `nextflow`, `diamond`, `mafft`, `iqtree2`, and `meme` are still missing from that environment.
+- Release checks needed to distinguish host PATH availability from Conda-environment availability.
+
+Decisions:
+- Add optional `--conda-env GeneFamilyFlow` support to `audit_readiness.py`.
+- When a command is not on PATH but is found inside the requested Conda environment, mark it as `available_in_conda`.
+- Count `available_in_conda` as available in readiness summaries.
+- Run the release-check readiness audit with `--conda-env GeneFamilyFlow` by default.
+- Update README, readiness checklist, and release audit commands to use the environment-aware audit.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/audit_readiness.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `tests/test_audit_readiness.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `conda env list` showed a `GeneFamilyFlow` environment at `/Users/liuyue/miniforge3/envs/GeneFamilyFlow`.
+- `conda run -n GeneFamilyFlow nextflow -version` exited `127`; `conda run -n GeneFamilyFlow hmmsearch -h` exited `0`; `conda run -n GeneFamilyFlow diamond version`, `mafft --version`, `iqtree2 --version`, and `meme -version` exited `127`.
+- `python -m pytest tests/test_audit_readiness.py -q` first failed because `audit_commands` did not accept `conda_env`, `summarize_status` did not count `available_in_conda`, and the CLI did not accept `--conda-env`.
+- Implemented Conda-environment command probing in `audit_readiness.py`.
+- `python -m pytest tests/test_audit_readiness.py -q` passed with 5 tests.
+- `python -m pytest tests/test_run_release_checks.py::test_default_readiness_check_audits_genefamilyflow_conda_env -q` first failed because release checks did not pass `--conda-env GeneFamilyFlow`.
+- Updated release checks and docs.
+- `python -m pytest tests/test_audit_readiness.py tests/test_run_release_checks.py tests/test_runtime_environment_files.py tests/test_release_audit_docs.py -q` passed with 21 tests.
+- `python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv` exited `1` and marked `hmmsearch` as `available_in_conda`; `nextflow`, `docker`, `apptainer`, `diamond`, `mafft`, `iqtree2`, and `meme` remain missing.
+- `python -m pytest tests -q` passed with 126 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/advanced_modules.example.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because Nextflow mock MVP smoke failed with `missing_nextflow` and readiness audit found the remaining missing runtime commands, but pytest, config validation, mock MVP, standard branch smoke, WGD event smoke, and runtime bootstrap plan passed.
+
+Commit:
+- pending
+
+Next:
+- Update the `GeneFamilyFlow` environment from `envs/GeneFamilyFlow.conda.yaml` so `nextflow`, `diamond`, `mafft`, `iqtree2`, and `meme` become available, then rerun Nextflow smoke and release checks.

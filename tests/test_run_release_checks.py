@@ -129,3 +129,9 @@ def test_default_checks_include_nextflow_smoke_before_readiness():
     smoke = next(check for check in default_checks() if check.name == "Nextflow mock MVP smoke")
     assert "bin/genefam/run_nextflow_smoke.py" in " ".join(smoke.command)
     assert "--outdir results/nextflow_smoke" in " ".join(smoke.command)
+
+
+def test_default_readiness_check_audits_genefamilyflow_conda_env():
+    readiness = next(check for check in default_checks() if check.name == "readiness audit")
+
+    assert "--conda-env GeneFamilyFlow" in " ".join(readiness.command)

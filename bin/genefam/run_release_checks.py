@@ -83,7 +83,14 @@ def default_checks() -> list[CheckSpec]:
         ),
         CheckSpec(
             "readiness audit",
-            [python, "bin/genefam/audit_readiness.py", "--out", "results/readiness/command_readiness.tsv"],
+            [
+                python,
+                "bin/genefam/audit_readiness.py",
+                "--conda-env",
+                "GeneFamilyFlow",
+                "--out",
+                "results/readiness/command_readiness.tsv",
+            ],
         ),
         CheckSpec(
             "runtime bootstrap plan",

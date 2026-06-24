@@ -34,7 +34,7 @@ Expected core mock outputs:
 Run:
 
 ```bash
-python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv
+python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv
 python bin/genefam/plan_runtime_bootstrap.py \
   --readiness results/readiness/command_readiness.tsv \
   --outdir results/readiness

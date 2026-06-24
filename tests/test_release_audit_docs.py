@@ -39,7 +39,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
         "python bin/genefam/validate_config.py configs/example.config.yaml",
         "python bin/genefam/validate_config.py configs/advanced_modules.example.yaml",
         "python bin/genefam/run_mock_mvp.py",
-        "python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv",
+        "python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv",
         "python bin/genefam/plan_runtime_bootstrap.py",
     ]
     for command in required_commands:

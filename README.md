@@ -72,7 +72,7 @@ Readiness audit:
 ```bash
 python bin/genefam/run_release_checks.py --outdir results/release_checks
 python bin/genefam/run_nextflow_smoke.py --outdir results/nextflow_smoke
-python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv
+python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv
 python bin/genefam/plan_runtime_bootstrap.py \
   --readiness results/readiness/command_readiness.tsv \
   --outdir results/readiness

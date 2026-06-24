@@ -25,7 +25,7 @@ python bin/genefam/run_wgd_smoke.py \
   --events-config configs/wgd_events.brassicaceae.yaml \
   --outdir results/wgd_smoke
 python bin/genefam/run_nextflow_smoke.py --outdir results/nextflow_smoke
-python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv
+python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv
 python bin/genefam/plan_runtime_bootstrap.py \
   --readiness results/readiness/command_readiness.tsv \
   --outdir results/readiness
@@ -48,7 +48,7 @@ The release checks runner writes:
 | YAML-driven parameters | `configs/example.config.yaml`; `configs/advanced_modules.example.yaml`; `bin/genefam/build_run_plan.py` | `python bin/genefam/build_run_plan.py --config configs/example.config.yaml --out results/mock_mvp/tables/run_plan.tsv` |
 | GeneFamilyFlow runtime | `envs/GeneFamilyFlow.conda.yaml`; `workflows/nextflow.config`; `Dockerfile` | `python -m pytest tests/test_runtime_environment_files.py -q` |
 | `/usr/local/bin/R` plotting and reporting convention | `workflows/modules/plots.nf`; `scripts/plot_family_counts.R`; `scripts/plot_kaks.R`; `scripts/plot_expression_heatmap.R` | `python -m pytest tests/test_workflow_modules.py tests/test_runtime_environment_files.py -q` |
-| Docker/Conda reproducible running | `Dockerfile`; `envs/GeneFamilyFlow.conda.yaml`; `bin/genefam/plan_runtime_bootstrap.py`; `workflows/nextflow.config` profiles `local`, `docker`, `apptainer` | `python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv` and `python bin/genefam/plan_runtime_bootstrap.py --readiness results/readiness/command_readiness.tsv --outdir results/readiness` |
+| Docker/Conda reproducible running | `Dockerfile`; `envs/GeneFamilyFlow.conda.yaml`; `bin/genefam/plan_runtime_bootstrap.py`; `workflows/nextflow.config` profiles `local`, `docker`, `apptainer` | `python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv` and `python bin/genefam/plan_runtime_bootstrap.py --readiness results/readiness/command_readiness.tsv --outdir results/readiness` |
 | species bank input model | `docs/input_contract.md`; `bin/genefam/discover_species.py`; `tests/fixtures/species_bank` | `python -m pytest tests/test_discover_species.py -q` |
 | target species selection | `configs/species_groups.yaml`; `species.include`; `species.exclude`; `run.species_group` | `python -m pytest tests/test_discover_species.py tests/test_build_run_plan.py -q` |
 | standard identification branch | `workflows/main.nf`; `workflows/modules/identification_inputs.nf`; `workflows/modules/standard_postprocess.nf`; `workflows/modules/annotation_integration.nf`; `bin/genefam/build_identification_inputs.py`; `bin/genefam/extract_family_sequences.py`; `bin/genefam/extract_chromosome_locations.py`; `bin/genefam/subset_expression_matrix.py`; `bin/genefam/build_standard_report_index.py`; `bin/genefam/assemble_report.py`; `bin/genefam/run_standard_smoke.py`; `bin/genefam/concat_tsv.py`; `results/standard_smoke/tables/chromosome_locations.tsv`; `results/standard_smoke/report/final_report.md` | `python -m pytest tests/test_build_identification_inputs.py tests/test_concat_tsv.py tests/test_extract_family_sequences.py tests/test_extract_chromosome_locations.py tests/test_subset_expression_matrix.py tests/test_standard_branch_report_index.py tests/test_assemble_report.py tests/test_run_standard_smoke.py tests/test_workflow_modules.py -q` |
@@ -77,7 +77,8 @@ The repository-level implementation and tests are in place, but this machine doe
 Recent readiness audits found:
 
 - available: `conda`, `/usr/local/bin/R`
-- missing: `nextflow`, `docker`, `apptainer`, `hmmsearch`, `diamond`, `mafft`, `iqtree2`, `meme`
+- available inside `GeneFamilyFlow`: `hmmsearch`
+- missing: `nextflow`, `docker`, `apptainer`, `diamond`, `mafft`, `iqtree2`, `meme`
 
 This means:
 

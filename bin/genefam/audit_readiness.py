@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 from typing import Callable
@@ -24,21 +25,55 @@ DEFAULT_COMMANDS = [
     "iqtree2",
     "meme",
 ]
+CONDA_SCOPED_COMMANDS = {"nextflow", "hmmsearch", "diamond", "mafft", "iqtree2", "meme"}
+
+
+def conda_which(env_name: str, command: str) -> str:
+    if "/" in command or command not in CONDA_SCOPED_COMMANDS or not shutil.which("conda"):
+        return ""
+    completed = subprocess.run(
+        [
+            "conda",
+            "run",
+            "-n",
+            env_name,
+            "python",
+            "-c",
+            "import shutil, sys; print(shutil.which(sys.argv[1]) or '')",
+            command,
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        return ""
+    return completed.stdout.strip().splitlines()[-1] if completed.stdout.strip() else ""
 
 
 def audit_commands(
     required_commands: list[str],
     which: Callable[[str], str | None] = shutil.which,
+    conda_env: str | None = None,
+    conda_which: Callable[[str, str], str | None] | None = None,
 ) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
+    conda_lookup = conda_which or globals()["conda_which"]
     for command in required_commands:
         path = which(command) or ""
-        rows.append({"command": command, "status": "available" if path else "missing", "path": path})
+        if path:
+            rows.append({"command": command, "status": "available", "path": path})
+            continue
+        conda_path = conda_lookup(conda_env, command) if conda_env else ""
+        if conda_path:
+            rows.append({"command": command, "status": "available_in_conda", "path": f"{conda_env}:{conda_path}"})
+            continue
+        rows.append({"command": command, "status": "missing", "path": ""})
     return rows
 
 
 def summarize_status(rows: list[dict[str, str]]) -> dict[str, int | bool]:
-    available = sum(1 for row in rows if row["status"] == "available")
+    available = sum(1 for row in rows if row["status"].startswith("available"))
     missing = sum(1 for row in rows if row["status"] == "missing")
     return {"available": available, "missing": missing, "ready": missing == 0}
 
@@ -54,10 +89,11 @@ def write_tsv(rows: list[dict[str, str]], out_path: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--command", action="append", default=[], help="Command or absolute binary path to check")
+    parser.add_argument("--conda-env", default=None, help="Optional Conda environment to inspect when PATH misses")
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
     commands = args.command or DEFAULT_COMMANDS
-    rows = audit_commands(commands)
+    rows = audit_commands(commands, conda_env=args.conda_env)
     write_tsv(rows, args.out)
     summary = summarize_status(rows)
     sys.exit(0 if summary["ready"] else 1)
