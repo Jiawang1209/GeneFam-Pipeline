@@ -48,6 +48,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "Known Gap" in text
     assert "release_checks.tsv" in text
     assert "runtime_bootstrap_plan.md" in text
+    assert "docs/quickstart.md" in text
     assert "build_identification_inputs.py" in text
     assert "extract_family_sequences.py" in text
     assert "extract_chromosome_locations.py" in text

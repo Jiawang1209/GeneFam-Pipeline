@@ -2618,7 +2618,49 @@ Verification:
 - `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
 
 Commit:
-- pending
+- hash: 6ec4fe4368d7472b403c8e3481bcdc0498f2e4b1
+- message: fix: quote WGD smoke report commands
+- files: WGD smoke command rendering, prepared WGD handoff command rendering, command-report tests, history
 
 Next:
 - Continue toward final runtime readiness; if Docker/Apptainer remain unavailable, keep strengthening user-facing examples, command reports, and release gates that are verifiable through `GeneFamilyFlow`.
+
+## 2026-06-24 - Add final quickstart handoff
+
+Context:
+- The repository had detailed README and release-audit material, but not a short handoff document that tells a user which verified commands to run first.
+- The final pipeline needs an easy morning entry point that connects release checks, the standard species-bank branch, and the prepared WGD event handoff.
+
+Decisions:
+- Add `docs/quickstart.md` as the shortest verified run path.
+- Link the quickstart from README.
+- Add release-audit evidence for the quickstart and tests to keep the handoff from drifting.
+- Document the current Docker/Apptainer runtime gap without blocking `GeneFamilyFlow`-verified local usage.
+
+Added:
+- `docs/quickstart.md`
+- `tests/test_quickstart_docs.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_quickstart_docs.py -q` first failed because `docs/quickstart.md` did not exist and README did not link it.
+- After adding the quickstart and README link, `python -m pytest tests/test_quickstart_docs.py -q` passed with 2 tests.
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because `docs/release_audit.md` did not mention `docs/quickstart.md`.
+- After adding the quickstart release-audit row, `python -m pytest tests/test_quickstart_docs.py tests/test_release_audit_docs.py -q` passed with 3 tests.
+- `python -m pytest tests -q` passed with 155 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker and Apptainer are missing, but pytest, config validation, mock MVP, Python standard branch smoke, Python WGD event smoke, Nextflow mock MVP smoke, Nextflow standard branch smoke, Nextflow WGD event smoke, prepared WGD handoff example, and runtime bootstrap plan passed.
+- `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
+
+Commit:
+- pending
+
+Next:
+- Continue toward final runtime readiness; if Docker/Apptainer remain unavailable, keep improving user-facing runnable paths and release evidence.

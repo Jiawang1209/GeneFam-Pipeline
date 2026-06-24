@@ -47,6 +47,7 @@ The species ID defaults to the folder name. A run can analyze all species, a man
 - `configs/example.config.yaml`: example analysis configuration.
 - `configs/advanced_modules.example.yaml`: advanced module configuration example.
 - `docs/input_contract.md`: input format contract.
+- `docs/quickstart.md`: shortest verified local run path.
 - `docs/advanced_module_examples.md`: safe examples for enabling advanced modules.
 - `docs/release_audit.md`: requirement-to-evidence release audit and known runtime gaps.
 - `docs/wgd_event_evidence.md`: WGD layer and named-event evidence contract.
