@@ -118,6 +118,17 @@ The first runnable checkpoint generates a species manifest:
 nextflow run workflows/main.nf -c workflows/nextflow.config --config configs/example.config.yaml
 ```
 
+The species-selection smoke validates the YAML-driven species-bank entrypoint before downstream analysis:
+
+```bash
+python bin/genefam/run_species_selection_smoke.py \
+  --config configs/example.config.yaml \
+  --groups configs/species_groups.yaml \
+  --outdir results/species_selection_smoke
+```
+
+It writes `results/species_selection_smoke/tables/species_manifest.tsv`, `results/species_selection_smoke/tables/run_plan.tsv`, and `results/species_selection_smoke/species_selection_smoke.md`, and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+
 The offline mock MVP runs without HMMER, DIAMOND, or Nextflow:
 
 ```bash

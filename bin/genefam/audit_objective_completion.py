@@ -72,10 +72,10 @@ def build_objective_audit(
             "DSL2 entrypoints, including HMMER-only and DIAMOND-only single-tool routing plus alignment/phylogeny manifests, are smoke-tested through GeneFamilyFlow evidence.",
         ),
         _achieved_if(
-            _all_passed(release, ["validate example config", "validate advanced config"]),
+            _all_passed(release, ["validate example config", "validate advanced config", "species selection smoke"]),
             "YAML-driven species selection",
-            "config validation checks",
-            "Species bank selection and advanced module settings are validated from YAML.",
+            "config validation checks and species selection smoke",
+            "Species bank discovery, selected target species, run-plan metadata, and advanced module settings are validated from YAML.",
         ),
         _row(
             "GeneFamilyFlow runtime",

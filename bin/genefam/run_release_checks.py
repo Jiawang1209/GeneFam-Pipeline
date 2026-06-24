@@ -49,6 +49,19 @@ def default_checks() -> list[CheckSpec]:
             [python, "bin/genefam/validate_config.py", "configs/advanced_modules.example.yaml"],
         ),
         CheckSpec(
+            "species selection smoke",
+            [
+                python,
+                "bin/genefam/run_species_selection_smoke.py",
+                "--config",
+                "configs/example.config.yaml",
+                "--groups",
+                "configs/species_groups.yaml",
+                "--outdir",
+                "results/species_selection_smoke",
+            ],
+        ),
+        CheckSpec(
             "mock MVP",
             [
                 python,

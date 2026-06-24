@@ -33,6 +33,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
         _release_row("pytest"),
         _release_row("validate example config"),
         _release_row("validate advanced config"),
+        _release_row("species selection smoke"),
         _release_row("mock MVP"),
         _release_row("domain filter smoke"),
         _release_row("motif parser smoke"),
@@ -77,6 +78,30 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
     assert "docker, apptainer" in by_requirement["Docker/Apptainer reproducibility"]["note"]
     assert by_requirement["WGD gamma beta alpha theta evidence"]["status"] == "achieved"
     assert by_requirement["quickstart handoff"]["status"] == "achieved"
+
+
+def test_yaml_driven_species_selection_requires_species_selection_smoke():
+    release_rows = [
+        _release_row("validate example config"),
+        _release_row("validate advanced config"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["YAML-driven species selection"]["status"] == "missing"
+    assert "species selection smoke" in by_requirement["YAML-driven species selection"]["evidence"]
 
 
 def test_standard_identification_branch_requires_domain_filter_smoke():
@@ -348,6 +373,7 @@ def test_audit_objective_completion_cli_writes_outputs(tmp_path):
         "pytest\ttrue\tpassed\t0\tpytest\t\n"
         "validate example config\ttrue\tpassed\t0\tvalidate\t\n"
         "validate advanced config\ttrue\tpassed\t0\tvalidate\t\n"
+        "species selection smoke\ttrue\tpassed\t0\tspecies\t\n"
         "domain filter smoke\ttrue\tpassed\t0\tdomain\t\n"
         "motif parser smoke\ttrue\tpassed\t0\tmotif\t\n"
         "standard branch smoke\ttrue\tpassed\t0\tstandard\t\n"

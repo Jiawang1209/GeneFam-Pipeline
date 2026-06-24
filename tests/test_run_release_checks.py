@@ -297,6 +297,19 @@ def test_default_checks_include_standard_branch_smoke_before_readiness():
     assert "--outdir results/standard_smoke" in " ".join(smoke.command)
 
 
+def test_default_checks_include_species_selection_smoke_before_mock_mvp():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("species selection smoke") < names.index("mock MVP")
+    assert names.index("species selection smoke") > names.index("validate advanced config")
+    smoke = next(check for check in default_checks() if check.name == "species selection smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_species_selection_smoke.py" in command
+    assert "--config configs/example.config.yaml" in command
+    assert "--groups configs/species_groups.yaml" in command
+    assert "--outdir results/species_selection_smoke" in command
+
+
 def test_default_checks_include_domain_filter_smoke_before_standard_branch_smoke():
     names = [check.name for check in default_checks()]
 

@@ -65,6 +65,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/handoff/handoff_report.md" in text
     assert "results/handoff/handoff_summary.tsv" in text
     assert "docs/quickstart.md" in text
+    assert "run_species_selection_smoke.py" in text
     assert "build_identification_inputs.py" in text
     assert "extract_family_sequences.py" in text
     assert "extract_gene_structure.py" in text
@@ -92,6 +93,8 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "run_quickstart.py" in text
     assert "examples/prepared_wgd_handoff" in text
     assert "test_prepared_wgd_handoff_example.py" in text
+    assert "results/species_selection_smoke/tables/species_manifest.tsv" in text
+    assert "results/species_selection_smoke/tables/run_plan.tsv" in text
     assert "results/standard_smoke/report/final_report.md" in text
     assert "results/standard_smoke/tables/run_config_snapshot.tsv" in text
     assert "results/standard_smoke/tables/gene_structure_summary.tsv" in text

@@ -4497,9 +4497,60 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports Ka/Ks and retention analysis achieved from `Ka/Ks parser smoke, retention enrichment smoke, and WGD/retention smoke outputs`; overall completion remains blocked only by missing `docker` and `apptainer`.
 
 Commit:
-- hash: pending
+- hash: bf8c147e3bfb6e316637f88d208e16887ec17dee
 - message: feat: add retention enrichment smoke
 - files: retention enrichment smoke helper, release gate, objective audit, README, release audit, tests, history
+
+Next:
+- Continue making broad objective items independently auditable while preserving Docker/Apptainer as the only current release blocker.
+
+## 2026-06-25 - Add species selection release smoke
+
+Context:
+- YAML-driven species-bank discovery and target-species selection were exercised inside mock and standard flows, but the entrypoint did not yet have an independent release smoke artifact.
+- The long objective explicitly requires a species bank with one folder per species and YAML-configured target species selection, so this input contract should be directly visible in the release gate.
+
+Decisions:
+- Add `bin/genefam/run_species_selection_smoke.py` to reuse `discover_species.py` and `build_run_plan.py`.
+- Use `configs/example.config.yaml` and `configs/species_groups.yaml` as the stable entrypoint contract.
+- Write `results/species_selection_smoke/tables/species_manifest.tsv`, `results/species_selection_smoke/tables/run_plan.tsv`, and `results/species_selection_smoke/species_selection_smoke.md`.
+- Add `species selection smoke` to the release gate after config validation and before the mock MVP.
+- Tighten the objective audit so YAML-driven species selection requires explicit species-selection smoke evidence.
+- Document the smoke in README and the release audit matrix.
+
+Added:
+- `bin/genefam/run_species_selection_smoke.py`
+- `tests/test_run_species_selection_smoke.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_species_selection_smoke.py tests/test_run_release_checks.py::test_default_checks_include_species_selection_smoke_before_mock_mvp tests/test_audit_objective_completion.py::test_yaml_driven_species_selection_requires_species_selection_smoke tests/test_release_audit_docs.py -q` first failed because `run_species_selection_smoke.py` did not exist, `species selection smoke` was not in release checks, the objective audit still accepted YAML species selection without it, and release audit did not mention `run_species_selection_smoke.py`.
+- The same command passed with 4 tests after adding the smoke, release check, objective-audit requirement, and documentation.
+- `python bin/genefam/run_species_selection_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --outdir results/species_selection_smoke` exited `0` and printed `species_manifest`, `run_plan`, and `summary` outputs.
+- `results/species_selection_smoke/tables/species_manifest.tsv` contains selected species `Arabidopsis_thaliana` and `Brassica_rapa` with their species-bank peptide and GFF3 paths.
+- `results/species_selection_smoke/tables/run_plan.tsv` records `runtime	environment	GeneFamilyFlow`, `runtime	r_bin	/usr/local/bin/R`, and the enabled/disabled module switches.
+- `results/species_selection_smoke/species_selection_smoke.md` reports `Selected species: 2` and `Arabidopsis_thaliana, Brassica_rapa`.
+- `python -m pytest tests -q` passed with 238 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 24`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; `species selection smoke` passed and lists `results/species_selection_smoke/tables/species_manifest.tsv` and `results/species_selection_smoke/tables/run_plan.tsv`.
+- `results/objective_audit/objective_audit.md` reports YAML-driven species selection achieved from `config validation checks and species selection smoke`; overall completion remains blocked only by missing `docker` and `apptainer`.
+
+Commit:
+- hash: pending
+- message: feat: add species selection smoke
+- files: species selection smoke helper, release gate, objective audit, README, release audit, tests, history
 
 Next:
 - Continue making broad objective items independently auditable while preserving Docker/Apptainer as the only current release blocker.
