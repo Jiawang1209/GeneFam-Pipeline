@@ -175,12 +175,22 @@ nextflow run workflows/main.nf \
 
 This branch produces normalized duplicate classifications, family duplicate classifications, WGD layer assignments, named-event evidence, family WGD event membership, family event retention summaries, and duplicate-type retention enrichment.
 
+For the complete handoff from the standard identification branch to the WGD branch, including the prepared-table contracts for real MCScanX/KaKs-derived inputs, see `docs/standard_to_wgd_handoff.md`.
+
 The offline WGD smoke check validates the gamma, beta, alpha, and theta named-event evidence path without external MCScanX or Ka/Ks tools:
 
 ```bash
 python bin/genefam/run_wgd_smoke.py \
   --events-config configs/wgd_events.brassicaceae.yaml \
   --outdir results/wgd_smoke
+```
+
+The Nextflow WGD smoke exercises the same prepared-table branch through `GeneFamilyFlow`:
+
+```bash
+python bin/genefam/run_nextflow_wgd_smoke.py \
+  --conda-env GeneFamilyFlow \
+  --outdir results/nextflow_wgd_smoke
 ```
 
 It writes `results/wgd_smoke/report/final_report.md` and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.

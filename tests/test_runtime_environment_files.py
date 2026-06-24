@@ -103,3 +103,32 @@ def test_readme_documents_explicit_standard_identification_branch():
     assert "run_standard_smoke.py" in readme
     assert "run_wgd_smoke.py" in readme
     assert "run_nextflow_smoke.py" in readme
+    assert "docs/standard_to_wgd_handoff.md" in readme
+
+
+def test_standard_to_wgd_handoff_doc_links_identification_and_wgd_branches():
+    text = Path("docs/standard_to_wgd_handoff.md").read_text(encoding="utf-8")
+
+    required_snippets = [
+        "results/<run>/tables/family_candidates.tsv",
+        "--run_identification true",
+        "--run_duplication_retention true",
+        "--duplicates path/to/duplicate_types.tsv",
+        "--family_members results/<run>/tables/family_candidates.tsv",
+        "--kaks_pairs path/to/kaks_pairs.tsv",
+        "gene_id",
+        "duplicate_type",
+        "gene_a",
+        "gene_b",
+        "ks",
+        "wgd_event_evidence.tsv",
+        "family_event_retention_summary.tsv",
+        "retention_enrichment.tsv",
+        "gamma",
+        "beta",
+        "alpha",
+        "theta",
+        "python bin/genefam/run_nextflow_wgd_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_wgd_smoke",
+    ]
+    for snippet in required_snippets:
+        assert snippet in text

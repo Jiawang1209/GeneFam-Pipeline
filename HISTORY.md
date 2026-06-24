@@ -2414,8 +2414,47 @@ Verification:
 - `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
 
 Commit:
-- pending
+- hash: 1c145e88f8ea0c56c17c46d0e54e44c52f809250
+- message: feat: add Nextflow WGD event smoke
+- files: WGD report index builder, Nextflow WGD smoke runner, duplication-retention publish/report processes, release check integration, tests, history
 
 Next:
 - Add a documented combined handoff path explaining when to run the standard identification branch versus the duplication/WGD branch and how to feed real MCScanX/KaKs-derived tables into the latter.
+- After container runtimes are installed or exposed, rerun release checks to verify Docker/Apptainer profiles.
+
+## 2026-06-24 - Document standard-to-WGD handoff
+
+Context:
+- The standard identification branch and the Nextflow WGD branch both run, but users need an explicit handoff path for feeding real MCScanX/KaKs-derived tables into the WGD branch after family identification.
+- The README mentioned both branches but did not document the table contracts and concrete output-to-input relationship.
+
+Decisions:
+- Add `docs/standard_to_wgd_handoff.md` as the handoff guide from `results/<run>/tables/family_candidates.tsv` into `--run_duplication_retention true`.
+- Document required duplicate type and Ka/Ks pair table fields.
+- Document the output tables and final report created by the WGD branch.
+- Link the new handoff guide from README and include the Nextflow WGD smoke command.
+
+Added:
+- `docs/standard_to_wgd_handoff.md`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_runtime_environment_files.py::test_readme_documents_explicit_standard_identification_branch tests/test_runtime_environment_files.py::test_standard_to_wgd_handoff_doc_links_identification_and_wgd_branches -q` first failed because the README link and handoff document did not exist.
+- After documentation updates, the same targeted test set passed with 2 tests.
+- `python -m pytest tests -q` passed with 149 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker and Apptainer are missing, but pytest, config validation, mock MVP, Python standard branch smoke, Python WGD event smoke, Nextflow mock MVP smoke, Nextflow standard branch smoke, Nextflow WGD event smoke, and runtime bootstrap plan passed.
+- `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
+
+Commit:
+- pending
+
+Next:
+- Add or document a minimal real-data style fixture for prepared MCScanX/KaKs handoff tables so users can copy a complete folder-level example.
 - After container runtimes are installed or exposed, rerun release checks to verify Docker/Apptainer profiles.
