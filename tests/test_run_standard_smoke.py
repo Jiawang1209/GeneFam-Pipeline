@@ -31,6 +31,7 @@ def test_run_standard_smoke_writes_standard_branch_outputs(tmp_path):
         "sequences/family_members.faa",
         "tables/alignment_manifest.tsv",
         "tables/phylogeny_manifest.tsv",
+        "tables/motif_summary.tsv",
         "tables/chromosome_locations.tsv",
         "report/report_index.tsv",
         "report/final_report.md",
@@ -41,7 +42,12 @@ def test_run_standard_smoke_writes_standard_branch_outputs(tmp_path):
 
     report_index = (outdir / "report/report_index.tsv").read_text(encoding="utf-8")
     assert "chromosome_locations" in report_index
+    assert "motif_summary" in report_index
+    assert "motif_summary.tsv\tavailable" in report_index
     assert "family_expression" in report_index
+    motif_summary = (outdir / "tables/motif_summary.tsv").read_text(encoding="utf-8")
+    assert motif_summary.startswith("family_name\tmotif_id\tmotif_name\twidth\tsites\tevalue\n")
+    assert "GDSL_motif_1" in motif_summary
 
 
 def test_run_standard_smoke_writes_family_expression_when_matrix_is_provided(tmp_path):

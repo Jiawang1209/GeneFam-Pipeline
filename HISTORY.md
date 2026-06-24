@@ -3723,9 +3723,69 @@ Verification:
 - `results/handoff/handoff_summary.tsv` still contains `next_unblock_command	bash results/readiness/runtime_bootstrap.sh`.
 
 Commit:
+- hash: a54b184a3b7f54b489865e4b3caba8679eeb9619
+- message: test: add container materials release audit
+- files: container materials audit, release gate, objective audit evidence, docs, tests, history
+
+Next:
+- Keep the runtime blocker explicit: this static audit improves reproducibility evidence but does not replace real Docker/Apptainer profile smoke after those commands are installed.
+
+## 2026-06-25 - Surface motif summary in standard branch reports
+
+Context:
+- The long objective includes motif analysis as a standard gene-family module.
+- `parse_meme_motifs.py` and the Nextflow `PARSE_MEME_MOTIFS` module already existed, but the standard smoke and standard report index did not expose a `motif_summary` output.
+- Without a report-index output, motif evidence could pass parser tests while remaining invisible in the user-facing standard branch report.
+
+Decisions:
+- Add `motif_summary` to the standard report index contract.
+- Have `run_standard_smoke.py` generate a small mock MEME text file, parse it through `parse_meme_motifs.py`, and write `tables/motif_summary.tsv`.
+- Parameterize the Nextflow MEME text input as `params.meme_txt` so real runs can provide a project-specific MEME output file.
+- Document `results/standard_smoke/tables/motif_summary.tsv` as standard branch evidence in README and release audit docs.
+
+Added:
+- `tests/fixtures/mock_evidence/meme.txt`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_nextflow_standard_smoke.py`
+- `bin/genefam/run_standard_smoke.py`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_nextflow_standard_smoke.py`
+- `tests/test_run_standard_smoke.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/nextflow.config`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_standard_branch_report_index.py tests/test_run_standard_smoke.py -q` first failed because `motif_summary` was not in the standard report-index contract and `run_standard_smoke.py` did not write `tables/motif_summary.tsv`.
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because `docs/release_audit.md` did not mention `results/standard_smoke/tables/motif_summary.tsv`.
+- `python -m pytest tests/test_runtime_environment_files.py::test_readme_documents_explicit_standard_identification_branch -q` first failed because README did not mention `motif_summary.tsv`.
+- `python -m pytest tests/test_workflow_modules.py::test_main_workflow_includes_remaining_standard_analysis_processes -q` first failed because `workflows/main.nf` included but did not call `PARSE_MEME_MOTIFS`.
+- `python -m pytest tests/test_runtime_environment_files.py::test_nextflow_config_has_container_profiles tests/test_workflow_modules.py::test_main_workflow_includes_remaining_standard_analysis_processes -q` first failed because `params.meme_txt` was not defined and `workflows/main.nf` used `mock_evidence_dir` directly for the MEME text input.
+- `python -m pytest tests/test_standard_branch_report_index.py tests/test_run_standard_smoke.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py tests/test_parse_meme_motifs.py -q` passed with 21 tests after adding the standard smoke and report-index path.
+- `python -m pytest tests/test_runtime_environment_files.py::test_nextflow_config_has_container_profiles tests/test_workflow_modules.py::test_main_workflow_includes_remaining_standard_analysis_processes tests/test_standard_branch_report_index.py tests/test_run_standard_smoke.py tests/test_run_nextflow_standard_smoke.py tests/test_release_audit_docs.py -q` passed with 17 tests after parameterizing the MEME text input as `params.meme_txt`.
+- `python bin/genefam/run_standard_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/standard_smoke` exited `0` and printed `motif_summary	results/standard_smoke/tables/motif_summary.tsv`.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_standard_smoke` first failed at `BUILD_STANDARD_REPORT_INDEX` because Nextflow did not pass `--motif-summary`; after wiring `PARSE_MEME_MOTIFS.out` into `BUILD_STANDARD_REPORT_INDEX`, the same command exited `0`.
+- `python -m pytest tests -q` passed with 199 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 14`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocked item remains Docker/Apptainer reproducibility.
+- `results/standard_smoke/report/final_report.md` and `results/nextflow_standard_smoke/standard/report/final_report.md` both list `motif_summary` as available.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Keep the runtime blocker explicit: this static audit improves reproducibility evidence but does not replace real Docker/Apptainer profile smoke after those commands are installed.
+- Keep standard-branch report evidence aligned with each major analysis module: if a module is part of the user-facing workflow, its output should appear in the report index or an explicit missing/blocked row.

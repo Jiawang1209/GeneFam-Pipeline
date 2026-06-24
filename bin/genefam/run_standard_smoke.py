@@ -21,6 +21,7 @@ from bin.genefam.extract_chromosome_locations import extract_locations_for_manif
 from bin.genefam.merge_identification_evidence import merge_evidence, read_tsv, write_tsv
 from bin.genefam.prepare_alignment_inputs import prepare_alignment_manifest, write_tsv as write_alignment_tsv
 from bin.genefam.prepare_phylogeny_inputs import prepare_phylogeny_manifest, write_tsv as write_phylogeny_tsv
+from bin.genefam.parse_meme_motifs import parse_meme_text, write_tsv as write_motif_tsv
 from bin.genefam.summarize_family import summarize_candidates, write_tsv as write_summary_tsv
 from bin.genefam.run_mock_mvp import _load_yaml
 from bin.genefam.subset_expression_matrix import (
@@ -70,6 +71,7 @@ def run_standard_smoke(
         "family_members_faa": sequences_dir / "family_members.faa",
         "alignment_manifest": tables_dir / "alignment_manifest.tsv",
         "phylogeny_manifest": tables_dir / "phylogeny_manifest.tsv",
+        "motif_summary": tables_dir / "motif_summary.tsv",
         "chromosome_locations": tables_dir / "chromosome_locations.tsv",
         "plot_manifest": report_dir / "plot_manifest.tsv",
         "report_index": report_dir / "report_index.tsv",
@@ -98,6 +100,17 @@ def run_standard_smoke(
         prepare_phylogeny_manifest(alignment_rows, outdir=outdir / "phylogeny", tree_builder="iqtree"),
         outputs["phylogeny_manifest"],
     )
+    meme_text = report_dir / "mock_meme.txt"
+    meme_text.parent.mkdir(parents=True, exist_ok=True)
+    meme_text.write_text(
+        "MEME version 5\n\n"
+        f"MOTIF 1 {gene_family}_motif_1\n"
+        "letter-probability matrix: alength= 20 w= 11 nsites= 18 E= 2.3e-12\n"
+        f"MOTIF 2 {gene_family}_motif_2\n"
+        "letter-probability matrix: alength= 20 w= 7 nsites= 12 E= 4.8e-06\n",
+        encoding="utf-8",
+    )
+    write_motif_tsv(parse_meme_text(meme_text, family_name=gene_family), outputs["motif_summary"])
     write_locations_tsv(extract_locations_for_manifest(candidates, manifest_rows), outputs["chromosome_locations"])
     if expression_matrix is not None:
         write_expression_tsv(

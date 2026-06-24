@@ -315,8 +315,16 @@ def test_main_workflow_includes_remaining_standard_analysis_processes():
     assert "PREPARE_PHYLOGENY_INPUTS" in workflow
     assert "RUN_PHYLOGENY" in workflow
     assert "PARSE_MEME_MOTIFS" in workflow
+    assert "PARSE_MEME_MOTIFS(" in workflow
+    assert "PARSE_MEME_MOTIFS.out" in workflow
+    assert "file(params.meme_txt)" in workflow
     assert "EXTRACT_CHROMOSOME_LOCATIONS" in workflow
     assert "SUBSET_EXPRESSION_MATRIX" in workflow
     assert "EXTRACT_CHROMOSOME_LOCATIONS(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)" in workflow
     assert "BUILD_STANDARD_REPORT_INDEX(" in workflow
+    assert "motif_summary" in Path("workflows/modules/standard_postprocess.nf").read_text(encoding="utf-8")
+    assert "--motif-summary ${motif_summary}" in Path("workflows/modules/standard_postprocess.nf").read_text(
+        encoding="utf-8"
+    )
+    assert "PARSE_MEME_MOTIFS.out" in workflow
     assert "EXTRACT_CHROMOSOME_LOCATIONS.out" in workflow

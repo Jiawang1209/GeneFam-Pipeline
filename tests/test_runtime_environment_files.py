@@ -54,6 +54,7 @@ def test_nextflow_config_has_container_profiles():
     assert 'params.apptainer_image = "genefam-pipeline_latest.sif"' in config
     assert "process.container = params.container_image" in config
     assert "process.container = params.apptainer_image" in config
+    assert 'params.meme_txt = "tests/fixtures/mock_evidence/meme.txt"' in config
     assert "params.use_hmmer = true" in config
     assert "params.use_diamond = true" in config
 
@@ -121,6 +122,7 @@ def test_readme_documents_explicit_standard_identification_branch():
     assert "--run_identification true" in readme
     assert "HMMER and DIAMOND input tables" in readme
     assert "family_members.faa" in readme
+    assert "motif_summary.tsv" in readme
     assert "chromosome_locations.tsv" in readme
     assert "family_expression" in readme
     assert "--expression-matrix" in readme

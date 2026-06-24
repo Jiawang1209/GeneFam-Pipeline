@@ -155,6 +155,8 @@ workflow {
             EXTRACT_FAMILY_SEQUENCES(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
             PREPARE_ALIGNMENT_INPUTS(family_name_ch, EXTRACT_FAMILY_SEQUENCES.out, aligner_ch, alignment_outdir_ch)
             PREPARE_PHYLOGENY_INPUTS(PREPARE_ALIGNMENT_INPUTS.out, tree_builder_ch, phylogeny_outdir_ch)
+            meme_txt_ch = Channel.value(file(params.meme_txt))
+            PARSE_MEME_MOTIFS(meme_txt_ch, family_name_ch)
             EXTRACT_CHROMOSOME_LOCATIONS(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
             family_expression_report_ch = Channel.value("")
             if (params.expression_matrix) {
@@ -171,6 +173,7 @@ workflow {
                 EXTRACT_FAMILY_SEQUENCES.out,
                 PREPARE_ALIGNMENT_INPUTS.out,
                 PREPARE_PHYLOGENY_INPUTS.out,
+                PARSE_MEME_MOTIFS.out,
                 EXTRACT_CHROMOSOME_LOCATIONS.out,
                 family_expression_report_ch,
                 BUILD_PLOT_MANIFEST.out

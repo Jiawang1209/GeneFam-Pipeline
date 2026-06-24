@@ -13,6 +13,7 @@ def test_build_standard_report_index_marks_core_outputs_available():
             "family_members_faa": "sequences/family_members.faa",
             "alignment_manifest": "tables/alignment_manifest.tsv",
             "phylogeny_manifest": "tables/phylogeny_manifest.tsv",
+            "motif_summary": "tables/motif_summary.tsv",
             "chromosome_locations": "tables/chromosome_locations.tsv",
             "family_expression": "",
             "plot_manifest": "tables/plot_manifest.tsv",
@@ -29,6 +30,7 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "family_members_faa",
         "alignment_manifest",
         "phylogeny_manifest",
+        "motif_summary",
         "chromosome_locations",
         "family_expression",
     }
@@ -45,6 +47,7 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
         "family_members_faa": "results/nextflow_standard_smoke/standard/sequences/family_members.faa",
         "alignment_manifest": "results/nextflow_standard_smoke/standard/tables/alignment_manifest.tsv",
         "phylogeny_manifest": "results/nextflow_standard_smoke/standard/tables/phylogeny_manifest.tsv",
+        "motif_summary": "results/nextflow_standard_smoke/standard/tables/motif_summary.tsv",
         "chromosome_locations": "results/nextflow_standard_smoke/standard/tables/chromosome_locations.tsv",
         "family_expression": "",
         "plot_manifest": "results/nextflow_standard_smoke/standard/report/plot_manifest.tsv",
@@ -70,6 +73,8 @@ def test_build_standard_report_index_cli_writes_tsv(tmp_path):
             "alignment_manifest.tsv",
             "--phylogeny-manifest",
             "phylogeny_manifest.tsv",
+            "--motif-summary",
+            "motif_summary.tsv",
             "--chromosome-locations",
             "chromosome_locations.tsv",
             "--family-expression",
@@ -112,6 +117,8 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
             "alignment_manifest.tsv",
             "--phylogeny-manifest",
             "phylogeny_manifest.tsv",
+            "--motif-summary",
+            "motif_summary.tsv",
             "--chromosome-locations",
             "chromosome_locations.tsv",
             "--family-expression",
@@ -132,4 +139,5 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
     rows = {row["key"]: row for row in read_tsv(out)}
     assert rows["family_candidates"]["path"] == "results/demo/tables/family_candidates.tsv"
     assert rows["family_members_faa"]["path"] == "results/demo/sequences/family_members.faa"
+    assert rows["motif_summary"]["path"] == "results/demo/tables/motif_summary.tsv"
     assert rows["plot_manifest"]["path"] == "results/demo/report/plot_manifest.tsv"

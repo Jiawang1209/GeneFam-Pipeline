@@ -142,6 +142,7 @@ def test_expected_published_outputs_cover_standard_user_results(tmp_path):
         standard_outdir / "tables/family_counts.tsv",
         standard_outdir / "tables/alignment_manifest.tsv",
         standard_outdir / "tables/phylogeny_manifest.tsv",
+        standard_outdir / "tables/motif_summary.tsv",
         standard_outdir / "tables/chromosome_locations.tsv",
         standard_outdir / "sequences/family_members.faa",
         standard_outdir / "report/report_index.tsv",

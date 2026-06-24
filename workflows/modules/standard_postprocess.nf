@@ -29,6 +29,7 @@ process BUILD_STANDARD_REPORT_INDEX {
     path family_members_faa
     path alignment_manifest
     path phylogeny_manifest
+    path motif_summary
     path chromosome_locations
     val family_expression
     path plot_manifest
@@ -45,6 +46,7 @@ process BUILD_STANDARD_REPORT_INDEX {
       --family-members-faa ${family_members_faa} \\
       --alignment-manifest ${alignment_manifest} \\
       --phylogeny-manifest ${phylogeny_manifest} \\
+      --motif-summary ${motif_summary} \\
       --chromosome-locations ${chromosome_locations} \\
       --family-expression "${family_expression}" \\
       --plot-manifest ${plot_manifest} \\

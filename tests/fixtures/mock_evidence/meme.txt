@@ -1,0 +1,7 @@
+MEME version 5
+
+MOTIF 1 GDSL_motif_1
+letter-probability matrix: alength= 20 w= 11 nsites= 18 E= 2.3e-12
+
+MOTIF 2 GDSL_motif_2
+letter-probability matrix: alength= 20 w= 7 nsites= 12 E= 4.8e-06
