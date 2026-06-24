@@ -92,6 +92,8 @@ def test_write_handoff_markdown_contains_copyable_next_steps(tmp_path):
     assert "nextflow, /usr/local/bin/R, hmmsearch" in text
     assert "docker, apptainer" in text
     assert "results/objective_audit/objective_audit.md" in text
+    assert "results/delivery_bundle/delivery_manifest.tsv" in text
+    assert "results/delivery_bundle/delivery_bundle.md" in text
 
 
 def test_write_handoff_markdown_uses_release_gate_when_no_unblock_command(tmp_path):

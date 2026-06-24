@@ -4624,12 +4624,50 @@ Verification:
 - `results/delivery_bundle/delivery_manifest.tsv` still lists standard and WGD final reports, alpha/beta/gamma/theta event evidence, GeneFamilyFlow, `/usr/local/bin/R`, and missing `docker`/`apptainer`.
 
 Commit:
-- hash: pending
+- hash: 2bcdec1c740ac3ec318d334ac47f05054b015ac7
 - message: docs: list delivery bundle in readiness checklist
 - files: readiness checklist, runtime docs test, history
 
 Next:
 - Commit the readiness checklist update, then continue toward the final objective while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Link delivery bundle from handoff report
+
+Context:
+- `results/handoff/handoff_report.md` is documented as the first human-facing status file, but its key evidence list still omitted the delivery bundle.
+- Users opening the handoff report should be able to jump directly to the final delivery manifest and Markdown bundle without consulting README first.
+
+Decisions:
+- Add delivery bundle paths to the handoff report key-evidence section.
+- Extend the handoff Markdown test so this relationship stays covered.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_handoff_report.py`
+- `tests/test_build_handoff_report.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_handoff_report.py::test_write_handoff_markdown_contains_copyable_next_steps -q` first failed because the handoff report did not mention `results/delivery_bundle/delivery_manifest.tsv`.
+- The same command passed with 1 test after adding delivery bundle paths to the key evidence list.
+- `python -m pytest tests -q` passed with 240 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 24`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; the embedded pytest check reports `240 passed`.
+- `results/handoff/handoff_report.md` now lists `results/delivery_bundle/delivery_manifest.tsv` and `results/delivery_bundle/delivery_bundle.md` under Key Evidence.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
+- hash: pending
+- message: docs: link delivery bundle from handoff report
+- files: handoff report helper, handoff tests, history
+
+Next:
+- Commit the handoff evidence update, then continue toward the final objective while Docker/Apptainer remains the external runtime blocker.
 
 ## 2026-06-25 - Add species selection release smoke
 
