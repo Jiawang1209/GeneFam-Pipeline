@@ -211,6 +211,16 @@ This branch produces `wgd_run_config_snapshot.tsv`, normalized duplicate classif
 
 For the complete handoff from the standard identification branch to the WGD branch, including the prepared-table contracts for real MCScanX/KaKs-derived inputs, see `docs/standard_to_wgd_handoff.md`.
 
+The synteny parser smoke validates the MCScanX `.collinearity` input bridge into a normalized syntenic-pair table:
+
+```bash
+python bin/genefam/run_synteny_smoke.py \
+  --collinearity tests/fixtures/mcscanx/sample.collinearity \
+  --outdir results/synteny_smoke
+```
+
+It writes `results/synteny_smoke/tables/syntenic_pairs.tsv` and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+
 The offline WGD smoke check validates the gamma, beta, alpha, and theta named-event evidence path without external MCScanX or Ka/Ks tools:
 
 ```bash

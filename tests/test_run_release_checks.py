@@ -310,6 +310,18 @@ def test_default_checks_include_standard_branch_expression_smoke_before_readines
     assert "--outdir results/standard_expression_smoke" in command
 
 
+def test_default_checks_include_synteny_parser_smoke_before_wgd_smoke():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("synteny parser smoke") < names.index("WGD event smoke")
+    assert names.index("synteny parser smoke") > names.index("standard branch expression smoke")
+    smoke = next(check for check in default_checks() if check.name == "synteny parser smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_synteny_smoke.py" in command
+    assert "--collinearity tests/fixtures/mcscanx/sample.collinearity" in command
+    assert "--outdir results/synteny_smoke" in command
+
+
 def test_default_checks_include_wgd_smoke_before_readiness():
     names = [check.name for check in default_checks()]
 

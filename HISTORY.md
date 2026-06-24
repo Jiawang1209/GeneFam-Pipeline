@@ -4093,9 +4093,61 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocker remains missing `docker` and `apptainer`.
 
 Commit:
+- hash: bb163fe5ae4269c254d70aaabe2f7b3653e1bdda
+- message: feat: add expression heatmap smoke
+- files: standard smoke plotting, release expression smoke, release docs, README, tests, history
+
+Next:
+- Keep plot outputs tied to concrete report entries so generated PDFs are not invisible artifacts.
+
+## 2026-06-25 - Add synteny parser release smoke
+
+Context:
+- MCScanX `.collinearity` parsing had unit coverage, but the release gate did not yet produce a concrete `syntenic_pairs.tsv` artifact.
+- The WGD/named-event evidence chain depends on synteny evidence before Ks-layer and event-name interpretation.
+
+Decisions:
+- Add a small MCScanX `.collinearity` fixture.
+- Add `bin/genefam/run_synteny_smoke.py` to parse that fixture into `tables/syntenic_pairs.tsv` plus a Markdown smoke summary.
+- Add `synteny parser smoke` to the release gate before the WGD event smoke.
+- Tighten the objective audit so gamma/beta/alpha/theta evidence requires synteny parser evidence as well as WGD handoff outputs.
+- Document the synteny smoke in README and release audit.
+
+Added:
+- `bin/genefam/run_synteny_smoke.py`
+- `tests/fixtures/mcscanx/sample.collinearity`
+- `tests/test_run_synteny_smoke.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_synteny_smoke.py tests/test_run_release_checks.py::test_default_checks_include_synteny_parser_smoke_before_wgd_smoke tests/test_audit_objective_completion.py::test_wgd_event_evidence_requires_synteny_parser_smoke -q` first failed because `run_synteny_smoke.py` did not exist, `synteny parser smoke` was not in release checks, and WGD objective evidence did not require synteny parser evidence.
+- The same command passed with 3 tests after adding the smoke script, release check, and objective-audit requirement.
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because release audit did not mention `run_synteny_smoke.py`.
+- `python -m pytest tests/test_run_synteny_smoke.py tests/test_run_release_checks.py::test_default_checks_include_synteny_parser_smoke_before_wgd_smoke tests/test_audit_objective_completion.py::test_wgd_event_evidence_requires_synteny_parser_smoke tests/test_release_audit_docs.py -q` passed with 4 tests after documenting the smoke.
+- `python bin/genefam/run_synteny_smoke.py --collinearity tests/fixtures/mcscanx/sample.collinearity --outdir results/synteny_smoke` exited `0` and printed `syntenic_pairs	results/synteny_smoke/tables/syntenic_pairs.tsv`.
+- `results/synteny_smoke/tables/syntenic_pairs.tsv` contains two MCScanX-derived syntenic pairs.
+- `results/synteny_smoke/synteny_smoke.md` reports `Parsed syntenic pairs: 2`.
+- `python -m pytest tests -q` passed with 214 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 16`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; `synteny parser smoke` passed and lists `results/synteny_smoke/tables/syntenic_pairs.tsv`.
+- `results/objective_audit/objective_audit.md` reports WGD gamma/beta/alpha/theta evidence achieved from `synteny parser smoke, WGD event smoke, and prepared WGD handoff checks`; overall completion remains blocked only by missing `docker` and `apptainer`.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Keep plot outputs tied to concrete report entries so generated PDFs are not invisible artifacts.
+- Keep prepared-table WGD inputs traceable to parser-level artifacts such as MCScanX collinearity outputs.

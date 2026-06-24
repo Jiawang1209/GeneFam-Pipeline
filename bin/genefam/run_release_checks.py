@@ -98,6 +98,17 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "synteny parser smoke",
+            [
+                python,
+                "bin/genefam/run_synteny_smoke.py",
+                "--collinearity",
+                "tests/fixtures/mcscanx/sample.collinearity",
+                "--outdir",
+                "results/synteny_smoke",
+            ],
+        ),
+        CheckSpec(
             "WGD event smoke",
             [
                 python,
