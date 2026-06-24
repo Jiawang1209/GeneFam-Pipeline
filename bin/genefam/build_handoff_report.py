@@ -37,6 +37,15 @@ def _objective_summary(rows: list[dict[str, str]]) -> str:
     return f"achieved={achieved} blocked={blocked} missing={missing} complete={str(blocked == 0 and missing == 0).lower()}"
 
 
+def _blocked_requirements(rows: list[dict[str, str]]) -> str:
+    blocked = [
+        row["requirement"]
+        for row in rows
+        if row.get("status") in {"blocked", "missing"} and row.get("requirement")
+    ]
+    return ", ".join(blocked) if blocked else "none"
+
+
 def _missing_runtime(rows: list[dict[str, str]]) -> str:
     missing = [row["command"] for row in rows if row.get("status") == "missing"]
     return ", ".join(missing) if missing else "none"
@@ -63,6 +72,7 @@ def build_handoff_sections(
     return {
         "release": _release_summary(release_rows),
         "objective": _objective_summary(objective_rows),
+        "blocked_requirements": _blocked_requirements(objective_rows),
         "available_runtime": _available_runtime(readiness_rows),
         "missing_runtime": _missing_runtime(readiness_rows),
         "container_smoke": _container_smoke(container_rows),
@@ -77,6 +87,7 @@ def write_markdown(sections: dict[str, str], out_path: Path) -> None:
         "",
         f"- Release checks: `{sections['release']}`",
         f"- Objective audit: `{sections['objective']}`",
+        f"- Blocked requirements: `{sections['blocked_requirements']}`",
         f"- Available runtime commands: `{sections['available_runtime']}`",
         f"- Missing runtime commands: `{sections['missing_runtime']}`",
         f"- Container smoke: `{sections['container_smoke']}`",

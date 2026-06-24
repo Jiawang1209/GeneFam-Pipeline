@@ -3167,9 +3167,51 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
 
 Commit:
-- hash: pending
+- hash: d32b980b510cfaa86ad5ab7d08d4d333b1cbf846
 - message: docs: align status with release evidence
 - files: README current status, release audit output list, docs tests, history
+
+Next:
+- Keep README and release-audit status aligned with `results/handoff/handoff_report.md` and `results/handoff/handoff_summary.tsv`.
+
+## 2026-06-24 - Show blocked requirements in handoff
+
+Context:
+- The handoff report and summary showed objective counts such as `blocked=1`, but did not directly name which requirement was blocked.
+- The first handoff page should make the remaining blocker explicit without requiring users or scripts to open the full objective audit.
+
+Decisions:
+- Add a `blocked_requirements` section to the handoff sections.
+- Treat objective audit rows with `blocked` or `missing` status as handoff blockers.
+- Write blocked requirement names to both `results/handoff/handoff_report.md` and `results/handoff/handoff_summary.tsv`.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_handoff_report.py`
+- `tests/test_build_handoff_report.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_handoff_report.py -q` first failed because `blocked_requirements` was missing from sections and Markdown.
+- After adding blocked requirement extraction and Markdown output, `python -m pytest tests/test_build_handoff_report.py -q` passed with 4 tests.
+- `python -m pytest tests/test_build_handoff_report.py tests/test_run_release_checks.py::test_write_handoff_report_uses_latest_written_release_tsv -q` passed with 5 tests.
+- `python -m pytest tests -q` passed with 181 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 12`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
+- `results/handoff/handoff_report.md` reports `Blocked requirements: Docker/Apptainer reproducibility`, available runtime commands `nextflow`, `conda`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2`, and `meme`, and missing runtime commands `docker, apptainer`.
+- `results/handoff/handoff_summary.tsv` contains `blocked_requirements	Docker/Apptainer reproducibility`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
+
+Commit:
+- hash: pending
+- message: feat: show blocked handoff requirements
+- files: handoff blocked requirement summary, release runner test, history
 
 Next:
 - Run full tests and release checks, then commit and backfill the full commit hash.

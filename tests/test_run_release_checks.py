@@ -258,6 +258,7 @@ def test_write_handoff_report_uses_latest_written_release_tsv(tmp_path):
     assert "passed=1 failed=2 required_failed=1 optional_failed=1 release_ready=false" in text
     summary_text = summary_tsv.read_text(encoding="utf-8")
     assert "release\tpassed=1 failed=2 required_failed=1 optional_failed=1 release_ready=false" in summary_text
+    assert "blocked_requirements\tDocker/Apptainer reproducibility" in summary_text
     assert "container_smoke\tdocker=missing_runtime; apptainer=missing_runtime" in summary_text
 
 
