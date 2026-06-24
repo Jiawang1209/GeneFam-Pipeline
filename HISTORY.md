@@ -3669,9 +3669,63 @@ Verification:
 - `results/handoff/handoff_summary.tsv` still contains `next_unblock_command	bash results/readiness/runtime_bootstrap.sh`.
 
 Commit:
+- hash: bb2e8de771e915e2345477110dbe72e060a3e4ca
+- message: test: require single-tool smoke in objective audit
+- files: objective audit single-tool requirement, release audit docs, tests, history
+
+Next:
+- Keep completion evidence strict: any new release smoke that proves core objective behavior should be reflected in `audit_objective_completion.py` and `docs/release_audit.md`.
+
+## 2026-06-25 - Add static container materials audit
+
+Context:
+- The objective still requires Docker/Conda reproducibility, but this machine lacks Docker and Apptainer, so runtime profile smoke remains blocked by external tools.
+- The repository can still verify that its container materials are internally consistent before those runtimes are installed.
+- Existing checks covered runtime profile smoke, but not a required static audit of the Dockerfile, Linux Conda environment, and Nextflow container-profile contract.
+
+Decisions:
+- Add `bin/genefam/audit_container_materials.py` as a required release check that does not need Docker or Apptainer.
+- Validate that the Dockerfile creates `GeneFamilyFlow`, links `/usr/local/bin/R`, and uses `envs/GeneFamilyFlow.linux-64.conda.yaml`.
+- Validate that the Linux Conda environment carries the container-only full toolchain, including `jcvi` and `kaks_calculator`.
+- Validate that Nextflow Docker and Apptainer profiles use parameterized container images and disable process-level Conda.
+
+Added:
+- `bin/genefam/audit_container_materials.py`
+- `tests/test_audit_container_materials.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `docs/runtime_environment.md`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_container_materials.py -q` first failed because `bin.genefam.audit_container_materials` did not exist.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_optional_container_profile_smokes_after_bootstrap -q` first failed because `container materials audit` was not in `default_checks()`.
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because `docs/release_audit.md` did not mention `python bin/genefam/audit_container_materials.py`.
+- `python -m pytest tests/test_audit_objective_completion.py::test_build_objective_audit_marks_goal_items_and_runtime_blockers -q` first failed because the Docker/Apptainer reproducibility evidence did not include `container materials audit`.
+- After implementing the static audit, release integration, docs, and objective-audit evidence text, `python -m pytest tests/test_audit_objective_completion.py tests/test_audit_container_materials.py tests/test_run_release_checks.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py -q` passed with 41 tests.
+- `python -m pytest tests -q` passed with 199 tests.
+- `python bin/genefam/audit_container_materials.py --outdir results/container_materials` exited `0`; `results/container_materials/container_materials.md` reports `Passed: 5` and `Failed: 0`.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 14`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
+- `container materials audit` is now a required release check and passed.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility due missing `docker` and `apptainer`.
+- `results/handoff/handoff_summary.tsv` still contains `next_unblock_command	bash results/readiness/runtime_bootstrap.sh`.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Keep completion evidence strict: any new release smoke that proves core objective behavior should be reflected in `audit_objective_completion.py` and `docs/release_audit.md`.
+- Keep the runtime blocker explicit: this static audit improves reproducibility evidence but does not replace real Docker/Apptainer profile smoke after those commands are installed.

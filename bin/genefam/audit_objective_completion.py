@@ -95,7 +95,7 @@ def build_objective_audit(
         _row(
             "Docker/Apptainer reproducibility",
             "achieved" if not missing_container_tools else "blocked",
-            "command readiness audit and runtime bootstrap plan",
+            "container materials audit, command readiness audit, and runtime bootstrap plan",
             "Container runtime route is available."
             if not missing_container_tools
             else "Missing container commands: " + ", ".join(missing_container_tools),

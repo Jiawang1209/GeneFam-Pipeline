@@ -174,8 +174,16 @@ def test_default_checks_include_optional_container_profile_smokes_after_bootstra
     checks = default_checks()
     names = [check.name for check in checks]
 
+    assert names.index("container materials audit") > names.index("runtime bootstrap plan")
+    assert names.index("Docker profile smoke") > names.index("container materials audit")
     assert names.index("Docker profile smoke") > names.index("runtime bootstrap plan")
     assert names.index("Apptainer profile smoke") > names.index("Docker profile smoke")
+
+    materials = next(check for check in checks if check.name == "container materials audit")
+    assert materials.required is True
+    materials_command = " ".join(materials.command)
+    assert "bin/genefam/audit_container_materials.py" in materials_command
+    assert "--outdir results/container_materials" in materials_command
 
     docker = next(check for check in checks if check.name == "Docker profile smoke")
     assert docker.required is False

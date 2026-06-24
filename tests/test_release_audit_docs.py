@@ -41,6 +41,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
         "python bin/genefam/run_mock_mvp.py",
         "python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv",
         "python bin/genefam/plan_runtime_bootstrap.py",
+        "python bin/genefam/audit_container_materials.py",
         "python bin/genefam/audit_objective_completion.py",
         "python bin/genefam/run_nextflow_single_tool_smoke.py",
         "python bin/genefam/run_container_profile_smoke.py --profile docker",
@@ -59,6 +60,8 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/objective_audit/objective_audit.tsv" in text
     assert "results/container_profile_smoke/docker/container_profile_smoke.md" in text
     assert "results/container_profile_smoke/apptainer/container_profile_smoke.md" in text
+    assert "results/container_materials/container_materials.tsv" in text
+    assert "results/container_materials/container_materials.md" in text
     assert "results/handoff/handoff_report.md" in text
     assert "results/handoff/handoff_summary.tsv" in text
     assert "docs/quickstart.md" in text

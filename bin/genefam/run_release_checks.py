@@ -180,6 +180,15 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "container materials audit",
+            [
+                python,
+                "bin/genefam/audit_container_materials.py",
+                "--outdir",
+                "results/container_materials",
+            ],
+        ),
+        CheckSpec(
             "Docker profile smoke",
             [
                 python,

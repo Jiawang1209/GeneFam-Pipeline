@@ -44,6 +44,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
         _release_row("quickstart handoff"),
         _release_row("readiness audit", status="failed"),
         _release_row("runtime bootstrap plan"),
+        _release_row("container materials audit"),
     ]
     readiness_rows = [
         _readiness_row("nextflow"),
@@ -64,6 +65,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
     assert by_requirement["YAML-driven species selection"]["status"] == "achieved"
     assert by_requirement["GeneFamilyFlow runtime"]["status"] == "achieved"
     assert by_requirement["Docker/Apptainer reproducibility"]["status"] == "blocked"
+    assert "container materials audit" in by_requirement["Docker/Apptainer reproducibility"]["evidence"]
     assert "docker, apptainer" in by_requirement["Docker/Apptainer reproducibility"]["note"]
     assert by_requirement["WGD gamma beta alpha theta evidence"]["status"] == "achieved"
     assert by_requirement["quickstart handoff"]["status"] == "achieved"

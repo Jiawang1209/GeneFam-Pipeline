@@ -48,12 +48,18 @@ python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/r
 python bin/genefam/plan_runtime_bootstrap.py \
   --readiness results/readiness/command_readiness.tsv \
   --outdir results/readiness
+python bin/genefam/audit_container_materials.py \
+  --outdir results/container_materials
 ```
 
 This writes:
 
 - `results/readiness/runtime_bootstrap_plan.md`
 - `results/readiness/runtime_bootstrap.sh`
+- `results/container_materials/container_materials.tsv`
+- `results/container_materials/container_materials.md`
+
+The container-materials audit is static: it verifies that the Dockerfile, Linux Conda environment, and Nextflow container profiles agree on `GeneFamilyFlow`, `/usr/local/bin/R`, and the configured Docker/Apptainer image names before a runtime engine is available.
 
 ## Docker
 

@@ -79,7 +79,7 @@ python bin/genefam/plan_runtime_bootstrap.py \
   --outdir results/readiness
 ```
 
-The release checks runner writes TSV and Markdown summaries. The Nextflow smoke writes `results/nextflow_smoke/nextflow_smoke.md`; it runs the mock MVP through Nextflow when Nextflow is installed and otherwise records a `missing_nextflow` blocker. The readiness audit writes a TSV report and exits non-zero when required runtime commands are missing. The bootstrap planner converts the TSV into `results/readiness/runtime_bootstrap_plan.md` and `results/readiness/runtime_bootstrap.sh`.
+The release checks runner writes TSV and Markdown summaries. The Nextflow smoke writes `results/nextflow_smoke/nextflow_smoke.md`; it runs the mock MVP through Nextflow when Nextflow is installed and otherwise records a `missing_nextflow` blocker. The readiness audit writes a TSV report and exits non-zero when required runtime commands are missing. The bootstrap planner converts the TSV into `results/readiness/runtime_bootstrap_plan.md` and `results/readiness/runtime_bootstrap.sh`. The static container-materials audit writes `results/container_materials/container_materials.md` and checks the Dockerfile, Linux Conda environment, and Nextflow container profile contracts before Docker/Apptainer are installed.
 
 When Docker and Apptainer are available, run the generated bootstrap script to build the local Docker image, build the local Apptainer SIF, smoke-test both container profiles, and rerun the release gate:
 

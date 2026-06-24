@@ -93,6 +93,9 @@ def test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file():
 
     assert "python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv" in text
     assert "GeneFamilyFlow.linux-64.conda.yaml" in text
+    assert "python bin/genefam/audit_container_materials.py" in text
+    assert "results/container_materials/container_materials.tsv" in text
+    assert "results/container_materials/container_materials.md" in text
     assert "python bin/genefam/run_container_profile_smoke.py --profile docker" in text
     assert "python bin/genefam/run_container_profile_smoke.py --profile apptainer" in text
     assert "results/container_profile_smoke/docker/container_profile_smoke.md" in text
