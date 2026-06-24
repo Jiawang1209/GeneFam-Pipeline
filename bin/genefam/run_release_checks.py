@@ -109,6 +109,21 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "gene structure smoke",
+            [
+                python,
+                "bin/genefam/run_gene_structure_smoke.py",
+                "--config",
+                "configs/example.config.yaml",
+                "--groups",
+                "configs/species_groups.yaml",
+                "--mock-evidence-dir",
+                "tests/fixtures/mock_evidence",
+                "--outdir",
+                "results/gene_structure_smoke",
+            ],
+        ),
+        CheckSpec(
             "chromosome location smoke",
             [
                 python,

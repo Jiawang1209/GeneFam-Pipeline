@@ -345,6 +345,18 @@ def test_default_checks_include_chromosome_smoke_before_expression_smoke():
     assert "--outdir results/chromosome_smoke" in command
 
 
+def test_default_checks_include_gene_structure_smoke_before_chromosome_smoke():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("gene structure smoke") < names.index("chromosome location smoke")
+    assert names.index("gene structure smoke") > names.index("standard branch smoke")
+    smoke = next(check for check in default_checks() if check.name == "gene structure smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_gene_structure_smoke.py" in command
+    assert "--config configs/example.config.yaml" in command
+    assert "--outdir results/gene_structure_smoke" in command
+
+
 def test_default_checks_include_alignment_phylogeny_smoke_before_synteny_smoke():
     names = [check.name for check in default_checks()]
 

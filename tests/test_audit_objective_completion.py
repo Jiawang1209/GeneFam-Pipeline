@@ -37,6 +37,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
         _release_row("domain filter smoke"),
         _release_row("motif parser smoke"),
         _release_row("standard branch smoke"),
+        _release_row("gene structure smoke"),
         _release_row("chromosome location smoke"),
         _release_row("alignment phylogeny smoke"),
         _release_row("synteny parser smoke"),
@@ -124,6 +125,32 @@ def test_standard_identification_branch_requires_motif_parser_smoke():
 
     assert by_requirement["standard identification branch"]["status"] == "missing"
     assert "motif parser smoke" in by_requirement["standard identification branch"]["evidence"]
+
+
+def test_standard_identification_branch_requires_gene_structure_smoke():
+    release_rows = [
+        _release_row("domain filter smoke"),
+        _release_row("motif parser smoke"),
+        _release_row("standard branch smoke"),
+        _release_row("Nextflow standard branch smoke"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["standard identification branch"]["status"] == "missing"
+    assert "gene structure smoke" in by_requirement["standard identification branch"]["evidence"]
 
 
 def test_wgd_event_evidence_requires_synteny_parser_smoke():
@@ -298,6 +325,7 @@ def test_audit_objective_completion_cli_writes_outputs(tmp_path):
         "domain filter smoke\ttrue\tpassed\t0\tdomain\t\n"
         "motif parser smoke\ttrue\tpassed\t0\tmotif\t\n"
         "standard branch smoke\ttrue\tpassed\t0\tstandard\t\n"
+        "gene structure smoke\ttrue\tpassed\t0\tgene_structure\t\n"
         "chromosome location smoke\ttrue\tpassed\t0\tchromosome\t\n"
         "alignment phylogeny smoke\ttrue\tpassed\t0\talignment\t\n"
         "synteny parser smoke\ttrue\tpassed\t0\tsynteny\t\n"

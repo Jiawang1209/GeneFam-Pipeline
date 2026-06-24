@@ -4397,9 +4397,58 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Nextflow DSL2 workflow` achieved with `Nextflow mock, standard, single-tool, WGD, and alignment phylogeny smoke checks`; overall completion remains blocked only by missing `docker` and `apptainer`.
 
 Commit:
-- hash: pending
+- hash: 061378e0e69c745820dfb9d464ee8e75bbc69d85
 - message: feat: add alignment phylogeny smoke
 - files: alignment/phylogeny smoke helper, FASTA fixture, release gate, objective audit, README, release audit, tests, history
 
 Next:
 - Continue exposing standalone release evidence for any remaining major modules that are only visible inside larger branch outputs.
+
+## 2026-06-25 - Add gene structure release smoke
+
+Context:
+- Gene-structure summaries were produced inside the standard branch, but the species-bank GFF3 to family-candidate structure extraction path did not yet have an independent release smoke artifact.
+- The long objective and README planned scope include motif and gene structure analysis, so gene structure evidence should be directly visible in the release gate.
+
+Decisions:
+- Add `bin/genefam/run_gene_structure_smoke.py` to reuse species-bank discovery, mock HMMER/DIAMOND evidence merging, and `extract_gene_structure.py`.
+- Write `results/gene_structure_smoke/tables/species_manifest.tsv`, `family_candidates.tsv`, and `gene_structure_summary.tsv`.
+- Add `gene structure smoke` to the release gate after the standard branch smoke and before chromosome/location and expression checks.
+- Tighten the objective audit so the standard identification branch requires explicit gene-structure smoke evidence.
+- Document the smoke in README and the release audit matrix.
+
+Added:
+- `bin/genefam/run_gene_structure_smoke.py`
+- `tests/test_run_gene_structure_smoke.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_gene_structure_smoke.py tests/test_run_release_checks.py::test_default_checks_include_gene_structure_smoke_before_chromosome_smoke tests/test_audit_objective_completion.py::test_standard_identification_branch_requires_gene_structure_smoke tests/test_release_audit_docs.py -q` first failed because `run_gene_structure_smoke.py` did not exist, `gene structure smoke` was not in release checks, the objective audit still accepted standard-branch evidence without it, and release audit did not mention `run_gene_structure_smoke.py`.
+- The same command passed with 4 tests after adding the smoke, release check, objective-audit requirement, and documentation.
+- `python bin/genefam/run_gene_structure_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/gene_structure_smoke` exited `0` and printed `gene_structure_summary	results/gene_structure_smoke/tables/gene_structure_summary.tsv`.
+- `results/gene_structure_smoke/tables/gene_structure_summary.tsv` contains `Arabidopsis_thaliana	AT1G01010	401	0	0	0	0	0` and `Brassica_rapa	BraA010001	701	0	0	0	0	0`.
+- `results/gene_structure_smoke/gene_structure_smoke.md` reports `Structured genes: 2` and `Species represented: 2`.
+- `python -m pytest tests -q` passed with 232 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 22`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; `gene structure smoke` passed and lists `results/gene_structure_smoke/tables/gene_structure_summary.tsv`.
+- `results/objective_audit/objective_audit.md` reports the standard identification branch achieved from `domain filter smoke, motif parser smoke, gene structure smoke, Python standard branch, and Nextflow standard branch smoke checks`; overall completion remains blocked only by missing `docker` and `apptainer`.
+
+Commit:
+- hash: pending
+- message: feat: add gene structure smoke
+- files: gene structure smoke helper, release gate, objective audit, README, release audit, tests, history
+
+Next:
+- Continue exposing standalone release evidence where broad objective items are still represented only indirectly.
