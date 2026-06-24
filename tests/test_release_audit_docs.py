@@ -53,6 +53,8 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "runtime_bootstrap_plan.md" in text
     assert "objective_audit.md" in text
     assert "The release checks runner writes" in text
+    assert "Required failed" in text
+    assert "Optional failed" in text
     assert "results/objective_audit/objective_audit.tsv" in text
     assert "results/container_profile_smoke/docker/container_profile_smoke.md" in text
     assert "results/container_profile_smoke/apptainer/container_profile_smoke.md" in text

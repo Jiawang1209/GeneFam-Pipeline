@@ -58,7 +58,13 @@ def test_summarize_checks_marks_release_not_ready_when_required_check_fails():
         },
     ]
 
-    assert summarize_checks(rows) == {"passed": 1, "failed": 1, "release_ready": False}
+    assert summarize_checks(rows) == {
+        "passed": 1,
+        "failed": 1,
+        "required_failed": 1,
+        "optional_failed": 0,
+        "release_ready": False,
+    }
 
 
 def test_summarize_checks_keeps_release_ready_when_only_optional_checks_fail():
@@ -74,7 +80,13 @@ def test_summarize_checks_keeps_release_ready_when_only_optional_checks_fail():
         },
     ]
 
-    assert summarize_checks(rows) == {"passed": 1, "failed": 1, "release_ready": True}
+    assert summarize_checks(rows) == {
+        "passed": 1,
+        "failed": 1,
+        "required_failed": 0,
+        "optional_failed": 1,
+        "release_ready": True,
+    }
 
 
 def test_run_release_checks_cli_writes_outputs(tmp_path):
@@ -116,6 +128,35 @@ def test_write_markdown_escapes_pipe_characters_in_table_cells(tmp_path):
     write_markdown(rows, out_path)
 
     assert "path \\| final_report" in out_path.read_text(encoding="utf-8")
+
+
+def test_write_markdown_summarizes_required_and_optional_failures(tmp_path):
+    out_path = tmp_path / "release_checks.md"
+    rows = [
+        {"check": "pytest", "required": "true", "status": "passed", "exit_code": "0", "command": "pytest", "note": ""},
+        {
+            "check": "readiness audit",
+            "required": "true",
+            "status": "failed",
+            "exit_code": "1",
+            "command": "readiness",
+            "note": "",
+        },
+        {
+            "check": "Docker profile smoke",
+            "required": "false",
+            "status": "failed",
+            "exit_code": "1",
+            "command": "docker smoke",
+            "note": "",
+        },
+    ]
+
+    write_markdown(rows, out_path)
+
+    text = out_path.read_text(encoding="utf-8")
+    assert "Required failed: 1" in text
+    assert "Optional failed: 1" in text
 
 
 def test_default_checks_generate_runtime_bootstrap_after_readiness_audit():

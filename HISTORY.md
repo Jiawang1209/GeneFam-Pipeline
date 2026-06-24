@@ -2898,9 +2898,55 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item is `Docker/Apptainer reproducibility`.
 
 Commit:
-- hash: pending
+- hash: dc6b6230356fa97b09c7666adea2444b7fd7ff5d
 - message: feat: add optional container smoke release checks
 - files: release gate container smoke integration, container smoke path fix, runtime/release docs, tests, history
 
 Next:
 - Once Docker or Apptainer is installed, rerun `python bin/genefam/run_release_checks.py --outdir results/release_checks` and confirm the corresponding optional container profile smoke changes from `missing_runtime` to `passed`.
+
+## 2026-06-24 - Split required and optional release failures
+
+Context:
+- Release checks now include optional Docker and Apptainer profile smoke evidence.
+- The Markdown summary only reported total failures, so a normal runtime-blocked Mac run showed `Failed: 3` without distinguishing the one required readiness blocker from two optional container-profile diagnostics.
+- The final handoff needs the summary to be readable at a glance.
+
+Decisions:
+- Extend `summarize_checks` with `required_failed` and `optional_failed` counts.
+- Add `Required failed` and `Optional failed` lines to `results/release_checks/release_checks.md`.
+- Keep `release_ready` based only on required failures.
+- Document the breakdown in quickstart and release-audit docs.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_release_checks.py`
+- `docs/quickstart.md`
+- `docs/release_audit.md`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_release_checks.py::test_summarize_checks_marks_release_not_ready_when_required_check_fails tests/test_run_release_checks.py::test_summarize_checks_keeps_release_ready_when_only_optional_checks_fail tests/test_run_release_checks.py::test_write_markdown_summarizes_required_and_optional_failures -q` first failed because `summarize_checks` did not return `required_failed` and `optional_failed`, and Markdown did not report them.
+- After updating the release summary code, `python -m pytest tests/test_run_release_checks.py -q` passed with 17 tests.
+- `python -m pytest tests/test_quickstart_docs.py tests/test_release_audit_docs.py -q` first failed because docs did not mention `Required failed` and `Optional failed`.
+- After updating docs, `python -m pytest tests/test_run_release_checks.py tests/test_quickstart_docs.py tests/test_release_audit_docs.py -q` passed with 20 tests.
+- `python -m pytest tests -q` passed with 173 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 12`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item is `Docker/Apptainer reproducibility`.
+
+Commit:
+- hash: pending
+- message: feat: split required and optional release failures
+- files: release summary breakdown, quickstart/release docs, tests, history
+
+Next:
+- Once Docker or Apptainer is installed, rerun release checks; optional failure counts should drop independently from required readiness status.

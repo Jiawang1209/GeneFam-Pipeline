@@ -15,6 +15,8 @@ def test_quickstart_documents_minimum_verified_run_path():
         "/usr/local/bin/R",
         "species bank",
         "python bin/genefam/run_release_checks.py --outdir results/release_checks",
+        "Required failed",
+        "Optional failed",
         "python bin/genefam/run_quickstart.py",
         "--outdir results/quickstart",
         "results/quickstart/quickstart_summary.md",

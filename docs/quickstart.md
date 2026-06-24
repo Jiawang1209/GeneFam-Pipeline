@@ -20,6 +20,7 @@ Expected on the current Mac development machine:
 
 - Python tests, config validation, mock MVP, standard smoke, WGD smoke, Nextflow mock MVP, Nextflow standard smoke, Nextflow WGD smoke, and prepared WGD handoff example should pass through `GeneFamilyFlow`.
 - The readiness audit may fail while `docker` and `apptainer` are unavailable.
+- `results/release_checks/release_checks.md` separates `Required failed` from `Optional failed`, so optional container-profile smoke failures do not obscure the required readiness blocker.
 - Inspect `results/release_checks/release_checks.md` and `results/readiness/command_readiness.tsv` for exact evidence.
 
 ## 2. Run The Quickstart Handoff

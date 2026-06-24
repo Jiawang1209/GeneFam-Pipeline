@@ -230,8 +230,15 @@ def run_checks(
 def summarize_checks(rows: list[dict[str, str]]) -> dict[str, int | bool]:
     passed = sum(1 for row in rows if row["status"] == "passed")
     failed = sum(1 for row in rows if row["status"] == "failed")
-    required_failed = any(row["required"] == "true" and row["status"] == "failed" for row in rows)
-    return {"passed": passed, "failed": failed, "release_ready": not required_failed}
+    required_failed = sum(1 for row in rows if row["required"] == "true" and row["status"] == "failed")
+    optional_failed = sum(1 for row in rows if row["required"] == "false" and row["status"] == "failed")
+    return {
+        "passed": passed,
+        "failed": failed,
+        "required_failed": required_failed,
+        "optional_failed": optional_failed,
+        "release_ready": required_failed == 0,
+    }
 
 
 def write_tsv(rows: list[dict[str, str]], out_path: Path) -> None:
@@ -253,6 +260,8 @@ def write_markdown(rows: list[dict[str, str]], out_path: Path) -> None:
         "",
         f"Passed: {summary['passed']}",
         f"Failed: {summary['failed']}",
+        f"Required failed: {summary['required_failed']}",
+        f"Optional failed: {summary['optional_failed']}",
         f"Release ready: {str(summary['release_ready']).lower()}",
         "",
         "| check | required | status | exit_code | command | note |",
