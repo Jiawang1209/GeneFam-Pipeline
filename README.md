@@ -164,7 +164,7 @@ nextflow run workflows/main.nf \
   --final_rule intersection
 ```
 
-This branch builds HMMER and DIAMOND input tables from the YAML config and species manifest, runs evidence detection per species, merges candidate evidence, concatenates family candidate tables, writes `run_config_snapshot.tsv` for the selected species and tool settings, summarizes copy numbers, extracts `family_members.faa`, prepares alignment and phylogeny manifests, parses `motif_summary.tsv` from the MEME text file supplied by `--meme_txt`, extracts `chromosome_locations.tsv` from the species-bank GFF3 files, optionally subsets a `family_expression` matrix when `--expression_matrix` is supplied, creates the family-count plot, writes a standard report index, and assembles `final_report.md`.
+This branch builds HMMER and DIAMOND input tables from the YAML config and species manifest, runs evidence detection per species, merges candidate evidence, concatenates family candidate tables, writes `run_config_snapshot.tsv` for the selected species and tool settings, summarizes copy numbers, extracts `family_members.faa`, prepares alignment and phylogeny manifests, parses `motif_summary.tsv` from the MEME text file supplied by `--meme_txt`, summarizes `gene_structure_summary.tsv` from species-bank GFF3 annotations, extracts `chromosome_locations.tsv`, optionally subsets a `family_expression` matrix when `--expression_matrix` is supplied, creates the family-count plot, writes a standard report index, and assembles `final_report.md`.
 
 The offline standard-branch smoke check exercises the same post-identification reporting chain without requiring HMMER, DIAMOND, MAFFT, or IQ-TREE:
 
@@ -178,7 +178,7 @@ python bin/genefam/run_standard_smoke.py \
 
 Add `--expression-matrix path/to/expression.tsv` to subset RNA-seq expression rows to the identified family members during the same smoke.
 
-It writes `results/standard_smoke/tables/run_config_snapshot.tsv`, `results/standard_smoke/tables/chromosome_locations.tsv`, `results/standard_smoke/tables/motif_summary.tsv`, records `family_expression` as missing when no expression matrix is supplied or available when `--expression-matrix` is provided, writes `results/standard_smoke/report/final_report.md`, and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+It writes `results/standard_smoke/tables/run_config_snapshot.tsv`, `results/standard_smoke/tables/gene_structure_summary.tsv`, `results/standard_smoke/tables/chromosome_locations.tsv`, `results/standard_smoke/tables/motif_summary.tsv`, records `family_expression` as missing when no expression matrix is supplied or available when `--expression-matrix` is provided, writes `results/standard_smoke/report/final_report.md`, and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
 
 The focused Nextflow single-tool smoke validates true HMMER-only and DIAMOND-only routing through `GeneFamilyFlow` without using mock evidence:
 

@@ -67,6 +67,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "docs/quickstart.md" in text
     assert "build_identification_inputs.py" in text
     assert "extract_family_sequences.py" in text
+    assert "extract_gene_structure.py" in text
     assert "build_run_config_snapshot.py" in text
     assert "extract_chromosome_locations.py" in text
     assert "subset_expression_matrix.py" in text
@@ -85,6 +86,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "test_prepared_wgd_handoff_example.py" in text
     assert "results/standard_smoke/report/final_report.md" in text
     assert "results/standard_smoke/tables/run_config_snapshot.tsv" in text
+    assert "results/standard_smoke/tables/gene_structure_summary.tsv" in text
     assert "results/standard_smoke/tables/motif_summary.tsv" in text
     assert "results/wgd_smoke/report/final_report.md" in text
     assert "results/wgd_smoke/tables/wgd_run_config_snapshot.tsv" in text

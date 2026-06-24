@@ -3937,9 +3937,67 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
 
 Commit:
+- hash: 183ba1e53e14dfb4b3eee46dc92a51ea4dab4ff6
+- message: feat: add wgd run config snapshot
+- files: WGD run config snapshot helper, WGD smoke and Nextflow wiring, report index integration, docs, tests, history
+
+Next:
+- Keep WGD interpretation artifacts self-describing, especially when users adjust Ks bins or map lineage-specific events beyond gamma, beta, alpha, and theta.
+
+## 2026-06-25 - Add gene structure summary to standard branch
+
+Context:
+- The project scope includes motif and gene structure analysis.
+- Motif summaries were already parsed and report-indexed, but gene structure evidence from species-bank GFF3 files was not yet emitted.
+- The standard branch already consumes GFF3 for chromosome locations, so gene length, transcript count, exon count, CDS count, and exon/CDS total lengths can be derived from the same annotation source.
+
+Decisions:
+- Add `bin/genefam/extract_gene_structure.py` to summarize selected family members from GFF3 `gene`, transcript, exon, and CDS features.
+- Publish `tables/gene_structure_summary.tsv` in Python and Nextflow standard-branch paths.
+- Add `gene_structure_summary` to the standard report index so final reports expose the output.
+- Document the output in README and release-audit evidence.
+
+Added:
+- `bin/genefam/extract_gene_structure.py`
+- `tests/test_extract_gene_structure.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_nextflow_standard_smoke.py`
+- `bin/genefam/run_standard_smoke.py`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_nextflow_standard_smoke.py`
+- `tests/test_run_standard_smoke.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/annotation_integration.nf`
+- `workflows/modules/standard_postprocess.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_extract_gene_structure.py tests/test_standard_branch_report_index.py tests/test_run_standard_smoke.py tests/test_run_nextflow_standard_smoke.py tests/test_workflow_modules.py -q` first failed because `bin.genefam.extract_gene_structure` did not exist.
+- After implementing the helper and wiring the standard branch, the same command first exposed a wrong test expectation for exon total length and a missing expected Nextflow output entry.
+- `python -m pytest tests/test_extract_gene_structure.py tests/test_standard_branch_report_index.py tests/test_run_standard_smoke.py tests/test_run_nextflow_standard_smoke.py tests/test_workflow_modules.py -q` passed with 33 tests after correcting the expectation and adding `gene_structure_summary.tsv` to the Nextflow standard smoke expected outputs.
+- `python -m pytest tests/test_extract_gene_structure.py tests/test_standard_branch_report_index.py tests/test_run_standard_smoke.py tests/test_run_nextflow_standard_smoke.py tests/test_workflow_modules.py tests/test_release_audit_docs.py -q` passed with 34 tests after updating release-audit documentation.
+- `python bin/genefam/run_standard_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/standard_smoke` exited `0` and printed `gene_structure_summary	results/standard_smoke/tables/gene_structure_summary.tsv`.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_standard_smoke` exited `0`.
+- `results/standard_smoke/tables/gene_structure_summary.tsv` and `results/nextflow_standard_smoke/standard/tables/gene_structure_summary.tsv` both contain `gene_length`, `transcript_count`, `exon_count`, `cds_count`, `exon_total_length`, and `cds_total_length`.
+- `results/standard_smoke/report/final_report.md` and `results/nextflow_standard_smoke/standard/report/final_report.md` both list `gene_structure_summary` as available.
+- `python -m pytest tests -q` passed with 209 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 14`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; the only required blocker remains the readiness audit for missing `docker` and `apptainer`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Keep WGD interpretation artifacts self-describing, especially when users adjust Ks bins or map lineage-specific events beyond gamma, beta, alpha, and theta.
+- Keep GFF3-derived outputs aligned: chromosome coordinates and gene structure summaries should remain sourced from the same species-bank annotation contract.

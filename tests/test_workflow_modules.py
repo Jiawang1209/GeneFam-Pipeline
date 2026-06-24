@@ -318,6 +318,10 @@ def test_annotation_integration_module_covers_chromosome_and_expression_steps():
     assert "--species-manifest ${species_manifest}" in module
     assert "--out chromosome_locations.tsv" in module
 
+    assert "process EXTRACT_GENE_STRUCTURE" in module
+    assert "extract_gene_structure.py" in module
+    assert "--out gene_structure_summary.tsv" in module
+
     assert "process SUBSET_EXPRESSION_MATRIX" in module
     assert "subset_expression_matrix.py" in module
     assert "--family-candidates ${family_candidates}" in module
@@ -335,6 +339,8 @@ def test_main_workflow_includes_remaining_standard_analysis_processes():
     assert "PARSE_MEME_MOTIFS" in workflow
     assert "PARSE_MEME_MOTIFS(" in workflow
     assert "PARSE_MEME_MOTIFS.out" in workflow
+    assert "EXTRACT_GENE_STRUCTURE(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)" in workflow
+    assert "EXTRACT_GENE_STRUCTURE.out" in workflow
     assert "file(params.meme_txt)" in workflow
     assert "EXTRACT_CHROMOSOME_LOCATIONS" in workflow
     assert "SUBSET_EXPRESSION_MATRIX" in workflow

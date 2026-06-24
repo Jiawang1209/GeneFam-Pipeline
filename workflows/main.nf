@@ -25,6 +25,7 @@ include {
 } from './modules/alignment_phylogeny.nf'
 include {
     EXTRACT_CHROMOSOME_LOCATIONS;
+    EXTRACT_GENE_STRUCTURE;
     SUBSET_EXPRESSION_MATRIX
 } from './modules/annotation_integration.nf'
 include {
@@ -160,6 +161,7 @@ workflow {
             PREPARE_PHYLOGENY_INPUTS(PREPARE_ALIGNMENT_INPUTS.out, tree_builder_ch, phylogeny_outdir_ch)
             meme_txt_ch = Channel.value(file(params.meme_txt))
             PARSE_MEME_MOTIFS(meme_txt_ch, family_name_ch)
+            EXTRACT_GENE_STRUCTURE(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
             EXTRACT_CHROMOSOME_LOCATIONS(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
             family_expression_report_ch = Channel.value("")
             if (params.expression_matrix) {
@@ -178,6 +180,7 @@ workflow {
                 PREPARE_ALIGNMENT_INPUTS.out,
                 PREPARE_PHYLOGENY_INPUTS.out,
                 PARSE_MEME_MOTIFS.out,
+                EXTRACT_GENE_STRUCTURE.out,
                 EXTRACT_CHROMOSOME_LOCATIONS.out,
                 family_expression_report_ch,
                 BUILD_PLOT_MANIFEST.out

@@ -33,6 +33,7 @@ def test_run_standard_smoke_writes_standard_branch_outputs(tmp_path):
         "tables/alignment_manifest.tsv",
         "tables/phylogeny_manifest.tsv",
         "tables/motif_summary.tsv",
+        "tables/gene_structure_summary.tsv",
         "tables/chromosome_locations.tsv",
         "report/report_index.tsv",
         "report/final_report.md",
@@ -47,10 +48,18 @@ def test_run_standard_smoke_writes_standard_branch_outputs(tmp_path):
     assert "chromosome_locations" in report_index
     assert "motif_summary" in report_index
     assert "motif_summary.tsv\tavailable" in report_index
+    assert "gene_structure_summary" in report_index
+    assert "gene_structure_summary.tsv\tavailable" in report_index
     assert "family_expression" in report_index
     motif_summary = (outdir / "tables/motif_summary.tsv").read_text(encoding="utf-8")
     assert motif_summary.startswith("family_name\tmotif_id\tmotif_name\twidth\tsites\tevalue\n")
     assert "GDSL_motif_1" in motif_summary
+    gene_structure = (outdir / "tables/gene_structure_summary.tsv").read_text(encoding="utf-8")
+    assert gene_structure.startswith(
+        "species_id\tgene_id\tgene_length\ttranscript_count\texon_count\tcds_count\texon_total_length\tcds_total_length\n"
+    )
+    assert "Arabidopsis_thaliana\tAT1G01010\t401\t0\t0\t0\t0\t0\n" in gene_structure
+    assert "Brassica_rapa\tBraA010001\t701\t0\t0\t0\t0\t0\n" in gene_structure
     run_config = (outdir / "tables/run_config_snapshot.tsv").read_text(encoding="utf-8")
     assert run_config.startswith("key\tvalue\n")
     assert "project.name\tGDSL_demo\n" in run_config

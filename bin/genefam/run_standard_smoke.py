@@ -20,6 +20,7 @@ from bin.genefam.discover_species import _select_species, discover_species, writ
 from bin.genefam.extract_family_sequences import extract_family_sequences, read_tsv as read_table, write_fasta
 from bin.genefam.extract_chromosome_locations import extract_locations_for_manifest, write_tsv as write_locations_tsv
 from bin.genefam.merge_identification_evidence import merge_evidence, read_tsv, write_tsv
+from bin.genefam.extract_gene_structure import summarize_structure, write_tsv as write_gene_structure_tsv
 from bin.genefam.prepare_alignment_inputs import prepare_alignment_manifest, write_tsv as write_alignment_tsv
 from bin.genefam.prepare_phylogeny_inputs import prepare_phylogeny_manifest, write_tsv as write_phylogeny_tsv
 from bin.genefam.parse_meme_motifs import parse_meme_text, write_tsv as write_motif_tsv
@@ -74,6 +75,7 @@ def run_standard_smoke(
         "alignment_manifest": tables_dir / "alignment_manifest.tsv",
         "phylogeny_manifest": tables_dir / "phylogeny_manifest.tsv",
         "motif_summary": tables_dir / "motif_summary.tsv",
+        "gene_structure_summary": tables_dir / "gene_structure_summary.tsv",
         "chromosome_locations": tables_dir / "chromosome_locations.tsv",
         "plot_manifest": report_dir / "plot_manifest.tsv",
         "report_index": report_dir / "report_index.tsv",
@@ -122,6 +124,7 @@ def run_standard_smoke(
         encoding="utf-8",
     )
     write_motif_tsv(parse_meme_text(meme_text, family_name=gene_family), outputs["motif_summary"])
+    write_gene_structure_tsv(summarize_structure(candidates, manifest_rows), outputs["gene_structure_summary"])
     write_locations_tsv(extract_locations_for_manifest(candidates, manifest_rows), outputs["chromosome_locations"])
     if expression_matrix is not None:
         write_expression_tsv(

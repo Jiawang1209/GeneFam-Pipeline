@@ -18,6 +18,26 @@ process EXTRACT_CHROMOSOME_LOCATIONS {
     """
 }
 
+process EXTRACT_GENE_STRUCTURE {
+    tag "gene structure summary"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
+
+    input:
+    path family_candidates
+    path species_manifest
+
+    output:
+    path "gene_structure_summary.tsv"
+
+    script:
+    """
+    python ${projectDir}/../bin/genefam/extract_gene_structure.py \\
+      --family-candidates ${family_candidates} \\
+      --species-manifest ${species_manifest} \\
+      --out gene_structure_summary.tsv
+    """
+}
+
 process SUBSET_EXPRESSION_MATRIX {
     tag "family expression matrix"
     publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
