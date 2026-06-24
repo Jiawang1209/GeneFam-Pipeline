@@ -3881,9 +3881,65 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
 
 Commit:
+- hash: b085bd7b741834d6c0cfd74f783b5d1edf96759c
+- message: feat: add standard run config snapshot
+- files: standard run config snapshot helper, Nextflow process wiring, report index integration, docs, tests, history
+
+Next:
+- Keep adding report-index evidence for user-facing outputs so final reports remain self-describing across large multi-species runs.
+
+## 2026-06-25 - Add WGD run configuration snapshot
+
+Context:
+- The WGD/named-event branch interprets gamma, beta, alpha, theta labels from Ks-supported WGD layers and configured event metadata.
+- Those interpretations depend on user-provided inputs: duplicate classifications, family members, Ka/Ks pairs, Ks bins, events config, and `--event` layer mappings.
+- The WGD report already exposed result tables, but did not preserve these run parameters as a report-indexed artifact.
+
+Decisions:
+- Add `bin/genefam/build_wgd_run_config_snapshot.py` to write a stable `key/value` TSV for WGD branch inputs, Ks bins, and named-event mappings.
+- Publish `tables/wgd_run_config_snapshot.tsv` from both the offline WGD smoke and the Nextflow WGD branch.
+- Add `wgd_run_config_snapshot` to the WGD report index so final reports expose the interpretation context alongside evidence tables.
+- Document the snapshot in README and release-audit evidence.
+
+Added:
+- `bin/genefam/build_wgd_run_config_snapshot.py`
+- `tests/test_build_wgd_run_config_snapshot.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/build_wgd_report_index.py`
+- `bin/genefam/run_nextflow_wgd_smoke.py`
+- `bin/genefam/run_wgd_smoke.py`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_nextflow_wgd_smoke.py`
+- `tests/test_run_wgd_smoke.py`
+- `tests/test_wgd_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/duplication_retention.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_wgd_report_index.py tests/test_run_wgd_smoke.py -q` first failed because `wgd_run_config_snapshot` was missing from the WGD report index and `run_wgd_smoke.py` did not write `tables/wgd_run_config_snapshot.tsv`.
+- `python -m pytest tests/test_build_wgd_run_config_snapshot.py tests/test_wgd_report_index.py tests/test_run_wgd_smoke.py tests/test_run_nextflow_wgd_smoke.py tests/test_workflow_modules.py -q` passed with 25 tests after implementing the helper, Python smoke output, report-index path, and Nextflow process wiring.
+- `python -m pytest tests/test_build_wgd_run_config_snapshot.py tests/test_wgd_report_index.py tests/test_run_wgd_smoke.py tests/test_run_nextflow_wgd_smoke.py tests/test_workflow_modules.py tests/test_release_audit_docs.py -q` passed with 26 tests after updating release-audit documentation.
+- `python bin/genefam/run_wgd_smoke.py --events-config configs/wgd_events.brassicaceae.yaml --outdir results/wgd_smoke` exited `0` and printed `wgd_run_config_snapshot	results/wgd_smoke/tables/wgd_run_config_snapshot.tsv`.
+- `python bin/genefam/run_nextflow_wgd_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_wgd_smoke` exited `0`.
+- `results/wgd_smoke/tables/wgd_run_config_snapshot.tsv` and `results/nextflow_wgd_smoke/wgd/tables/wgd_run_config_snapshot.tsv` both record `events_config`, `ks_bins`, input table paths, and `event.WGD_layer_1` through `event.WGD_layer_4` mapped to `alpha`, `beta`, `gamma`, and `theta`.
+- `results/wgd_smoke/report/final_report.md` and `results/nextflow_wgd_smoke/wgd/report/final_report.md` both list `wgd_run_config_snapshot` as available.
+- `python -m pytest tests -q` passed with 206 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 14`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; the required blocker remains the readiness audit for missing `docker` and `apptainer`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Keep adding report-index evidence for user-facing outputs so final reports remain self-describing across large multi-species runs.
+- Keep WGD interpretation artifacts self-describing, especially when users adjust Ks bins or map lineage-specific events beyond gamma, beta, alpha, and theta.

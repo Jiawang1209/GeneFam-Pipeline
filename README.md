@@ -207,7 +207,7 @@ nextflow run workflows/main.nf \
   --wgd_event_args "--event WGD_layer_1=alpha --event WGD_layer_2=beta --event WGD_layer_3=gamma --event WGD_layer_4=theta"
 ```
 
-This branch produces normalized duplicate classifications, family duplicate classifications, WGD layer assignments, named-event evidence, family WGD event membership, family event retention summaries, and duplicate-type retention enrichment.
+This branch produces `wgd_run_config_snapshot.tsv`, normalized duplicate classifications, family duplicate classifications, WGD layer assignments, named-event evidence, family WGD event membership, family event retention summaries, and duplicate-type retention enrichment.
 
 For the complete handoff from the standard identification branch to the WGD branch, including the prepared-table contracts for real MCScanX/KaKs-derived inputs, see `docs/standard_to_wgd_handoff.md`.
 
@@ -227,7 +227,7 @@ python bin/genefam/run_nextflow_wgd_smoke.py \
   --outdir results/nextflow_wgd_smoke
 ```
 
-It writes `results/wgd_smoke/report/final_report.md` and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+It writes `results/wgd_smoke/tables/wgd_run_config_snapshot.tsv`, `results/wgd_smoke/report/final_report.md`, and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
 
 ## Current Status
 

@@ -10,6 +10,7 @@ from pathlib import Path
 
 FIELDNAMES = ["key", "path", "status", "description"]
 DESCRIPTIONS = {
+    "wgd_run_config_snapshot": "WGD run parameters including Ks bins and named event mappings",
     "normalized_duplicates": "Normalized whole-genome duplicate type table",
     "family_duplicates": "Family members joined to duplicate classifications",
     "wgd_layers": "Ks-derived anonymous WGD layer assignments",
@@ -23,6 +24,7 @@ DESCRIPTIONS = {
 def build_report_index(published_outdir: str) -> list[dict[str, str]]:
     outdir = Path(published_outdir)
     paths = {
+        "wgd_run_config_snapshot": outdir / "tables/wgd_run_config_snapshot.tsv",
         "normalized_duplicates": outdir / "tables/normalized_duplicate_types.tsv",
         "family_duplicates": outdir / "tables/family_duplicate_classification.tsv",
         "wgd_layers": outdir / "tables/wgd_layers.tsv",

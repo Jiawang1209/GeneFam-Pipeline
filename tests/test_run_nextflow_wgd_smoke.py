@@ -46,6 +46,7 @@ def test_expected_published_outputs_cover_wgd_results(tmp_path):
     outdir = tmp_path / "wgd"
 
     assert expected_published_outputs(outdir) == [
+        outdir / "tables/wgd_run_config_snapshot.tsv",
         outdir / "tables/normalized_duplicate_types.tsv",
         outdir / "tables/family_duplicate_classification.tsv",
         outdir / "tables/wgd_layers.tsv",

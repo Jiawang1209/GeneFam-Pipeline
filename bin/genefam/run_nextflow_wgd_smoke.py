@@ -28,6 +28,7 @@ def format_command(command: list[str]) -> str:
 
 def expected_published_outputs(wgd_outdir: Path) -> list[Path]:
     return [
+        wgd_outdir / "tables/wgd_run_config_snapshot.tsv",
         wgd_outdir / "tables/normalized_duplicate_types.tsv",
         wgd_outdir / "tables/family_duplicate_classification.tsv",
         wgd_outdir / "tables/wgd_layers.tsv",

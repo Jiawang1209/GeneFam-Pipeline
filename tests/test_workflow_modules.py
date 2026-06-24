@@ -131,6 +131,13 @@ def test_main_workflow_wires_standard_identification_branch():
 def test_duplication_retention_module_exposes_wgd_helper_processes():
     module = Path("workflows/modules/duplication_retention.nf").read_text(encoding="utf-8")
 
+    assert "process BUILD_WGD_RUN_CONFIG_SNAPSHOT" in module
+    assert "build_wgd_run_config_snapshot.py" in module
+    assert "--events-config ${events_config}" in module
+    assert "--ks-bins ${ks_bins}" in module
+    assert '--event-args "${event_args}"' in module
+    assert "--out wgd_run_config_snapshot.tsv" in module
+
     assert "process NORMALIZE_DUPLICATE_TYPES" in module
     assert 'publishDir "${params.outdir}/tables", mode: "copy", overwrite: true' in module
     assert "normalize_duplicate_types.py" in module
@@ -186,6 +193,8 @@ def test_duplication_retention_module_exposes_wgd_helper_processes():
 def test_main_workflow_includes_duplication_retention_processes():
     workflow = Path("workflows/main.nf").read_text(encoding="utf-8")
 
+    assert "BUILD_WGD_RUN_CONFIG_SNAPSHOT" in workflow
+    assert "BUILD_WGD_RUN_CONFIG_SNAPSHOT(duplicates_ch, family_members_ch, kaks_pairs_ch, events_config_ch, ks_bins_ch, event_args_ch)" in workflow
     assert "NORMALIZE_DUPLICATE_TYPES" in workflow
     assert "JOIN_FAMILY_DUPLICATES" in workflow
     assert "CLASSIFY_WGD_LAYERS" in workflow

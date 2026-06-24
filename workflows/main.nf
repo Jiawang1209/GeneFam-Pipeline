@@ -28,6 +28,7 @@ include {
     SUBSET_EXPRESSION_MATRIX
 } from './modules/annotation_integration.nf'
 include {
+    BUILD_WGD_RUN_CONFIG_SNAPSHOT;
     NORMALIZE_DUPLICATE_TYPES;
     JOIN_FAMILY_DUPLICATES;
     CLASSIFY_WGD_LAYERS;
@@ -71,6 +72,7 @@ workflow {
         project_name_ch = Channel.value(params.project_name)
         family_name_ch = Channel.value(params.gene_family)
 
+        BUILD_WGD_RUN_CONFIG_SNAPSHOT(duplicates_ch, family_members_ch, kaks_pairs_ch, events_config_ch, ks_bins_ch, event_args_ch)
         NORMALIZE_DUPLICATE_TYPES(duplicates_ch)
         JOIN_FAMILY_DUPLICATES(family_members_ch, NORMALIZE_DUPLICATE_TYPES.out)
         CLASSIFY_WGD_LAYERS(kaks_pairs_ch, ks_bins_ch, event_args_ch)

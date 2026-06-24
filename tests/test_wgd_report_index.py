@@ -8,6 +8,12 @@ def test_build_wgd_report_index_points_to_published_outputs():
     rows = build_report_index("results/nextflow_wgd_smoke/wgd")
     by_key = {row["key"]: row for row in rows}
 
+    assert by_key["wgd_run_config_snapshot"] == {
+        "key": "wgd_run_config_snapshot",
+        "path": "results/nextflow_wgd_smoke/wgd/tables/wgd_run_config_snapshot.tsv",
+        "status": "available",
+        "description": "WGD run parameters including Ks bins and named event mappings",
+    }
     assert by_key["wgd_event_evidence"] == {
         "key": "wgd_event_evidence",
         "path": "results/nextflow_wgd_smoke/wgd/tables/wgd_event_evidence.tsv",
@@ -39,5 +45,6 @@ def test_build_wgd_report_index_cli_writes_tsv(tmp_path):
 
     assert completed.returncode == 0, completed.stderr
     rows = {row["key"]: row for row in read_tsv(out)}
+    assert rows["wgd_run_config_snapshot"]["path"] == "results/demo_wgd/tables/wgd_run_config_snapshot.tsv"
     assert rows["wgd_layers"]["path"] == "results/demo_wgd/tables/wgd_layers.tsv"
     assert rows["wgd_event_evidence"]["status"] == "available"

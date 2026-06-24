@@ -15,6 +15,8 @@ if str(REPO_ROOT) not in sys.path:
 from bin.genefam.annotate_family_wgd_events import annotate_family_wgd_events, write_tsv as write_family_wgd_tsv
 from bin.genefam.assemble_report import assemble_report, read_tsv, write_report
 from bin.genefam.build_wgd_event_evidence import build_event_evidence, load_event_metadata, write_tsv as write_evidence_tsv
+from bin.genefam.build_wgd_run_config_snapshot import build_snapshot as build_wgd_snapshot
+from bin.genefam.build_wgd_run_config_snapshot import write_tsv as write_wgd_snapshot_tsv
 from bin.genefam.classify_wgd_layers import classify_pairs, write_pairs
 from bin.genefam.join_family_duplicates import join_family_duplicates, write_tsv as write_joined_tsv
 from bin.genefam.normalize_duplicate_types import normalize_duplicate_rows, write_tsv as write_duplicate_tsv
@@ -82,7 +84,10 @@ def _print_outputs(outputs: dict[str, Path]) -> None:
 def run_wgd_smoke(events_config: Path, outdir: Path) -> dict[str, Path]:
     tables_dir = outdir / "tables"
     report_dir = outdir / "report"
+    ks_bins = "0.3,0.8,1.5"
+    event_args = "--event WGD_layer_1=alpha --event WGD_layer_2=beta --event WGD_layer_3=gamma --event WGD_layer_4=theta"
     outputs = {
+        "wgd_run_config_snapshot": tables_dir / "wgd_run_config_snapshot.tsv",
         "family_members": tables_dir / "family_members.tsv",
         "duplicates": tables_dir / "duplicates.tsv",
         "normalized_duplicates": tables_dir / "normalized_duplicate_types.tsv",
@@ -128,6 +133,17 @@ def run_wgd_smoke(events_config: Path, outdir: Path) -> dict[str, Path]:
 
     _write_tsv(family_rows, ["species_id", "gene_id"], outputs["family_members"])
     _write_tsv(duplicate_rows, ["gene_id", "duplicate_type"], outputs["duplicates"])
+    write_wgd_snapshot_tsv(
+        build_wgd_snapshot(
+            events_config=str(events_config),
+            ks_bins=ks_bins,
+            event_args=event_args,
+            duplicates=str(outputs["duplicates"]),
+            family_members=str(outputs["family_members"]),
+            kaks_pairs=str(outputs["kaks_pairs"]),
+        ),
+        outputs["wgd_run_config_snapshot"],
+    )
     write_duplicate_tsv(normalized_duplicates, outputs["normalized_duplicates"])
     write_joined_tsv(family_duplicates, outputs["family_duplicates"])
     _write_tsv(_ks_pairs(), ["gene_a", "gene_b", "ks"], outputs["kaks_pairs"])

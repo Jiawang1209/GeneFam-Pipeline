@@ -1,3 +1,31 @@
+process BUILD_WGD_RUN_CONFIG_SNAPSHOT {
+    tag "WGD run config snapshot"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
+
+    input:
+    path duplicates
+    path family_members
+    path kaks_pairs
+    path events_config
+    val ks_bins
+    val event_args
+
+    output:
+    path "wgd_run_config_snapshot.tsv"
+
+    script:
+    """
+    python ${projectDir}/../bin/genefam/build_wgd_run_config_snapshot.py \\
+      --events-config ${events_config} \\
+      --ks-bins ${ks_bins} \\
+      --event-args "${event_args}" \\
+      --duplicates ${duplicates} \\
+      --family-members ${family_members} \\
+      --kaks-pairs ${kaks_pairs} \\
+      --out wgd_run_config_snapshot.tsv
+    """
+}
+
 process NORMALIZE_DUPLICATE_TYPES {
     tag "normalize duplicate types"
     publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
