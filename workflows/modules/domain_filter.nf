@@ -14,6 +14,36 @@ process MOCK_IDENTIFICATION_EVIDENCE {
     """
 }
 
+process EMPTY_HMMER_EVIDENCE {
+    tag "${species_id}:empty hmmer"
+
+    input:
+    val species_id
+
+    output:
+    tuple val(species_id), path("${species_id}.hmmer.tsv")
+
+    script:
+    """
+    printf 'species_id\tgene_id\thmm_id\tevalue\thmm_from\thmm_to\thmm_length\tbitscore\n' > ${species_id}.hmmer.tsv
+    """
+}
+
+process EMPTY_DIAMOND_EVIDENCE {
+    tag "${species_id}:empty diamond"
+
+    input:
+    val species_id
+
+    output:
+    tuple val(species_id), path("${species_id}.diamond.tsv")
+
+    script:
+    """
+    printf 'species_id\tgene_id\treference_hit\tevalue\n' > ${species_id}.diamond.tsv
+    """
+}
+
 process DOMAIN_FILTER {
     tag "${species_id}"
     publishDir "${params.outdir}/tables/domain_filter", mode: "copy", overwrite: true

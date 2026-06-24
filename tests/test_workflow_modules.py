@@ -33,9 +33,13 @@ def test_domain_filter_module_can_concatenate_species_candidate_tables():
     module = Path("workflows/modules/domain_filter.nf").read_text(encoding="utf-8")
 
     assert "process MOCK_IDENTIFICATION_EVIDENCE" in module
+    assert "process EMPTY_HMMER_EVIDENCE" in module
+    assert "process EMPTY_DIAMOND_EVIDENCE" in module
     assert "${mock_evidence_dir}/hmmer.tsv" in module
     assert "${mock_evidence_dir}/diamond.tsv" in module
     assert 'tuple val("mock"), path("hmmer.tsv"), path("diamond.tsv")' in module
+    assert "species_id\\tgene_id\\thmm_id\\tevalue\\thmm_from\\thmm_to\\thmm_length\\tbitscore" in module
+    assert "species_id\\tgene_id\\treference_hit\\tevalue" in module
 
     assert "process CONCAT_FAMILY_CANDIDATES" in module
     assert 'publishDir "${params.outdir}/tables", mode: "copy", overwrite: true' in module
@@ -79,12 +83,24 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "include { EXTRACT_FAMILY_SEQUENCES; BUILD_STANDARD_REPORT_INDEX; ASSEMBLE_STANDARD_REPORT } from './modules/standard_postprocess.nf'" in workflow
     assert "include { HMMER_SEARCH } from './modules/hmmer_search.nf'" in workflow
     assert "include { DIAMOND_SEARCH } from './modules/diamond_search.nf'" in workflow
-    assert "include { DOMAIN_FILTER; CONCAT_FAMILY_CANDIDATES; MOCK_IDENTIFICATION_EVIDENCE } from './modules/domain_filter.nf'" in workflow
+    assert "DOMAIN_FILTER;" in workflow
+    assert "CONCAT_FAMILY_CANDIDATES;" in workflow
+    assert "MOCK_IDENTIFICATION_EVIDENCE;" in workflow
+    assert "EMPTY_HMMER_EVIDENCE;" in workflow
+    assert "EMPTY_DIAMOND_EVIDENCE" in workflow
+    assert "} from './modules/domain_filter.nf'" in workflow
     assert "include { FAMILY_SUMMARY } from './modules/family_summary.nf'" in workflow
     assert "} else if (params.run_identification) {" in workflow
     assert "BUILD_IDENTIFICATION_INPUTS(config_ch, PREPARE_SPECIES.out)" in workflow
+    assert "species_ids_ch = PREPARE_SPECIES.out" in workflow
+    assert "if (params.use_hmmer)" in workflow
+    assert "if (params.use_diamond)" in workflow
     assert "HMMER_SEARCH(hmmer_inputs_ch)" in workflow
+    assert "EMPTY_HMMER_EVIDENCE(species_ids_ch)" in workflow
     assert "DIAMOND_SEARCH(diamond_inputs_ch)" in workflow
+    assert "EMPTY_DIAMOND_EVIDENCE(species_ids_ch)" in workflow
+    assert "joined_evidence_ch = hmmer_evidence_ch" in workflow
+    assert ".join(diamond_evidence_ch, by: 0)" in workflow
     assert "if (params.mock_external_tools)" in workflow
     assert "MOCK_IDENTIFICATION_EVIDENCE(mock_evidence_ch)" in workflow
     assert "joined_evidence_ch = MOCK_IDENTIFICATION_EVIDENCE.out" in workflow

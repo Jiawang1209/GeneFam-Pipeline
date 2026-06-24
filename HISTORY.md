@@ -3385,9 +3385,55 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
 
 Commit:
-- hash: pending
+- hash: ccfdf938985626f99bf8dce0357af179a7c8b166
 - message: feat: respect identification tool flags
 - files: identification input builders, config validation, input docs/schema, tests, history
+
+Next:
+- Continue tightening YAML-driven Nextflow behavior and keep Docker/Apptainer as the explicit runtime blocker.
+
+## 2026-06-25 - Wire single-tool standard evidence paths
+
+Context:
+- The identification input builder now respects `identification.use_hmmer` and `identification.use_diamond`.
+- `workflows/main.nf` still joined `HMMER_SEARCH.out` and `DIAMOND_SEARCH.out` directly, which made HMMER-only or DIAMOND-only standard runs lose all candidate evidence.
+- The Nextflow standard branch needs a stable evidence tuple for each selected species even when one search tool is disabled.
+
+Decisions:
+- Add `EMPTY_HMMER_EVIDENCE` and `EMPTY_DIAMOND_EVIDENCE` processes that emit header-only normalized TSVs per species.
+- Add `params.use_hmmer` and `params.use_diamond` defaults to `workflows/nextflow.config`.
+- In the standard identification branch, choose real HMMER/DIAMOND outputs or empty evidence outputs based on the params before joining evidence.
+- Keep the downstream `DOMAIN_FILTER` interface unchanged as `(species_id, hmmer_tsv, diamond_tsv)`.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `workflows/main.nf`
+- `workflows/nextflow.config`
+- `workflows/modules/domain_filter.nf`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_workflow_modules.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_workflow_modules.py::test_domain_filter_module_can_concatenate_species_candidate_tables tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q` first failed because the empty evidence processes and conditional evidence channels did not exist.
+- After adding the processes and conditional wiring, the same command passed with 2 tests.
+- `python -m pytest tests/test_workflow_modules.py::test_domain_filter_module_can_concatenate_species_candidate_tables tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_runtime_environment_files.py::test_nextflow_config_has_container_profiles -q` passed with 3 tests.
+- `python -m pytest tests -q` passed with 187 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 12`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
+- `results/nextflow_standard_smoke/nextflow_standard_smoke.tsv` reports `nextflow_standard_identification` as `passed`.
+- `results/handoff/handoff_summary.tsv` still contains `next_unblock_command	bash results/readiness/runtime_bootstrap.sh`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
+
+Commit:
+- hash: pending
+- message: feat: wire single-tool standard evidence paths
+- files: standard branch evidence routing, empty evidence processes, Nextflow params, tests, history
 
 Next:
 - Run full tests and release checks, then commit and backfill the full commit hash.

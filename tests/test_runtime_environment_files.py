@@ -50,6 +50,8 @@ def test_nextflow_config_has_container_profiles():
     assert "docker" in config
     assert "apptainer" in config
     assert "genefam-pipeline:latest" in config
+    assert "params.use_hmmer = true" in config
+    assert "params.use_diamond = true" in config
 
 
 def test_readiness_checklist_documents_command_audit():
