@@ -162,18 +162,18 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     module = Path("workflows/modules/plots.nf").read_text(encoding="utf-8")
 
     assert "process PLOT_FAMILY_COUNTS" in module
-    assert "${params.r_bin} --vanilla --slave -f ${projectDir}/scripts/plot_family_counts.R" in module
+    assert "${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_family_counts.R" in module
     assert "--args ${family_counts} plots" in module
     assert 'path "plots/family_counts.pdf"' in module
     assert 'path "plots/family_counts.png"' in module
 
     assert "process PLOT_KAKS" in module
-    assert "${params.r_bin} --vanilla --slave -f ${projectDir}/scripts/plot_kaks.R" in module
+    assert "${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_kaks.R" in module
     assert "--args ${kaks_pairs} plots" in module
     assert 'path "plots/ks_distribution.pdf"' in module
 
     assert "process PLOT_EXPRESSION_HEATMAP" in module
-    assert "${params.r_bin} --vanilla --slave -f ${projectDir}/scripts/plot_expression_heatmap.R" in module
+    assert "${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_expression_heatmap.R" in module
     assert "--args ${expression_matrix} plots" in module
     assert 'path "plots/expression_heatmap.pdf"' in module
 
@@ -214,7 +214,8 @@ def test_alignment_phylogeny_module_covers_alignment_tree_and_motif_steps():
     assert "--out phylogeny_manifest.tsv" in module
 
     assert "process RUN_PHYLOGENY" in module
-    assert "iqtree2 -s ${alignment} -m MFP -bb 1000 -nt AUTO" in module
+    assert "IQTREE_BIN=\\$(command -v iqtree2 || command -v iqtree)" in module
+    assert '"\\${IQTREE_BIN}" -s ${alignment} -m MFP -bb 1000 -nt AUTO' in module
     assert 'path "treefile.nwk"' in module
 
     assert "process PARSE_MEME_MOTIFS" in module

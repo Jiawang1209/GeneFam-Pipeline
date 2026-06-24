@@ -2129,7 +2129,93 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because Nextflow mock MVP smoke failed with `missing_nextflow` and readiness audit found the remaining missing runtime commands, but pytest, config validation, mock MVP, standard branch smoke, WGD event smoke, and runtime bootstrap plan passed.
 
 Commit:
-- pending
+- hash: 5cdcded52a650061ac85f03d2a225f9aa549a696
+- message: feat: audit GeneFamilyFlow runtime commands
+- files: environment-aware readiness audit, release check integration, README/readiness/release audit docs, tests, history
 
 Next:
 - Update the `GeneFamilyFlow` environment from `envs/GeneFamilyFlow.conda.yaml` so `nextflow`, `diamond`, `mafft`, `iqtree2`, and `meme` become available, then rerun Nextflow smoke and release checks.
+
+## 2026-06-24 - Run Nextflow smoke through GeneFamilyFlow
+
+Context:
+- `conda env update -n GeneFamilyFlow -f envs/GeneFamilyFlow.conda.yaml --prune` initially failed on osx-arm64 because `jcvi` and `kaks_calculator` are not available from the current Conda channels for this platform.
+- `conda search` confirmed `jcvi` is available for osx-64 and linux-64 but not osx-arm64; `kaks_calculator` is also unavailable on osx-arm64.
+- After removing platform-limited packages from the local environment file, the `GeneFamilyFlow` environment update succeeded and installed `nextflow`, `diamond`, `mafft`, `meme`, and related tools.
+- The first real Nextflow smoke attempts exposed two workflow bugs: Nextflow tried to create a Conda env from the string `GeneFamilyFlow`, and modules resolved `${projectDir}/bin` as `workflows/bin`.
+- A later Nextflow smoke exposed that staged config files still contained repo-relative paths, so `run_mock_mvp.py` needed a repo-root base directory.
+
+Decisions:
+- Keep `envs/GeneFamilyFlow.conda.yaml` as the local cross-platform environment and move Linux/container-only tools to `envs/GeneFamilyFlow.linux-64.conda.yaml`.
+- Make Docker build from the Linux-specific environment file so `jcvi` and `kaks_calculator` remain available in the container route.
+- Add a Nextflow `activated` profile that disables per-process Conda creation when Nextflow is launched from an already prepared `GeneFamilyFlow` environment.
+- Teach `run_nextflow_smoke.py` to resolve `nextflow` inside `GeneFamilyFlow`, prepend that environment to `PATH`, and run with `-profile activated`.
+- Support `iqtree` as an alias for the audited `iqtree2` command, because the installed IQ-TREE 3 package exposes `iqtree` on this machine.
+- Change workflow module script paths from `${projectDir}/bin` and `${projectDir}/scripts` to `${projectDir}/../bin` and `${projectDir}/../scripts`.
+- Add `--base-dir` to `run_mock_mvp.py` and pass `${projectDir}/..` from the Nextflow mock module so staged config files can resolve species-bank paths against the repository root.
+
+Added:
+- `envs/GeneFamilyFlow.linux-64.conda.yaml`
+
+Modified:
+- `HISTORY.md`
+- `Dockerfile`
+- `README.md`
+- `bin/genefam/audit_readiness.py`
+- `bin/genefam/plan_runtime_bootstrap.py`
+- `bin/genefam/run_mock_mvp.py`
+- `bin/genefam/run_nextflow_smoke.py`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `docs/runtime_environment.md`
+- `envs/GeneFamilyFlow.conda.yaml`
+- `tests/test_audit_readiness.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_mock_mvp.py`
+- `tests/test_run_nextflow_smoke.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_workflow_modules.py`
+- `workflows/modules/alignment_phylogeny.nf`
+- `workflows/modules/annotation_integration.nf`
+- `workflows/modules/diamond_search.nf`
+- `workflows/modules/domain_filter.nf`
+- `workflows/modules/duplication_retention.nf`
+- `workflows/modules/family_summary.nf`
+- `workflows/modules/hmmer_search.nf`
+- `workflows/modules/identification_inputs.nf`
+- `workflows/modules/mock_mvp.nf`
+- `workflows/modules/plots.nf`
+- `workflows/modules/prepare_species.nf`
+- `workflows/modules/report.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/nextflow.config`
+
+Deleted:
+- none
+
+Verification:
+- `conda env update -n GeneFamilyFlow -f envs/GeneFamilyFlow.conda.yaml --prune` first failed with `PackagesNotFoundError` for `jcvi`.
+- `conda search -c bioconda -c conda-forge jcvi --platform osx-arm64` returned no match; osx-64 and linux-64 searches returned available `jcvi` builds.
+- `conda search -c bioconda -c conda-forge kaks_calculator --platform osx-arm64` returned no match.
+- `conda search -c bioconda -c conda-forge mcscanx --platform osx-arm64`, `meme --platform osx-arm64`, and `diamond --platform osx-arm64` returned available packages.
+- `python -m pytest tests/test_runtime_environment_files.py::test_conda_environment_file_defines_genefamilyflow_runtime tests/test_runtime_environment_files.py::test_linux_conda_environment_keeps_platform_limited_full_toolchain tests/test_runtime_environment_files.py::test_dockerfile_installs_genefamilyflow_and_exposes_usr_local_r tests/test_runtime_environment_files.py::test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file -q` first failed until the environment files, Dockerfile, and docs were split.
+- `conda env update -n GeneFamilyFlow -f envs/GeneFamilyFlow.conda.yaml --prune` succeeded after the split.
+- `conda run -n GeneFamilyFlow python -c "import shutil; ..."` found `nextflow`, `diamond`, `mafft`, `meme`, and `hmmsearch`; it found `iqtree` but not `iqtree2`.
+- `python -m pytest tests/test_audit_readiness.py::test_audit_commands_accepts_iqtree_alias_for_iqtree2 tests/test_workflow_modules.py::test_alignment_phylogeny_module_covers_alignment_tree_and_motif_steps -q` first failed until the IQ-TREE alias and workflow fallback were added.
+- `python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv` now marks `nextflow`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as `available_in_conda`; only `docker` and `apptainer` remain missing.
+- `python bin/genefam/run_nextflow_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_smoke` first failed because Nextflow tried to create a Conda environment from `GeneFamilyFlow`; adding the `activated` profile moved it forward.
+- The next smoke failed because modules referenced `${projectDir}/bin`, which resolved to `workflows/bin`; changing module paths to `${projectDir}/../bin` moved it forward.
+- The next smoke failed because `tests/fixtures/species_bank` was resolved inside the Nextflow work directory; adding `--base-dir` to `run_mock_mvp.py` and passing `${projectDir}/..` from `mock_mvp.nf` fixed it.
+- `python bin/genefam/run_nextflow_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_smoke` passed and wrote `results/nextflow_smoke/nextflow_smoke.md`.
+- `python -m pytest tests/test_runtime_environment_files.py tests/test_release_audit_docs.py tests/test_plan_runtime_bootstrap.py tests/test_run_nextflow_smoke.py tests/test_audit_readiness.py tests/test_workflow_modules.py tests/test_run_mock_mvp.py -q` passed with 40 tests.
+- `python -m pytest tests -q` passed with 132 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` returned `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/advanced_modules.example.yaml` returned `Configuration OK`.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` still exited `1` because Docker and Apptainer are missing, but pytest, config validation, mock MVP, standard branch smoke, WGD event smoke, Nextflow mock MVP smoke, and runtime bootstrap plan passed.
+
+Commit:
+- pending
+
+Next:
+- Install or expose Docker or Apptainer to verify container profiles; otherwise continue wiring the standard external-tool branch beyond the mock MVP using the now-working `GeneFamilyFlow` local environment.

@@ -12,7 +12,7 @@ process PREPARE_ALIGNMENT_INPUTS {
 
     script:
     """
-    python ${projectDir}/bin/genefam/prepare_alignment_inputs.py \\
+    python ${projectDir}/../bin/genefam/prepare_alignment_inputs.py \\
       --family-name ${family_name} \\
       --fasta ${family_members_faa} \\
       --outdir ${outdir} \\
@@ -49,7 +49,7 @@ process PREPARE_PHYLOGENY_INPUTS {
 
     script:
     """
-    python ${projectDir}/bin/genefam/prepare_phylogeny_inputs.py \\
+    python ${projectDir}/../bin/genefam/prepare_phylogeny_inputs.py \\
       --alignment-manifest ${alignment_manifest} \\
       --tree-builder ${tree_builder} \\
       --outdir ${outdir} \\
@@ -68,7 +68,8 @@ process RUN_PHYLOGENY {
 
     script:
     """
-    iqtree2 -s ${alignment} -m MFP -bb 1000 -nt AUTO
+    IQTREE_BIN=\$(command -v iqtree2 || command -v iqtree)
+    "\${IQTREE_BIN}" -s ${alignment} -m MFP -bb 1000 -nt AUTO
     cp ${alignment}.treefile treefile.nwk
     """
 }
@@ -85,7 +86,7 @@ process PARSE_MEME_MOTIFS {
 
     script:
     """
-    python ${projectDir}/bin/genefam/parse_meme_motifs.py \\
+    python ${projectDir}/../bin/genefam/parse_meme_motifs.py \\
       --meme-txt ${meme_txt} \\
       --family-name ${family_name} \\
       --out motif_summary.tsv

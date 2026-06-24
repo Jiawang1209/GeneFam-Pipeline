@@ -10,7 +10,7 @@ process PREPARE_SPECIES {
 
     script:
     """
-    python ${projectDir}/bin/genefam/discover_species.py \\
+    python ${projectDir}/../bin/genefam/discover_species.py \\
       --config ${config_file} \\
       --groups ${groups_file} \\
       --out species_manifest.tsv

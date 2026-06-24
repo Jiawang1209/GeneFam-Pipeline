@@ -9,7 +9,7 @@ process FAMILY_SUMMARY {
 
     script:
     """
-    python ${projectDir}/bin/genefam/summarize_family.py \\
+    python ${projectDir}/../bin/genefam/summarize_family.py \\
       --candidates ${candidates} \\
       --out family_counts.tsv
     """

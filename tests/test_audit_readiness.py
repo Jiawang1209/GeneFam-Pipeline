@@ -35,6 +35,23 @@ def test_audit_commands_can_mark_commands_available_inside_conda_env():
     ]
 
 
+def test_audit_commands_accepts_iqtree_alias_for_iqtree2():
+    rows = audit_commands(
+        required_commands=["iqtree2"],
+        which=lambda command: "",
+        conda_env="GeneFamilyFlow",
+        conda_which=lambda env_name, command: "/envs/GeneFamilyFlow/bin/iqtree" if command == "iqtree" else "",
+    )
+
+    assert rows == [
+        {
+            "command": "iqtree2",
+            "status": "available_in_conda",
+            "path": "GeneFamilyFlow:/envs/GeneFamilyFlow/bin/iqtree",
+        }
+    ]
+
+
 def test_summarize_status_counts_missing_commands():
     rows = [
         {"command": "nextflow", "status": "available", "path": "/mock/bin/nextflow"},

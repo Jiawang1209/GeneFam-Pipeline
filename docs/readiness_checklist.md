@@ -70,4 +70,4 @@ Default audited commands:
 
 ## Current Machine Note
 
-On this development machine, recent audits found `/usr/local/bin/R` and `/Users/liuyue/miniforge3/bin/conda`, while `nextflow`, `docker`, `apptainer`, `mafft`, `iqtree2`, and `meme` were not on `PATH`. That means repository-level checks can pass here, but full end-to-end Nextflow execution needs the missing tools installed or a container runtime configured.
+On this development machine, recent audits found `/usr/local/bin/R` and `/Users/liuyue/miniforge3/bin/conda` on the host, and `nextflow`, `hmmsearch`, `diamond`, `mafft`, `iqtree` as the IQ-TREE command, and `meme` inside the `GeneFamilyFlow` Conda environment. Docker and Apptainer are still missing, so local Conda Nextflow smoke can run, while container-profile verification still needs a container runtime configured.

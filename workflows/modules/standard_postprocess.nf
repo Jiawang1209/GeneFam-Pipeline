@@ -10,7 +10,7 @@ process EXTRACT_FAMILY_SEQUENCES {
 
     script:
     """
-    python ${projectDir}/bin/genefam/extract_family_sequences.py \\
+    python ${projectDir}/../bin/genefam/extract_family_sequences.py \\
       --family-candidates ${family_candidates} \\
       --species-manifest ${species_manifest} \\
       --out family_members.faa
@@ -36,7 +36,7 @@ process BUILD_STANDARD_REPORT_INDEX {
 
     script:
     """
-    python ${projectDir}/bin/genefam/build_standard_report_index.py \\
+    python ${projectDir}/../bin/genefam/build_standard_report_index.py \\
       --species-manifest ${species_manifest} \\
       --family-candidates ${family_candidates} \\
       --family-counts ${family_counts} \\
@@ -64,7 +64,7 @@ process ASSEMBLE_STANDARD_REPORT {
 
     script:
     """
-    python ${projectDir}/bin/genefam/assemble_report.py \\
+    python ${projectDir}/../bin/genefam/assemble_report.py \\
       --project-name ${project_name} \\
       --gene-family ${gene_family} \\
       --report-index ${report_index} \\

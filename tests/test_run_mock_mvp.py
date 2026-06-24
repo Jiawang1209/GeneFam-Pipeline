@@ -142,3 +142,34 @@ def test_run_mock_mvp_cli_works_when_invoked_by_script_path(tmp_path):
     assert (outdir / "tables" / "family_candidates.tsv").exists()
     assert (outdir / "report" / "report_index.tsv").exists()
     assert "family_counts" in completed.stdout
+
+
+def test_run_mock_mvp_cli_resolves_config_paths_against_base_dir(tmp_path):
+    staged_config = tmp_path / "example.config.yaml"
+    staged_groups = tmp_path / "species_groups.yaml"
+    staged_config.write_text(Path("configs/example.config.yaml").read_text(encoding="utf-8"), encoding="utf-8")
+    staged_groups.write_text(Path("configs/species_groups.yaml").read_text(encoding="utf-8"), encoding="utf-8")
+    outdir = tmp_path / "cli_results"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "bin/genefam/run_mock_mvp.py",
+            "--config",
+            str(staged_config),
+            "--groups",
+            str(staged_groups),
+            "--mock-evidence-dir",
+            "tests/fixtures/mock_evidence",
+            "--base-dir",
+            str(Path.cwd()),
+            "--outdir",
+            str(outdir),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert (outdir / "tables" / "species_manifest.tsv").exists()

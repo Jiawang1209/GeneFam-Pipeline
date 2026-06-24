@@ -16,6 +16,18 @@ def test_conda_environment_file_defines_genefamilyflow_runtime():
     assert "iqtree" in text
     assert "r-base" in text
     assert "quarto" in text
+    assert "\n  - jcvi\n" not in text
+    assert "\n  - kaks_calculator\n" not in text
+
+
+def test_linux_conda_environment_keeps_platform_limited_full_toolchain():
+    environment = Path("envs/GeneFamilyFlow.linux-64.conda.yaml")
+
+    assert environment.exists()
+    text = environment.read_text(encoding="utf-8")
+    assert "name: GeneFamilyFlow" in text
+    assert "\n  - jcvi\n" in text
+    assert "\n  - kaks_calculator\n" in text
 
 
 def test_dockerfile_installs_genefamilyflow_and_exposes_usr_local_r():
@@ -23,7 +35,7 @@ def test_dockerfile_installs_genefamilyflow_and_exposes_usr_local_r():
 
     assert dockerfile.exists()
     text = dockerfile.read_text(encoding="utf-8")
-    assert "GeneFamilyFlow.conda.yaml" in text
+    assert "GeneFamilyFlow.linux-64.conda.yaml" in text
     assert "GeneFamilyFlow" in text
     assert "/usr/local/bin/R" in text
     assert "micromamba" in text
@@ -33,6 +45,8 @@ def test_nextflow_config_has_container_profiles():
     config = Path("workflows/nextflow.config").read_text(encoding="utf-8")
 
     assert "profiles" in config
+    assert "activated" in config
+    assert "conda.enabled = false" in config
     assert "docker" in config
     assert "apptainer" in config
     assert "genefam-pipeline:latest" in config
@@ -53,6 +67,13 @@ def test_readiness_checklist_documents_command_audit():
     assert "mafft" in text
     assert "iqtree2" in text
     assert "meme" in text
+
+
+def test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file():
+    text = Path("docs/runtime_environment.md").read_text(encoding="utf-8")
+
+    assert "python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv" in text
+    assert "GeneFamilyFlow.linux-64.conda.yaml" in text
 
 
 def test_advanced_module_examples_document_safe_enablement():

@@ -17,7 +17,7 @@ process DIAMOND_SEARCH {
       --outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore \\
       --quiet
 
-    python ${projectDir}/bin/genefam/parse_diamond_outfmt6.py \\
+    python ${projectDir}/../bin/genefam/parse_diamond_outfmt6.py \\
       --outfmt6 ${species_id}.diamond.raw.tsv \\
       --species-id ${species_id} \\
       --out ${species_id}.diamond.tsv

@@ -12,10 +12,11 @@ process MOCK_MVP {
 
     script:
     """
-    python ${projectDir}/bin/genefam/run_mock_mvp.py \\
+    python ${projectDir}/../bin/genefam/run_mock_mvp.py \\
       --config ${config_file} \\
       --groups ${groups_file} \\
       --mock-evidence-dir ${mock_evidence_dir} \\
+      --base-dir ${projectDir}/.. \\
       --outdir ${outdir} \\
       > mock_mvp_outputs.tsv
     """

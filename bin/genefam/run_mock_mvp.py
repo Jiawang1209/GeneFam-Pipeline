@@ -160,6 +160,7 @@ def run_mock_mvp(
     groups_path: Path,
     mock_evidence_dir: Path,
     outdir: Path,
+    base_dir: Path | None = None,
 ) -> dict[str, Path]:
     """Run the offline MVP and return standard output paths."""
 
@@ -167,8 +168,11 @@ def run_mock_mvp(
     groups = _load_yaml(groups_path) if groups_path and Path(groups_path).exists() else {}
     include, exclude = _select_species(config, groups)
     input_config = config.get("input", {}) or {}
+    species_root = Path(input_config["root"])
+    if base_dir is not None and not species_root.is_absolute():
+        species_root = Path(base_dir) / species_root
     manifest_rows = discover_species(
-        root=Path(input_config["root"]),
+        root=species_root,
         include=include,
         exclude=exclude,
         patterns=input_config.get("patterns", {}),
@@ -241,9 +245,10 @@ def main() -> None:
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--groups", required=True, type=Path)
     parser.add_argument("--mock-evidence-dir", required=True, type=Path)
+    parser.add_argument("--base-dir", type=Path)
     parser.add_argument("--outdir", required=True, type=Path)
     args = parser.parse_args()
-    _print_outputs(run_mock_mvp(args.config, args.groups, args.mock_evidence_dir, args.outdir))
+    _print_outputs(run_mock_mvp(args.config, args.groups, args.mock_evidence_dir, args.outdir, args.base_dir))
 
 
 if __name__ == "__main__":

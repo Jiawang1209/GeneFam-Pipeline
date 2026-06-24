@@ -10,7 +10,7 @@ process PLOT_FAMILY_COUNTS {
 
     script:
     """
-    ${params.r_bin} --vanilla --slave -f ${projectDir}/scripts/plot_family_counts.R --args ${family_counts} plots
+    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_family_counts.R --args ${family_counts} plots
     """
 }
 
@@ -25,7 +25,7 @@ process PLOT_KAKS {
 
     script:
     """
-    ${params.r_bin} --vanilla --slave -f ${projectDir}/scripts/plot_kaks.R --args ${kaks_pairs} plots
+    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_kaks.R --args ${kaks_pairs} plots
     """
 }
 
@@ -40,7 +40,7 @@ process PLOT_EXPRESSION_HEATMAP {
 
     script:
     """
-    ${params.r_bin} --vanilla --slave -f ${projectDir}/scripts/plot_expression_heatmap.R --args ${expression_matrix} plots
+    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_expression_heatmap.R --args ${expression_matrix} plots
     """
 }
 
@@ -52,7 +52,7 @@ process BUILD_PLOT_MANIFEST {
 
     script:
     """
-    python ${projectDir}/bin/genefam/build_plot_manifest.py \\
+    python ${projectDir}/../bin/genefam/build_plot_manifest.py \\
       --plot family_counts=plots/family_counts.pdf=Family member counts by species \\
       --plot ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs \\
       --plot expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap \\

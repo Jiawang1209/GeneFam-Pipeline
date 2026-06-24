@@ -77,6 +77,8 @@ def default_checks() -> list[CheckSpec]:
             [
                 python,
                 "bin/genefam/run_nextflow_smoke.py",
+                "--conda-env",
+                "GeneFamilyFlow",
                 "--outdir",
                 "results/nextflow_smoke",
             ],

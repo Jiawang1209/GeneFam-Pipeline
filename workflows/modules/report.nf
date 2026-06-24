@@ -14,7 +14,7 @@ process ASSEMBLE_REPORT {
 
     script:
     """
-    python ${projectDir}/bin/genefam/assemble_report.py \\
+    python ${projectDir}/../bin/genefam/assemble_report.py \\
       --project-name ${project_name} \\
       --gene-family ${gene_family} \\
       --report-index ${report_index} \\

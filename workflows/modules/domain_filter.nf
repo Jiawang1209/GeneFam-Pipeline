@@ -10,7 +10,7 @@ process DOMAIN_FILTER {
 
     script:
     """
-    python ${projectDir}/bin/genefam/merge_identification_evidence.py \\
+    python ${projectDir}/../bin/genefam/merge_identification_evidence.py \\
       --hmmer ${hmmer_tsv} \\
       --diamond ${diamond_tsv} \\
       --final-rule ${final_rule} \\
@@ -29,7 +29,7 @@ process CONCAT_FAMILY_CANDIDATES {
 
     script:
     """
-    python ${projectDir}/bin/genefam/concat_tsv.py \\
+    python ${projectDir}/../bin/genefam/concat_tsv.py \\
       --inputs ${candidate_tables} \\
       --out family_candidates.tsv
     """

@@ -25,7 +25,8 @@ DEFAULT_COMMANDS = [
     "iqtree2",
     "meme",
 ]
-CONDA_SCOPED_COMMANDS = {"nextflow", "hmmsearch", "diamond", "mafft", "iqtree2", "meme"}
+CONDA_SCOPED_COMMANDS = {"nextflow", "hmmsearch", "diamond", "mafft", "iqtree2", "iqtree", "meme"}
+COMMAND_ALIASES = {"iqtree2": ["iqtree"]}
 
 
 def conda_which(env_name: str, command: str) -> str:
@@ -60,11 +61,21 @@ def audit_commands(
     rows: list[dict[str, str]] = []
     conda_lookup = conda_which or globals()["conda_which"]
     for command in required_commands:
-        path = which(command) or ""
+        candidates = [command, *COMMAND_ALIASES.get(command, [])]
+        path = ""
+        for candidate in candidates:
+            path = which(candidate) or ""
+            if path:
+                break
         if path:
             rows.append({"command": command, "status": "available", "path": path})
             continue
-        conda_path = conda_lookup(conda_env, command) if conda_env else ""
+        conda_path = ""
+        if conda_env:
+            for candidate in candidates:
+                conda_path = conda_lookup(conda_env, candidate) or ""
+                if conda_path:
+                    break
         if conda_path:
             rows.append({"command": command, "status": "available_in_conda", "path": f"{conda_env}:{conda_path}"})
             continue

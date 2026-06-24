@@ -3,8 +3,8 @@ FROM mambaorg/micromamba:1.5.10
 USER root
 WORKDIR /opt/GeneFam-Pipeline
 
-COPY envs/GeneFamilyFlow.conda.yaml /tmp/GeneFamilyFlow.conda.yaml
-RUN micromamba create -y -f /tmp/GeneFamilyFlow.conda.yaml \
+COPY envs/GeneFamilyFlow.linux-64.conda.yaml /tmp/GeneFamilyFlow.linux-64.conda.yaml
+RUN micromamba create -y -f /tmp/GeneFamilyFlow.linux-64.conda.yaml \
     && micromamba clean --all --yes
 
 ENV MAMBA_DOCKERFILE_ACTIVATE=1

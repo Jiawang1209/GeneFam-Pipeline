@@ -23,6 +23,8 @@ dependencies:
   - fasttree
   - meme
   - mcscanx
+  - jcvi
+  - kaks_calculator
   - r-base
   - r-ggplot2
   - r-pheatmap

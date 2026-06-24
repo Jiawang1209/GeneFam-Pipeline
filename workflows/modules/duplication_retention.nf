@@ -9,7 +9,7 @@ process NORMALIZE_DUPLICATE_TYPES {
 
     script:
     """
-    python ${projectDir}/bin/genefam/normalize_duplicate_types.py \\
+    python ${projectDir}/../bin/genefam/normalize_duplicate_types.py \\
       --duplicates ${duplicates} \\
       --out normalized_duplicate_types.tsv
     """
@@ -27,7 +27,7 @@ process JOIN_FAMILY_DUPLICATES {
 
     script:
     """
-    python ${projectDir}/bin/genefam/join_family_duplicates.py \\
+    python ${projectDir}/../bin/genefam/join_family_duplicates.py \\
       --family-members ${family_members} \\
       --duplicates ${normalized_duplicates} \\
       --out family_duplicate_classification.tsv
@@ -47,7 +47,7 @@ process CLASSIFY_WGD_LAYERS {
 
     script:
     """
-    python ${projectDir}/bin/genefam/classify_wgd_layers.py \\
+    python ${projectDir}/../bin/genefam/classify_wgd_layers.py \\
       --pairs ${kaks_pairs} \\
       --bins ${ks_bins} \\
       ${event_args} \\
@@ -67,7 +67,7 @@ process BUILD_WGD_EVENT_EVIDENCE {
 
     script:
     """
-    python ${projectDir}/bin/genefam/build_wgd_event_evidence.py \\
+    python ${projectDir}/../bin/genefam/build_wgd_event_evidence.py \\
       --classified-pairs ${classified_pairs} \\
       --events-config ${events_config} \\
       --out wgd_event_evidence.tsv
@@ -86,7 +86,7 @@ process ANNOTATE_FAMILY_WGD_EVENTS {
 
     script:
     """
-    python ${projectDir}/bin/genefam/annotate_family_wgd_events.py \\
+    python ${projectDir}/../bin/genefam/annotate_family_wgd_events.py \\
       --family-duplicates ${family_duplicates} \\
       --classified-pairs ${classified_pairs} \\
       --out family_wgd_event_membership.tsv
@@ -104,7 +104,7 @@ process SUMMARIZE_FAMILY_EVENT_RETENTION {
 
     script:
     """
-    python ${projectDir}/bin/genefam/summarize_family_event_retention.py \\
+    python ${projectDir}/../bin/genefam/summarize_family_event_retention.py \\
       --family-wgd-events ${family_wgd_events} \\
       --out family_event_retention_summary.tsv
     """
@@ -122,7 +122,7 @@ process RETENTION_ENRICHMENT {
 
     script:
     """
-    python ${projectDir}/bin/genefam/retention_enrichment.py \\
+    python ${projectDir}/../bin/genefam/retention_enrichment.py \\
       --family-duplicates ${family_duplicates} \\
       --background-duplicates ${background_duplicates} \\
       --out retention_enrichment.tsv

@@ -77,16 +77,16 @@ The repository-level implementation and tests are in place, but this machine doe
 Recent readiness audits found:
 
 - available: `conda`, `/usr/local/bin/R`
-- available inside `GeneFamilyFlow`: `hmmsearch`
-- missing: `nextflow`, `docker`, `apptainer`, `diamond`, `mafft`, `iqtree2`, `meme`
+- available inside `GeneFamilyFlow`: `nextflow`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, `meme`
+- missing: `docker`, `apptainer`
 
 This means:
 
 - Mock MVP and Python/R/report helpers can be validated locally.
-- Full Nextflow local execution needs `nextflow` and the GeneFamilyFlow command-line tools on `PATH`; `envs/GeneFamilyFlow.conda.yaml` now includes `openjdk` and `nextflow` for the Conda route.
+- Full Nextflow mock-MVP execution now works through `GeneFamilyFlow` with the `activated` profile.
 - Docker profile execution needs Docker plus the `genefam-pipeline:latest` image.
 - Apptainer profile execution needs Apptainer and access to the Docker image.
-- External HMMER, DIAMOND, MAFFT, IQ-TREE, MEME, and related bioinformatics commands must be installed through Conda or container profiles before true end-to-end execution can be claimed.
+- External HMMER, DIAMOND, MAFFT, IQ-TREE, MEME, and related bioinformatics commands are available through the local `GeneFamilyFlow` Conda environment; Linux/container-only helpers such as `jcvi` and `kaks_calculator` are kept in `envs/GeneFamilyFlow.linux-64.conda.yaml`.
 - `python bin/genefam/plan_runtime_bootstrap.py --readiness results/readiness/command_readiness.tsv --outdir results/readiness` writes a Markdown plan and shell script for the current machine gap.
 
 ## Release Decision

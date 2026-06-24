@@ -10,7 +10,7 @@ process EXTRACT_CHROMOSOME_LOCATIONS {
 
     script:
     """
-    python ${projectDir}/bin/genefam/extract_chromosome_locations.py \\
+    python ${projectDir}/../bin/genefam/extract_chromosome_locations.py \\
       --family-candidates ${family_candidates} \\
       --species-manifest ${species_manifest} \\
       --out chromosome_locations.tsv
@@ -29,7 +29,7 @@ process SUBSET_EXPRESSION_MATRIX {
 
     script:
     """
-    python ${projectDir}/bin/genefam/subset_expression_matrix.py \\
+    python ${projectDir}/../bin/genefam/subset_expression_matrix.py \\
       --family-candidates ${family_candidates} \\
       --expression ${expression_matrix} \\
       --out family_expression.tsv

@@ -14,7 +14,7 @@ R-language steps should use:
 
 ## Conda
 
-Create the environment from:
+Create or update the local environment from:
 
 ```bash
 conda env create -f envs/GeneFamilyFlow.conda.yaml
@@ -23,6 +23,7 @@ conda activate GeneFamilyFlow
 
 The environment file includes Python, R, workflow dependencies, and common bioinformatics tools used by the pipeline modules.
 It also includes `openjdk` and `nextflow` so the local Conda route can run the workflow engine from the same `GeneFamilyFlow` environment.
+On macOS arm64, `jcvi` and `kaks_calculator` are not available from the current Conda channels, so they are kept out of the local cross-platform environment file.
 
 Update an existing environment with:
 
@@ -30,10 +31,20 @@ Update an existing environment with:
 conda env update -n GeneFamilyFlow -f envs/GeneFamilyFlow.conda.yaml --prune
 ```
 
+## Linux And Container Environment
+
+Linux and Docker builds use the fuller environment file:
+
+```bash
+conda env create -f envs/GeneFamilyFlow.linux-64.conda.yaml
+```
+
+This file keeps platform-limited tools such as `jcvi` and `kaks_calculator` for containerized or Linux execution.
+
 Generate a machine-specific bootstrap plan from the readiness TSV:
 
 ```bash
-python bin/genefam/audit_readiness.py --out results/readiness/command_readiness.tsv
+python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv
 python bin/genefam/plan_runtime_bootstrap.py \
   --readiness results/readiness/command_readiness.tsv \
   --outdir results/readiness
