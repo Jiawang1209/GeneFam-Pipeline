@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import os
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -19,6 +20,10 @@ from bin.genefam.run_nextflow_smoke import resolve_nextflow_binary
 
 FIELDNAMES = ["check", "status", "exit_code", "command", "note"]
 WGD_EVENT_ARGS = "--event WGD_layer_1=alpha --event WGD_layer_2=beta --event WGD_layer_3=gamma --event WGD_layer_4=theta"
+
+
+def format_command(command: list[str]) -> str:
+    return shlex.join(command)
 
 
 def expected_published_outputs(wgd_outdir: Path) -> list[Path]:
@@ -173,7 +178,7 @@ def run_nextflow_wgd_smoke(
             "check": "nextflow_wgd_events",
             "status": "missing_nextflow",
             "exit_code": "127",
-            "command": " ".join(command),
+            "command": format_command(command),
             "note": "nextflow was not found on PATH or in the requested Conda environment; run the runtime bootstrap plan before this smoke can execute.",
         }
     env = os.environ.copy()
@@ -190,7 +195,7 @@ def run_nextflow_wgd_smoke(
         "check": "nextflow_wgd_events",
         "status": "passed" if passed else "failed",
         "exit_code": str(completed.returncode),
-        "command": " ".join(command),
+        "command": format_command(command),
         "note": " | ".join(line.strip() for line in output.splitlines() if line.strip())[:500],
     }
 

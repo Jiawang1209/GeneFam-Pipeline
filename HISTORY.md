@@ -2579,7 +2579,46 @@ Verification:
 - `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
 
 Commit:
-- pending
+- hash: dd444ab4f194e6c158dc109bd12439d9d93f2a9d
+- message: feat: add prepared WGD handoff release gate
+- files: prepared WGD handoff release wrapper, release checks, release audit docs, tests, history
 
 Next:
 - Continue toward container-runtime verification when Docker or Apptainer is available; otherwise focus on reusable user-facing examples and documentation that are fully verifiable through `GeneFamilyFlow`.
+
+## 2026-06-24 - Make WGD smoke commands copyable
+
+Context:
+- The WGD smoke wrappers executed commands correctly, but their TSV/Markdown command fields were rendered with simple space joining.
+- `--wgd_event_args` contains spaces, so copied report commands could be split incorrectly by a shell.
+
+Decisions:
+- Render command strings with `shlex.join()` in the Nextflow WGD smoke wrapper and prepared WGD handoff wrapper.
+- Keep subprocess execution list-based so runtime behavior is unchanged.
+- Add tests that prove missing-Nextflow reports preserve a quoted, copyable `--wgd_event_args` value.
+
+Added:
+- `tests/test_run_prepared_wgd_handoff_example.py`
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_nextflow_wgd_smoke.py`
+- `bin/genefam/run_prepared_wgd_handoff_example.py`
+- `tests/test_run_nextflow_wgd_smoke.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_nextflow_wgd_smoke.py tests/test_run_prepared_wgd_handoff_example.py -q` first failed because `--wgd_event_args` was not shell-quoted in generated TSV command fields.
+- After switching command rendering to `shlex.join()`, the same targeted test command passed with 4 tests.
+- `python -m pytest tests -q` passed with 153 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker and Apptainer are missing, but pytest, config validation, mock MVP, Python standard branch smoke, Python WGD event smoke, Nextflow mock MVP smoke, Nextflow standard branch smoke, Nextflow WGD event smoke, prepared WGD handoff example, and runtime bootstrap plan passed.
+- `results/example_prepared_wgd/prepared_wgd_handoff_example.tsv` now reports a shell-copyable command with the quoted `--wgd_event_args` value.
+- `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
+
+Commit:
+- pending
+
+Next:
+- Continue toward final runtime readiness; if Docker/Apptainer remain unavailable, keep strengthening user-facing examples, command reports, and release gates that are verifiable through `GeneFamilyFlow`.

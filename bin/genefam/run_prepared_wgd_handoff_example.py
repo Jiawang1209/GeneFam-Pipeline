@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import os
+import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -20,6 +21,10 @@ from bin.genefam.run_nextflow_wgd_smoke import WGD_EVENT_ARGS, expected_publishe
 
 FIELDNAMES = ["check", "status", "exit_code", "command", "note"]
 EXPECTED_EVENTS = {"alpha", "beta", "gamma", "theta"}
+
+
+def format_command(command: list[str]) -> str:
+    return shlex.join(command)
 
 
 def build_nextflow_command(
@@ -99,7 +104,7 @@ def run_prepared_wgd_handoff_example(
             "check": "prepared_wgd_handoff_example",
             "status": "missing_inputs",
             "exit_code": "2",
-            "command": " ".join(command),
+            "command": format_command(command),
             "note": "Missing example inputs: " + ", ".join(str(path) for path in missing_inputs),
         }
     if not resolved_nextflow:
@@ -107,7 +112,7 @@ def run_prepared_wgd_handoff_example(
             "check": "prepared_wgd_handoff_example",
             "status": "missing_nextflow",
             "exit_code": "127",
-            "command": " ".join(command),
+            "command": format_command(command),
             "note": "nextflow was not found on PATH or in the requested Conda environment; run the runtime bootstrap plan before this example can execute.",
         }
     env = os.environ.copy()
@@ -131,7 +136,7 @@ def run_prepared_wgd_handoff_example(
         "check": "prepared_wgd_handoff_example",
         "status": "passed" if passed else "failed",
         "exit_code": str(completed.returncode),
-        "command": " ".join(command),
+        "command": format_command(command),
         "note": " | ".join(line.strip() for part in note_parts for line in part.splitlines() if line.strip())[:500],
     }
 

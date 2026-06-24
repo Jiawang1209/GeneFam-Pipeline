@@ -80,4 +80,8 @@ def test_run_nextflow_wgd_smoke_cli_reports_missing_nextflow(tmp_path):
         "check\tstatus\texit_code\tcommand\tnote\n"
     )
     assert "missing_nextflow" in (outdir / "nextflow_wgd_smoke.tsv").read_text(encoding="utf-8")
+    assert (
+        "--wgd_event_args '--event WGD_layer_1=alpha --event WGD_layer_2=beta --event WGD_layer_3=gamma --event WGD_layer_4=theta'"
+        in (outdir / "nextflow_wgd_smoke.tsv").read_text(encoding="utf-8")
+    )
     assert "Nextflow WGD Event Smoke" in (outdir / "nextflow_wgd_smoke.md").read_text(encoding="utf-8")
