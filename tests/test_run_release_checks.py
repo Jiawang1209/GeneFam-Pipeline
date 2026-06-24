@@ -263,6 +263,7 @@ def test_write_handoff_report_uses_latest_written_release_tsv(tmp_path):
         "next_unblock_artifacts\tresults/readiness/runtime_bootstrap_plan.md, "
         "results/readiness/runtime_bootstrap.sh" in summary_text
     )
+    assert "next_unblock_command\tbash results/readiness/runtime_bootstrap.sh" in summary_text
     assert "container_smoke\tdocker=missing_runtime; apptainer=missing_runtime" in summary_text
 
 

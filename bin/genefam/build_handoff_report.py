@@ -54,6 +54,11 @@ def _next_unblock_artifacts(objective_rows: list[dict[str, str]], readiness_rows
     return "results/readiness/runtime_bootstrap_plan.md, results/readiness/runtime_bootstrap.sh"
 
 
+def _next_unblock_command(objective_rows: list[dict[str, str]], readiness_rows: list[dict[str, str]]) -> str:
+    has_unblock_artifacts = _next_unblock_artifacts(objective_rows, readiness_rows) != "none"
+    return "bash results/readiness/runtime_bootstrap.sh" if has_unblock_artifacts else "none"
+
+
 def _missing_runtime(rows: list[dict[str, str]]) -> str:
     missing = [row["command"] for row in rows if row.get("status") == "missing"]
     return ", ".join(missing) if missing else "none"
@@ -82,6 +87,7 @@ def build_handoff_sections(
         "objective": _objective_summary(objective_rows),
         "blocked_requirements": _blocked_requirements(objective_rows),
         "next_unblock_artifacts": _next_unblock_artifacts(objective_rows, readiness_rows),
+        "next_unblock_command": _next_unblock_command(objective_rows, readiness_rows),
         "available_runtime": _available_runtime(readiness_rows),
         "missing_runtime": _missing_runtime(readiness_rows),
         "container_smoke": _container_smoke(container_rows),
@@ -98,6 +104,7 @@ def write_markdown(sections: dict[str, str], out_path: Path) -> None:
         f"- Objective audit: `{sections['objective']}`",
         f"- Blocked requirements: `{sections['blocked_requirements']}`",
         f"- Unblock artifacts: `{sections['next_unblock_artifacts']}`",
+        f"- Next unblock command: `{sections['next_unblock_command']}`",
         f"- Available runtime commands: `{sections['available_runtime']}`",
         f"- Missing runtime commands: `{sections['missing_runtime']}`",
         f"- Container smoke: `{sections['container_smoke']}`",
