@@ -3995,9 +3995,58 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
 
 Commit:
+- hash: 6e908525cb2d2d83171df7316b6e498cfa63669d
+- message: feat: add gene structure summary
+- files: gene structure helper, standard smoke integration, Nextflow annotation wiring, report index integration, docs, tests, history
+
+Next:
+- Keep GFF3-derived outputs aligned: chromosome coordinates and gene structure summaries should remain sourced from the same species-bank annotation contract.
+
+## 2026-06-25 - Add release-level expression smoke
+
+Context:
+- RNA-seq expression integration existed as a standard-branch option and unit-tested helper, but the release gate only exercised the standard branch without an expression matrix.
+- The long objective requires expression integration as part of the final reusable workflow, so release evidence should prove a real family expression subset is produced.
+
+Decisions:
+- Add a small expression fixture with family and non-family rows.
+- Add `standard branch expression smoke` to the required release checks.
+- Tighten the objective audit so chromosome/expression integration requires the expression smoke, not only the no-expression standard smoke.
+- Document the release-level expression output in README and release audit evidence.
+
+Added:
+- `tests/fixtures/expression/family_expression.tsv`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_standard_branch_expression_smoke_before_readiness -q` first failed because `standard branch expression smoke` was not in `default_checks()`.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_standard_branch_expression_smoke_before_readiness tests/test_run_release_checks.py::test_write_objective_audit_requires_expression_smoke_for_expression_integration -q` then failed because the objective audit still considered expression integration achieved without expression smoke evidence.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_standard_branch_expression_smoke_before_readiness tests/test_run_release_checks.py::test_write_objective_audit_requires_expression_smoke_for_expression_integration -q` passed after adding the release check and tightening the audit.
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because release audit did not mention `results/standard_expression_smoke/tables/family_expression.tsv`.
+- `python -m pytest tests/test_run_release_checks.py tests/test_release_audit_docs.py tests/test_run_standard_smoke.py -q` passed with 25 tests after documenting release-level expression evidence.
+- `python bin/genefam/run_standard_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --expression-matrix tests/fixtures/expression/family_expression.tsv --outdir results/standard_expression_smoke` exited `0` and printed `family_expression	results/standard_expression_smoke/tables/family_expression.tsv`.
+- `results/standard_expression_smoke/tables/family_expression.tsv` contains only the two identified family members and excludes `unused_gene`.
+- `results/standard_expression_smoke/report/report_index.tsv` lists `family_expression` as `available`.
+- `python -m pytest tests -q` passed with 211 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 15`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; `standard branch expression smoke` passed, and the required blocker remains the readiness audit for missing `docker` and `apptainer`.
+- `results/objective_audit/objective_audit.md` reports `chromosome and expression integration` achieved using `standard branch, expression smoke, and quickstart outputs`; overall completion remains blocked only by Docker/Apptainer reproducibility.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Keep GFF3-derived outputs aligned: chromosome coordinates and gene structure summaries should remain sourced from the same species-bank annotation contract.
+- Keep release-level evidence aligned with the long objective, especially where optional modules become required proof points for the final usable version.

@@ -297,6 +297,18 @@ def test_default_checks_include_standard_branch_smoke_before_readiness():
     assert "--outdir results/standard_smoke" in " ".join(smoke.command)
 
 
+def test_default_checks_include_standard_branch_expression_smoke_before_readiness():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("standard branch expression smoke") < names.index("readiness audit")
+    assert names.index("standard branch expression smoke") > names.index("standard branch smoke")
+    smoke = next(check for check in default_checks() if check.name == "standard branch expression smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_standard_smoke.py" in command
+    assert "--expression-matrix tests/fixtures/expression/family_expression.tsv" in command
+    assert "--outdir results/standard_expression_smoke" in command
+
+
 def test_default_checks_include_wgd_smoke_before_readiness():
     names = [check.name for check in default_checks()]
 
@@ -411,6 +423,14 @@ def test_write_objective_audit_uses_release_rows_and_readiness_tsv(tmp_path):
             "note": "",
         },
         {
+            "check": "standard branch expression smoke",
+            "required": "true",
+            "status": "passed",
+            "exit_code": "0",
+            "command": "standard expression",
+            "note": "",
+        },
+        {
             "check": "WGD event smoke",
             "required": "true",
             "status": "passed",
@@ -467,3 +487,46 @@ def test_write_objective_audit_uses_release_rows_and_readiness_tsv(tmp_path):
         tmp_path / "objective" / "objective_audit.tsv"
     ).read_text(encoding="utf-8")
     assert "Complete: false" in (tmp_path / "objective" / "objective_audit.md").read_text(encoding="utf-8")
+
+
+def test_write_objective_audit_requires_expression_smoke_for_expression_integration(tmp_path):
+    readiness = tmp_path / "command_readiness.tsv"
+    readiness.write_text(
+        "command\tstatus\tpath\n"
+        "nextflow\tavailable_in_conda\tGeneFamilyFlow:/bin/nextflow\n"
+        "/usr/local/bin/R\tavailable\t/usr/local/bin/R\n"
+        "hmmsearch\tavailable_in_conda\tGeneFamilyFlow:/bin/hmmsearch\n"
+        "diamond\tavailable_in_conda\tGeneFamilyFlow:/bin/diamond\n"
+        "mafft\tavailable_in_conda\tGeneFamilyFlow:/bin/mafft\n"
+        "iqtree2\tavailable_in_conda\tGeneFamilyFlow:/bin/iqtree\n"
+        "meme\tavailable_in_conda\tGeneFamilyFlow:/bin/meme\n"
+        "docker\tmissing\t\n"
+        "apptainer\tmissing\t\n",
+        encoding="utf-8",
+    )
+    rows = [
+        {"check": "pytest", "required": "true", "status": "passed", "exit_code": "0", "command": "pytest", "note": ""},
+        {
+            "check": "standard branch smoke",
+            "required": "true",
+            "status": "passed",
+            "exit_code": "0",
+            "command": "standard",
+            "note": "",
+        },
+        {
+            "check": "quickstart handoff",
+            "required": "true",
+            "status": "passed",
+            "exit_code": "0",
+            "command": "quickstart",
+            "note": "",
+        },
+    ]
+
+    written = write_objective_audit(rows, readiness, tmp_path / "objective")
+
+    assert written is True
+    assert "chromosome and expression integration\tmissing" in (
+        tmp_path / "objective" / "objective_audit.tsv"
+    ).read_text(encoding="utf-8")

@@ -122,10 +122,10 @@ def build_objective_audit(
             "Ka/Ks, retention class, family-event membership, and retention summaries are generated from prepared evidence.",
         ),
         _achieved_if(
-            _all_passed(release, ["standard branch smoke", "quickstart handoff"]),
+            _all_passed(release, ["standard branch smoke", "standard branch expression smoke", "quickstart handoff"]),
             "chromosome and expression integration",
-            "standard branch and quickstart outputs",
-            "Chromosome locations and optional expression matrices are represented in standard reports.",
+            "standard branch, expression smoke, and quickstart outputs",
+            "Chromosome locations and an RNA-seq expression matrix subset are represented in standard reports.",
         ),
         _achieved_if(
             release.get("quickstart handoff") == "passed",

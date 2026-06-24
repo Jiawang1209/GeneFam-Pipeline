@@ -79,6 +79,23 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "standard branch expression smoke",
+            [
+                python,
+                "bin/genefam/run_standard_smoke.py",
+                "--config",
+                "configs/example.config.yaml",
+                "--groups",
+                "configs/species_groups.yaml",
+                "--mock-evidence-dir",
+                "tests/fixtures/mock_evidence",
+                "--expression-matrix",
+                "tests/fixtures/expression/family_expression.tsv",
+                "--outdir",
+                "results/standard_expression_smoke",
+            ],
+        ),
+        CheckSpec(
             "WGD event smoke",
             [
                 python,

@@ -88,6 +88,8 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/standard_smoke/tables/run_config_snapshot.tsv" in text
     assert "results/standard_smoke/tables/gene_structure_summary.tsv" in text
     assert "results/standard_smoke/tables/motif_summary.tsv" in text
+    assert "results/standard_expression_smoke/tables/family_expression.tsv" in text
+    assert "tests/fixtures/expression/family_expression.tsv" in text
     assert "results/wgd_smoke/report/final_report.md" in text
     assert "results/wgd_smoke/tables/wgd_run_config_snapshot.tsv" in text
     assert "results/nextflow_smoke/nextflow_smoke.md" in text
