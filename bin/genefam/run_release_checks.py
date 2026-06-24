@@ -91,6 +91,8 @@ def default_checks() -> list[CheckSpec]:
                 "tests/fixtures/mock_evidence",
                 "--expression-matrix",
                 "tests/fixtures/expression/family_expression.tsv",
+                "--r-bin",
+                "/usr/local/bin/R",
                 "--outdir",
                 "results/standard_expression_smoke",
             ],

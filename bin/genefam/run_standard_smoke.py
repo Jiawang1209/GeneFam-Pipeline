@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import subprocess
 import sys
 from pathlib import Path
 
@@ -41,12 +42,30 @@ def _print_outputs(outputs: dict[str, Path]) -> None:
         writer.writerow([key, outputs[key]])
 
 
+def _run_expression_heatmap(expression_path: Path, outdir: Path, r_bin: Path) -> None:
+    command = [
+        str(r_bin),
+        "--vanilla",
+        "--slave",
+        "-f",
+        str(REPO_ROOT / "scripts/plot_expression_heatmap.R"),
+        "--args",
+        str(expression_path),
+        str(outdir),
+    ]
+    completed = subprocess.run(command, check=False, capture_output=True, text=True)
+    if completed.returncode != 0:
+        output = "\n".join(part for part in [completed.stdout.strip(), completed.stderr.strip()] if part)
+        raise RuntimeError(f"Expression heatmap plotting failed with {r_bin}: {output}")
+
+
 def run_standard_smoke(
     config_path: Path,
     groups_path: Path,
     mock_evidence_dir: Path,
     outdir: Path,
     expression_matrix: Path | None = None,
+    r_bin: Path = Path("/usr/local/bin/R"),
 ) -> dict[str, Path]:
     config = _load_yaml(config_path)
     groups = _load_yaml(groups_path) if groups_path and groups_path.exists() else {}
@@ -83,6 +102,7 @@ def run_standard_smoke(
     }
     if expression_matrix is not None:
         outputs["family_expression"] = tables_dir / "family_expression.tsv"
+        outputs["expression_heatmap"] = outdir / "plots/expression_heatmap.pdf"
 
     write_manifest(manifest_rows, outputs["species_manifest"])
     write_snapshot_tsv(
@@ -131,8 +151,12 @@ def run_standard_smoke(
             subset_expression(read_expression_tsv(expression_matrix), gene_ids_from_family_candidates(candidates)),
             outputs["family_expression"],
         )
+        _run_expression_heatmap(outputs["family_expression"], outdir / "plots", r_bin)
+    plots = [("family_counts", "plots/family_counts.pdf", "Family member counts by species")]
+    if expression_matrix is not None:
+        plots.append(("expression_heatmap", "plots/expression_heatmap.pdf", "Family member expression heatmap"))
     write_plot_manifest_tsv(
-        build_plot_manifest([("family_counts", "plots/family_counts.pdf", "Family member counts by species")]),
+        build_plot_manifest(plots),
         outputs["plot_manifest"],
     )
     write_report_index_tsv(
@@ -157,10 +181,11 @@ def main() -> None:
     parser.add_argument("--groups", required=True, type=Path)
     parser.add_argument("--mock-evidence-dir", required=True, type=Path)
     parser.add_argument("--expression-matrix", type=Path)
+    parser.add_argument("--r-bin", default=Path("/usr/local/bin/R"), type=Path)
     parser.add_argument("--outdir", required=True, type=Path)
     args = parser.parse_args()
     _print_outputs(
-        run_standard_smoke(args.config, args.groups, args.mock_evidence_dir, args.outdir, args.expression_matrix)
+        run_standard_smoke(args.config, args.groups, args.mock_evidence_dir, args.outdir, args.expression_matrix, args.r_bin)
     )
 
 

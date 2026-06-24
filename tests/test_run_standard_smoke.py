@@ -111,3 +111,8 @@ def test_run_standard_smoke_writes_family_expression_when_matrix_is_provided(tmp
     report_index = (outdir / "report/report_index.tsv").read_text(encoding="utf-8")
     assert "family_expression\t" in report_index
     assert "family_expression.tsv\tavailable" in report_index
+    assert (outdir / "plots/expression_heatmap.pdf").exists()
+    plot_manifest = (outdir / "report/plot_manifest.tsv").read_text(encoding="utf-8")
+    assert "expression_heatmap\tplots/expression_heatmap.pdf\tFamily member expression heatmap" in plot_manifest
+    final_report = (outdir / "report/final_report.md").read_text(encoding="utf-8")
+    assert "| expression_heatmap | plots/expression_heatmap.pdf | Family member expression heatmap |" in final_report

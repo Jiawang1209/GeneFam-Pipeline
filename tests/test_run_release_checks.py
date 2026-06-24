@@ -306,6 +306,7 @@ def test_default_checks_include_standard_branch_expression_smoke_before_readines
     command = " ".join(smoke.command)
     assert "bin/genefam/run_standard_smoke.py" in command
     assert "--expression-matrix tests/fixtures/expression/family_expression.tsv" in command
+    assert "--r-bin /usr/local/bin/R" in command
     assert "--outdir results/standard_expression_smoke" in command
 
 
