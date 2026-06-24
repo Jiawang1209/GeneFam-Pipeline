@@ -21,6 +21,11 @@ from bin.genefam.audit_objective_completion import (
     write_markdown as write_objective_markdown,
     write_tsv as write_objective_tsv,
 )
+from bin.genefam.build_handoff_report import (
+    build_handoff_sections,
+    read_tsv as read_handoff_tsv,
+    write_markdown as write_handoff_markdown,
+)
 
 
 FIELDNAMES = ["check", "required", "status", "exit_code", "command", "note"]
@@ -289,6 +294,32 @@ def write_objective_audit(
     return True
 
 
+def write_handoff_report(
+    release_checks_path: Path = Path("results/release_checks/release_checks.tsv"),
+    objective_audit_path: Path = Path("results/objective_audit/objective_audit.tsv"),
+    readiness_path: Path = Path("results/readiness/command_readiness.tsv"),
+    container_smoke_paths: list[Path] | None = None,
+    out_path: Path = Path("results/handoff/handoff_report.md"),
+) -> bool:
+    if not release_checks_path.exists():
+        return False
+    smoke_paths = container_smoke_paths or [
+        Path("results/container_profile_smoke/docker/container_profile_smoke.tsv"),
+        Path("results/container_profile_smoke/apptainer/container_profile_smoke.tsv"),
+    ]
+    container_rows: list[dict[str, str]] = []
+    for path in smoke_paths:
+        container_rows.extend(read_handoff_tsv(path))
+    sections = build_handoff_sections(
+        release_rows=read_handoff_tsv(release_checks_path),
+        objective_rows=read_handoff_tsv(objective_audit_path),
+        readiness_rows=read_handoff_tsv(readiness_path),
+        container_rows=container_rows,
+    )
+    write_handoff_markdown(sections, out_path)
+    return True
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--outdir", default="results/release_checks", type=Path)
@@ -300,6 +331,7 @@ def main() -> None:
     write_markdown(rows, args.outdir / "release_checks.md")
     if not args.quick_self_check:
         write_objective_audit(rows)
+        write_handoff_report(args.outdir / "release_checks.tsv")
     sys.exit(0 if summarize_checks(rows)["release_ready"] else 1)
 
 

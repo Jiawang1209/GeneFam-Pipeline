@@ -2944,9 +2944,60 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item is `Docker/Apptainer reproducibility`.
 
 Commit:
-- hash: pending
+- hash: cc9246038fc106d670fa5b546c2d72d5ffa9060a
 - message: feat: split required and optional release failures
 - files: release summary breakdown, quickstart/release docs, tests, history
 
 Next:
 - Once Docker or Apptainer is installed, rerun release checks; optional failure counts should drop independently from required readiness status.
+
+## 2026-06-24 - Add final handoff report
+
+Context:
+- Release checks, objective audit, readiness audit, and container smoke reports were available, but the user still had to inspect several files to understand current delivery status.
+- The final handoff needed one compact Markdown page that points to the authoritative evidence and states the current blocker.
+- An initial release-gate integration ran the handoff report as a check, which made it read the previous `release_checks.tsv` instead of the just-generated one.
+
+Decisions:
+- Add `bin/genefam/build_handoff_report.py` to summarize release, objective, readiness, and container smoke evidence.
+- Write `results/handoff/handoff_report.md` from the release runner after the latest release TSV/Markdown and objective audit have been written.
+- Keep the handoff report out of `default_checks()` so it does not read stale release evidence.
+- Document the handoff report in quickstart and release-audit docs.
+
+Added:
+- `bin/genefam/build_handoff_report.py`
+- `tests/test_build_handoff_report.py`
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_release_checks.py`
+- `docs/quickstart.md`
+- `docs/release_audit.md`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_handoff_report.py -q` first failed because `bin.genefam.build_handoff_report` did not exist.
+- After adding the script, `python -m pytest tests/test_build_handoff_report.py -q` passed with 3 tests.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_handoff_report_after_container_smokes tests/test_quickstart_docs.py tests/test_release_audit_docs.py -q` first failed because release checks and docs did not mention the handoff report.
+- After integrating the first version, `python -m pytest tests/test_build_handoff_report.py tests/test_run_release_checks.py::test_default_checks_include_handoff_report_after_container_smokes tests/test_quickstart_docs.py tests/test_release_audit_docs.py -q` passed with 7 tests.
+- Manual verification of `results/handoff/handoff_report.md` showed stale release counts because the handoff report ran as a check before the latest release TSV was written.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_do_not_include_handoff_report_as_a_stale_input_check tests/test_run_release_checks.py::test_write_handoff_report_uses_latest_written_release_tsv -q` first failed because `write_handoff_report` did not exist.
+- After moving handoff report generation after release TSV writing, `python -m pytest tests/test_run_release_checks.py tests/test_build_handoff_report.py tests/test_quickstart_docs.py tests/test_release_audit_docs.py -q` passed with 25 tests.
+- `python -m pytest tests -q` passed with 178 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 12`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
+- `results/handoff/handoff_report.md` now reports `passed=12 failed=3 required_failed=1 optional_failed=2 release_ready=false`, matching the latest release checks.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item is `Docker/Apptainer reproducibility`.
+
+Commit:
+- hash: pending
+- message: feat: add final handoff report
+- files: handoff report builder, release runner integration, quickstart/release docs, tests, history
+
+Next:
+- Use `results/handoff/handoff_report.md` as the first file to inspect after each release-gate run.

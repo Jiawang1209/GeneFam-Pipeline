@@ -6,8 +6,10 @@ from bin.genefam.run_release_checks import (
     default_checks,
     run_checks,
     summarize_checks,
+    write_handoff_report,
     write_markdown,
     write_objective_audit,
+    write_tsv,
 )
 
 
@@ -190,6 +192,68 @@ def test_default_checks_include_optional_container_profile_smokes_after_bootstra
     assert "--profile apptainer" in apptainer_command
     assert "--conda-env GeneFamilyFlow" in apptainer_command
     assert "--outdir results/container_profile_smoke/apptainer" in apptainer_command
+
+
+def test_default_checks_do_not_include_handoff_report_as_a_stale_input_check():
+    checks = default_checks()
+    names = [check.name for check in checks]
+
+    assert "handoff report" not in names
+
+
+def test_write_handoff_report_uses_latest_written_release_tsv(tmp_path):
+    release_tsv = tmp_path / "release_checks.tsv"
+    objective_tsv = tmp_path / "objective_audit.tsv"
+    readiness_tsv = tmp_path / "command_readiness.tsv"
+    docker_tsv = tmp_path / "docker.tsv"
+    apptainer_tsv = tmp_path / "apptainer.tsv"
+    out = tmp_path / "handoff_report.md"
+    write_tsv(
+        [
+            {"check": "pytest", "required": "true", "status": "passed", "exit_code": "0", "command": "pytest", "note": ""},
+            {
+                "check": "readiness audit",
+                "required": "true",
+                "status": "failed",
+                "exit_code": "1",
+                "command": "readiness",
+                "note": "",
+            },
+            {
+                "check": "Docker profile smoke",
+                "required": "false",
+                "status": "failed",
+                "exit_code": "1",
+                "command": "docker",
+                "note": "",
+            },
+        ],
+        release_tsv,
+    )
+    objective_tsv.write_text(
+        "requirement\tstatus\tevidence\tnote\nDocker/Apptainer reproducibility\tblocked\treadiness\tmissing\n",
+        encoding="utf-8",
+    )
+    readiness_tsv.write_text("command\tstatus\tpath\ndocker\tmissing\t\n", encoding="utf-8")
+    docker_tsv.write_text(
+        "check\tprofile\tstatus\texit_code\tcommand\tnote\ndocker_profile_smoke\tdocker\tmissing_runtime\t127\tdocker\t\n",
+        encoding="utf-8",
+    )
+    apptainer_tsv.write_text(
+        "check\tprofile\tstatus\texit_code\tcommand\tnote\napptainer_profile_smoke\tapptainer\tmissing_runtime\t127\tapptainer\t\n",
+        encoding="utf-8",
+    )
+
+    assert write_handoff_report(
+        release_tsv,
+        objective_tsv,
+        readiness_tsv,
+        [docker_tsv, apptainer_tsv],
+        out,
+    )
+
+    text = out.read_text(encoding="utf-8")
+    assert "passed=1 failed=2 required_failed=1 optional_failed=1 release_ready=false" in text
 
 
 def test_default_checks_include_standard_branch_smoke_before_readiness():

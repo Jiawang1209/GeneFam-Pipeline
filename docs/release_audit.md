@@ -75,6 +75,7 @@ The release checks runner writes:
 - `results/container_profile_smoke/docker/container_profile_smoke.md`
 - `results/container_profile_smoke/apptainer/container_profile_smoke.tsv`
 - `results/container_profile_smoke/apptainer/container_profile_smoke.md`
+- `results/handoff/handoff_report.md`
 
 The Markdown summary reports `Required failed` and `Optional failed` separately. Container profile smoke checks are optional evidence; the required readiness audit remains the release-blocking signal while Docker/Apptainer are unavailable.
 

@@ -55,6 +55,7 @@ Key outputs:
 
 - `results/objective_audit/objective_audit.tsv`
 - `results/objective_audit/objective_audit.md`
+- `results/handoff/handoff_report.md`
 
 On the current development machine, Docker/Apptainer reproducibility is expected to remain `blocked` until a container runtime is available.
 

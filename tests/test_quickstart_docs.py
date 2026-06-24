@@ -22,6 +22,7 @@ def test_quickstart_documents_minimum_verified_run_path():
         "results/quickstart/quickstart_summary.md",
         "python bin/genefam/audit_objective_completion.py",
         "results/objective_audit/objective_audit.md",
+        "results/handoff/handoff_report.md",
         "python bin/genefam/run_standard_smoke.py",
         "--config configs/example.config.yaml",
         "--groups configs/species_groups.yaml",
