@@ -197,6 +197,19 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "retention enrichment smoke",
+            [
+                python,
+                "bin/genefam/run_retention_enrichment_smoke.py",
+                "--family-members",
+                "examples/prepared_wgd_handoff/family_candidates.tsv",
+                "--duplicates",
+                "examples/prepared_wgd_handoff/duplicate_types.tsv",
+                "--outdir",
+                "results/retention_enrichment_smoke",
+            ],
+        ),
+        CheckSpec(
             "WGD event smoke",
             [
                 python,

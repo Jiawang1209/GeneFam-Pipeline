@@ -393,6 +393,19 @@ def test_default_checks_include_kaks_smoke_before_wgd_smoke():
     assert "--outdir results/kaks_smoke" in command
 
 
+def test_default_checks_include_retention_enrichment_smoke_before_wgd_smoke():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("retention enrichment smoke") < names.index("WGD event smoke")
+    assert names.index("retention enrichment smoke") > names.index("Ka/Ks parser smoke")
+    smoke = next(check for check in default_checks() if check.name == "retention enrichment smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_retention_enrichment_smoke.py" in command
+    assert "--family-members examples/prepared_wgd_handoff/family_candidates.tsv" in command
+    assert "--duplicates examples/prepared_wgd_handoff/duplicate_types.tsv" in command
+    assert "--outdir results/retention_enrichment_smoke" in command
+
+
 def test_default_checks_include_wgd_smoke_before_readiness():
     names = [check.name for check in default_checks()]
 

@@ -292,6 +292,17 @@ python bin/genefam/run_kaks_smoke.py \
 
 It writes `results/kaks_smoke/tables/normalized_kaks.tsv` and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
 
+The retention-enrichment smoke validates duplicate-type normalization, family duplicate classification, and enrichment statistics from the prepared WGD handoff example:
+
+```bash
+python bin/genefam/run_retention_enrichment_smoke.py \
+  --family-members examples/prepared_wgd_handoff/family_candidates.tsv \
+  --duplicates examples/prepared_wgd_handoff/duplicate_types.tsv \
+  --outdir results/retention_enrichment_smoke
+```
+
+It writes `results/retention_enrichment_smoke/tables/normalized_duplicate_types.tsv`, `results/retention_enrichment_smoke/tables/family_duplicate_classification.tsv`, and `results/retention_enrichment_smoke/tables/retention_enrichment.tsv`, and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+
 The offline WGD smoke check validates the gamma, beta, alpha, and theta named-event evidence path without external MCScanX or Ka/Ks tools:
 
 ```bash

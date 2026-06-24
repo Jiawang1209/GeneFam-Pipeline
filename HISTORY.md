@@ -4446,9 +4446,60 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports the standard identification branch achieved from `domain filter smoke, motif parser smoke, gene structure smoke, Python standard branch, and Nextflow standard branch smoke checks`; overall completion remains blocked only by missing `docker` and `apptainer`.
 
 Commit:
-- hash: pending
+- hash: ee15597019df46c5c6708e8d72ef5ba4b3e95de2
 - message: feat: add gene structure smoke
 - files: gene structure smoke helper, release gate, objective audit, README, release audit, tests, history
 
 Next:
 - Continue exposing standalone release evidence where broad objective items are still represented only indirectly.
+
+## 2026-06-25 - Add retention enrichment release smoke
+
+Context:
+- Duplicate-type retention enrichment was produced inside the WGD smoke and Nextflow duplication-retention branch, but the enrichment helper chain did not yet have an independent release smoke artifact.
+- The long objective explicitly includes retention enrichment analysis, so release evidence should expose duplicate normalization, family duplicate classification, and enrichment statistics directly.
+
+Decisions:
+- Add `bin/genefam/run_retention_enrichment_smoke.py` to reuse `normalize_duplicate_types.py`, `join_family_duplicates.py`, and `retention_enrichment.py`.
+- Use `examples/prepared_wgd_handoff/family_candidates.tsv` and `examples/prepared_wgd_handoff/duplicate_types.tsv` as the stable prepared-input contract.
+- Write `results/retention_enrichment_smoke/tables/normalized_duplicate_types.tsv`, `family_duplicate_classification.tsv`, and `retention_enrichment.tsv`.
+- Add `retention enrichment smoke` to the release gate after the Ka/Ks parser smoke and before the WGD event smoke.
+- Tighten the objective audit so Ka/Ks and retention analysis requires explicit retention enrichment smoke evidence.
+- Document the smoke in README and the release audit matrix.
+
+Added:
+- `bin/genefam/run_retention_enrichment_smoke.py`
+- `tests/test_run_retention_enrichment_smoke.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_retention_enrichment_smoke.py tests/test_run_release_checks.py::test_default_checks_include_retention_enrichment_smoke_before_wgd_smoke tests/test_audit_objective_completion.py::test_kaks_and_retention_analysis_requires_retention_enrichment_smoke tests/test_release_audit_docs.py -q` first failed because `run_retention_enrichment_smoke.py` did not exist, `retention enrichment smoke` was not in release checks, the objective audit still accepted retention evidence without it, and release audit did not mention `run_retention_enrichment_smoke.py`.
+- The same command passed with 4 tests after adding the smoke, release check, objective-audit requirement, and documentation.
+- `python bin/genefam/run_retention_enrichment_smoke.py --family-members examples/prepared_wgd_handoff/family_candidates.tsv --duplicates examples/prepared_wgd_handoff/duplicate_types.tsv --outdir results/retention_enrichment_smoke` exited `0` and printed `retention_enrichment	results/retention_enrichment_smoke/tables/retention_enrichment.tsv`.
+- `results/retention_enrichment_smoke/tables/retention_enrichment.tsv` contains `WGD/segmental	8	8	8	12	1.5000	0.0020202` plus dispersed, singleton, and tandem background rows with zero family counts.
+- `results/retention_enrichment_smoke/tables/family_duplicate_classification.tsv` classifies all eight prepared family genes as `WGD/segmental`.
+- `results/retention_enrichment_smoke/retention_enrichment_smoke.md` reports `Family genes: 8`, `Background genes: 12`, and `Enrichment rows: 4`.
+- `python -m pytest tests -q` passed with 235 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 23`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; `retention enrichment smoke` passed and lists `results/retention_enrichment_smoke/tables/retention_enrichment.tsv`.
+- `results/objective_audit/objective_audit.md` reports Ka/Ks and retention analysis achieved from `Ka/Ks parser smoke, retention enrichment smoke, and WGD/retention smoke outputs`; overall completion remains blocked only by missing `docker` and `apptainer`.
+
+Commit:
+- hash: pending
+- message: feat: add retention enrichment smoke
+- files: retention enrichment smoke helper, release gate, objective audit, README, release audit, tests, history
+
+Next:
+- Continue making broad objective items independently auditable while preserving Docker/Apptainer as the only current release blocker.

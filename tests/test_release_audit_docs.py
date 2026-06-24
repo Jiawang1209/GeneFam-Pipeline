@@ -80,6 +80,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "run_domain_filter_smoke.py" in text
     assert "run_motif_smoke.py" in text
     assert "run_kaks_smoke.py" in text
+    assert "run_retention_enrichment_smoke.py" in text
     assert "run_wgd_smoke.py" in text
     assert "run_synteny_smoke.py" in text
     assert "build_wgd_run_config_snapshot.py" in text
@@ -106,6 +107,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/domain_filter_smoke/tables/filtered_domains.tsv" in text
     assert "tests/fixtures/kaks/kaks_calculator.tsv" in text
     assert "results/kaks_smoke/tables/normalized_kaks.tsv" in text
+    assert "results/retention_enrichment_smoke/tables/retention_enrichment.tsv" in text
     assert "results/standard_expression_smoke/tables/family_expression.tsv" in text
     assert "results/standard_expression_smoke/plots/expression_heatmap.pdf" in text
     assert "tests/fixtures/expression/family_expression.tsv" in text
