@@ -63,6 +63,15 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "Reference governance audit",
+            [
+                python,
+                "bin/genefam/audit_reference_governance.py",
+                "--outdir",
+                "results/reference_governance",
+            ],
+        ),
+        CheckSpec(
             "mock MVP",
             [
                 python,

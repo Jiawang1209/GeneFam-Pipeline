@@ -4662,12 +4662,61 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
 
 Commit:
-- hash: pending
+- hash: f1cf6fcf4991b2ce561eb8de08cf7380883aedc8
 - message: docs: link delivery bundle from handoff report
 - files: handoff report helper, handoff tests, history
 
 Next:
 - Commit the handoff evidence update, then continue toward the final objective while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Add Reference governance release audit
+
+Context:
+- The long objective says `Reference/` is a read-only source area for papers and script templates.
+- The release evidence previously relied on broad pytest/documentation contracts, but did not explicitly detect tracked `Reference/` changes.
+- The workspace can contain many untracked reference source files, so the audit must allow untracked source material while still blocking tracked modifications, deletions, or staged changes.
+
+Decisions:
+- Add `bin/genefam/audit_reference_governance.py`.
+- Treat `git status --porcelain -- Reference` rows with `??` as allowed untracked source material and every other status as release-blocking tracked Reference changes.
+- Write `results/reference_governance/reference_governance.tsv` and `results/reference_governance/reference_governance.md`.
+- Add `Reference governance audit` to the release gate before runtime readiness.
+- Tighten the objective audit so `history and Reference governance` requires both pytest and the Reference governance audit.
+- Document the audit in `docs/release_audit.md`.
+
+Added:
+- `bin/genefam/audit_reference_governance.py`
+- `tests/test_audit_reference_governance.py`
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_reference_governance.py tests/test_run_release_checks.py::test_default_checks_include_reference_governance_before_readiness tests/test_audit_objective_completion.py::test_history_and_reference_governance_requires_reference_audit -q` first failed because the audit script did not exist, the release gate did not include `Reference governance audit`, and objective audit still marked Reference governance achieved from pytest alone.
+- `python -m pytest tests/test_audit_reference_governance.py tests/test_run_release_checks.py::test_default_checks_include_reference_governance_before_readiness tests/test_audit_objective_completion.py::test_history_and_reference_governance_requires_reference_audit tests/test_audit_objective_completion.py::test_audit_objective_completion_cli_writes_outputs tests/test_release_audit_docs.py -q` passed with 6 tests after adding the audit, release-gate check, objective-audit requirement, and release-audit documentation.
+- `python -m pytest tests -q` passed with 244 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 25`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; the embedded pytest check reports `244 passed`.
+- `results/reference_governance/reference_governance.md` reports `Tracked changes: 0` and `Untracked reference files: 1`.
+- `results/objective_audit/objective_audit.md` reports history and Reference governance achieved from `pytest, documentation contracts, and Reference governance audit`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocker remains missing `docker` and `apptainer`.
+
+Commit:
+- hash: pending
+- message: feat: add Reference governance audit
+- files: Reference governance audit, release gate, objective audit, release audit docs, tests, history
+
+Next:
+- Commit the Reference governance audit, then continue toward the final objective while Docker/Apptainer remains the external runtime blocker.
 
 ## 2026-06-25 - Add species selection release smoke
 

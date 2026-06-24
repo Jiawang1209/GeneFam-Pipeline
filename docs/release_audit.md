@@ -64,6 +64,8 @@ python bin/genefam/audit_objective_completion.py \
   --release-checks results/release_checks/release_checks.tsv \
   --readiness results/readiness/command_readiness.tsv \
   --outdir results/objective_audit
+python bin/genefam/audit_reference_governance.py \
+  --outdir results/reference_governance
 ```
 
 The readiness audit may exit non-zero when runtime commands are missing; inspect the TSV for exact missing tools and use the bootstrap planner to generate next-step commands.
@@ -78,6 +80,8 @@ The release checks runner writes:
 - `results/container_materials/container_materials.md`
 - `results/objective_audit/objective_audit.tsv`
 - `results/objective_audit/objective_audit.md`
+- `results/reference_governance/reference_governance.tsv`
+- `results/reference_governance/reference_governance.md`
 - `results/nextflow_single_tool_smoke/nextflow_single_tool_smoke.tsv`
 - `results/nextflow_single_tool_smoke/nextflow_single_tool_smoke.md`
 - `results/container_profile_smoke/docker/container_profile_smoke.tsv`
@@ -102,6 +106,7 @@ The Markdown summary reports `Required failed` and `Optional failed` separately.
 | Docker/Conda reproducible running | `Dockerfile`; `envs/GeneFamilyFlow.conda.yaml`; `envs/GeneFamilyFlow.linux-64.conda.yaml`; `bin/genefam/audit_container_materials.py`; `bin/genefam/plan_runtime_bootstrap.py`; `workflows/nextflow.config` profiles `local`, `docker`, `apptainer`; `results/container_materials/container_materials.tsv`; `results/container_materials/container_materials.md` | `python bin/genefam/audit_container_materials.py --outdir results/container_materials`, `python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv`, and `python bin/genefam/plan_runtime_bootstrap.py --readiness results/readiness/command_readiness.tsv --outdir results/readiness` |
 | container profile smoke verification | `bin/genefam/run_container_profile_smoke.py`; `workflows/nextflow.config` profiles `docker`, `apptainer`; `results/container_profile_smoke/docker/container_profile_smoke.md`; `results/container_profile_smoke/apptainer/container_profile_smoke.md` | `python bin/genefam/run_container_profile_smoke.py --profile docker --conda-env GeneFamilyFlow --outdir results/container_profile_smoke/docker` and `python bin/genefam/run_container_profile_smoke.py --profile apptainer --conda-env GeneFamilyFlow --outdir results/container_profile_smoke/apptainer` |
 | long objective completion audit | `bin/genefam/audit_objective_completion.py`; `results/objective_audit/objective_audit.tsv`; `results/objective_audit/objective_audit.md` | `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` |
+| history and Reference governance | `HISTORY.md`; `Reference/`; `bin/genefam/audit_reference_governance.py`; `results/reference_governance/reference_governance.tsv`; `results/reference_governance/reference_governance.md` | `python bin/genefam/audit_reference_governance.py --outdir results/reference_governance` and `python -m pytest tests/test_audit_reference_governance.py -q` |
 | quickstart handoff for users | `bin/genefam/run_quickstart.py`; `bin/genefam/run_delivery_bundle.py`; `docs/quickstart.md`; `README.md`; `results/quickstart/quickstart_summary.md`; `results/delivery_bundle/delivery_manifest.tsv`; `results/delivery_bundle/delivery_bundle.md`; `results/release_checks/release_checks.md`; `results/standard_smoke/report/final_report.md`; `results/example_prepared_wgd/report/final_report.md` | `python bin/genefam/run_quickstart.py --conda-env GeneFamilyFlow --outdir results/quickstart`, `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle`, and `python -m pytest tests/test_quickstart_docs.py tests/test_release_audit_docs.py -q` |
 | species bank input model | `docs/input_contract.md`; `bin/genefam/discover_species.py`; `bin/genefam/run_species_selection_smoke.py`; `tests/fixtures/species_bank`; `results/species_selection_smoke/tables/species_manifest.tsv` | `python bin/genefam/run_species_selection_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --outdir results/species_selection_smoke` and `python -m pytest tests/test_discover_species.py -q` |
 | target species selection | `configs/species_groups.yaml`; `species.include`; `species.exclude`; `run.species_group`; `results/species_selection_smoke/tables/run_plan.tsv` | `python bin/genefam/run_species_selection_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --outdir results/species_selection_smoke` and `python -m pytest tests/test_discover_species.py tests/test_build_run_plan.py tests/test_run_species_selection_smoke.py -q` |

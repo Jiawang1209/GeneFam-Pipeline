@@ -169,10 +169,10 @@ def build_objective_audit(
             "Final Markdown reports are produced for both standard and WGD handoff paths.",
         ),
         _achieved_if(
-            release.get("pytest") == "passed",
+            _all_passed(release, ["pytest", "Reference governance audit"]),
             "history and Reference governance",
-            "pytest and documentation contracts",
-            "Development history is maintained; Reference remains a read-only source area.",
+            "pytest, documentation contracts, and Reference governance audit",
+            "Development history is maintained; tracked Reference/ changes are release-blocking while untracked source material remains allowed.",
         ),
     ]
     return rows

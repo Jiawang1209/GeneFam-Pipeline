@@ -171,6 +171,17 @@ def test_default_checks_generate_runtime_bootstrap_after_readiness_audit():
     assert "--readiness results/readiness/command_readiness.tsv" in " ".join(bootstrap.command)
 
 
+def test_default_checks_include_reference_governance_before_readiness():
+    checks = default_checks()
+    names = [check.name for check in checks]
+
+    assert names.index("Reference governance audit") < names.index("readiness audit")
+    governance = next(check for check in checks if check.name == "Reference governance audit")
+    command = " ".join(governance.command)
+    assert "bin/genefam/audit_reference_governance.py" in command
+    assert "--outdir results/reference_governance" in command
+
+
 def test_default_checks_include_optional_container_profile_smokes_after_bootstrap():
     checks = default_checks()
     names = [check.name for check in checks]

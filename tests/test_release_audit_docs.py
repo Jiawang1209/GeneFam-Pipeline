@@ -43,6 +43,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
         "python bin/genefam/plan_runtime_bootstrap.py",
         "python bin/genefam/audit_container_materials.py",
         "python bin/genefam/audit_objective_completion.py",
+        "python bin/genefam/audit_reference_governance.py",
         "python bin/genefam/run_nextflow_single_tool_smoke.py",
         "python bin/genefam/run_container_profile_smoke.py --profile docker",
         "python bin/genefam/run_container_profile_smoke.py --profile apptainer",
@@ -65,6 +66,9 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/handoff/handoff_report.md" in text
     assert "results/handoff/handoff_summary.tsv" in text
     assert "run_delivery_bundle.py" in text
+    assert "audit_reference_governance.py" in text
+    assert "results/reference_governance/reference_governance.tsv" in text
+    assert "results/reference_governance/reference_governance.md" in text
     assert "results/delivery_bundle/delivery_manifest.tsv" in text
     assert "results/delivery_bundle/delivery_bundle.md" in text
     assert "docs/quickstart.md" in text

@@ -51,6 +51,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
         _release_row("Nextflow WGD event smoke"),
         _release_row("prepared WGD handoff example"),
         _release_row("quickstart handoff"),
+        _release_row("Reference governance audit"),
         _release_row("readiness audit", status="failed"),
         _release_row("runtime bootstrap plan"),
         _release_row("container materials audit"),
@@ -102,6 +103,29 @@ def test_yaml_driven_species_selection_requires_species_selection_smoke():
 
     assert by_requirement["YAML-driven species selection"]["status"] == "missing"
     assert "species selection smoke" in by_requirement["YAML-driven species selection"]["evidence"]
+
+
+def test_history_and_reference_governance_requires_reference_audit():
+    release_rows = [
+        _release_row("pytest"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["history and Reference governance"]["status"] == "missing"
+    assert "Reference governance audit" in by_requirement["history and Reference governance"]["evidence"]
 
 
 def test_standard_identification_branch_requires_domain_filter_smoke():
@@ -390,6 +414,7 @@ def test_audit_objective_completion_cli_writes_outputs(tmp_path):
         "Nextflow WGD event smoke\ttrue\tpassed\t0\tnextflow\t\n"
         "prepared WGD handoff example\ttrue\tpassed\t0\tprepared\t\n"
         "quickstart handoff\ttrue\tpassed\t0\tquickstart\t\n"
+        "Reference governance audit\ttrue\tpassed\t0\treference\t\n"
         "readiness audit\ttrue\tfailed\t1\treadiness\t\n",
         encoding="utf-8",
     )
