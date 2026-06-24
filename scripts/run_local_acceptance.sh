@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -u
+
+PYTHON_BIN=${PYTHON_BIN:-python}
+CONDA_ENV=${CONDA_ENV:-GeneFamilyFlow}
+RELEASE_OUTDIR=${RELEASE_OUTDIR:-results/release_checks}
+QUICKSTART_OUTDIR=${QUICKSTART_OUTDIR:-results/quickstart}
+
+echo "[GeneFam] Running release gate into ${RELEASE_OUTDIR}"
+"$PYTHON_BIN" bin/genefam/run_release_checks.py --outdir "$RELEASE_OUTDIR"
+release_status=$?
+
+echo "[GeneFam] Running quickstart handoff into ${QUICKSTART_OUTDIR}"
+"$PYTHON_BIN" bin/genefam/run_quickstart.py \
+  --conda-env "$CONDA_ENV" \
+  --outdir "$QUICKSTART_OUTDIR"
+quickstart_status=$?
+
+echo "[GeneFam] Primary handoff files:"
+echo "- results/handoff/handoff_report.md"
+echo "- results/handoff/handoff_summary.tsv"
+echo "- ${RELEASE_OUTDIR}/release_checks.md"
+echo "- ${QUICKSTART_OUTDIR}/quickstart_summary.md"
+
+if [ "$release_status" -ne 0 ]; then
+  echo "[GeneFam] Release gate exited with status ${release_status}."
+  echo "[GeneFam] Inspect results/handoff/handoff_report.md for blockers."
+fi
+
+if [ "$quickstart_status" -ne 0 ]; then
+  echo "[GeneFam] Quickstart handoff exited with status ${quickstart_status}."
+fi
+
+if [ "$release_status" -ne 0 ]; then
+  exit "$release_status"
+fi
+
+exit "$quickstart_status"

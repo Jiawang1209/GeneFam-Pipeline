@@ -71,6 +71,7 @@ Runtime files:
 Readiness audit:
 
 ```bash
+bash scripts/run_local_acceptance.sh
 python bin/genefam/run_release_checks.py --outdir results/release_checks
 python bin/genefam/run_nextflow_smoke.py --outdir results/nextflow_smoke
 python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv
@@ -80,6 +81,8 @@ python bin/genefam/plan_runtime_bootstrap.py \
 ```
 
 The release checks runner writes TSV and Markdown summaries. The Nextflow smoke writes `results/nextflow_smoke/nextflow_smoke.md`; it runs the mock MVP through Nextflow when Nextflow is installed and otherwise records a `missing_nextflow` blocker. The readiness audit writes a TSV report and exits non-zero when required runtime commands are missing. The bootstrap planner converts the TSV into `results/readiness/runtime_bootstrap_plan.md` and `results/readiness/runtime_bootstrap.sh`. The static container-materials audit writes `results/container_materials/container_materials.md` and checks the Dockerfile, Linux Conda environment, and Nextflow container profile contracts before Docker/Apptainer are installed.
+
+`bash scripts/run_local_acceptance.sh` is the shortest local acceptance entrypoint: it runs the release gate, then runs the quickstart handoff so `results/handoff/handoff_report.md`, `results/handoff/handoff_summary.tsv`, and `results/quickstart/quickstart_summary.md` are refreshed even when the release gate remains blocked by missing Docker/Apptainer commands.
 
 When Docker and Apptainer are available, run the generated bootstrap script to build the local Docker image, build the local Apptainer SIF, smoke-test both container profiles, and rerun the release gate:
 

@@ -12,6 +12,20 @@ This is the shortest verified path for checking GeneFam-Pipeline on this machine
 
 ## 1. Run The Release Gate
 
+For a local acceptance pass that runs the release gate and then still writes the quickstart handoff artifacts even when the current machine is runtime-blocked, use:
+
+```bash
+bash scripts/run_local_acceptance.sh
+```
+
+Optional overrides:
+
+```bash
+PYTHON_BIN=/Users/liuyue/miniforge3/bin/python \
+CONDA_ENV=GeneFamilyFlow \
+bash scripts/run_local_acceptance.sh
+```
+
 ```bash
 python bin/genefam/run_release_checks.py --outdir results/release_checks
 ```

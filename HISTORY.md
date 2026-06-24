@@ -3783,9 +3783,51 @@ Verification:
 - `results/standard_smoke/report/final_report.md` and `results/nextflow_standard_smoke/standard/report/final_report.md` both list `motif_summary` as available.
 
 Commit:
+- hash: 4381bb97712d2d344cd9be208137a76f956e97a2
+- message: feat: surface motif summary in standard reports
+- files: motif summary report integration, MEME fixture, Nextflow wiring, standard smoke, docs, tests, history
+
+Next:
+- Keep standard-branch report evidence aligned with each major analysis module: if a module is part of the user-facing workflow, its output should appear in the report index or an explicit missing/blocked row.
+
+## 2026-06-25 - Add local acceptance entrypoint
+
+Context:
+- The long objective now has many evidence-producing commands: release checks, objective audit, quickstart handoff, Nextflow smokes, and runtime bootstrap.
+- The repository is usable on the current machine except for Docker/Apptainer reproducibility, so a single local acceptance command should refresh the release evidence and still write handoff artifacts when the release gate exits non-zero.
+- A script-level entrypoint makes the final workflow easier to rerun without copying several commands from README or quickstart docs.
+
+Decisions:
+- Add `scripts/run_local_acceptance.sh` as a small Bash wrapper around the release gate and quickstart handoff.
+- Keep the release gate status authoritative: if Docker/Apptainer are still missing, the script exits with the release-gate status after printing the handoff files to inspect.
+- Allow `PYTHON_BIN`, `CONDA_ENV`, `RELEASE_OUTDIR`, and `QUICKSTART_OUTDIR` overrides so the same script works with `/Users/liuyue/miniforge3/bin/python`, `GeneFamilyFlow`, and custom result folders.
+- Document the script in `docs/quickstart.md` and README as the shortest local acceptance entrypoint.
+
+Added:
+- `scripts/run_local_acceptance.sh`
+- `tests/test_local_acceptance_script.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/quickstart.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_local_acceptance_script.py -q` first failed because `scripts/run_local_acceptance.sh` did not exist and `docs/quickstart.md` did not mention the script.
+- `python -m pytest tests/test_local_acceptance_script.py -q` passed with 2 tests after adding the script and docs.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected on this machine, after running the release gate and quickstart handoff.
+- `results/release_checks/release_checks.md` reports `Passed: 14`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; the remaining required failure is the readiness audit for missing `docker` and `apptainer`.
+- `results/quickstart/quickstart_summary.md` reports both `standard_branch_smoke` and `prepared_wgd_handoff` as passed.
+- `results/handoff/handoff_report.md` reports `Docker/Apptainer reproducibility` as the only blocked requirement and points to `bash results/readiness/runtime_bootstrap.sh`.
+- `python -m pytest tests -q` passed with 201 tests.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Keep standard-branch report evidence aligned with each major analysis module: if a module is part of the user-facing workflow, its output should appear in the report index or an explicit missing/blocked row.
+- Run the focused script test, then run the local acceptance script with the known Python path to refresh release and quickstart evidence.
