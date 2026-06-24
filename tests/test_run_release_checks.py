@@ -297,6 +297,17 @@ def test_default_checks_include_standard_branch_smoke_before_readiness():
     assert "--outdir results/standard_smoke" in " ".join(smoke.command)
 
 
+def test_default_checks_include_domain_filter_smoke_before_standard_branch_smoke():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("domain filter smoke") < names.index("standard branch smoke")
+    smoke = next(check for check in default_checks() if check.name == "domain filter smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_domain_filter_smoke.py" in command
+    assert "--input tests/fixtures/hmmer_domains/domains.tsv" in command
+    assert "--outdir results/domain_filter_smoke" in command
+
+
 def test_default_checks_include_standard_branch_expression_smoke_before_readiness():
     names = [check.name for check in default_checks()]
 

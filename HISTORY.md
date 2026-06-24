@@ -4145,9 +4145,62 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports WGD gamma/beta/alpha/theta evidence achieved from `synteny parser smoke, WGD event smoke, and prepared WGD handoff checks`; overall completion remains blocked only by missing `docker` and `apptainer`.
 
 Commit:
+- hash: 21bfc9d5a7121272b1b46866ea7d9334e1a50501
+- message: feat: add synteny parser smoke
+- files: synteny smoke helper, MCScanX fixture, release gate, objective audit, docs, tests, history
+
+Next:
+- Keep prepared-table WGD inputs traceable to parser-level artifacts such as MCScanX collinearity outputs.
+
+## 2026-06-25 - Add domain filter release smoke
+
+Context:
+- Domain filtering is an explicit target module and had unit coverage, but the release gate did not yet produce a filtered HMMER-domain artifact.
+- The standard branch depends on HMMER domain thresholds before downstream candidate merging and reporting.
+
+Decisions:
+- Add a normalized HMMER domain fixture with passing and failing rows.
+- Add `bin/genefam/run_domain_filter_smoke.py` to apply e-value, bitscore, and domain-coverage thresholds and write `tables/filtered_domains.tsv`.
+- Add `domain filter smoke` to the release gate before the standard branch smoke.
+- Tighten the objective audit so the standard identification branch requires domain filter smoke evidence.
+- Document the smoke in README and release audit.
+
+Added:
+- `bin/genefam/run_domain_filter_smoke.py`
+- `tests/fixtures/hmmer_domains/domains.tsv`
+- `tests/test_run_domain_filter_smoke.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_domain_filter_smoke.py tests/test_run_release_checks.py::test_default_checks_include_domain_filter_smoke_before_standard_branch_smoke tests/test_audit_objective_completion.py::test_standard_identification_branch_requires_domain_filter_smoke -q` first failed because `run_domain_filter_smoke.py` did not exist, `domain filter smoke` was not in release checks, and the standard identification audit did not require domain filter evidence.
+- The same command initially left one failure because the audit evidence text did not use the exact `domain filter smoke` check name.
+- `python -m pytest tests/test_run_domain_filter_smoke.py tests/test_run_release_checks.py::test_default_checks_include_domain_filter_smoke_before_standard_branch_smoke tests/test_audit_objective_completion.py::test_standard_identification_branch_requires_domain_filter_smoke -q` passed with 3 tests after adding the smoke and tightening the audit wording.
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because release audit did not mention `run_domain_filter_smoke.py`.
+- `python -m pytest tests/test_run_domain_filter_smoke.py tests/test_run_release_checks.py::test_default_checks_include_domain_filter_smoke_before_standard_branch_smoke tests/test_audit_objective_completion.py::test_standard_identification_branch_requires_domain_filter_smoke tests/test_release_audit_docs.py -q` passed with 4 tests after documenting the smoke.
+- `python bin/genefam/run_domain_filter_smoke.py --input tests/fixtures/hmmer_domains/domains.tsv --max-evalue 1e-10 --min-bitscore 50 --min-domain-coverage 0.5 --outdir results/domain_filter_smoke` exited `0` and printed `filtered_domains	results/domain_filter_smoke/tables/filtered_domains.tsv`.
+- `results/domain_filter_smoke/tables/filtered_domains.tsv` contains the two retained HMMER domain rows after thresholding.
+- `results/domain_filter_smoke/domain_filter_smoke.md` reports `Input domains: 4` and `Filtered domains: 2`.
+- `python -m pytest tests -q` passed with 217 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 17`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; `domain filter smoke` passed and lists `results/domain_filter_smoke/tables/filtered_domains.tsv`.
+- `results/objective_audit/objective_audit.md` reports the standard identification branch achieved from `domain filter smoke, Python standard branch, and Nextflow standard branch smoke checks`; overall completion remains blocked only by missing `docker` and `apptainer`.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Keep prepared-table WGD inputs traceable to parser-level artifacts such as MCScanX collinearity outputs.
+- Keep standard-branch release evidence close to the actual decision points: domain filtering, candidate merging, summaries, plots, and reports.

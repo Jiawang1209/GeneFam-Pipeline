@@ -166,6 +166,19 @@ nextflow run workflows/main.nf \
 
 This branch builds HMMER and DIAMOND input tables from the YAML config and species manifest, runs evidence detection per species, merges candidate evidence, concatenates family candidate tables, writes `run_config_snapshot.tsv` for the selected species and tool settings, summarizes copy numbers, extracts `family_members.faa`, prepares alignment and phylogeny manifests, parses `motif_summary.tsv` from the MEME text file supplied by `--meme_txt`, summarizes `gene_structure_summary.tsv` from species-bank GFF3 annotations, extracts `chromosome_locations.tsv`, optionally subsets a `family_expression` matrix when `--expression_matrix` is supplied, creates the family-count plot, writes a standard report index, and assembles `final_report.md`.
 
+The domain filter smoke validates the normalized HMMER evidence thresholding step before standard candidate merging:
+
+```bash
+python bin/genefam/run_domain_filter_smoke.py \
+  --input tests/fixtures/hmmer_domains/domains.tsv \
+  --max-evalue 1e-10 \
+  --min-bitscore 50 \
+  --min-domain-coverage 0.5 \
+  --outdir results/domain_filter_smoke
+```
+
+It writes `results/domain_filter_smoke/tables/filtered_domains.tsv` and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+
 The offline standard-branch smoke check exercises the same post-identification reporting chain without requiring HMMER, DIAMOND, MAFFT, or IQ-TREE:
 
 ```bash

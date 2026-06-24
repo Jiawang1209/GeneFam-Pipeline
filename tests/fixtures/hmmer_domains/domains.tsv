@@ -1,0 +1,5 @@
+species_id	gene_id	hmm_id	hmm_length	hmm_from	hmm_to	ali_from	ali_to	domain_coverage	evalue	bitscore
+Arabidopsis_thaliana	AT1G01010	PF00657	200	1	180	5	190	0.9000	1e-40	100.0
+Arabidopsis_thaliana	AT1G01020	PF00657	200	1	160	3	175	0.8000	1e-4	95.0
+Brassica_rapa	BraA010001	PF00657	200	10	190	12	210	0.9050	1e-35	120.0
+Brassica_rapa	BraA010002	PF00657	200	1	70	4	90	0.3500	1e-45	110.0

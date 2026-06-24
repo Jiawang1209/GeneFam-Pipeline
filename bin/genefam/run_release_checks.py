@@ -64,6 +64,23 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "domain filter smoke",
+            [
+                python,
+                "bin/genefam/run_domain_filter_smoke.py",
+                "--input",
+                "tests/fixtures/hmmer_domains/domains.tsv",
+                "--max-evalue",
+                "1e-10",
+                "--min-bitscore",
+                "50",
+                "--min-domain-coverage",
+                "0.5",
+                "--outdir",
+                "results/domain_filter_smoke",
+            ],
+        ),
+        CheckSpec(
             "standard branch smoke",
             [
                 python,
