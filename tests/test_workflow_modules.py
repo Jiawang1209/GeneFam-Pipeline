@@ -79,6 +79,8 @@ def test_standard_postprocess_module_extracts_family_sequences_and_report_index(
 def test_main_workflow_wires_standard_identification_branch():
     workflow = Path("workflows/main.nf").read_text(encoding="utf-8")
 
+    assert "def asBooleanParam(value)" in workflow
+    assert "if (asBooleanParam(params.mock_external_tools))" in workflow
     assert "include { BUILD_IDENTIFICATION_INPUTS } from './modules/identification_inputs.nf'" in workflow
     assert "include { EXTRACT_FAMILY_SEQUENCES; BUILD_STANDARD_REPORT_INDEX; ASSEMBLE_STANDARD_REPORT } from './modules/standard_postprocess.nf'" in workflow
     assert "include { HMMER_SEARCH } from './modules/hmmer_search.nf'" in workflow
@@ -93,19 +95,20 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "} else if (params.run_identification) {" in workflow
     assert "BUILD_IDENTIFICATION_INPUTS(config_ch, PREPARE_SPECIES.out)" in workflow
     assert "species_ids_ch = PREPARE_SPECIES.out" in workflow
-    assert "if (params.use_hmmer)" in workflow
-    assert "if (params.use_diamond)" in workflow
+    assert "if (asBooleanParam(params.use_hmmer))" in workflow
+    assert "if (asBooleanParam(params.use_diamond))" in workflow
     assert "HMMER_SEARCH(hmmer_inputs_ch)" in workflow
     assert "EMPTY_HMMER_EVIDENCE(species_ids_ch)" in workflow
     assert "DIAMOND_SEARCH(diamond_inputs_ch)" in workflow
     assert "EMPTY_DIAMOND_EVIDENCE(species_ids_ch)" in workflow
     assert "joined_evidence_ch = hmmer_evidence_ch" in workflow
     assert ".join(diamond_evidence_ch, by: 0)" in workflow
-    assert "if (params.mock_external_tools)" in workflow
+    assert "if (asBooleanParam(params.mock_external_tools))" in workflow
     assert "MOCK_IDENTIFICATION_EVIDENCE(mock_evidence_ch)" in workflow
     assert "joined_evidence_ch = MOCK_IDENTIFICATION_EVIDENCE.out" in workflow
     assert "DOMAIN_FILTER(joined_evidence_ch, final_rule_ch)" in workflow
     assert "CONCAT_FAMILY_CANDIDATES(candidate_tables_ch.collect())" in workflow
+    assert "if (!asBooleanParam(params.standard_stop_after_family_candidates))" in workflow
     assert "FAMILY_SUMMARY(CONCAT_FAMILY_CANDIDATES.out)" in workflow
     assert "EXTRACT_FAMILY_SEQUENCES(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)" in workflow
     assert "PREPARE_ALIGNMENT_INPUTS(family_name_ch, EXTRACT_FAMILY_SEQUENCES.out, aligner_ch, alignment_outdir_ch)" in workflow

@@ -4,7 +4,8 @@ import sys
 from bin.genefam.run_nextflow_standard_smoke import (
     build_nextflow_command,
     expected_published_outputs,
-    load_identification_params,
+    expected_single_tool_outputs,
+    load_standard_params,
 )
 
 
@@ -37,6 +38,8 @@ def test_build_nextflow_command_targets_standard_identification_branch():
         "intersection",
         "--mock_external_tools",
         "true",
+        "--standard_stop_after_family_candidates",
+        "false",
         "--mock_evidence_dir",
         "tests/fixtures/mock_evidence",
         "--outdir",
@@ -75,6 +78,8 @@ def test_build_nextflow_command_passes_identification_params():
         use_hmmer=False,
         use_diamond=True,
         final_rule="union",
+        mock_external_tools=False,
+        stop_after_family_candidates=True,
     )
 
     assert "--use_hmmer" in command
@@ -83,6 +88,10 @@ def test_build_nextflow_command_passes_identification_params():
     assert command[command.index("--use_diamond") + 1] == "true"
     assert "--final_rule" in command
     assert command[command.index("--final_rule") + 1] == "union"
+    assert "--mock_external_tools" in command
+    assert command[command.index("--mock_external_tools") + 1] == "false"
+    assert "--standard_stop_after_family_candidates" in command
+    assert command[command.index("--standard_stop_after_family_candidates") + 1] == "true"
 
 
 def test_build_nextflow_command_preserves_string_boolean_params():
@@ -100,7 +109,7 @@ def test_build_nextflow_command_preserves_string_boolean_params():
     assert command[command.index("--use_diamond") + 1] == "true"
 
 
-def test_load_identification_params_reads_yaml_tool_flags(tmp_path):
+def test_load_standard_params_reads_yaml_tool_and_mock_flags(tmp_path):
     config = tmp_path / "disabled_hmmer.yaml"
     config.write_text(
         "\n".join(
@@ -109,15 +118,18 @@ def test_load_identification_params_reads_yaml_tool_flags(tmp_path):
                 "  use_hmmer: false",
                 "  use_diamond: true",
                 "  final_rule: union",
+                "dev:",
+                "  mock_external_tools: false",
             ]
         ),
         encoding="utf-8",
     )
 
-    assert load_identification_params(config) == {
+    assert load_standard_params(config) == {
         "use_hmmer": "false",
         "use_diamond": "true",
         "final_rule": "union",
+        "mock_external_tools": "false",
     }
 
 
@@ -137,6 +149,15 @@ def test_expected_published_outputs_cover_standard_user_results(tmp_path):
         standard_outdir / "report/final_report.md",
         standard_outdir / "plots/family_counts.pdf",
         standard_outdir / "plots/family_counts.png",
+    ]
+
+
+def test_expected_single_tool_outputs_stop_after_family_candidates(tmp_path):
+    standard_outdir = tmp_path / "standard"
+
+    assert expected_single_tool_outputs(standard_outdir) == [
+        standard_outdir / "tables/species_manifest.tsv",
+        standard_outdir / "tables/family_candidates.tsv",
     ]
 
 

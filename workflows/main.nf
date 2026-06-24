@@ -39,6 +39,13 @@ include {
     ASSEMBLE_WGD_REPORT
 } from './modules/duplication_retention.nf'
 
+def asBooleanParam(value) {
+    if (value instanceof Boolean) {
+        return value
+    }
+    return value?.toString()?.trim()?.toLowerCase() in ['true', '1', 'yes', 'on']
+}
+
 workflow {
     if (!params.config) {
         error "Missing required parameter: --config configs/example.config.yaml"
@@ -96,7 +103,7 @@ workflow {
         alignment_outdir_ch = Channel.value("${params.outdir}/alignment")
         phylogeny_outdir_ch = Channel.value("${params.outdir}/phylogeny")
 
-        if (params.mock_external_tools) {
+        if (asBooleanParam(params.mock_external_tools)) {
             mock_evidence_ch = Channel.value(file(params.mock_evidence_dir))
             MOCK_IDENTIFICATION_EVIDENCE(mock_evidence_ch)
             joined_evidence_ch = MOCK_IDENTIFICATION_EVIDENCE.out
@@ -115,7 +122,7 @@ workflow {
                 .splitCsv(header: true, sep: '\t')
                 .map { row -> tuple(row.species_id, file(row.pep), file(row.reference_peptides)) }
 
-            if (params.use_hmmer) {
+            if (asBooleanParam(params.use_hmmer)) {
                 HMMER_SEARCH(hmmer_inputs_ch)
                 hmmer_evidence_ch = HMMER_SEARCH.out
             } else {
@@ -123,7 +130,7 @@ workflow {
                 hmmer_evidence_ch = EMPTY_HMMER_EVIDENCE.out
             }
 
-            if (params.use_diamond) {
+            if (asBooleanParam(params.use_diamond)) {
                 DIAMOND_SEARCH(diamond_inputs_ch)
                 diamond_evidence_ch = DIAMOND_SEARCH.out
             } else {
@@ -139,37 +146,41 @@ workflow {
         DOMAIN_FILTER(joined_evidence_ch, final_rule_ch)
         candidate_tables_ch = DOMAIN_FILTER.out.map { species_id, candidates -> candidates }
         CONCAT_FAMILY_CANDIDATES(candidate_tables_ch.collect())
-        FAMILY_SUMMARY(CONCAT_FAMILY_CANDIDATES.out)
-        EXTRACT_FAMILY_SEQUENCES(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
-        PREPARE_ALIGNMENT_INPUTS(family_name_ch, EXTRACT_FAMILY_SEQUENCES.out, aligner_ch, alignment_outdir_ch)
-        PREPARE_PHYLOGENY_INPUTS(PREPARE_ALIGNMENT_INPUTS.out, tree_builder_ch, phylogeny_outdir_ch)
-        EXTRACT_CHROMOSOME_LOCATIONS(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
-        family_expression_report_ch = Channel.value("")
-        if (params.expression_matrix) {
-            expression_matrix_ch = Channel.value(file(params.expression_matrix))
-            SUBSET_EXPRESSION_MATRIX(CONCAT_FAMILY_CANDIDATES.out, expression_matrix_ch)
-            family_expression_report_ch = SUBSET_EXPRESSION_MATRIX.out
-        }
-        PLOT_FAMILY_COUNTS(FAMILY_SUMMARY.out)
-        BUILD_PLOT_MANIFEST()
-        BUILD_STANDARD_REPORT_INDEX(
-            PREPARE_SPECIES.out,
-            CONCAT_FAMILY_CANDIDATES.out,
-            FAMILY_SUMMARY.out,
-            EXTRACT_FAMILY_SEQUENCES.out,
-            PREPARE_ALIGNMENT_INPUTS.out,
-            PREPARE_PHYLOGENY_INPUTS.out,
-            EXTRACT_CHROMOSOME_LOCATIONS.out,
-            family_expression_report_ch,
-            BUILD_PLOT_MANIFEST.out
-        )
-        ASSEMBLE_STANDARD_REPORT(project_name_ch, family_name_ch, BUILD_STANDARD_REPORT_INDEX.out, BUILD_PLOT_MANIFEST.out)
 
         PREPARE_SPECIES.out.view { manifest -> "Species manifest: ${manifest}" }
         CONCAT_FAMILY_CANDIDATES.out.view { candidates -> "Family candidates: ${candidates}" }
-        FAMILY_SUMMARY.out.view { counts -> "Family counts: ${counts}" }
-        BUILD_STANDARD_REPORT_INDEX.out.view { report_index -> "Report index: ${report_index}" }
-        ASSEMBLE_STANDARD_REPORT.out.view { report -> "Final report: ${report}" }
+
+        if (!asBooleanParam(params.standard_stop_after_family_candidates)) {
+            FAMILY_SUMMARY(CONCAT_FAMILY_CANDIDATES.out)
+            EXTRACT_FAMILY_SEQUENCES(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
+            PREPARE_ALIGNMENT_INPUTS(family_name_ch, EXTRACT_FAMILY_SEQUENCES.out, aligner_ch, alignment_outdir_ch)
+            PREPARE_PHYLOGENY_INPUTS(PREPARE_ALIGNMENT_INPUTS.out, tree_builder_ch, phylogeny_outdir_ch)
+            EXTRACT_CHROMOSOME_LOCATIONS(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
+            family_expression_report_ch = Channel.value("")
+            if (params.expression_matrix) {
+                expression_matrix_ch = Channel.value(file(params.expression_matrix))
+                SUBSET_EXPRESSION_MATRIX(CONCAT_FAMILY_CANDIDATES.out, expression_matrix_ch)
+                family_expression_report_ch = SUBSET_EXPRESSION_MATRIX.out
+            }
+            PLOT_FAMILY_COUNTS(FAMILY_SUMMARY.out)
+            BUILD_PLOT_MANIFEST()
+            BUILD_STANDARD_REPORT_INDEX(
+                PREPARE_SPECIES.out,
+                CONCAT_FAMILY_CANDIDATES.out,
+                FAMILY_SUMMARY.out,
+                EXTRACT_FAMILY_SEQUENCES.out,
+                PREPARE_ALIGNMENT_INPUTS.out,
+                PREPARE_PHYLOGENY_INPUTS.out,
+                EXTRACT_CHROMOSOME_LOCATIONS.out,
+                family_expression_report_ch,
+                BUILD_PLOT_MANIFEST.out
+            )
+            ASSEMBLE_STANDARD_REPORT(project_name_ch, family_name_ch, BUILD_STANDARD_REPORT_INDEX.out, BUILD_PLOT_MANIFEST.out)
+
+            FAMILY_SUMMARY.out.view { counts -> "Family counts: ${counts}" }
+            BUILD_STANDARD_REPORT_INDEX.out.view { report_index -> "Report index: ${report_index}" }
+            ASSEMBLE_STANDARD_REPORT.out.view { report -> "Final report: ${report}" }
+        }
     } else {
         PREPARE_SPECIES(config_ch, groups_ch)
 

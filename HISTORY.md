@@ -3474,9 +3474,66 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
 
 Commit:
+- hash: 26f6af888f258e607811c3b58daea702062bfe31
+- message: feat: pass identification flags to standard smoke
+- files: standard smoke YAML param propagation, command builder tests, history
+
+Next:
+- Continue expanding focused smoke coverage for single-tool standard routing and keep Docker/Apptainer as the explicit release blocker.
+
+## 2026-06-25 - Add single-tool Nextflow standard smoke
+
+Context:
+- The standard branch now supports `identification.use_hmmer` and `identification.use_diamond`, but the existing Nextflow standard smoke used `mock_external_tools` and did not exercise the real single-tool routing paths.
+- Passing `--mock_external_tools false` and `--use_hmmer false` from Python still reached Nextflow as strings, so Groovy treated `"false"` as truthy and stayed on the wrong branch.
+- HMMER-only and DIAMOND-only routing need release-gate evidence without requiring the downstream alignment/report steps to succeed on tiny toy evidence.
+
+Decisions:
+- Rename the standard smoke config helper to `load_standard_params()` and include `dev.mock_external_tools`.
+- Add `asBooleanParam()` in `workflows/main.nf` so Nextflow CLI string params such as `"false"` are interpreted correctly.
+- Add `params.standard_stop_after_family_candidates` to stop focused diagnostics after true tool routing, domain filtering, and candidate concatenation.
+- Add `bin/genefam/run_nextflow_single_tool_smoke.py` to generate HMMER-only and DIAMOND-only non-mock configs and run both focused Nextflow checks.
+- Add the single-tool smoke as a required release check after the standard branch smoke.
+
+Added:
+- `bin/genefam/run_nextflow_single_tool_smoke.py`
+- `tests/test_run_nextflow_single_tool_smoke.py`
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_nextflow_standard_smoke.py`
+- `bin/genefam/run_release_checks.py`
+- `tests/test_run_nextflow_standard_smoke.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/nextflow.config`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py tests/test_run_nextflow_single_tool_smoke.py tests/test_run_release_checks.py::test_default_checks_include_nextflow_single_tool_smoke -q` first failed because `load_standard_params` and `bin.genefam.run_nextflow_single_tool_smoke` did not exist.
+- After adding the standard params helper, single-tool script, and release check, the same focused command passed with 11 tests.
+- `python bin/genefam/run_nextflow_single_tool_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_single_tool_smoke` first exited `1`; the command had `--mock_external_tools false`, but Nextflow still ran `MOCK_IDENTIFICATION_EVIDENCE` because string `"false"` was truthy.
+- `python -m pytest tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q` first failed because `asBooleanParam()` did not exist.
+- After adding `asBooleanParam()`, the workflow structure test passed with 1 test.
+- Re-running `python bin/genefam/run_nextflow_single_tool_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_single_tool_smoke` then entered true single-tool branches but exited `1` because downstream alignment requires at least two sequences on the tiny toy evidence.
+- After adding `standard_stop_after_family_candidates`, `python -m pytest tests/test_run_nextflow_standard_smoke.py tests/test_run_nextflow_single_tool_smoke.py tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_run_release_checks.py::test_default_checks_include_nextflow_single_tool_smoke -q` passed with 13 tests.
+- `python bin/genefam/run_nextflow_single_tool_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_single_tool_smoke` exited `0`.
+- `results/nextflow_single_tool_smoke/nextflow_single_tool_smoke.tsv` reports both `nextflow_standard_hmmer_only` and `nextflow_standard_diamond_only` as `passed`.
+- `.nextflow.log.1` shows HMMER-only routing submitted `HMMER_SEARCH` and `EMPTY_DIAMOND_EVIDENCE`; `.nextflow.log` shows DIAMOND-only routing submitted `DIAMOND_SEARCH` and `EMPTY_HMMER_EVIDENCE`.
+- `python -m pytest tests -q` passed with 195 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 13`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
+- `results/release_checks/release_checks.md` includes required `Nextflow standard single-tool smoke` as `passed`.
+- `results/handoff/handoff_summary.tsv` still contains `next_unblock_command	bash results/readiness/runtime_bootstrap.sh`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Run full tests and the release gate, then commit this wrapper-level YAML propagation change.
+- Keep Docker/Apptainer as the explicit release blocker; continue improving release evidence without changing `Reference/`.

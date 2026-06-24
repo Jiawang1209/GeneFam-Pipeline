@@ -31,13 +31,15 @@ def _bool_param(value: object) -> str:
     return str(bool(value)).lower()
 
 
-def load_identification_params(config_path: Path) -> dict[str, str]:
+def load_standard_params(config_path: Path) -> dict[str, str]:
     config = load_config(config_path)
     identification = config.get("identification", {}) or {}
+    dev = config.get("dev", {}) or {}
     return {
         "use_hmmer": _bool_param(identification.get("use_hmmer", True)),
         "use_diamond": _bool_param(identification.get("use_diamond", True)),
         "final_rule": str(identification.get("final_rule", "intersection")),
+        "mock_external_tools": _bool_param(dev.get("mock_external_tools", True)),
     }
 
 
@@ -58,6 +60,13 @@ def expected_published_outputs(standard_outdir: Path) -> list[Path]:
     ]
 
 
+def expected_single_tool_outputs(standard_outdir: Path) -> list[Path]:
+    return [
+        standard_outdir / "tables/species_manifest.tsv",
+        standard_outdir / "tables/family_candidates.tsv",
+    ]
+
+
 def build_nextflow_command(
     nextflow_bin: str,
     config: str,
@@ -68,6 +77,8 @@ def build_nextflow_command(
     use_hmmer: bool | str = True,
     use_diamond: bool | str = True,
     final_rule: str = "intersection",
+    mock_external_tools: bool | str = True,
+    stop_after_family_candidates: bool | str = False,
 ) -> list[str]:
     command = [
         nextflow_bin,
@@ -93,7 +104,9 @@ def build_nextflow_command(
             "--final_rule",
             final_rule,
             "--mock_external_tools",
-            "true",
+            _bool_param(mock_external_tools),
+            "--standard_stop_after_family_candidates",
+            _bool_param(stop_after_family_candidates),
             "--mock_evidence_dir",
             mock_evidence_dir,
             "--outdir",
@@ -136,9 +149,10 @@ def run_nextflow_standard_smoke(
     mock_evidence_dir: str,
     outdir: Path,
     conda_env: str | None = None,
+    stop_after_family_candidates: bool | str = False,
 ) -> dict[str, str]:
     resolved_nextflow = resolve_nextflow_binary(nextflow_bin, conda_env=conda_env)
-    identification_params = load_identification_params(Path(config))
+    standard_params = load_standard_params(Path(config))
     command_nextflow = resolved_nextflow or nextflow_bin
     profile = "activated" if conda_env and resolved_nextflow else None
     command = build_nextflow_command(
@@ -148,7 +162,8 @@ def run_nextflow_standard_smoke(
         mock_evidence_dir=mock_evidence_dir,
         outdir=str(outdir / "standard"),
         profile=profile,
-        **identification_params,
+        stop_after_family_candidates=stop_after_family_candidates,
+        **standard_params,
     )
     if not resolved_nextflow:
         return {
@@ -165,7 +180,12 @@ def run_nextflow_standard_smoke(
     completed = subprocess.run(command, check=False, capture_output=True, text=True, env=env)
     output = "\n".join(part for part in [completed.stdout.strip(), completed.stderr.strip()] if part)
     standard_outdir = outdir / "standard"
-    missing_outputs = [path for path in expected_published_outputs(standard_outdir) if not path.exists()]
+    expected_outputs = (
+        expected_single_tool_outputs(standard_outdir)
+        if _bool_param(stop_after_family_candidates) == "true"
+        else expected_published_outputs(standard_outdir)
+    )
+    missing_outputs = [path for path in expected_outputs if not path.exists()]
     passed = completed.returncode == 0 and not missing_outputs
     if completed.returncode == 0 and missing_outputs:
         output = "\n".join(

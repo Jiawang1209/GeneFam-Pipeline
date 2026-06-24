@@ -194,6 +194,19 @@ def test_default_checks_include_optional_container_profile_smokes_after_bootstra
     assert "--outdir results/container_profile_smoke/apptainer" in apptainer_command
 
 
+def test_default_checks_include_nextflow_single_tool_smoke():
+    checks = default_checks()
+    names = [check.name for check in checks]
+
+    assert names.index("Nextflow standard single-tool smoke") > names.index("Nextflow standard branch smoke")
+    smoke = next(check for check in checks if check.name == "Nextflow standard single-tool smoke")
+    assert smoke.required is True
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_nextflow_single_tool_smoke.py" in command
+    assert "--conda-env GeneFamilyFlow" in command
+    assert "--outdir results/nextflow_single_tool_smoke" in command
+
+
 def test_default_checks_do_not_include_handoff_report_as_a_stale_input_check():
     checks = default_checks()
     names = [check.name for check in checks]
