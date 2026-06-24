@@ -28,7 +28,9 @@ include {
     BUILD_WGD_EVENT_EVIDENCE;
     ANNOTATE_FAMILY_WGD_EVENTS;
     SUMMARIZE_FAMILY_EVENT_RETENTION;
-    RETENTION_ENRICHMENT
+    RETENTION_ENRICHMENT;
+    BUILD_WGD_REPORT_INDEX;
+    ASSEMBLE_WGD_REPORT
 } from './modules/duplication_retention.nf'
 
 workflow {
@@ -52,6 +54,9 @@ workflow {
         events_config_ch = Channel.value(file(params.events_config))
         ks_bins_ch = Channel.value(params.ks_bins)
         event_args_ch = Channel.value(params.wgd_event_args ?: "")
+        outdir_ch = Channel.value(params.outdir)
+        project_name_ch = Channel.value(params.project_name)
+        family_name_ch = Channel.value(params.gene_family)
 
         NORMALIZE_DUPLICATE_TYPES(duplicates_ch)
         JOIN_FAMILY_DUPLICATES(family_members_ch, NORMALIZE_DUPLICATE_TYPES.out)
@@ -60,10 +65,20 @@ workflow {
         ANNOTATE_FAMILY_WGD_EVENTS(JOIN_FAMILY_DUPLICATES.out, CLASSIFY_WGD_LAYERS.out)
         SUMMARIZE_FAMILY_EVENT_RETENTION(ANNOTATE_FAMILY_WGD_EVENTS.out)
         RETENTION_ENRICHMENT(JOIN_FAMILY_DUPLICATES.out, NORMALIZE_DUPLICATE_TYPES.out)
+        BUILD_WGD_REPORT_INDEX(outdir_ch)
+        ASSEMBLE_WGD_REPORT(
+            project_name_ch,
+            family_name_ch,
+            BUILD_WGD_REPORT_INDEX.out,
+            BUILD_WGD_EVENT_EVIDENCE.out,
+            SUMMARIZE_FAMILY_EVENT_RETENTION.out,
+            RETENTION_ENRICHMENT.out
+        )
 
         BUILD_WGD_EVENT_EVIDENCE.out.view { evidence -> "WGD event evidence: ${evidence}" }
         SUMMARIZE_FAMILY_EVENT_RETENTION.out.view { summary -> "Family event retention summary: ${summary}" }
         RETENTION_ENRICHMENT.out.view { enrichment -> "Retention enrichment: ${enrichment}" }
+        ASSEMBLE_WGD_REPORT.out.view { report -> "WGD final report: ${report}" }
     } else if (params.run_identification) {
         PREPARE_SPECIES(config_ch, groups_ch)
 

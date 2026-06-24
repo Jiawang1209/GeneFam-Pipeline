@@ -2363,8 +2363,59 @@ Verification:
 - `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
 
 Commit:
-- pending
+- hash: d01b5df3cf9ff7ae7b3833740f6350d2f104b1f6
+- message: feat: report published standard paths
+- files: standard report-index published-path mode, Nextflow report-index wiring, tests, history
 
 Next:
 - Wire more WGD/duplication published outputs into the main Nextflow report path so gamma/beta/alpha/theta evidence can be emitted from the same workflow run, not only the WGD smoke helper.
+- After container runtimes are installed or exposed, rerun release checks to verify Docker/Apptainer profiles.
+
+## 2026-06-24 - Add Nextflow WGD event smoke and report
+
+Context:
+- The Python WGD smoke already validated gamma, beta, alpha, and theta evidence, but the main Nextflow `run_duplication_retention` branch did not publish stable outputs or assemble a WGD-focused final report.
+- The final workflow needs named WGD event evidence and retention summaries available from a Nextflow run, not only a helper script.
+
+Decisions:
+- Add a WGD report-index builder for published duplication/WGD output paths.
+- Add `publishDir` rules to the duplication-retention Nextflow processes.
+- Add WGD report-index and final-report processes to `workflows/modules/duplication_retention.nf`.
+- Wire those WGD report processes into the `run_duplication_retention` branch in `workflows/main.nf`.
+- Add a dedicated `run_nextflow_wgd_smoke.py` that creates small fixture TSV inputs, runs the Nextflow WGD branch through `GeneFamilyFlow`, and fails when core published outputs are missing.
+- Add the Nextflow WGD smoke to release checks after the standard Nextflow smoke.
+
+Added:
+- `bin/genefam/build_wgd_report_index.py`
+- `bin/genefam/run_nextflow_wgd_smoke.py`
+- `tests/test_run_nextflow_wgd_smoke.py`
+- `tests/test_wgd_report_index.py`
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_release_checks.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/duplication_retention.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_wgd_report_index.py tests/test_run_nextflow_wgd_smoke.py tests/test_workflow_modules.py::test_duplication_retention_module_exposes_wgd_helper_processes tests/test_workflow_modules.py::test_main_workflow_includes_duplication_retention_processes tests/test_run_release_checks.py::test_default_checks_include_nextflow_wgd_smoke_before_readiness -q` first failed because `build_wgd_report_index.py` and `run_nextflow_wgd_smoke.py` did not exist.
+- After implementation, the same targeted test set passed with 8 tests.
+- `rm -rf results/nextflow_wgd_smoke/wgd results/nextflow_wgd_smoke/inputs && python bin/genefam/run_nextflow_wgd_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_wgd_smoke` passed.
+- `results/nextflow_wgd_smoke/wgd/tables/wgd_event_evidence.tsv` includes configured named events `alpha`, `beta`, `gamma`, and `theta` with expected relative ages and species scopes from `configs/wgd_events.brassicaceae.yaml`.
+- `results/nextflow_wgd_smoke/wgd/report/final_report.md` includes WGD Event Evidence, Family Event Retention, and Duplicate-Type Retention Enrichment sections populated from the Nextflow branch outputs.
+- `python -m pytest tests -q` passed with 148 tests.
+- `python -m py_compile bin/genefam/build_wgd_report_index.py bin/genefam/run_nextflow_wgd_smoke.py` passed.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker and Apptainer are missing, but pytest, config validation, mock MVP, Python standard branch smoke, Python WGD event smoke, Nextflow mock MVP smoke, Nextflow standard branch smoke, Nextflow WGD event smoke, and runtime bootstrap plan passed.
+- `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
+
+Commit:
+- pending
+
+Next:
+- Add a documented combined handoff path explaining when to run the standard identification branch versus the duplication/WGD branch and how to feed real MCScanX/KaKs-derived tables into the latter.
 - After container runtimes are installed or exposed, rerun release checks to verify Docker/Apptainer profiles.

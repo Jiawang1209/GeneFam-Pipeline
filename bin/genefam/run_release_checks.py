@@ -95,6 +95,17 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "Nextflow WGD event smoke",
+            [
+                python,
+                "bin/genefam/run_nextflow_wgd_smoke.py",
+                "--conda-env",
+                "GeneFamilyFlow",
+                "--outdir",
+                "results/nextflow_wgd_smoke",
+            ],
+        ),
+        CheckSpec(
             "readiness audit",
             [
                 python,

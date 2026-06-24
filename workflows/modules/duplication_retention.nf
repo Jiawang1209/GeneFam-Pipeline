@@ -1,5 +1,6 @@
 process NORMALIZE_DUPLICATE_TYPES {
     tag "normalize duplicate types"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
 
     input:
     path duplicates
@@ -17,6 +18,7 @@ process NORMALIZE_DUPLICATE_TYPES {
 
 process JOIN_FAMILY_DUPLICATES {
     tag "family duplicate classification"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
 
     input:
     path family_members
@@ -36,6 +38,7 @@ process JOIN_FAMILY_DUPLICATES {
 
 process CLASSIFY_WGD_LAYERS {
     tag "classify WGD layers"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
 
     input:
     path kaks_pairs
@@ -57,6 +60,7 @@ process CLASSIFY_WGD_LAYERS {
 
 process BUILD_WGD_EVENT_EVIDENCE {
     tag "WGD event evidence"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
 
     input:
     path classified_pairs
@@ -76,6 +80,7 @@ process BUILD_WGD_EVENT_EVIDENCE {
 
 process ANNOTATE_FAMILY_WGD_EVENTS {
     tag "family WGD event membership"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
 
     input:
     path family_duplicates
@@ -95,6 +100,7 @@ process ANNOTATE_FAMILY_WGD_EVENTS {
 
 process SUMMARIZE_FAMILY_EVENT_RETENTION {
     tag "family event retention summary"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
 
     input:
     path family_wgd_events
@@ -112,6 +118,7 @@ process SUMMARIZE_FAMILY_EVENT_RETENTION {
 
 process RETENTION_ENRICHMENT {
     tag "duplicate retention enrichment"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
 
     input:
     path family_duplicates
@@ -126,5 +133,51 @@ process RETENTION_ENRICHMENT {
       --family-duplicates ${family_duplicates} \\
       --background-duplicates ${background_duplicates} \\
       --out retention_enrichment.tsv
+    """
+}
+
+process BUILD_WGD_REPORT_INDEX {
+    tag "WGD report index"
+    publishDir "${params.outdir}/report", mode: "copy", overwrite: true
+
+    input:
+    val published_outdir
+
+    output:
+    path "report_index.tsv"
+
+    script:
+    """
+    python ${projectDir}/../bin/genefam/build_wgd_report_index.py \\
+      --published-outdir ${published_outdir} \\
+      --out report_index.tsv
+    """
+}
+
+process ASSEMBLE_WGD_REPORT {
+    tag "WGD final report"
+    publishDir "${params.outdir}/report", mode: "copy", overwrite: true
+
+    input:
+    val project_name
+    val gene_family
+    path report_index
+    path wgd_event_evidence
+    path family_event_retention
+    path retention_enrichment
+
+    output:
+    path "final_report.md"
+
+    script:
+    """
+    python ${projectDir}/../bin/genefam/assemble_report.py \\
+      --project-name ${project_name} \\
+      --gene-family ${gene_family} \\
+      --report-index ${report_index} \\
+      --wgd-event-evidence ${wgd_event_evidence} \\
+      --family-event-retention ${family_event_retention} \\
+      --retention-enrichment ${retention_enrichment} \\
+      --out final_report.md
     """
 }

@@ -104,6 +104,7 @@ def test_duplication_retention_module_exposes_wgd_helper_processes():
     module = Path("workflows/modules/duplication_retention.nf").read_text(encoding="utf-8")
 
     assert "process NORMALIZE_DUPLICATE_TYPES" in module
+    assert 'publishDir "${params.outdir}/tables", mode: "copy", overwrite: true' in module
     assert "normalize_duplicate_types.py" in module
     assert "--duplicates ${duplicates}" in module
     assert "--out normalized_duplicate_types.tsv" in module
@@ -141,6 +142,18 @@ def test_duplication_retention_module_exposes_wgd_helper_processes():
     assert "--background-duplicates ${background_duplicates}" in module
     assert "--out retention_enrichment.tsv" in module
 
+    assert "process BUILD_WGD_REPORT_INDEX" in module
+    assert "build_wgd_report_index.py" in module
+    assert "--published-outdir ${published_outdir}" in module
+    assert "--out report_index.tsv" in module
+
+    assert "process ASSEMBLE_WGD_REPORT" in module
+    assert "assemble_report.py" in module
+    assert "--wgd-event-evidence ${wgd_event_evidence}" in module
+    assert "--family-event-retention ${family_event_retention}" in module
+    assert "--retention-enrichment ${retention_enrichment}" in module
+    assert "--out final_report.md" in module
+
 
 def test_main_workflow_includes_duplication_retention_processes():
     workflow = Path("workflows/main.nf").read_text(encoding="utf-8")
@@ -152,6 +165,8 @@ def test_main_workflow_includes_duplication_retention_processes():
     assert "ANNOTATE_FAMILY_WGD_EVENTS" in workflow
     assert "SUMMARIZE_FAMILY_EVENT_RETENTION" in workflow
     assert "RETENTION_ENRICHMENT" in workflow
+    assert "BUILD_WGD_REPORT_INDEX(outdir_ch)" in workflow
+    assert "ASSEMBLE_WGD_REPORT(" in workflow
 
 
 def test_report_module_assembles_final_markdown():
