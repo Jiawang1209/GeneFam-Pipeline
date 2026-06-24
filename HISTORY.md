@@ -3825,9 +3825,65 @@ Verification:
 - `python -m pytest tests -q` passed with 201 tests.
 
 Commit:
+- hash: 1c374cb2edcba413896b11e4146d3aed42869904
+- message: chore: add local acceptance entrypoint
+- files: local acceptance script, quickstart docs, README, script contract tests, history
+
+Next:
+- Keep the local acceptance script as the first manual rerun command; after Docker/Apptainer are installed, rerun it to verify the container profiles and objective completion audit.
+
+## 2026-06-25 - Add standard run configuration snapshot
+
+Context:
+- The final pipeline should be reusable for large, multi-species gene-family analyses, which means reports need to preserve not only results but also the exact run context.
+- The standard branch already publishes species manifests and final reports, but it did not emit a compact snapshot of YAML-derived settings such as selected species, runtime, gene family, HMMER/DIAMOND switches, and final evidence rule.
+- Without this snapshot, a future report reader would need to reconstruct run settings from command history and config files.
+
+Decisions:
+- Add `bin/genefam/build_run_config_snapshot.py` to write a stable `key/value` TSV from the YAML config and selected species manifest.
+- Publish `tables/run_config_snapshot.tsv` in the standard branch and include it in `report/report_index.tsv`.
+- Wire the same helper into the Nextflow standard branch through a `BUILD_RUN_CONFIG_SNAPSHOT` process.
+- Document the snapshot as standard-branch release evidence.
+
+Added:
+- `bin/genefam/build_run_config_snapshot.py`
+- `tests/test_build_run_config_snapshot.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_nextflow_standard_smoke.py`
+- `bin/genefam/run_standard_smoke.py`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_nextflow_standard_smoke.py`
+- `tests/test_run_standard_smoke.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_standard_branch_report_index.py tests/test_run_standard_smoke.py -q` first failed because `run_config_snapshot` was not in the standard report-index contract and `run_standard_smoke.py` did not write `tables/run_config_snapshot.tsv`.
+- `python -m pytest tests/test_build_run_config_snapshot.py tests/test_standard_branch_report_index.py tests/test_run_standard_smoke.py tests/test_run_nextflow_standard_smoke.py tests/test_workflow_modules.py -q` passed with 32 tests after implementing the helper, standard smoke output, report-index path, and Nextflow process wiring.
+- `python -m pytest tests/test_build_run_config_snapshot.py tests/test_standard_branch_report_index.py tests/test_run_standard_smoke.py tests/test_run_nextflow_standard_smoke.py tests/test_workflow_modules.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py -q` passed with 45 tests after updating release-audit documentation.
+- `python bin/genefam/run_standard_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/standard_smoke` exited `0` and printed `run_config_snapshot	results/standard_smoke/tables/run_config_snapshot.tsv`.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_standard_smoke` exited `0`.
+- `results/standard_smoke/tables/run_config_snapshot.tsv` and `results/nextflow_standard_smoke/standard/tables/run_config_snapshot.tsv` both record `project.name`, `runtime.environment`, `/usr/local/bin/R`, selected species, gene family, HMMER/DIAMOND switches, and `identification.final_rule`.
+- `results/standard_smoke/report/final_report.md` and `results/nextflow_standard_smoke/standard/report/final_report.md` both list `run_config_snapshot` as available.
+- `python -m pytest tests -q` passed with 203 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 14`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; the only required blocker remains the readiness audit for missing `docker` and `apptainer`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Run the focused script test, then run the local acceptance script with the known Python path to refresh release and quickstart evidence.
+- Keep adding report-index evidence for user-facing outputs so final reports remain self-describing across large multi-species runs.

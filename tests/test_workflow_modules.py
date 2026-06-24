@@ -58,9 +58,16 @@ def test_standard_postprocess_module_extracts_family_sequences_and_report_index(
     assert "--species-manifest ${species_manifest}" in module
     assert "--out family_members.faa" in module
 
+    assert "process BUILD_RUN_CONFIG_SNAPSHOT" in module
+    assert "build_run_config_snapshot.py" in module
+    assert "--config ${config}" in module
+    assert "--species-manifest ${species_manifest}" in module
+    assert "--out run_config_snapshot.tsv" in module
+
     assert "process BUILD_STANDARD_REPORT_INDEX" in module
     assert 'publishDir "${params.outdir}/report", mode: "copy", overwrite: true' in module
     assert "build_standard_report_index.py" in module
+    assert "--run-config-snapshot ${run_config_snapshot}" in module
     assert "--family-members-faa ${family_members_faa}" in module
     assert "--phylogeny-manifest ${phylogeny_manifest}" in module
     assert "--published-outdir ${params.outdir}" in module
@@ -82,7 +89,7 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "def asBooleanParam(value)" in workflow
     assert "if (asBooleanParam(params.mock_external_tools))" in workflow
     assert "include { BUILD_IDENTIFICATION_INPUTS } from './modules/identification_inputs.nf'" in workflow
-    assert "include { EXTRACT_FAMILY_SEQUENCES; BUILD_STANDARD_REPORT_INDEX; ASSEMBLE_STANDARD_REPORT } from './modules/standard_postprocess.nf'" in workflow
+    assert "include { BUILD_RUN_CONFIG_SNAPSHOT; EXTRACT_FAMILY_SEQUENCES; BUILD_STANDARD_REPORT_INDEX; ASSEMBLE_STANDARD_REPORT } from './modules/standard_postprocess.nf'" in workflow
     assert "include { HMMER_SEARCH } from './modules/hmmer_search.nf'" in workflow
     assert "include { DIAMOND_SEARCH } from './modules/diamond_search.nf'" in workflow
     assert "DOMAIN_FILTER;" in workflow
@@ -109,6 +116,7 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "DOMAIN_FILTER(joined_evidence_ch, final_rule_ch)" in workflow
     assert "CONCAT_FAMILY_CANDIDATES(candidate_tables_ch.collect())" in workflow
     assert "if (!asBooleanParam(params.standard_stop_after_family_candidates))" in workflow
+    assert "BUILD_RUN_CONFIG_SNAPSHOT(config_ch, PREPARE_SPECIES.out)" in workflow
     assert "FAMILY_SUMMARY(CONCAT_FAMILY_CANDIDATES.out)" in workflow
     assert "EXTRACT_FAMILY_SEQUENCES(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)" in workflow
     assert "PREPARE_ALIGNMENT_INPUTS(family_name_ch, EXTRACT_FAMILY_SEQUENCES.out, aligner_ch, alignment_outdir_ch)" in workflow
@@ -116,6 +124,7 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "PLOT_FAMILY_COUNTS(FAMILY_SUMMARY.out)" in workflow
     assert "BUILD_PLOT_MANIFEST()" in workflow
     assert "BUILD_STANDARD_REPORT_INDEX(" in workflow
+    assert "BUILD_RUN_CONFIG_SNAPSHOT.out" in workflow
     assert "ASSEMBLE_STANDARD_REPORT(project_name_ch, family_name_ch, BUILD_STANDARD_REPORT_INDEX.out, BUILD_PLOT_MANIFEST.out)" in workflow
 
 

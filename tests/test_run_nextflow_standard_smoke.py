@@ -138,6 +138,7 @@ def test_expected_published_outputs_cover_standard_user_results(tmp_path):
 
     assert expected_published_outputs(standard_outdir) == [
         standard_outdir / "tables/species_manifest.tsv",
+        standard_outdir / "tables/run_config_snapshot.tsv",
         standard_outdir / "tables/family_candidates.tsv",
         standard_outdir / "tables/family_counts.tsv",
         standard_outdir / "tables/alignment_manifest.tsv",

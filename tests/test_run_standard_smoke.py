@@ -26,6 +26,7 @@ def test_run_standard_smoke_writes_standard_branch_outputs(tmp_path):
     assert completed.returncode == 0, completed.stderr
     expected = [
         "tables/species_manifest.tsv",
+        "tables/run_config_snapshot.tsv",
         "tables/family_candidates.tsv",
         "tables/family_counts.tsv",
         "sequences/family_members.faa",
@@ -41,6 +42,8 @@ def test_run_standard_smoke_writes_standard_branch_outputs(tmp_path):
     assert "standard_final_report" in completed.stdout
 
     report_index = (outdir / "report/report_index.tsv").read_text(encoding="utf-8")
+    assert "run_config_snapshot" in report_index
+    assert "run_config_snapshot.tsv\tavailable" in report_index
     assert "chromosome_locations" in report_index
     assert "motif_summary" in report_index
     assert "motif_summary.tsv\tavailable" in report_index
@@ -48,6 +51,14 @@ def test_run_standard_smoke_writes_standard_branch_outputs(tmp_path):
     motif_summary = (outdir / "tables/motif_summary.tsv").read_text(encoding="utf-8")
     assert motif_summary.startswith("family_name\tmotif_id\tmotif_name\twidth\tsites\tevalue\n")
     assert "GDSL_motif_1" in motif_summary
+    run_config = (outdir / "tables/run_config_snapshot.tsv").read_text(encoding="utf-8")
+    assert run_config.startswith("key\tvalue\n")
+    assert "project.name\tGDSL_demo\n" in run_config
+    assert "gene_family.name\tGDSL\n" in run_config
+    assert "identification.final_rule\tintersection\n" in run_config
+    assert "identification.use_hmmer\tTrue\n" in run_config
+    assert "identification.use_diamond\tTrue\n" in run_config
+    assert "selected_species\tArabidopsis_thaliana,Brassica_rapa\n" in run_config
 
 
 def test_run_standard_smoke_writes_family_expression_when_matrix_is_provided(tmp_path):

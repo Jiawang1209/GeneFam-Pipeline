@@ -12,7 +12,7 @@ include {
     EMPTY_DIAMOND_EVIDENCE
 } from './modules/domain_filter.nf'
 include { FAMILY_SUMMARY } from './modules/family_summary.nf'
-include { EXTRACT_FAMILY_SEQUENCES; BUILD_STANDARD_REPORT_INDEX; ASSEMBLE_STANDARD_REPORT } from './modules/standard_postprocess.nf'
+include { BUILD_RUN_CONFIG_SNAPSHOT; EXTRACT_FAMILY_SEQUENCES; BUILD_STANDARD_REPORT_INDEX; ASSEMBLE_STANDARD_REPORT } from './modules/standard_postprocess.nf'
 include { MOCK_MVP } from './modules/mock_mvp.nf'
 include { ASSEMBLE_REPORT } from './modules/report.nf'
 include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
@@ -151,6 +151,7 @@ workflow {
         CONCAT_FAMILY_CANDIDATES.out.view { candidates -> "Family candidates: ${candidates}" }
 
         if (!asBooleanParam(params.standard_stop_after_family_candidates)) {
+            BUILD_RUN_CONFIG_SNAPSHOT(config_ch, PREPARE_SPECIES.out)
             FAMILY_SUMMARY(CONCAT_FAMILY_CANDIDATES.out)
             EXTRACT_FAMILY_SEQUENCES(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
             PREPARE_ALIGNMENT_INPUTS(family_name_ch, EXTRACT_FAMILY_SEQUENCES.out, aligner_ch, alignment_outdir_ch)
@@ -168,6 +169,7 @@ workflow {
             BUILD_PLOT_MANIFEST()
             BUILD_STANDARD_REPORT_INDEX(
                 PREPARE_SPECIES.out,
+                BUILD_RUN_CONFIG_SNAPSHOT.out,
                 CONCAT_FAMILY_CANDIDATES.out,
                 FAMILY_SUMMARY.out,
                 EXTRACT_FAMILY_SEQUENCES.out,

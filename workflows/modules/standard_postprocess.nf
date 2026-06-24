@@ -1,3 +1,23 @@
+process BUILD_RUN_CONFIG_SNAPSHOT {
+    tag "run config snapshot"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
+
+    input:
+    path config
+    path species_manifest
+
+    output:
+    path "run_config_snapshot.tsv"
+
+    script:
+    """
+    python ${projectDir}/../bin/genefam/build_run_config_snapshot.py \\
+      --config ${config} \\
+      --species-manifest ${species_manifest} \\
+      --out run_config_snapshot.tsv
+    """
+}
+
 process EXTRACT_FAMILY_SEQUENCES {
     tag "family member FASTA"
     publishDir "${params.outdir}/sequences", mode: "copy", overwrite: true
@@ -24,6 +44,7 @@ process BUILD_STANDARD_REPORT_INDEX {
 
     input:
     path species_manifest
+    path run_config_snapshot
     path family_candidates
     path family_counts
     path family_members_faa
@@ -41,6 +62,7 @@ process BUILD_STANDARD_REPORT_INDEX {
     """
     python ${projectDir}/../bin/genefam/build_standard_report_index.py \\
       --species-manifest ${species_manifest} \\
+      --run-config-snapshot ${run_config_snapshot} \\
       --family-candidates ${family_candidates} \\
       --family-counts ${family_counts} \\
       --family-members-faa ${family_members_faa} \\

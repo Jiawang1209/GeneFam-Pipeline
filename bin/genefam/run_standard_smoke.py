@@ -14,6 +14,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from bin.genefam.assemble_report import assemble_report, write_report
 from bin.genefam.build_plot_manifest import build_plot_manifest, write_tsv as write_plot_manifest_tsv
+from bin.genefam.build_run_config_snapshot import build_snapshot, write_tsv as write_snapshot_tsv
 from bin.genefam.build_standard_report_index import DESCRIPTIONS, build_report_index, write_tsv as write_report_index_tsv
 from bin.genefam.discover_species import _select_species, discover_species, write_manifest
 from bin.genefam.extract_family_sequences import extract_family_sequences, read_tsv as read_table, write_fasta
@@ -66,6 +67,7 @@ def run_standard_smoke(
     report_dir = outdir / "report"
     outputs = {
         "species_manifest": tables_dir / "species_manifest.tsv",
+        "run_config_snapshot": tables_dir / "run_config_snapshot.tsv",
         "family_candidates": tables_dir / "family_candidates.tsv",
         "family_counts": tables_dir / "family_counts.tsv",
         "family_members_faa": sequences_dir / "family_members.faa",
@@ -81,6 +83,15 @@ def run_standard_smoke(
         outputs["family_expression"] = tables_dir / "family_expression.tsv"
 
     write_manifest(manifest_rows, outputs["species_manifest"])
+    write_snapshot_tsv(
+        build_snapshot(
+            config,
+            [row["species_id"] for row in manifest_rows],
+            source_config=str(config_path),
+            species_manifest=str(outputs["species_manifest"]),
+        ),
+        outputs["run_config_snapshot"],
+    )
     candidates = merge_evidence(
         read_tsv(mock_evidence_dir / "hmmer.tsv"),
         read_tsv(mock_evidence_dir / "diamond.tsv"),

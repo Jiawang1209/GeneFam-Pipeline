@@ -11,6 +11,7 @@ from pathlib import Path
 FIELDNAMES = ["key", "path", "status", "description"]
 DESCRIPTIONS = {
     "species_manifest": "Selected species and input files",
+    "run_config_snapshot": "Run configuration and selected species snapshot",
     "family_candidates": "Merged family candidate members",
     "family_counts": "Per-species family member counts",
     "family_members_faa": "Family member peptide FASTA",
@@ -39,6 +40,7 @@ def published_paths(published_outdir: str, family_expression_available: bool) ->
     outdir = Path(published_outdir)
     return {
         "species_manifest": str(outdir / "tables/species_manifest.tsv"),
+        "run_config_snapshot": str(outdir / "tables/run_config_snapshot.tsv"),
         "family_candidates": str(outdir / "tables/family_candidates.tsv"),
         "family_counts": str(outdir / "tables/family_counts.tsv"),
         "family_members_faa": str(outdir / "sequences/family_members.faa"),

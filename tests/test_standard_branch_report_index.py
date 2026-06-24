@@ -8,6 +8,7 @@ def test_build_standard_report_index_marks_core_outputs_available():
     rows = build_report_index(
         {
             "species_manifest": "tables/species_manifest.tsv",
+            "run_config_snapshot": "tables/run_config_snapshot.tsv",
             "family_candidates": "tables/family_candidates.tsv",
             "family_counts": "tables/family_counts.tsv",
             "family_members_faa": "sequences/family_members.faa",
@@ -27,6 +28,7 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "description": "Selected species and input files",
     }
     assert {row["key"] for row in rows} >= {
+        "run_config_snapshot",
         "family_members_faa",
         "alignment_manifest",
         "phylogeny_manifest",
@@ -42,6 +44,7 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
 
     assert paths == {
         "species_manifest": "results/nextflow_standard_smoke/standard/tables/species_manifest.tsv",
+        "run_config_snapshot": "results/nextflow_standard_smoke/standard/tables/run_config_snapshot.tsv",
         "family_candidates": "results/nextflow_standard_smoke/standard/tables/family_candidates.tsv",
         "family_counts": "results/nextflow_standard_smoke/standard/tables/family_counts.tsv",
         "family_members_faa": "results/nextflow_standard_smoke/standard/sequences/family_members.faa",
@@ -63,6 +66,8 @@ def test_build_standard_report_index_cli_writes_tsv(tmp_path):
             "bin/genefam/build_standard_report_index.py",
             "--species-manifest",
             "species_manifest.tsv",
+            "--run-config-snapshot",
+            "run_config_snapshot.tsv",
             "--family-candidates",
             "family_candidates.tsv",
             "--family-counts",
@@ -107,6 +112,8 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
             "bin/genefam/build_standard_report_index.py",
             "--species-manifest",
             "species_manifest.tsv",
+            "--run-config-snapshot",
+            "run_config_snapshot.tsv",
             "--family-candidates",
             "family_candidates.tsv",
             "--family-counts",
@@ -138,6 +145,7 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
     assert completed.returncode == 0, completed.stderr
     rows = {row["key"]: row for row in read_tsv(out)}
     assert rows["family_candidates"]["path"] == "results/demo/tables/family_candidates.tsv"
+    assert rows["run_config_snapshot"]["path"] == "results/demo/tables/run_config_snapshot.tsv"
     assert rows["family_members_faa"]["path"] == "results/demo/sequences/family_members.faa"
     assert rows["motif_summary"]["path"] == "results/demo/tables/motif_summary.tsv"
     assert rows["plot_manifest"]["path"] == "results/demo/report/plot_manifest.tsv"
