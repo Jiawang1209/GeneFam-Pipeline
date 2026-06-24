@@ -95,6 +95,9 @@ def build_handoff_sections(
 
 
 def write_markdown(sections: dict[str, str], out_path: Path) -> None:
+    next_command = sections.get("next_unblock_command")
+    if not next_command or next_command == "none":
+        next_command = "python bin/genefam/run_release_checks.py --outdir results/release_checks"
     lines = [
         "# GeneFam-Pipeline Handoff Report",
         "",
@@ -122,7 +125,7 @@ def write_markdown(sections: dict[str, str], out_path: Path) -> None:
         "## Next Command",
         "",
         "```bash",
-        "python bin/genefam/run_release_checks.py --outdir results/release_checks",
+        next_command,
         "```",
         "",
     ]

@@ -86,10 +86,32 @@ def test_write_handoff_markdown_contains_copyable_next_steps(tmp_path):
     assert "results/readiness/runtime_bootstrap.sh" in text
     assert "Next unblock command" in text
     assert "bash results/readiness/runtime_bootstrap.sh" in text
+    next_command = text.split("## Next Command", 1)[1]
+    assert "bash results/readiness/runtime_bootstrap.sh" in next_command
+    assert "python bin/genefam/run_release_checks.py --outdir results/release_checks" not in next_command
     assert "nextflow, /usr/local/bin/R, hmmsearch" in text
     assert "docker, apptainer" in text
-    assert "python bin/genefam/run_release_checks.py --outdir results/release_checks" in text
     assert "results/objective_audit/objective_audit.md" in text
+
+
+def test_write_handoff_markdown_uses_release_gate_when_no_unblock_command(tmp_path):
+    out = tmp_path / "handoff_report.md"
+    sections = {
+        "release": "passed=15 failed=0 required_failed=0 optional_failed=0 release_ready=true",
+        "objective": "achieved=12 blocked=0 missing=0 complete=true",
+        "blocked_requirements": "none",
+        "next_unblock_artifacts": "none",
+        "next_unblock_command": "none",
+        "available_runtime": "nextflow, docker, apptainer",
+        "missing_runtime": "none",
+        "container_smoke": "docker=passed; apptainer=passed",
+    }
+
+    write_markdown(sections, out)
+
+    next_command = out.read_text(encoding="utf-8").split("## Next Command", 1)[1]
+    assert "python bin/genefam/run_release_checks.py --outdir results/release_checks" in next_command
+    assert "bash results/readiness/runtime_bootstrap.sh" not in next_command
 
 
 def test_write_handoff_summary_tsv_contains_stable_keys(tmp_path):

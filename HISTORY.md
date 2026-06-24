@@ -3293,9 +3293,49 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
 
 Commit:
-- hash: pending
+- hash: 7da7b320f3e5475cd8ee42eb60af3345a47762f1
 - message: feat: add handoff unblock command
 - files: handoff unblock command summary, release runner test, history
+
+Next:
+- Keep `next_unblock_command` visible in the top-level handoff until Docker/Apptainer verification is available.
+
+## 2026-06-24 - Prefer unblock command in handoff next step
+
+Context:
+- The handoff report exposed `next_unblock_command`, but the `Next Command` code block still showed the release-gate rerun.
+- When the release is blocked, the most useful next copyable command is the unblock command; when there is no blocker, the release gate should remain the next command.
+
+Decisions:
+- Make `write_markdown()` choose `next_unblock_command` for the `Next Command` block when it is present and not `none`.
+- Keep `python bin/genefam/run_release_checks.py --outdir results/release_checks` as the fallback when no unblock command is needed.
+- Add tests for both blocked and no-blocker handoff states.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_handoff_report.py`
+- `tests/test_build_handoff_report.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_handoff_report.py -q` first failed because the `Next Command` block still showed the release-gate rerun instead of `bash results/readiness/runtime_bootstrap.sh`.
+- After making the next command dynamic, `python -m pytest tests/test_build_handoff_report.py -q` passed with 5 tests.
+- `python -m pytest tests -q` passed with 182 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 12`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
+- `results/handoff/handoff_report.md` now shows `bash results/readiness/runtime_bootstrap.sh` inside the `Next Command` block.
+- `results/handoff/handoff_summary.tsv` still contains `next_unblock_command	bash results/readiness/runtime_bootstrap.sh`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
+
+Commit:
+- hash: pending
+- message: feat: prefer unblock handoff command
+- files: handoff next-command selection, handoff tests, history
 
 Next:
 - Run full tests and release checks, then commit and backfill the full commit hash.
