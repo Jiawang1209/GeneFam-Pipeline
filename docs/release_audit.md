@@ -25,6 +25,9 @@ python bin/genefam/run_wgd_smoke.py \
   --events-config configs/wgd_events.brassicaceae.yaml \
   --outdir results/wgd_smoke
 python bin/genefam/run_nextflow_smoke.py --outdir results/nextflow_smoke
+python bin/genefam/run_nextflow_single_tool_smoke.py \
+  --conda-env GeneFamilyFlow \
+  --outdir results/nextflow_single_tool_smoke
 python bin/genefam/run_nextflow_wgd_smoke.py --outdir results/nextflow_wgd_smoke
 python bin/genefam/run_prepared_wgd_handoff_example.py \
   --conda-env GeneFamilyFlow \
@@ -71,6 +74,8 @@ The release checks runner writes:
 - `results/readiness/runtime_bootstrap.sh`
 - `results/objective_audit/objective_audit.tsv`
 - `results/objective_audit/objective_audit.md`
+- `results/nextflow_single_tool_smoke/nextflow_single_tool_smoke.tsv`
+- `results/nextflow_single_tool_smoke/nextflow_single_tool_smoke.md`
 - `results/container_profile_smoke/docker/container_profile_smoke.tsv`
 - `results/container_profile_smoke/docker/container_profile_smoke.md`
 - `results/container_profile_smoke/apptainer/container_profile_smoke.tsv`
@@ -84,7 +89,7 @@ The Markdown summary reports `Required failed` and `Optional failed` separately.
 
 | Requirement | Evidence | Verification |
 |---|---|---|
-| Nextflow DSL2 workflow | `workflows/main.nf`; modules under `workflows/modules/`; `bin/genefam/run_nextflow_smoke.py`; `results/nextflow_smoke/nextflow_smoke.md` | `python -m pytest tests/test_workflow_modules.py tests/test_run_nextflow_smoke.py -q` |
+| Nextflow DSL2 workflow | `workflows/main.nf`; modules under `workflows/modules/`; `bin/genefam/run_nextflow_smoke.py`; `bin/genefam/run_nextflow_single_tool_smoke.py`; `results/nextflow_smoke/nextflow_smoke.md`; `results/nextflow_single_tool_smoke/nextflow_single_tool_smoke.tsv` | `python -m pytest tests/test_workflow_modules.py tests/test_run_nextflow_smoke.py tests/test_run_nextflow_single_tool_smoke.py -q` |
 | YAML-driven parameters | `configs/example.config.yaml`; `configs/advanced_modules.example.yaml`; `bin/genefam/build_run_plan.py` | `python bin/genefam/build_run_plan.py --config configs/example.config.yaml --out results/mock_mvp/tables/run_plan.tsv` |
 | GeneFamilyFlow runtime | `envs/GeneFamilyFlow.conda.yaml`; `workflows/nextflow.config`; `Dockerfile` | `python -m pytest tests/test_runtime_environment_files.py -q` |
 | `/usr/local/bin/R` plotting and reporting convention | `workflows/modules/plots.nf`; `scripts/plot_family_counts.R`; `scripts/plot_kaks.R`; `scripts/plot_expression_heatmap.R` | `python -m pytest tests/test_workflow_modules.py tests/test_runtime_environment_files.py -q` |
@@ -94,7 +99,7 @@ The Markdown summary reports `Required failed` and `Optional failed` separately.
 | quickstart handoff for users | `bin/genefam/run_quickstart.py`; `docs/quickstart.md`; `README.md`; `results/quickstart/quickstart_summary.md`; `results/release_checks/release_checks.md`; `results/standard_smoke/report/final_report.md`; `results/example_prepared_wgd/report/final_report.md` | `python bin/genefam/run_quickstart.py --conda-env GeneFamilyFlow --outdir results/quickstart` and `python -m pytest tests/test_quickstart_docs.py tests/test_release_audit_docs.py -q` |
 | species bank input model | `docs/input_contract.md`; `bin/genefam/discover_species.py`; `tests/fixtures/species_bank` | `python -m pytest tests/test_discover_species.py -q` |
 | target species selection | `configs/species_groups.yaml`; `species.include`; `species.exclude`; `run.species_group` | `python -m pytest tests/test_discover_species.py tests/test_build_run_plan.py -q` |
-| standard identification branch | `workflows/main.nf`; `workflows/modules/identification_inputs.nf`; `workflows/modules/standard_postprocess.nf`; `workflows/modules/annotation_integration.nf`; `bin/genefam/build_identification_inputs.py`; `bin/genefam/extract_family_sequences.py`; `bin/genefam/extract_chromosome_locations.py`; `bin/genefam/subset_expression_matrix.py`; `bin/genefam/build_standard_report_index.py`; `bin/genefam/assemble_report.py`; `bin/genefam/run_standard_smoke.py`; `bin/genefam/concat_tsv.py`; `results/standard_smoke/tables/chromosome_locations.tsv`; `results/standard_smoke/report/final_report.md` | `python -m pytest tests/test_build_identification_inputs.py tests/test_concat_tsv.py tests/test_extract_family_sequences.py tests/test_extract_chromosome_locations.py tests/test_subset_expression_matrix.py tests/test_standard_branch_report_index.py tests/test_assemble_report.py tests/test_run_standard_smoke.py tests/test_workflow_modules.py -q` |
+| standard identification branch | `workflows/main.nf`; `workflows/modules/identification_inputs.nf`; `workflows/modules/standard_postprocess.nf`; `workflows/modules/annotation_integration.nf`; `bin/genefam/build_identification_inputs.py`; `bin/genefam/extract_family_sequences.py`; `bin/genefam/extract_chromosome_locations.py`; `bin/genefam/subset_expression_matrix.py`; `bin/genefam/build_standard_report_index.py`; `bin/genefam/assemble_report.py`; `bin/genefam/run_standard_smoke.py`; `bin/genefam/run_nextflow_single_tool_smoke.py`; `bin/genefam/concat_tsv.py`; `results/standard_smoke/tables/chromosome_locations.tsv`; `results/standard_smoke/report/final_report.md`; `results/nextflow_single_tool_smoke/nextflow_single_tool_smoke.tsv` | `python -m pytest tests/test_build_identification_inputs.py tests/test_concat_tsv.py tests/test_extract_family_sequences.py tests/test_extract_chromosome_locations.py tests/test_subset_expression_matrix.py tests/test_standard_branch_report_index.py tests/test_assemble_report.py tests/test_run_standard_smoke.py tests/test_run_nextflow_single_tool_smoke.py tests/test_workflow_modules.py -q` |
 | HMMER family identification | `workflows/modules/hmmer_search.nf`; `bin/genefam/parse_hmmer_domtbl.py`; `bin/genefam/filter_hmmer_domains.py` | `python -m pytest tests/test_parse_hmmer_domtbl.py tests/test_filter_hmmer_domains.py -q` |
 | DIAMOND confirmation | `workflows/modules/diamond_search.nf`; `bin/genefam/parse_diamond_outfmt6.py` | `python -m pytest tests/test_parse_diamond_outfmt6.py -q` |
 | domain filtering | `bin/genefam/filter_hmmer_domains.py`; `workflows/modules/domain_filter.nf` | `python -m pytest tests/test_filter_hmmer_domains.py tests/test_merge_identification_evidence.py -q` |

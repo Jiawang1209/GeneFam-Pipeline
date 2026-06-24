@@ -42,6 +42,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
         "python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv",
         "python bin/genefam/plan_runtime_bootstrap.py",
         "python bin/genefam/audit_objective_completion.py",
+        "python bin/genefam/run_nextflow_single_tool_smoke.py",
         "python bin/genefam/run_container_profile_smoke.py --profile docker",
         "python bin/genefam/run_container_profile_smoke.py --profile apptainer",
     ]
@@ -70,6 +71,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "run_standard_smoke.py" in text
     assert "run_wgd_smoke.py" in text
     assert "run_nextflow_smoke.py" in text
+    assert "run_nextflow_single_tool_smoke.py" in text
     assert "run_container_profile_smoke.py" in text
     assert "run_nextflow_wgd_smoke.py" in text
     assert "run_prepared_wgd_handoff_example.py" in text
@@ -79,6 +81,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/standard_smoke/report/final_report.md" in text
     assert "results/wgd_smoke/report/final_report.md" in text
     assert "results/nextflow_smoke/nextflow_smoke.md" in text
+    assert "results/nextflow_single_tool_smoke/nextflow_single_tool_smoke.tsv" in text
     assert "results/example_prepared_wgd/report/final_report.md" in text
     assert "--run_identification true" in text
     assert "--run_duplication_retention true" in text

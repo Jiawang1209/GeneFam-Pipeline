@@ -3626,9 +3626,52 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
 
 Commit:
+- hash: 0b9d26a484895cb5a3cba1bd36ec783ceedda8e0
+- message: docs: surface final verification entrypoints
+- files: README/quickstart final entrypoints, documentation tests, history
+
+Next:
+- Keep the docs, handoff report, and release gate aligned while Docker/Apptainer remain the only machine-level blocker.
+
+## 2026-06-25 - Require single-tool smoke in objective audit
+
+Context:
+- The release gate now runs `Nextflow standard single-tool smoke`, but `bin/genefam/audit_objective_completion.py` still considered the DSL2 workflow achieved without that evidence.
+- `docs/release_audit.md` also mapped the DSL2 workflow to the older mock and WGD smokes without listing the single-tool command and result file.
+- The long objective explicitly asks for YAML-driven HMMER/BLAST-style identification paths, so HMMER-only and DIAMOND-only routing should be part of the completion evidence.
+
+Decisions:
+- Require `Nextflow standard single-tool smoke` for the `Nextflow DSL2 workflow` objective row.
+- Update the DSL2 objective note to mention HMMER-only and DIAMOND-only routing through `GeneFamilyFlow`.
+- Update `docs/release_audit.md` to list `run_nextflow_single_tool_smoke.py` and `results/nextflow_single_tool_smoke/nextflow_single_tool_smoke.tsv`.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_objective_completion.py`
+- `docs/release_audit.md`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_release_audit_docs.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py tests/test_release_audit_docs.py -q` first failed because the objective audit still passed DSL2 without the single-tool smoke and release audit docs did not mention `run_nextflow_single_tool_smoke.py`.
+- After tightening the objective audit and updating release audit docs, the same command passed with 6 tests.
+- `python -m pytest tests/test_audit_objective_completion.py tests/test_release_audit_docs.py tests/test_run_release_checks.py -q` passed with 26 tests.
+- `python -m pytest tests -q` passed with 196 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 13`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
+- `results/objective_audit/objective_audit.md` now says `Nextflow DSL2 workflow` is achieved from `Nextflow mock, standard, single-tool, and WGD smoke checks`.
+- `results/handoff/handoff_summary.tsv` still contains `next_unblock_command	bash results/readiness/runtime_bootstrap.sh`.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Keep the docs, handoff report, and release gate aligned while Docker/Apptainer remain the only machine-level blocker.
+- Keep completion evidence strict: any new release smoke that proves core objective behavior should be reflected in `audit_objective_completion.py` and `docs/release_audit.md`.

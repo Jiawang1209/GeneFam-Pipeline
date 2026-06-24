@@ -59,11 +59,16 @@ def build_objective_audit(
         _achieved_if(
             _all_passed(
                 release,
-                ["Nextflow mock MVP smoke", "Nextflow standard branch smoke", "Nextflow WGD event smoke"],
+                [
+                    "Nextflow mock MVP smoke",
+                    "Nextflow standard branch smoke",
+                    "Nextflow standard single-tool smoke",
+                    "Nextflow WGD event smoke",
+                ],
             ),
             "Nextflow DSL2 workflow",
-            "Nextflow mock, standard, and WGD smoke checks",
-            "DSL2 entrypoints are smoke-tested through GeneFamilyFlow.",
+            "Nextflow mock, standard, single-tool, and WGD smoke checks",
+            "DSL2 entrypoints, including HMMER-only and DIAMOND-only single-tool routing, are smoke-tested through GeneFamilyFlow.",
         ),
         _achieved_if(
             _all_passed(release, ["validate example config", "validate advanced config"]),
