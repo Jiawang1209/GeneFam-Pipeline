@@ -63,7 +63,7 @@ def run_container_profile_smoke(
     path_exists: Callable[[str], bool] = lambda path: Path(path).exists(),
 ) -> dict[str, str]:
     runtime_command = runtime_command_for_profile(profile)
-    profile_outdir = Path(outdir) / profile / "mock_mvp"
+    profile_outdir = Path(outdir) / "mock_mvp"
     command = build_container_smoke_command(
         nextflow_bin=nextflow_bin,
         profile=profile,

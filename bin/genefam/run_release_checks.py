@@ -162,6 +162,34 @@ def default_checks() -> list[CheckSpec]:
                 "results/readiness",
             ],
         ),
+        CheckSpec(
+            "Docker profile smoke",
+            [
+                python,
+                "bin/genefam/run_container_profile_smoke.py",
+                "--profile",
+                "docker",
+                "--conda-env",
+                "GeneFamilyFlow",
+                "--outdir",
+                "results/container_profile_smoke/docker",
+            ],
+            required=False,
+        ),
+        CheckSpec(
+            "Apptainer profile smoke",
+            [
+                python,
+                "bin/genefam/run_container_profile_smoke.py",
+                "--profile",
+                "apptainer",
+                "--conda-env",
+                "GeneFamilyFlow",
+                "--outdir",
+                "results/container_profile_smoke/apptainer",
+            ],
+            required=False,
+        ),
     ]
 
 

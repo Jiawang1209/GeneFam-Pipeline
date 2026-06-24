@@ -2845,9 +2845,62 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item is `Docker/Apptainer reproducibility`.
 
 Commit:
-- hash: pending
+- hash: 84f7392ade220477e4c17fa643cebcefbd7f81bc
 - message: feat: add container profile smoke verifier
 - files: container profile smoke verifier, runtime/release docs, tests, history
 
 Next:
 - Once Docker or Apptainer is available, run the new container profile smoke verifier for the corresponding profile and rerun release checks/objective audit.
+
+## 2026-06-24 - Add optional container smoke to release gate
+
+Context:
+- Container profile smoke verification existed as a standalone command, but the default release gate did not yet run it automatically.
+- Docker/Apptainer are still unavailable on this machine, so these checks should add evidence without turning into an additional required release blocker.
+- `HISTORY.md` also needed the actual commit hash for the previous container profile smoke checkpoint.
+
+Decisions:
+- Add optional `Docker profile smoke` and `Apptainer profile smoke` checks after the runtime bootstrap plan in `run_release_checks.py`.
+- Keep both checks `required=False`, so missing container runtimes are visible in release outputs while `release_ready` remains controlled by required checks.
+- Use profile-specific output directories under `results/container_profile_smoke/docker` and `results/container_profile_smoke/apptainer`.
+- Fix `run_container_profile_smoke.py` so profile-specific output directories do not duplicate the profile name inside the Nextflow `--outdir`.
+- Update runtime and release-audit docs to describe the profile-specific report paths.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_container_profile_smoke.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `docs/runtime_environment.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_container_profile_smoke.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_release_checks.py::test_summarize_checks_keeps_release_ready_when_only_optional_checks_fail tests/test_run_release_checks.py::test_default_checks_include_optional_container_profile_smokes_after_bootstrap -q` first failed because default release checks did not include `Docker profile smoke`.
+- After adding the optional checks, `python -m pytest tests/test_run_release_checks.py::test_summarize_checks_keeps_release_ready_when_only_optional_checks_fail tests/test_run_release_checks.py::test_default_checks_include_optional_container_profile_smokes_after_bootstrap tests/test_release_audit_docs.py tests/test_runtime_environment_files.py::test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file -q` passed with 4 tests.
+- `python -m pytest tests/test_runtime_environment_files.py::test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file tests/test_release_audit_docs.py -q` first failed after tightening expected profile-specific report paths.
+- After updating docs, `python -m pytest tests/test_run_release_checks.py tests/test_runtime_environment_files.py::test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file tests/test_release_audit_docs.py -q` passed with 18 tests.
+- `python -m pytest tests/test_run_container_profile_smoke.py::test_run_container_profile_smoke_does_not_duplicate_profile_named_outdir -q` first failed because the command used `results/container_profile_smoke/docker/docker/mock_mvp`.
+- After fixing the script, `python -m pytest tests/test_run_container_profile_smoke.py tests/test_run_release_checks.py tests/test_runtime_environment_files.py::test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file tests/test_release_audit_docs.py -q` passed with 24 tests.
+- `python -m pytest tests -q` passed with 172 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`; required checks still fail only at readiness because Docker/Apptainer are missing, while optional `Docker profile smoke` and `Apptainer profile smoke` also report failed evidence.
+- `results/release_checks/release_checks.md` reports `Passed: 12`, `Failed: 3`, and `Release ready: false`.
+- `results/container_profile_smoke/docker/container_profile_smoke.tsv` reports `missing_runtime` for Docker with Nextflow output path `results/container_profile_smoke/docker/mock_mvp`.
+- `results/container_profile_smoke/apptainer/container_profile_smoke.tsv` reports `missing_runtime` for Apptainer with Nextflow output path `results/container_profile_smoke/apptainer/mock_mvp`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item is `Docker/Apptainer reproducibility`.
+
+Commit:
+- hash: pending
+- message: feat: add optional container smoke release checks
+- files: release gate container smoke integration, container smoke path fix, runtime/release docs, tests, history
+
+Next:
+- Once Docker or Apptainer is installed, rerun `python bin/genefam/run_release_checks.py --outdir results/release_checks` and confirm the corresponding optional container profile smoke changes from `missing_runtime` to `passed`.

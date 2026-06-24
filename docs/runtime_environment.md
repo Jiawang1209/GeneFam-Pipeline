@@ -96,7 +96,7 @@ Docker smoke verifier:
 ```bash
 python bin/genefam/run_container_profile_smoke.py --profile docker \
   --conda-env GeneFamilyFlow \
-  --outdir results/container_profile_smoke
+  --outdir results/container_profile_smoke/docker
 ```
 
 Apptainer execution:
@@ -113,13 +113,15 @@ Apptainer smoke verifier:
 ```bash
 python bin/genefam/run_container_profile_smoke.py --profile apptainer \
   --conda-env GeneFamilyFlow \
-  --outdir results/container_profile_smoke
+  --outdir results/container_profile_smoke/apptainer
 ```
 
 The container smoke verifier writes:
 
-- `results/container_profile_smoke/container_profile_smoke.tsv`
-- `results/container_profile_smoke/container_profile_smoke.md`
+- `results/container_profile_smoke/docker/container_profile_smoke.tsv`
+- `results/container_profile_smoke/docker/container_profile_smoke.md`
+- `results/container_profile_smoke/apptainer/container_profile_smoke.tsv`
+- `results/container_profile_smoke/apptainer/container_profile_smoke.md`
 
 ## Current Verification Boundary
 

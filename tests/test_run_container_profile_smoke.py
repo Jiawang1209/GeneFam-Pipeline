@@ -52,6 +52,8 @@ def test_run_container_profile_smoke_reports_missing_runtime_before_nextflow():
     assert row["status"] == "missing_runtime"
     assert row["exit_code"] == "127"
     assert "docker was not found" in row["note"]
+    assert "--outdir results/container_profile_smoke/mock_mvp" in row["command"]
+    assert "docker/docker/mock_mvp" not in row["command"]
 
 
 def test_run_container_profile_smoke_reports_missing_nextflow_after_runtime_exists():
@@ -69,6 +71,22 @@ def test_run_container_profile_smoke_reports_missing_nextflow_after_runtime_exis
     assert row["check"] == "apptainer_profile_smoke"
     assert row["status"] == "missing_nextflow"
     assert "nextflow was not found" in row["note"]
+
+
+def test_run_container_profile_smoke_does_not_duplicate_profile_named_outdir():
+    row = run_container_profile_smoke(
+        profile="docker",
+        nextflow_bin="nextflow",
+        config="configs/example.config.yaml",
+        groups="configs/species_groups.yaml",
+        mock_evidence_dir="tests/fixtures/mock_evidence",
+        outdir="results/container_profile_smoke/docker",
+        which=lambda command: "",
+        path_exists=lambda path: True,
+    )
+
+    assert "--outdir results/container_profile_smoke/docker/mock_mvp" in row["command"]
+    assert "docker/docker/mock_mvp" not in row["command"]
 
 
 def test_run_container_profile_smoke_cli_writes_outputs(tmp_path):

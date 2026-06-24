@@ -76,7 +76,8 @@ def test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file():
     assert "GeneFamilyFlow.linux-64.conda.yaml" in text
     assert "python bin/genefam/run_container_profile_smoke.py --profile docker" in text
     assert "python bin/genefam/run_container_profile_smoke.py --profile apptainer" in text
-    assert "results/container_profile_smoke/container_profile_smoke.md" in text
+    assert "results/container_profile_smoke/docker/container_profile_smoke.md" in text
+    assert "results/container_profile_smoke/apptainer/container_profile_smoke.md" in text
 
 
 def test_advanced_module_examples_document_safe_enablement():

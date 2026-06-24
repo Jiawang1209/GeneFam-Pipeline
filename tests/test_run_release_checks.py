@@ -61,6 +61,22 @@ def test_summarize_checks_marks_release_not_ready_when_required_check_fails():
     assert summarize_checks(rows) == {"passed": 1, "failed": 1, "release_ready": False}
 
 
+def test_summarize_checks_keeps_release_ready_when_only_optional_checks_fail():
+    rows = [
+        {"check": "unit tests", "required": "true", "status": "passed", "exit_code": "0", "command": "pytest", "note": ""},
+        {
+            "check": "Docker profile smoke",
+            "required": "false",
+            "status": "failed",
+            "exit_code": "127",
+            "command": "container smoke",
+            "note": "docker missing",
+        },
+    ]
+
+    assert summarize_checks(rows) == {"passed": 1, "failed": 1, "release_ready": True}
+
+
 def test_run_release_checks_cli_writes_outputs(tmp_path):
     outdir = tmp_path / "release"
 
@@ -109,6 +125,30 @@ def test_default_checks_generate_runtime_bootstrap_after_readiness_audit():
     bootstrap = next(check for check in default_checks() if check.name == "runtime bootstrap plan")
     assert "bin/genefam/plan_runtime_bootstrap.py" in " ".join(bootstrap.command)
     assert "--readiness results/readiness/command_readiness.tsv" in " ".join(bootstrap.command)
+
+
+def test_default_checks_include_optional_container_profile_smokes_after_bootstrap():
+    checks = default_checks()
+    names = [check.name for check in checks]
+
+    assert names.index("Docker profile smoke") > names.index("runtime bootstrap plan")
+    assert names.index("Apptainer profile smoke") > names.index("Docker profile smoke")
+
+    docker = next(check for check in checks if check.name == "Docker profile smoke")
+    assert docker.required is False
+    docker_command = " ".join(docker.command)
+    assert "bin/genefam/run_container_profile_smoke.py" in docker_command
+    assert "--profile docker" in docker_command
+    assert "--conda-env GeneFamilyFlow" in docker_command
+    assert "--outdir results/container_profile_smoke/docker" in docker_command
+
+    apptainer = next(check for check in checks if check.name == "Apptainer profile smoke")
+    assert apptainer.required is False
+    apptainer_command = " ".join(apptainer.command)
+    assert "bin/genefam/run_container_profile_smoke.py" in apptainer_command
+    assert "--profile apptainer" in apptainer_command
+    assert "--conda-env GeneFamilyFlow" in apptainer_command
+    assert "--outdir results/container_profile_smoke/apptainer" in apptainer_command
 
 
 def test_default_checks_include_standard_branch_smoke_before_readiness():
