@@ -21,8 +21,10 @@ After the release gate finishes, the first file to inspect is:
 
 - `results/handoff/handoff_report.md`
 - `results/handoff/handoff_summary.tsv`
+- `results/delivery_bundle/delivery_manifest.tsv`
+- `results/delivery_bundle/delivery_bundle.md`
 
-The Markdown report is the human-facing handoff. The TSV summary carries the same top-level status sections in a stable `section` / `summary` table for automated checks. They summarize release readiness, objective completion, available and missing runtime commands, and container-profile smoke status.
+The handoff Markdown is the human-facing status summary. The delivery bundle is the final index for standard reports, prepared WGD reports, alpha/beta/gamma/theta event evidence, runtime availability, and documentation entrypoints. The TSV summaries carry stable machine-readable tables for automated checks. Together they summarize release readiness, objective completion, available and missing runtime commands, container-profile smoke status, and the report/evidence files to open first.
 
 Expected core mock outputs:
 

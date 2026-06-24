@@ -76,6 +76,8 @@ def test_readiness_checklist_documents_command_audit():
     assert "meme" in text
     assert "results/handoff/handoff_report.md" in text
     assert "results/handoff/handoff_summary.tsv" in text
+    assert "results/delivery_bundle/delivery_manifest.tsv" in text
+    assert "results/delivery_bundle/delivery_bundle.md" in text
     assert "first file to inspect" in text
 
 

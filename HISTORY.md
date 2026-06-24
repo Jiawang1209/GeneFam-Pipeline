@@ -4586,12 +4586,50 @@ Verification:
 - `results/delivery_bundle/delivery_manifest.tsv` still lists standard and WGD final reports, alpha/beta/gamma/theta event evidence, GeneFamilyFlow, `/usr/local/bin/R`, and missing `docker`/`apptainer`.
 
 Commit:
-- hash: pending
+- hash: 51bf60a336ca4a5ab9fe72ff2c617ddf874ed560
 - message: fix: refresh delivery bundle in local acceptance
 - files: local acceptance script, acceptance tests, history
 
 Next:
 - Commit the local acceptance refresh, then continue toward the final objective while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Document delivery bundle in readiness checklist
+
+Context:
+- README, quickstart, release audit, release gate, and local acceptance now all surface `results/delivery_bundle/`.
+- `docs/readiness_checklist.md` still pointed only to the handoff report and summary, so users following the readiness checklist could miss the final report/evidence index.
+
+Decisions:
+- Extend the readiness checklist contract test to require both delivery bundle outputs.
+- Update the checklist to describe the handoff report as status summary and the delivery bundle as the final index for standard reports, prepared WGD reports, alpha/beta/gamma/theta evidence, runtime availability, and docs.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `docs/readiness_checklist.md`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_runtime_environment_files.py::test_readiness_checklist_documents_command_audit -q` first failed because `docs/readiness_checklist.md` did not mention `results/delivery_bundle/delivery_manifest.tsv` or `results/delivery_bundle/delivery_bundle.md`.
+- The same command passed with 1 test after updating the readiness checklist.
+- `python -m pytest tests -q` passed with 240 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 24`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; the embedded pytest check reports `240 passed`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+- `results/delivery_bundle/delivery_manifest.tsv` still lists standard and WGD final reports, alpha/beta/gamma/theta event evidence, GeneFamilyFlow, `/usr/local/bin/R`, and missing `docker`/`apptainer`.
+
+Commit:
+- hash: pending
+- message: docs: list delivery bundle in readiness checklist
+- files: readiness checklist, runtime docs test, history
+
+Next:
+- Commit the readiness checklist update, then continue toward the final objective while Docker/Apptainer remains the external runtime blocker.
 
 ## 2026-06-25 - Add species selection release smoke
 
