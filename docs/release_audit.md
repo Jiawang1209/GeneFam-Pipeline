@@ -25,6 +25,19 @@ python bin/genefam/run_wgd_smoke.py \
   --events-config configs/wgd_events.brassicaceae.yaml \
   --outdir results/wgd_smoke
 python bin/genefam/run_nextflow_smoke.py --outdir results/nextflow_smoke
+python bin/genefam/run_nextflow_wgd_smoke.py --outdir results/nextflow_wgd_smoke
+PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH" nextflow run workflows/main.nf \
+  -c workflows/nextflow.config \
+  -profile activated \
+  --config configs/example.config.yaml \
+  --run_duplication_retention true \
+  --duplicates examples/prepared_wgd_handoff/duplicate_types.tsv \
+  --family_members examples/prepared_wgd_handoff/family_candidates.tsv \
+  --kaks_pairs examples/prepared_wgd_handoff/kaks_pairs.tsv \
+  --events_config configs/wgd_events.brassicaceae.yaml \
+  --ks_bins 0.3,0.8,1.5 \
+  --wgd_event_args "--event WGD_layer_1=alpha --event WGD_layer_2=beta --event WGD_layer_3=gamma --event WGD_layer_4=theta" \
+  --outdir results/example_prepared_wgd
 python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv
 python bin/genefam/plan_runtime_bootstrap.py \
   --readiness results/readiness/command_readiness.tsv \
@@ -60,6 +73,7 @@ The release checks runner writes:
 | phylogeny | `bin/genefam/prepare_phylogeny_inputs.py`; `workflows/modules/alignment_phylogeny.nf` | `python -m pytest tests/test_prepare_phylogeny_inputs.py tests/test_workflow_modules.py -q` |
 | motif | `bin/genefam/parse_meme_motifs.py`; `workflows/modules/alignment_phylogeny.nf` | `python -m pytest tests/test_parse_meme_motifs.py tests/test_workflow_modules.py -q` |
 | synteny | `bin/genefam/parse_mcscanx_collinearity.py`; `workflows/modules/duplication_retention.nf` prepared-table branch | `python -m pytest tests/test_parse_mcscanx_collinearity.py tests/test_workflow_modules.py -q` |
+| standard-to-WGD prepared handoff | `docs/standard_to_wgd_handoff.md`; `examples/prepared_wgd_handoff/`; `examples/prepared_wgd_handoff/family_candidates.tsv`; `examples/prepared_wgd_handoff/duplicate_types.tsv`; `examples/prepared_wgd_handoff/kaks_pairs.tsv`; `results/example_prepared_wgd/report/final_report.md` | `python -m pytest tests/test_prepared_wgd_handoff_example.py -q` and the `--run_duplication_retention true` Nextflow command above |
 | duplication retention | `bin/genefam/normalize_duplicate_types.py`; `bin/genefam/join_family_duplicates.py`; `bin/genefam/retention_enrichment.py` | `python -m pytest tests/test_normalize_duplicate_types.py tests/test_join_family_duplicates.py tests/test_retention_enrichment.py -q` |
 | WGD layer and named event model | `bin/genefam/classify_wgd_layers.py`; `bin/genefam/build_wgd_event_evidence.py`; `bin/genefam/run_wgd_smoke.py`; `configs/wgd_events.brassicaceae.yaml`; `results/wgd_smoke/report/final_report.md` | `python -m pytest tests/test_classify_wgd_layers.py tests/test_build_wgd_event_evidence.py tests/test_run_wgd_smoke.py -q` |
 | gamma beta alpha theta interpretation | `configs/wgd_events.brassicaceae.yaml`; `docs/wgd_event_evidence.md`; `docs/duplication_retention_design.md` | `python -m pytest tests/test_build_wgd_event_evidence.py -q` |

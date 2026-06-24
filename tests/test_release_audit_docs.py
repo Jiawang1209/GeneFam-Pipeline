@@ -57,10 +57,15 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "run_standard_smoke.py" in text
     assert "run_wgd_smoke.py" in text
     assert "run_nextflow_smoke.py" in text
+    assert "run_nextflow_wgd_smoke.py" in text
+    assert "examples/prepared_wgd_handoff" in text
+    assert "test_prepared_wgd_handoff_example.py" in text
     assert "results/standard_smoke/report/final_report.md" in text
     assert "results/wgd_smoke/report/final_report.md" in text
     assert "results/nextflow_smoke/nextflow_smoke.md" in text
+    assert "results/example_prepared_wgd/report/final_report.md" in text
     assert "--run_identification true" in text
+    assert "--run_duplication_retention true" in text
     assert "nextflow" in text
     assert "docker" in text
     assert "mafft" in text

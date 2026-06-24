@@ -2497,7 +2497,44 @@ Verification:
 - `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
 
 Commit:
-- pending
+- hash: 7ee8914b5ce334254d6cd0ed68733bff05396a8b
+- message: docs: add prepared WGD handoff example
+- files: prepared WGD handoff example TSVs, example README, contract tests, history
 
 Next:
 - Consider adding a small release audit row for the prepared handoff example, then continue toward container-runtime verification when Docker or Apptainer is available.
+
+## 2026-06-24 - Audit prepared WGD handoff release evidence
+
+Context:
+- The prepared WGD handoff example had a tested Nextflow command, but the release audit did not yet expose it as part of the requirement-to-evidence map.
+- Users need one release-facing checklist that shows how the standard identification outputs can be converted into WGD event evidence through prepared MCScanX/Ka/Ks tables.
+
+Decisions:
+- Extend `docs/release_audit.md` with the prepared WGD handoff command that runs `--run_duplication_retention true` on `examples/prepared_wgd_handoff/`.
+- Add a requirement audit row for the standard-to-WGD prepared handoff.
+- Lock this release audit coverage with `tests/test_release_audit_docs.py`.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because `docs/release_audit.md` did not mention `run_nextflow_wgd_smoke.py`.
+- After updating the release audit, `python -m pytest tests/test_release_audit_docs.py -q` passed with 1 test.
+- `python -m pytest tests -q` passed with 151 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker and Apptainer are missing, but pytest, config validation, mock MVP, Python standard branch smoke, Python WGD event smoke, Nextflow mock MVP smoke, Nextflow standard branch smoke, Nextflow WGD event smoke, and runtime bootstrap plan passed.
+- `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
+
+Commit:
+- pending
+
+Next:
+- Continue toward container-runtime verification when Docker or Apptainer is available, or add the next reusable project-facing example that can be verified entirely through `GeneFamilyFlow`.
