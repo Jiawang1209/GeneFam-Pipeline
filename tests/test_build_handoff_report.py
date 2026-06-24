@@ -50,6 +50,10 @@ def test_build_handoff_sections_summarizes_release_objective_and_runtime_state(t
     assert sections["release"] == "passed=1 failed=2 required_failed=1 optional_failed=1 release_ready=false"
     assert sections["objective"] == "achieved=1 blocked=1 missing=0 complete=false"
     assert sections["blocked_requirements"] == "Docker/Apptainer reproducibility"
+    assert (
+        sections["next_unblock_artifacts"]
+        == "results/readiness/runtime_bootstrap_plan.md, results/readiness/runtime_bootstrap.sh"
+    )
     assert sections["available_runtime"] == "nextflow"
     assert sections["missing_runtime"] == "docker, apptainer"
     assert sections["container_smoke"] == "docker=missing_runtime"
@@ -61,6 +65,7 @@ def test_write_handoff_markdown_contains_copyable_next_steps(tmp_path):
         "release": "passed=12 failed=3 required_failed=1 optional_failed=2 release_ready=false",
         "objective": "achieved=11 blocked=1 missing=0 complete=false",
         "blocked_requirements": "Docker/Apptainer reproducibility",
+        "next_unblock_artifacts": "results/readiness/runtime_bootstrap_plan.md, results/readiness/runtime_bootstrap.sh",
         "available_runtime": "nextflow, /usr/local/bin/R, hmmsearch",
         "missing_runtime": "docker, apptainer",
         "container_smoke": "docker=missing_runtime; apptainer=missing_runtime",
@@ -74,6 +79,9 @@ def test_write_handoff_markdown_contains_copyable_next_steps(tmp_path):
     assert "Available runtime commands" in text
     assert "Blocked requirements" in text
     assert "Docker/Apptainer reproducibility" in text
+    assert "Unblock artifacts" in text
+    assert "results/readiness/runtime_bootstrap_plan.md" in text
+    assert "results/readiness/runtime_bootstrap.sh" in text
     assert "nextflow, /usr/local/bin/R, hmmsearch" in text
     assert "docker, apptainer" in text
     assert "python bin/genefam/run_release_checks.py --outdir results/release_checks" in text
@@ -86,6 +94,7 @@ def test_write_handoff_summary_tsv_contains_stable_keys(tmp_path):
         "release": "passed=12 failed=3 required_failed=1 optional_failed=2 release_ready=false",
         "objective": "achieved=11 blocked=1 missing=0 complete=false",
         "blocked_requirements": "Docker/Apptainer reproducibility",
+        "next_unblock_artifacts": "results/readiness/runtime_bootstrap_plan.md, results/readiness/runtime_bootstrap.sh",
         "available_runtime": "nextflow, /usr/local/bin/R, hmmsearch",
         "missing_runtime": "docker, apptainer",
         "container_smoke": "docker=missing_runtime; apptainer=missing_runtime",
@@ -101,6 +110,10 @@ def test_write_handoff_summary_tsv_contains_stable_keys(tmp_path):
         },
         {"section": "objective", "summary": "achieved=11 blocked=1 missing=0 complete=false"},
         {"section": "blocked_requirements", "summary": "Docker/Apptainer reproducibility"},
+        {
+            "section": "next_unblock_artifacts",
+            "summary": "results/readiness/runtime_bootstrap_plan.md, results/readiness/runtime_bootstrap.sh",
+        },
         {"section": "available_runtime", "summary": "nextflow, /usr/local/bin/R, hmmsearch"},
         {"section": "missing_runtime", "summary": "docker, apptainer"},
         {"section": "container_smoke", "summary": "docker=missing_runtime; apptainer=missing_runtime"},
