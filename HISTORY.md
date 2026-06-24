@@ -3036,9 +3036,48 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item is `Docker/Apptainer reproducibility`.
 
 Commit:
-- hash: pending
+- hash: 7a6def8b21bb8a89b7a8b84260a25d8fa0a774be
 - message: docs: document handoff report entrypoint
 - files: README/readiness handoff entrypoint docs, tests, history
 
 Next:
 - Continue keeping the handoff report as the first human-facing status page while remaining runtime-blocked on Docker/Apptainer.
+
+## 2026-06-24 - Add available runtime summary to handoff report
+
+Context:
+- The handoff report showed missing runtime commands, but not the commands already available through the host or `GeneFamilyFlow`.
+- The final status page should distinguish "blocked on Docker/Apptainer" from "core Nextflow and bioinformatics tools are available".
+
+Decisions:
+- Add an `available_runtime` summary to `build_handoff_report.py`.
+- Treat readiness statuses beginning with `available` as available, including `available_in_conda`.
+- Show available runtime commands in `results/handoff/handoff_report.md`.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_handoff_report.py`
+- `tests/test_build_handoff_report.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_handoff_report.py -q` first failed because `available_runtime` was not returned and Markdown did not include `Available runtime commands`.
+- After adding the summary, `python -m pytest tests/test_build_handoff_report.py -q` passed with 3 tests.
+- `python -m pytest tests -q` passed with 179 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/handoff/handoff_report.md` now lists available runtime commands: `nextflow`, `conda`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2`, and `meme`.
+- The same handoff report lists missing runtime commands: `docker, apptainer`.
+- `results/release_checks/release_checks.md` reports `Passed: 12`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
+
+Commit:
+- hash: pending
+- message: feat: add available runtime handoff summary
+- files: handoff runtime availability summary, tests, history
+
+Next:
+- Keep using the handoff report as the top-level delivery status while Docker/Apptainer remain unavailable.

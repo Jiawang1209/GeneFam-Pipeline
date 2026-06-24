@@ -48,6 +48,7 @@ def test_build_handoff_sections_summarizes_release_objective_and_runtime_state(t
 
     assert sections["release"] == "passed=1 failed=2 required_failed=1 optional_failed=1 release_ready=false"
     assert sections["objective"] == "achieved=1 blocked=1 missing=0 complete=false"
+    assert sections["available_runtime"] == "nextflow"
     assert sections["missing_runtime"] == "docker, apptainer"
     assert sections["container_smoke"] == "docker=missing_runtime"
 
@@ -57,6 +58,7 @@ def test_write_handoff_markdown_contains_copyable_next_steps(tmp_path):
     sections = {
         "release": "passed=12 failed=3 required_failed=1 optional_failed=2 release_ready=false",
         "objective": "achieved=11 blocked=1 missing=0 complete=false",
+        "available_runtime": "nextflow, /usr/local/bin/R, hmmsearch",
         "missing_runtime": "docker, apptainer",
         "container_smoke": "docker=missing_runtime; apptainer=missing_runtime",
     }
@@ -66,6 +68,8 @@ def test_write_handoff_markdown_contains_copyable_next_steps(tmp_path):
     text = out.read_text(encoding="utf-8")
     assert "# GeneFam-Pipeline Handoff Report" in text
     assert "release_ready=false" in text
+    assert "Available runtime commands" in text
+    assert "nextflow, /usr/local/bin/R, hmmsearch" in text
     assert "docker, apptainer" in text
     assert "python bin/genefam/run_release_checks.py --outdir results/release_checks" in text
     assert "results/objective_audit/objective_audit.md" in text

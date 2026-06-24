@@ -42,6 +42,11 @@ def _missing_runtime(rows: list[dict[str, str]]) -> str:
     return ", ".join(missing) if missing else "none"
 
 
+def _available_runtime(rows: list[dict[str, str]]) -> str:
+    available = [row["command"] for row in rows if row.get("status", "").startswith("available")]
+    return ", ".join(available) if available else "none"
+
+
 def _container_smoke(rows: list[dict[str, str]]) -> str:
     if not rows:
         return "not_run"
@@ -58,6 +63,7 @@ def build_handoff_sections(
     return {
         "release": _release_summary(release_rows),
         "objective": _objective_summary(objective_rows),
+        "available_runtime": _available_runtime(readiness_rows),
         "missing_runtime": _missing_runtime(readiness_rows),
         "container_smoke": _container_smoke(container_rows),
     }
@@ -71,6 +77,7 @@ def write_markdown(sections: dict[str, str], out_path: Path) -> None:
         "",
         f"- Release checks: `{sections['release']}`",
         f"- Objective audit: `{sections['objective']}`",
+        f"- Available runtime commands: `{sections['available_runtime']}`",
         f"- Missing runtime commands: `{sections['missing_runtime']}`",
         f"- Container smoke: `{sections['container_smoke']}`",
         "",
