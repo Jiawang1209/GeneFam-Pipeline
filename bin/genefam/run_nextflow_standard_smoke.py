@@ -15,9 +15,30 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from bin.genefam.run_nextflow_smoke import resolve_nextflow_binary
+from bin.genefam.validate_config import load_config
 
 
 FIELDNAMES = ["check", "status", "exit_code", "command", "note"]
+
+
+def _bool_param(value: object) -> str:
+    if isinstance(value, str):
+        lowered = value.strip().lower()
+        if lowered in {"true", "1", "yes", "on"}:
+            return "true"
+        if lowered in {"false", "0", "no", "off"}:
+            return "false"
+    return str(bool(value)).lower()
+
+
+def load_identification_params(config_path: Path) -> dict[str, str]:
+    config = load_config(config_path)
+    identification = config.get("identification", {}) or {}
+    return {
+        "use_hmmer": _bool_param(identification.get("use_hmmer", True)),
+        "use_diamond": _bool_param(identification.get("use_diamond", True)),
+        "final_rule": str(identification.get("final_rule", "intersection")),
+    }
 
 
 def expected_published_outputs(standard_outdir: Path) -> list[Path]:
@@ -44,6 +65,9 @@ def build_nextflow_command(
     mock_evidence_dir: str,
     outdir: str,
     profile: str | None = None,
+    use_hmmer: bool | str = True,
+    use_diamond: bool | str = True,
+    final_rule: str = "intersection",
 ) -> list[str]:
     command = [
         nextflow_bin,
@@ -62,6 +86,12 @@ def build_nextflow_command(
             groups,
             "--run_identification",
             "true",
+            "--use_hmmer",
+            _bool_param(use_hmmer),
+            "--use_diamond",
+            _bool_param(use_diamond),
+            "--final_rule",
+            final_rule,
             "--mock_external_tools",
             "true",
             "--mock_evidence_dir",
@@ -108,6 +138,7 @@ def run_nextflow_standard_smoke(
     conda_env: str | None = None,
 ) -> dict[str, str]:
     resolved_nextflow = resolve_nextflow_binary(nextflow_bin, conda_env=conda_env)
+    identification_params = load_identification_params(Path(config))
     command_nextflow = resolved_nextflow or nextflow_bin
     profile = "activated" if conda_env and resolved_nextflow else None
     command = build_nextflow_command(
@@ -117,6 +148,7 @@ def run_nextflow_standard_smoke(
         mock_evidence_dir=mock_evidence_dir,
         outdir=str(outdir / "standard"),
         profile=profile,
+        **identification_params,
     )
     if not resolved_nextflow:
         return {

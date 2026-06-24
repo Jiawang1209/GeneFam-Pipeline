@@ -3431,9 +3431,52 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
 
 Commit:
-- hash: pending
+- hash: fa17d377a83d88b639c6a695d6eae390cb0d5a36
 - message: feat: wire single-tool standard evidence paths
 - files: standard branch evidence routing, empty evidence processes, Nextflow params, tests, history
 
 Next:
-- Run full tests and release checks, then commit and backfill the full commit hash.
+- Add a focused Nextflow smoke for HMMER-only or DIAMOND-only standard evidence routing if runtime fixtures are expanded.
+
+## 2026-06-25 - Pass identification flags into standard smoke
+
+Context:
+- The standard Nextflow branch now has `params.use_hmmer`, `params.use_diamond`, and `params.final_rule`.
+- `bin/genefam/run_nextflow_standard_smoke.py` still only passed the YAML path as `--config`; Nextflow did not automatically consume the YAML `identification` values as params.
+- The YAML-driven contract should be visible in the exact Nextflow command emitted by the standard smoke wrapper.
+
+Decisions:
+- Add `load_identification_params()` to read `identification.use_hmmer`, `identification.use_diamond`, and `identification.final_rule` from the YAML config.
+- Pass those values as `--use_hmmer`, `--use_diamond`, and `--final_rule` in the internal `nextflow run` command.
+- Normalize boolean params so both Python booleans and string values such as `"false"` are preserved correctly.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_nextflow_standard_smoke.py`
+- `tests/test_run_nextflow_standard_smoke.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py -q` first failed because `load_identification_params` did not exist.
+- After adding the helper and command params, `python -m pytest tests/test_run_nextflow_standard_smoke.py -q` failed because the old exact command expectation did not include the new params.
+- After updating the expected command, `python -m pytest tests/test_run_nextflow_standard_smoke.py -q` failed because string `"false"` was converted to `true`.
+- After tightening boolean normalization, `python -m pytest tests/test_run_nextflow_standard_smoke.py -q` passed with 7 tests.
+- `python -m pytest tests -q` passed with 190 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 12`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
+- `results/nextflow_standard_smoke/nextflow_standard_smoke.tsv` reports `nextflow_standard_identification` as `passed`; the internal command includes `--use_hmmer true --use_diamond true --final_rule intersection`.
+- `results/handoff/handoff_summary.tsv` still contains `next_unblock_command	bash results/readiness/runtime_bootstrap.sh`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
+
+Commit:
+- hash: pending
+- message: pending
+- files: pending
+
+Next:
+- Run full tests and the release gate, then commit this wrapper-level YAML propagation change.

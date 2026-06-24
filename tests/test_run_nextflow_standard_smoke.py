@@ -1,7 +1,11 @@
 import subprocess
 import sys
 
-from bin.genefam.run_nextflow_standard_smoke import build_nextflow_command, expected_published_outputs
+from bin.genefam.run_nextflow_standard_smoke import (
+    build_nextflow_command,
+    expected_published_outputs,
+    load_identification_params,
+)
 
 
 def test_build_nextflow_command_targets_standard_identification_branch():
@@ -25,6 +29,12 @@ def test_build_nextflow_command_targets_standard_identification_branch():
         "configs/species_groups.yaml",
         "--run_identification",
         "true",
+        "--use_hmmer",
+        "true",
+        "--use_diamond",
+        "true",
+        "--final_rule",
+        "intersection",
         "--mock_external_tools",
         "true",
         "--mock_evidence_dir",
@@ -53,6 +63,62 @@ def test_build_nextflow_command_can_use_activated_profile():
     ]
     assert "-profile" in command
     assert "activated" in command
+
+
+def test_build_nextflow_command_passes_identification_params():
+    command = build_nextflow_command(
+        nextflow_bin="nextflow",
+        config="configs/example.config.yaml",
+        groups="configs/species_groups.yaml",
+        mock_evidence_dir="tests/fixtures/mock_evidence",
+        outdir="results/nextflow_standard_smoke/standard",
+        use_hmmer=False,
+        use_diamond=True,
+        final_rule="union",
+    )
+
+    assert "--use_hmmer" in command
+    assert command[command.index("--use_hmmer") + 1] == "false"
+    assert "--use_diamond" in command
+    assert command[command.index("--use_diamond") + 1] == "true"
+    assert "--final_rule" in command
+    assert command[command.index("--final_rule") + 1] == "union"
+
+
+def test_build_nextflow_command_preserves_string_boolean_params():
+    command = build_nextflow_command(
+        nextflow_bin="nextflow",
+        config="configs/example.config.yaml",
+        groups="configs/species_groups.yaml",
+        mock_evidence_dir="tests/fixtures/mock_evidence",
+        outdir="results/nextflow_standard_smoke/standard",
+        use_hmmer="false",
+        use_diamond="true",
+    )
+
+    assert command[command.index("--use_hmmer") + 1] == "false"
+    assert command[command.index("--use_diamond") + 1] == "true"
+
+
+def test_load_identification_params_reads_yaml_tool_flags(tmp_path):
+    config = tmp_path / "disabled_hmmer.yaml"
+    config.write_text(
+        "\n".join(
+            [
+                "identification:",
+                "  use_hmmer: false",
+                "  use_diamond: true",
+                "  final_rule: union",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    assert load_identification_params(config) == {
+        "use_hmmer": "false",
+        "use_diamond": "true",
+        "final_rule": "union",
+    }
 
 
 def test_expected_published_outputs_cover_standard_user_results(tmp_path):
