@@ -2660,7 +2660,57 @@ Verification:
 - `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
 
 Commit:
-- pending
+- hash: 54a8c305501c277fe24b1d40a04ab5f440e7d7c9
+- message: docs: add verified quickstart handoff
+- files: quickstart handoff doc, README link, release audit evidence, quickstart tests, history
 
 Next:
 - Continue toward final runtime readiness; if Docker/Apptainer remain unavailable, keep improving user-facing runnable paths and release evidence.
+
+## 2026-06-24 - Add executable quickstart runner
+
+Context:
+- `docs/quickstart.md` described the shortest verified path, but users still had to run multiple commands and inspect separate outputs.
+- The final handoff benefits from a single command that proves the standard species-bank branch and prepared WGD handoff can both run and emits a compact summary.
+
+Decisions:
+- Add `bin/genefam/run_quickstart.py` to run the standard branch smoke and prepared WGD handoff.
+- Write `quickstart_summary.tsv` and `quickstart_summary.md` under the selected output directory.
+- Add `quickstart handoff` to release checks before the machine readiness audit.
+- Update quickstart and release-audit docs so the one-command handoff is discoverable.
+
+Added:
+- `bin/genefam/run_quickstart.py`
+- `tests/test_run_quickstart.py`
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_release_checks.py`
+- `docs/quickstart.md`
+- `docs/release_audit.md`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_quickstart.py -q` first failed because `bin/genefam/run_quickstart.py` did not exist.
+- After adding the runner, `python -m pytest tests/test_run_quickstart.py -q` passed with 3 tests.
+- `python -m pytest tests/test_run_release_checks.py -q` first failed because default release checks did not include `quickstart handoff`.
+- After wiring release checks, `python -m pytest tests/test_run_release_checks.py -q` passed with 13 tests.
+- `python -m pytest tests/test_quickstart_docs.py tests/test_release_audit_docs.py -q` first failed because docs did not mention `run_quickstart.py`.
+- After updating quickstart and release audit docs, the same doc test command passed with 3 tests.
+- `python bin/genefam/run_quickstart.py --conda-env GeneFamilyFlow --outdir results/quickstart` exited `0`.
+- `results/quickstart/quickstart_summary.tsv` reports `standard_branch_smoke` and `prepared_wgd_handoff` as `passed`.
+- `results/quickstart/standard_smoke/report/final_report.md`, `results/quickstart/example_prepared_wgd/report/final_report.md`, and `results/quickstart/example_prepared_wgd/tables/wgd_event_evidence.tsv` exist.
+- `python -m pytest tests -q` passed with 159 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker and Apptainer are missing, but pytest, config validation, mock MVP, Python standard branch smoke, Python WGD event smoke, Nextflow mock MVP smoke, Nextflow standard branch smoke, Nextflow WGD event smoke, prepared WGD handoff example, quickstart handoff, and runtime bootstrap plan passed.
+- `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
+
+Commit:
+- pending
+
+Next:
+- Continue toward final runtime readiness; if Docker/Apptainer remain unavailable, keep improving reproducible user handoffs and evidence summaries.

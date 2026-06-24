@@ -119,6 +119,17 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "quickstart handoff",
+            [
+                python,
+                "bin/genefam/run_quickstart.py",
+                "--conda-env",
+                "GeneFamilyFlow",
+                "--outdir",
+                "results/quickstart",
+            ],
+        ),
+        CheckSpec(
             "readiness audit",
             [
                 python,

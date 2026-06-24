@@ -22,7 +22,24 @@ Expected on the current Mac development machine:
 - The readiness audit may fail while `docker` and `apptainer` are unavailable.
 - Inspect `results/release_checks/release_checks.md` and `results/readiness/command_readiness.tsv` for exact evidence.
 
-## 2. Run The Standard Branch Smoke
+## 2. Run The Quickstart Handoff
+
+This one command runs the standard branch smoke and prepared WGD handoff, then writes a compact summary.
+
+```bash
+python bin/genefam/run_quickstart.py \
+  --conda-env GeneFamilyFlow \
+  --outdir results/quickstart
+```
+
+Key outputs:
+
+- `results/quickstart/quickstart_summary.tsv`
+- `results/quickstart/quickstart_summary.md`
+- `results/quickstart/standard_smoke/report/final_report.md`
+- `results/quickstart/example_prepared_wgd/report/final_report.md`
+
+## 3. Run The Standard Branch Smoke
 
 This checks the species-bank driven family identification post-processing path without requiring external HMMER or DIAMOND execution.
 
@@ -41,7 +58,7 @@ Key outputs:
 - `results/standard_smoke/sequences/family_members.faa`
 - `results/standard_smoke/report/final_report.md`
 
-## 3. Run The Prepared WGD Handoff
+## 4. Run The Prepared WGD Handoff
 
 This checks the reusable handoff from family candidates plus prepared duplication and Ka/Ks tables into WGD layer and named-event evidence.
 
@@ -61,7 +78,7 @@ Key outputs:
 
 The example verifies configured `alpha`, `beta`, `gamma`, and `theta` WGD event labels. These labels are interpreted from Ks-supported WGD layers and the configured event mapping; they are not raw MCScanX or Ka/Ks outputs.
 
-## 4. What To Read Next
+## 5. What To Read Next
 
 - `docs/input_contract.md`: species bank, YAML, and prepared-table contracts.
 - `docs/standard_to_wgd_handoff.md`: how standard branch outputs connect to WGD evidence.

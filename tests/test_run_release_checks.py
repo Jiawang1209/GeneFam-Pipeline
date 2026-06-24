@@ -167,6 +167,18 @@ def test_default_checks_include_prepared_wgd_handoff_example_before_readiness():
     assert "--outdir results/example_prepared_wgd" in command
 
 
+def test_default_checks_include_quickstart_handoff_before_readiness():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("quickstart handoff") < names.index("readiness audit")
+    assert names.index("quickstart handoff") > names.index("prepared WGD handoff example")
+    quickstart = next(check for check in default_checks() if check.name == "quickstart handoff")
+    command = " ".join(quickstart.command)
+    assert "bin/genefam/run_quickstart.py" in command
+    assert "--conda-env GeneFamilyFlow" in command
+    assert "--outdir results/quickstart" in command
+
+
 def test_default_readiness_check_audits_genefamilyflow_conda_env():
     readiness = next(check for check in default_checks() if check.name == "readiness audit")
 
