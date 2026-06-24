@@ -3531,9 +3531,59 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
 
 Commit:
+- hash: 6c6cbf1734710b8f054cb5eec5ffcd1318f80259
+- message: test: add single-tool nextflow standard smoke
+- files: single-tool Nextflow smoke, bool param parsing, focused family-candidate stop point, release check, tests, history
+
+Next:
+- Keep Docker/Apptainer as the explicit release blocker; continue improving release evidence without changing `Reference/`.
+
+## 2026-06-25 - Parameterize container images and bootstrap profile checks
+
+Context:
+- `workflows/nextflow.config` hard-coded Docker and Apptainer container names inside profiles.
+- Docker used the local image tag `genefam-pipeline:latest`, while Apptainer used `docker://genefam-pipeline:latest`, which is ambiguous for a locally built image.
+- `results/readiness/runtime_bootstrap.sh` built the Docker image but did not explicitly build a local Apptainer SIF or run the two container profile smoke checks before the full release gate.
+
+Decisions:
+- Add `params.container_image` and `params.apptainer_image` to `workflows/nextflow.config`.
+- Make the Docker profile use `params.container_image` and the Apptainer profile use `params.apptainer_image`.
+- Default `params.apptainer_image` to `genefam-pipeline_latest.sif` so the Apptainer route can use a local SIF produced by the bootstrap script.
+- Extend the runtime bootstrap plan and shell script with `apptainer build --force genefam-pipeline_latest.sif docker-daemon://genefam-pipeline:latest`.
+- Add explicit Docker and Apptainer profile smoke commands to the bootstrap outputs.
+- Document the container image parameters and Apptainer SIF build in `docs/runtime_environment.md`.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/plan_runtime_bootstrap.py`
+- `docs/runtime_environment.md`
+- `tests/test_plan_runtime_bootstrap.py`
+- `tests/test_runtime_environment_files.py`
+- `workflows/nextflow.config`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_runtime_environment_files.py::test_nextflow_config_has_container_profiles tests/test_plan_runtime_bootstrap.py::test_build_bootstrap_plan_groups_missing_commands_into_actionable_steps -q` first failed because container image params and Apptainer bootstrap/profile smoke commands were missing.
+- After parameterizing container images and extending the bootstrap plan, `python -m pytest tests/test_runtime_environment_files.py::test_nextflow_config_has_container_profiles tests/test_plan_runtime_bootstrap.py::test_build_bootstrap_plan_groups_missing_commands_into_actionable_steps tests/test_runtime_environment_files.py::test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file -q` passed with 3 tests.
+- `python -m pytest tests/test_plan_runtime_bootstrap.py tests/test_runtime_environment_files.py -q` passed with 15 tests.
+- `python bin/genefam/plan_runtime_bootstrap.py --readiness results/readiness/command_readiness.tsv --outdir results/readiness` exited `0`.
+- `results/readiness/runtime_bootstrap_plan.md` now documents `genefam-pipeline_latest.sif` and the Docker/Apptainer profile smoke commands.
+- `results/readiness/runtime_bootstrap.sh` now includes Docker build, Apptainer SIF build, Docker profile smoke, Apptainer profile smoke, and the full release gate.
+- `python -m pytest tests -q` passed with 195 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 13`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
+- `results/handoff/handoff_summary.tsv` still contains `next_unblock_command	bash results/readiness/runtime_bootstrap.sh`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Keep Docker/Apptainer as the explicit release blocker; continue improving release evidence without changing `Reference/`.
+- Once Docker and Apptainer are installed on the machine, run `bash results/readiness/runtime_bootstrap.sh` to build the local Docker image, build the Apptainer SIF, verify both profiles, and rerun the release gate.

@@ -63,6 +63,12 @@ Build the local image:
 docker build -t genefam-pipeline:latest .
 ```
 
+Build a local Apptainer image from the Docker image when Apptainer is available:
+
+```bash
+apptainer build --force genefam-pipeline_latest.sif docker-daemon://genefam-pipeline:latest
+```
+
 The Docker image creates the `GeneFamilyFlow` environment and links:
 
 ```text
@@ -70,6 +76,13 @@ The Docker image creates the `GeneFamilyFlow` environment and links:
 ```
 
 This preserves the project-wide R binary contract inside the container.
+
+Container image names are parameterized in `workflows/nextflow.config`:
+
+```text
+params.container_image = "genefam-pipeline:latest"
+params.apptainer_image = "genefam-pipeline_latest.sif"
+```
 
 ## Nextflow Profiles
 
@@ -88,7 +101,8 @@ Docker execution:
 nextflow run workflows/main.nf \
   -c workflows/nextflow.config \
   -profile docker \
-  --config configs/example.config.yaml
+  --config configs/example.config.yaml \
+  --container_image genefam-pipeline:latest
 ```
 
 Docker smoke verifier:
@@ -105,7 +119,8 @@ Apptainer execution:
 nextflow run workflows/main.nf \
   -c workflows/nextflow.config \
   -profile apptainer \
-  --config configs/example.config.yaml
+  --config configs/example.config.yaml \
+  --apptainer_image genefam-pipeline_latest.sif
 ```
 
 Apptainer smoke verifier:

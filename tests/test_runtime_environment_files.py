@@ -50,6 +50,10 @@ def test_nextflow_config_has_container_profiles():
     assert "docker" in config
     assert "apptainer" in config
     assert "genefam-pipeline:latest" in config
+    assert 'params.container_image = "genefam-pipeline:latest"' in config
+    assert 'params.apptainer_image = "genefam-pipeline_latest.sif"' in config
+    assert "process.container = params.container_image" in config
+    assert "process.container = params.apptainer_image" in config
     assert "params.use_hmmer = true" in config
     assert "params.use_diamond = true" in config
 
