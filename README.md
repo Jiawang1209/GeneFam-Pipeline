@@ -81,6 +81,12 @@ python bin/genefam/plan_runtime_bootstrap.py \
 
 The release checks runner writes TSV and Markdown summaries. The Nextflow smoke writes `results/nextflow_smoke/nextflow_smoke.md`; it runs the mock MVP through Nextflow when Nextflow is installed and otherwise records a `missing_nextflow` blocker. The readiness audit writes a TSV report and exits non-zero when required runtime commands are missing. The bootstrap planner converts the TSV into `results/readiness/runtime_bootstrap_plan.md` and `results/readiness/runtime_bootstrap.sh`.
 
+After `python bin/genefam/run_release_checks.py --outdir results/release_checks`, the first file to inspect is:
+
+- `results/handoff/handoff_report.md`
+
+It summarizes release readiness, objective completion, missing runtime commands, container-profile smoke status, and links back to the detailed evidence files.
+
 ## Reference Plotting Scripts
 
 The `Reference/` directory contains paper-derived plotting scripts and result examples. New reusable plots should inspect these scripts first, reuse their scientific plotting logic where appropriate, and then implement parameterized versions under `scripts/`.

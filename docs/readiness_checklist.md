@@ -17,6 +17,12 @@ python bin/genefam/run_mock_mvp.py \
   --outdir results/mock_mvp
 ```
 
+After the release gate finishes, the first file to inspect is:
+
+- `results/handoff/handoff_report.md`
+
+This handoff report summarizes release readiness, objective completion, missing runtime commands, and container-profile smoke status.
+
 Expected core mock outputs:
 
 - `results/mock_mvp/tables/species_manifest.tsv`

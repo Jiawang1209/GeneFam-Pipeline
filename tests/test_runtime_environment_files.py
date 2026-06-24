@@ -67,6 +67,8 @@ def test_readiness_checklist_documents_command_audit():
     assert "mafft" in text
     assert "iqtree2" in text
     assert "meme" in text
+    assert "results/handoff/handoff_report.md" in text
+    assert "first file to inspect" in text
 
 
 def test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file():
@@ -108,6 +110,14 @@ def test_readme_documents_explicit_standard_identification_branch():
     assert "run_wgd_smoke.py" in readme
     assert "run_nextflow_smoke.py" in readme
     assert "docs/standard_to_wgd_handoff.md" in readme
+
+
+def test_readme_points_to_final_handoff_report():
+    readme = Path("README.md").read_text(encoding="utf-8")
+
+    assert "results/handoff/handoff_report.md" in readme
+    assert "first file to inspect" in readme
+    assert "run_release_checks.py" in readme
 
 
 def test_standard_to_wgd_handoff_doc_links_identification_and_wgd_branches():
