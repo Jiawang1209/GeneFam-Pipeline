@@ -122,6 +122,18 @@ def test_readme_points_to_final_handoff_report():
     assert "run_release_checks.py" in readme
 
 
+def test_readme_current_status_matches_release_evidence():
+    readme = Path("README.md").read_text(encoding="utf-8")
+
+    assert "Full external-tool workflow wiring is still under development" not in readme
+    assert "Current Status" in readme
+    assert "repository-ready but runtime-blocked" in readme
+    assert "Docker/Apptainer reproducibility" in readme
+    assert "standard identification branch" in readme
+    assert "prepared-table WGD branch" in readme
+    assert "results/handoff/handoff_summary.tsv" in readme
+
+
 def test_standard_to_wgd_handoff_doc_links_identification_and_wgd_branches():
     text = Path("docs/standard_to_wgd_handoff.md").read_text(encoding="utf-8")
 

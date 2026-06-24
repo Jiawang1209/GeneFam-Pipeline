@@ -59,6 +59,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/container_profile_smoke/docker/container_profile_smoke.md" in text
     assert "results/container_profile_smoke/apptainer/container_profile_smoke.md" in text
     assert "results/handoff/handoff_report.md" in text
+    assert "results/handoff/handoff_summary.tsv" in text
     assert "docs/quickstart.md" in text
     assert "build_identification_inputs.py" in text
     assert "extract_family_sequences.py" in text

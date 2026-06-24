@@ -205,11 +205,9 @@ It writes `results/wgd_smoke/report/final_report.md` and is included in `python 
 
 ## Current Status
 
-- Project governance files are in place.
-- YAML config and schema draft are in place.
-- Species discovery helper is implemented and tested.
-- Offline mock MVP runner is implemented and tested.
-- Report index generation is implemented for stable downstream reporting.
-- Duplication, WGD-event, and retention helper processes are wired as a prepared-table Nextflow branch.
-- Alignment, phylogeny, motif parsing, chromosome location, and optional expression-subset processes are represented as Nextflow DSL2 modules; chromosome location is wired into the standard identification report contract.
-- Full external-tool workflow wiring is still under development.
+- The repository is repository-ready but runtime-blocked on this machine until Docker/Apptainer reproducibility can be verified.
+- YAML-driven species-bank discovery, manual species selection, named species groups, and run-plan generation are implemented and tested.
+- The standard identification branch is wired through Nextflow DSL2 for HMMER, DIAMOND, domain filtering, family summaries, family FASTA extraction, alignment and phylogeny manifests, chromosome locations, optional RNA-seq expression handoff, plotting, and final report assembly.
+- The prepared-table WGD branch is wired through Nextflow DSL2 for duplicate classification, Ka/Ks-supported WGD layers, gamma/beta/alpha/theta named-event evidence, family event membership, retention summaries, retention enrichment, and final report assembly.
+- The local `GeneFamilyFlow` runtime verifies Nextflow, HMMER, DIAMOND, MAFFT, IQ-TREE, MEME, and `/usr/local/bin/R`; Docker/Apptainer remain the current machine-level blocker.
+- The top-level delivery status is written to `results/handoff/handoff_report.md` for humans and `results/handoff/handoff_summary.tsv` for scripts after each release-gate run.

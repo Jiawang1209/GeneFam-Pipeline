@@ -3124,9 +3124,52 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item is still Docker/Apptainer reproducibility.
 
 Commit:
-- hash: pending
+- hash: 1c097218ffa0b717899f18878713dd89b341d0e0
 - message: feat: add machine-readable handoff summary
 - files: handoff summary TSV writer, release runner integration, README/readiness docs, tests, history
+
+Next:
+- Keep the Markdown and TSV handoff files as the top-level release evidence while Docker/Apptainer remain unavailable.
+
+## 2026-06-24 - Align README status with release evidence
+
+Context:
+- README still contained an early statement that full external-tool workflow wiring was under development.
+- Current release evidence shows the standard branch and prepared WGD branch are wired and tested through `GeneFamilyFlow`; the remaining blocker is machine-level Docker/Apptainer availability.
+- The release audit output list also needed to include the machine-readable handoff summary.
+
+Decisions:
+- Replace the stale README Current Status section with evidence-aligned repository-ready/runtime-blocked wording.
+- Mention the standard identification branch, prepared-table WGD branch, gamma/beta/alpha/theta evidence path, available `GeneFamilyFlow` commands, and Docker/Apptainer blocker.
+- Add `results/handoff/handoff_summary.tsv` to the release audit output list.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_runtime_environment_files.py::test_readme_current_status_matches_release_evidence tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` first failed because README still said full external-tool wiring was under development and release audit did not mention `results/handoff/handoff_summary.tsv`.
+- After updating docs, the same command passed with 2 tests.
+- `python -m pytest tests -q` passed with 181 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 12`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
+- `results/handoff/handoff_report.md` reports `passed=12 failed=3 required_failed=1 optional_failed=2 release_ready=false`, `achieved=11 blocked=1 missing=0 complete=false`, available runtime commands `nextflow`, `conda`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2`, and `meme`, and missing runtime commands `docker, apptainer`.
+- `results/handoff/handoff_summary.tsv` contains matching `release`, `objective`, `available_runtime`, `missing_runtime`, and `container_smoke` sections.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item remains Docker/Apptainer reproducibility.
+
+Commit:
+- hash: pending
+- message: docs: align status with release evidence
+- files: README current status, release audit output list, docs tests, history
 
 Next:
 - Run full tests and release checks, then commit and backfill the full commit hash.
