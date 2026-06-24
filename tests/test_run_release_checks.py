@@ -154,6 +154,19 @@ def test_default_checks_include_nextflow_wgd_smoke_before_readiness():
     assert "--outdir results/nextflow_wgd_smoke" in " ".join(smoke.command)
 
 
+def test_default_checks_include_prepared_wgd_handoff_example_before_readiness():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("prepared WGD handoff example") < names.index("readiness audit")
+    assert names.index("prepared WGD handoff example") > names.index("Nextflow WGD event smoke")
+    example = next(check for check in default_checks() if check.name == "prepared WGD handoff example")
+    command = " ".join(example.command)
+    assert "bin/genefam/run_prepared_wgd_handoff_example.py" in command
+    assert "--conda-env GeneFamilyFlow" in command
+    assert "--example-dir examples/prepared_wgd_handoff" in command
+    assert "--outdir results/example_prepared_wgd" in command
+
+
 def test_default_readiness_check_audits_genefamilyflow_conda_env():
     readiness = next(check for check in default_checks() if check.name == "readiness audit")
 

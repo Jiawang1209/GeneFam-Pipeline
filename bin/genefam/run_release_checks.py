@@ -106,6 +106,19 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "prepared WGD handoff example",
+            [
+                python,
+                "bin/genefam/run_prepared_wgd_handoff_example.py",
+                "--conda-env",
+                "GeneFamilyFlow",
+                "--example-dir",
+                "examples/prepared_wgd_handoff",
+                "--outdir",
+                "results/example_prepared_wgd",
+            ],
+        ),
+        CheckSpec(
             "readiness audit",
             [
                 python,

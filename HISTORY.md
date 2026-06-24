@@ -2534,7 +2534,52 @@ Verification:
 - `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
 
 Commit:
-- pending
+- hash: 7a192a746a5661818bf898fe7f5f5bac586ba5dc
+- message: docs: audit prepared WGD handoff evidence
+- files: release audit prepared WGD handoff evidence, release audit tests, history
 
 Next:
 - Continue toward container-runtime verification when Docker or Apptainer is available, or add the next reusable project-facing example that can be verified entirely through `GeneFamilyFlow`.
+
+## 2026-06-24 - Add prepared WGD handoff release gate
+
+Context:
+- The prepared WGD handoff example was documented and independently runnable, but `run_release_checks.py` did not yet execute it as a formal release gate.
+- The final pipeline should have a single release-check command that proves the standard-to-WGD prepared-table path can run through Nextflow and produce named alpha, beta, gamma, and theta event evidence.
+
+Decisions:
+- Add `bin/genefam/run_prepared_wgd_handoff_example.py` as a wrapper around the prepared example Nextflow command.
+- Make the wrapper verify required example inputs, published WGD outputs, and presence of alpha, beta, gamma, and theta in `wgd_event_evidence.tsv`.
+- Add `prepared WGD handoff example` to the default release checks before the readiness audit.
+- Update release audit documentation and tests so the new gate is discoverable.
+
+Added:
+- `bin/genefam/run_prepared_wgd_handoff_example.py`
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_release_checks.py -q` first failed because the default check list did not contain `prepared WGD handoff example`.
+- After adding the wrapper and default release check, `python -m pytest tests/test_run_release_checks.py -q` passed with 12 tests.
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because `docs/release_audit.md` did not mention `run_prepared_wgd_handoff_example.py`.
+- After updating the release audit, `python -m pytest tests/test_release_audit_docs.py -q` passed with 1 test.
+- `python bin/genefam/run_prepared_wgd_handoff_example.py --conda-env GeneFamilyFlow --example-dir examples/prepared_wgd_handoff --outdir results/example_prepared_wgd` exited `0`.
+- `results/example_prepared_wgd/prepared_wgd_handoff_example.tsv` reports `prepared_wgd_handoff_example` as `passed`.
+- `results/example_prepared_wgd/tables/wgd_event_evidence.tsv` contains alpha, beta, gamma, and theta rows.
+- `python -m pytest tests -q` passed with 152 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker and Apptainer are missing, but pytest, config validation, mock MVP, Python standard branch smoke, Python WGD event smoke, Nextflow mock MVP smoke, Nextflow standard branch smoke, Nextflow WGD event smoke, prepared WGD handoff example, and runtime bootstrap plan passed.
+- `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
+
+Commit:
+- pending
+
+Next:
+- Continue toward container-runtime verification when Docker or Apptainer is available; otherwise focus on reusable user-facing examples and documentation that are fully verifiable through `GeneFamilyFlow`.
