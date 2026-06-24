@@ -2453,8 +2453,51 @@ Verification:
 - `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
 
 Commit:
-- pending
+- hash: 37d0fa0c6b0cb10702691a924ed6fd760d31c8dc
+- message: docs: add standard to WGD handoff
+- files: standard-to-WGD handoff guide, README link, documentation tests, history
 
 Next:
 - Add or document a minimal real-data style fixture for prepared MCScanX/KaKs handoff tables so users can copy a complete folder-level example.
 - After container runtimes are installed or exposed, rerun release checks to verify Docker/Apptainer profiles.
+
+## 2026-06-24 - Add prepared WGD handoff example
+
+Context:
+- The standard-to-WGD handoff guide described required prepared tables, but users still needed a small folder-level example they could copy when preparing real MCScanX/KaKs-derived inputs.
+- The final workflow should include examples that exercise the same contracts as the Nextflow WGD branch.
+
+Decisions:
+- Add `examples/prepared_wgd_handoff/` with minimal `family_candidates.tsv`, `duplicate_types.tsv`, `kaks_pairs.tsv`, and README.
+- Make the example cover alpha, beta, gamma, and theta WGD layers through Ks values and configured event names.
+- Add tests that run the example rows through the actual duplicate-normalization, family-join, and WGD-layer classification helpers.
+- Verify the README command by running the documented Nextflow WGD branch against the example files.
+
+Added:
+- `examples/prepared_wgd_handoff/README.md`
+- `examples/prepared_wgd_handoff/duplicate_types.tsv`
+- `examples/prepared_wgd_handoff/family_candidates.tsv`
+- `examples/prepared_wgd_handoff/kaks_pairs.tsv`
+- `tests/test_prepared_wgd_handoff_example.py`
+
+Modified:
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_prepared_wgd_handoff_example.py -q` first failed because the example folder did not exist.
+- After adding the example, `python -m pytest tests/test_prepared_wgd_handoff_example.py -q` passed with 2 tests.
+- `rm -rf results/example_prepared_wgd && PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH" nextflow run workflows/main.nf -c workflows/nextflow.config -profile activated --config configs/example.config.yaml --run_duplication_retention true --duplicates examples/prepared_wgd_handoff/duplicate_types.tsv --family_members examples/prepared_wgd_handoff/family_candidates.tsv --kaks_pairs examples/prepared_wgd_handoff/kaks_pairs.tsv --events_config configs/wgd_events.brassicaceae.yaml --ks_bins 0.3,0.8,1.5 --wgd_event_args "--event WGD_layer_1=alpha --event WGD_layer_2=beta --event WGD_layer_3=gamma --event WGD_layer_4=theta" --outdir results/example_prepared_wgd` passed.
+- `results/example_prepared_wgd/tables/wgd_event_evidence.tsv` contains alpha, beta, gamma, and theta rows.
+- `results/example_prepared_wgd/report/final_report.md` includes populated WGD Event Evidence, Family Event Retention, and Duplicate-Type Retention Enrichment sections.
+- `python -m pytest tests -q` passed with 151 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker and Apptainer are missing, but pytest, config validation, mock MVP, Python standard branch smoke, Python WGD event smoke, Nextflow mock MVP smoke, Nextflow standard branch smoke, Nextflow WGD event smoke, and runtime bootstrap plan passed.
+- `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
+
+Commit:
+- pending
+
+Next:
+- Consider adding a small release audit row for the prepared handoff example, then continue toward container-runtime verification when Docker or Apptainer is available.

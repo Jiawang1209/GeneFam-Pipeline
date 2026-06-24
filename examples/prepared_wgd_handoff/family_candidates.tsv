@@ -1,0 +1,9 @@
+species_id	gene_id	evidence
+Arabidopsis_thaliana	AT_ALPHA1	mock_family
+Arabidopsis_thaliana	AT_ALPHA2	mock_family
+Brassica_rapa	BR_BETA1	mock_family
+Brassica_rapa	BR_BETA2	mock_family
+Brassica_rapa	BR_THETA1	mock_family
+Brassica_rapa	BR_THETA2	mock_family
+Vitis_vinifera	VV_GAMMA1	mock_family
+Vitis_vinifera	VV_GAMMA2	mock_family
