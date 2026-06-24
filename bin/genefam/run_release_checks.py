@@ -27,6 +27,7 @@ from bin.genefam.build_handoff_report import (
     write_markdown as write_handoff_markdown,
     write_summary_tsv as write_handoff_summary_tsv,
 )
+from bin.genefam.run_delivery_bundle import run_delivery_bundle
 
 
 FIELDNAMES = ["check", "required", "status", "exit_code", "command", "note"]
@@ -487,6 +488,25 @@ def write_handoff_report(
     return True
 
 
+def write_delivery_bundle(
+    release_checks_path: Path = Path("results/release_checks/release_checks.tsv"),
+    objective_audit_path: Path = Path("results/objective_audit/objective_audit.tsv"),
+    readiness_path: Path = Path("results/readiness/command_readiness.tsv"),
+    quickstart_path: Path = Path("results/quickstart/quickstart_summary.tsv"),
+    outdir: Path = Path("results/delivery_bundle"),
+) -> bool:
+    if not release_checks_path.exists():
+        return False
+    run_delivery_bundle(
+        release_checks=release_checks_path,
+        objective_audit=objective_audit_path,
+        readiness=readiness_path,
+        quickstart=quickstart_path,
+        outdir=outdir,
+    )
+    return True
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--outdir", default="results/release_checks", type=Path)
@@ -498,6 +518,7 @@ def main() -> None:
     write_markdown(rows, args.outdir / "release_checks.md")
     if not args.quick_self_check:
         write_objective_audit(rows)
+        write_delivery_bundle(args.outdir / "release_checks.tsv")
         write_handoff_report(args.outdir / "release_checks.tsv")
     sys.exit(0 if summarize_checks(rows)["release_ready"] else 1)
 

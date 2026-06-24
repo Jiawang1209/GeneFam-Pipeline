@@ -23,6 +23,8 @@ def test_quickstart_documents_minimum_verified_run_path():
         "python bin/genefam/audit_objective_completion.py",
         "results/objective_audit/objective_audit.md",
         "results/handoff/handoff_report.md",
+        "results/delivery_bundle/delivery_manifest.tsv",
+        "results/delivery_bundle/delivery_bundle.md",
         "python bin/genefam/run_standard_smoke.py",
         "python bin/genefam/run_nextflow_single_tool_smoke.py",
         "--config configs/example.config.yaml",

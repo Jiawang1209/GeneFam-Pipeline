@@ -80,9 +80,9 @@ python bin/genefam/plan_runtime_bootstrap.py \
   --outdir results/readiness
 ```
 
-The release checks runner writes TSV and Markdown summaries. The Nextflow smoke writes `results/nextflow_smoke/nextflow_smoke.md`; it runs the mock MVP through Nextflow when Nextflow is installed and otherwise records a `missing_nextflow` blocker. The readiness audit writes a TSV report and exits non-zero when required runtime commands are missing. The bootstrap planner converts the TSV into `results/readiness/runtime_bootstrap_plan.md` and `results/readiness/runtime_bootstrap.sh`. The static container-materials audit writes `results/container_materials/container_materials.md` and checks the Dockerfile, Linux Conda environment, and Nextflow container profile contracts before Docker/Apptainer are installed.
+The release checks runner writes TSV and Markdown summaries. The Nextflow smoke writes `results/nextflow_smoke/nextflow_smoke.md`; it runs the mock MVP through Nextflow when Nextflow is installed and otherwise records a `missing_nextflow` blocker. The readiness audit writes a TSV report and exits non-zero when required runtime commands are missing. The bootstrap planner converts the TSV into `results/readiness/runtime_bootstrap_plan.md` and `results/readiness/runtime_bootstrap.sh`. The static container-materials audit writes `results/container_materials/container_materials.md` and checks the Dockerfile, Linux Conda environment, and Nextflow container profile contracts before Docker/Apptainer are installed. After the release and objective evidence is written, `bin/genefam/run_delivery_bundle.py` writes `results/delivery_bundle/delivery_manifest.tsv` and `results/delivery_bundle/delivery_bundle.md` as the final user-facing index.
 
-`bash scripts/run_local_acceptance.sh` is the shortest local acceptance entrypoint: it runs the release gate, then runs the quickstart handoff so `results/handoff/handoff_report.md`, `results/handoff/handoff_summary.tsv`, and `results/quickstart/quickstart_summary.md` are refreshed even when the release gate remains blocked by missing Docker/Apptainer commands.
+`bash scripts/run_local_acceptance.sh` is the shortest local acceptance entrypoint: it runs the release gate, then runs the quickstart handoff so `results/handoff/handoff_report.md`, `results/handoff/handoff_summary.tsv`, `results/delivery_bundle/delivery_manifest.tsv`, `results/delivery_bundle/delivery_bundle.md`, and `results/quickstart/quickstart_summary.md` are refreshed even when the release gate remains blocked by missing Docker/Apptainer commands.
 
 When Docker and Apptainer are available, run the generated bootstrap script to build the local Docker image, build the local Apptainer SIF, smoke-test both container profiles, and rerun the release gate:
 
@@ -101,8 +101,10 @@ After `python bin/genefam/run_release_checks.py --outdir results/release_checks`
 
 - `results/handoff/handoff_report.md`
 - `results/handoff/handoff_summary.tsv`
+- `results/delivery_bundle/delivery_bundle.md`
+- `results/delivery_bundle/delivery_manifest.tsv`
 
-The Markdown report is the human-facing handoff. The TSV summary carries the same top-level sections in a stable `section` / `summary` table for scripts, dashboards, or quick release parsing. Together they summarize release readiness, objective completion, available and missing runtime commands, container-profile smoke status, and links back to the detailed evidence files.
+The handoff Markdown is the human-facing status summary. The delivery bundle is the final user-facing index for standard reports, WGD event evidence, runtime availability, and documentation. The TSV summaries carry stable machine-readable tables for scripts, dashboards, or quick release parsing.
 
 ## Reference Plotting Scripts
 

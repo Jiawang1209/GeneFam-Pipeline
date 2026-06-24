@@ -4504,6 +4504,55 @@ Commit:
 Next:
 - Continue making broad objective items independently auditable while preserving Docker/Apptainer as the only current release blocker.
 
+## 2026-06-25 - Add final delivery bundle index
+
+Context:
+- The release gate and quickstart handoff produced many useful artifacts, but users still needed to know which final reports, WGD event evidence, runtime status files, and docs to inspect first.
+- The long objective asks for a final reusable workflow version, so the top-level handoff should include a stable user-facing delivery index.
+
+Decisions:
+- Add `bin/genefam/run_delivery_bundle.py` to assemble a compact delivery manifest from release checks, objective audit, readiness, and quickstart outputs.
+- Keep Docker/Apptainer absence as a reported runtime status rather than a script failure, so the bundle remains useful while container runtimes are unavailable.
+- Generate both a machine-readable TSV and a Markdown handoff under `results/delivery_bundle/`.
+- Have `run_release_checks.py` write the delivery bundle as a post-run artifact after the objective audit, avoiding stale intermediate inputs inside the sequential check list.
+- Document the delivery bundle in README, quickstart, and release audit.
+
+Added:
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_run_delivery_bundle.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/run_release_checks.py`
+- `docs/quickstart.md`
+- `docs/release_audit.md`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py tests/test_run_release_checks.py::test_write_delivery_bundle_uses_latest_release_outputs tests/test_release_audit_docs.py tests/test_quickstart_docs.py -q` first failed because `run_delivery_bundle.py` did not exist, `run_release_checks.py` had no `write_delivery_bundle`, and docs did not mention the delivery bundle outputs.
+- The same command passed with 5 tests after adding the delivery-bundle script, release-runner post-run writer, and documentation.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` exited `0` and wrote `results/delivery_bundle/delivery_manifest.tsv` plus `results/delivery_bundle/delivery_bundle.md`.
+- `results/delivery_bundle/delivery_manifest.tsv` lists standard final report, prepared WGD final report, `wgd_event_evidence.tsv` for `alpha,beta,gamma,theta`, GeneFamilyFlow Nextflow, `/usr/local/bin/R`, and missing `docker`/`apptainer`.
+- `python -m pytest tests -q` passed with 240 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 24`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; the embedded pytest check reports `240 passed`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocker remains missing `docker` and `apptainer`.
+- `results/delivery_bundle/delivery_manifest.tsv` was refreshed by the release runner after objective-audit generation.
+
+Commit:
+- hash: pending
+- message: feat: add delivery bundle index
+- files: delivery bundle helper, release runner, README, quickstart, release audit, tests, history
+
+Next:
+- Commit the delivery bundle index work, then continue toward the final objective while preserving Docker/Apptainer as the remaining external blocker.
+
 ## 2026-06-25 - Add species selection release smoke
 
 Context:
@@ -4548,7 +4597,7 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports YAML-driven species selection achieved from `config validation checks and species selection smoke`; overall completion remains blocked only by missing `docker` and `apptainer`.
 
 Commit:
-- hash: pending
+- hash: 61218dc5004bcf5940af1dee4a0f110c0df15726
 - message: feat: add species selection smoke
 - files: species selection smoke helper, release gate, objective audit, README, release audit, tests, history
 

@@ -11,6 +11,7 @@ from bin.genefam.run_release_checks import (
     write_objective_audit,
     write_tsv,
 )
+import bin.genefam.run_release_checks as release_checks
 
 
 def test_run_checks_records_pass_and_fail_statuses():
@@ -483,6 +484,44 @@ def test_default_checks_include_quickstart_handoff_before_readiness():
     assert "bin/genefam/run_quickstart.py" in command
     assert "--conda-env GeneFamilyFlow" in command
     assert "--outdir results/quickstart" in command
+
+
+def test_write_delivery_bundle_uses_latest_release_outputs(tmp_path):
+    release_tsv = tmp_path / "release_checks.tsv"
+    objective_tsv = tmp_path / "objective_audit.tsv"
+    readiness_tsv = tmp_path / "command_readiness.tsv"
+    quickstart_tsv = tmp_path / "quickstart_summary.tsv"
+    outdir = tmp_path / "delivery_bundle"
+    write_tsv(
+        [
+            {"check": "quickstart handoff", "required": "true", "status": "passed", "exit_code": "0", "command": "quickstart", "note": ""},
+            {"check": "readiness audit", "required": "true", "status": "failed", "exit_code": "1", "command": "readiness", "note": "docker missing"},
+        ],
+        release_tsv,
+    )
+    objective_tsv.write_text(
+        "requirement\tstatus\tevidence\tnote\n"
+        "final reports\tachieved\tstandard and WGD reports\tok\n"
+        "Docker/Apptainer reproducibility\tblocked\treadiness\tmissing\n",
+        encoding="utf-8",
+    )
+    readiness_tsv.write_text(
+        "command\tstatus\tpath\nnextflow\tavailable_in_conda\tGeneFamilyFlow:/bin/nextflow\n/usr/local/bin/R\tavailable\t/usr/local/bin/R\ndocker\tmissing\t\n",
+        encoding="utf-8",
+    )
+    quickstart_tsv.write_text(
+        "step\tstatus\tpath\tnote\n"
+        "standard_branch_smoke\tpassed\tresults/quickstart/standard_smoke/report/final_report.md\tstandard\n"
+        "prepared_wgd_handoff\tpassed\tresults/quickstart/example_prepared_wgd/report/final_report.md\twgd\n",
+        encoding="utf-8",
+    )
+
+    assert release_checks.write_delivery_bundle(release_tsv, objective_tsv, readiness_tsv, quickstart_tsv, outdir)
+    text = (outdir / "delivery_manifest.tsv").read_text(encoding="utf-8")
+    assert "standard\tfinal_report\tavailable\tresults/quickstart/standard_smoke/report/final_report.md" in text
+    assert "wgd\tfinal_report\tavailable\tresults/quickstart/example_prepared_wgd/report/final_report.md" in text
+    assert "runtime\tGeneFamilyFlow\tavailable\tGeneFamilyFlow:/bin/nextflow" in text
+    assert "runtime\tdocker\tmissing\t" in text
 
 
 def test_default_readiness_check_audits_genefamilyflow_conda_env():

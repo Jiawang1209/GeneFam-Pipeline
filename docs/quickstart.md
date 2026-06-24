@@ -78,10 +78,25 @@ Key outputs:
 - `results/objective_audit/objective_audit.tsv`
 - `results/objective_audit/objective_audit.md`
 - `results/handoff/handoff_report.md`
+- `results/delivery_bundle/delivery_manifest.tsv`
+- `results/delivery_bundle/delivery_bundle.md`
 
 On the current development machine, Docker/Apptainer reproducibility is expected to remain `blocked` until a container runtime is available.
 
-## 4. Run The Standard Branch Smoke
+## 4. Inspect The Delivery Bundle
+
+The release gate writes the final delivery index after the objective audit. It collects the standard final report, prepared WGD report, alpha/beta/gamma/theta event evidence, runtime status, and documentation entrypoints.
+
+```bash
+python bin/genefam/run_delivery_bundle.py \
+  --release-checks results/release_checks/release_checks.tsv \
+  --objective-audit results/objective_audit/objective_audit.tsv \
+  --readiness results/readiness/command_readiness.tsv \
+  --quickstart results/quickstart/quickstart_summary.tsv \
+  --outdir results/delivery_bundle
+```
+
+## 5. Run The Standard Branch Smoke
 
 This checks the species-bank driven family identification post-processing path without requiring external HMMER or DIAMOND execution.
 
@@ -100,7 +115,7 @@ Key outputs:
 - `results/standard_smoke/sequences/family_members.faa`
 - `results/standard_smoke/report/final_report.md`
 
-## 5. Run The Prepared WGD Handoff
+## 6. Run The Prepared WGD Handoff
 
 This checks the reusable handoff from family candidates plus prepared duplication and Ka/Ks tables into WGD layer and named-event evidence.
 
@@ -120,7 +135,7 @@ Key outputs:
 
 The example verifies configured `alpha`, `beta`, `gamma`, and `theta` WGD event labels. These labels are interpreted from Ks-supported WGD layers and the configured event mapping; they are not raw MCScanX or Ka/Ks outputs.
 
-## 6. Run The Nextflow Single-Tool Smoke
+## 7. Run The Nextflow Single-Tool Smoke
 
 This checks real Nextflow routing for HMMER-only and DIAMOND-only standard identification paths through `GeneFamilyFlow`.
 
@@ -138,7 +153,7 @@ Key checks in `results/nextflow_single_tool_smoke/nextflow_single_tool_smoke.tsv
 - `nextflow_standard_hmmer_only`
 - `nextflow_standard_diamond_only`
 
-## 7. What To Read Next
+## 8. What To Read Next
 
 - `docs/input_contract.md`: species bank, YAML, and prepared-table contracts.
 - `docs/standard_to_wgd_handoff.md`: how standard branch outputs connect to WGD evidence.

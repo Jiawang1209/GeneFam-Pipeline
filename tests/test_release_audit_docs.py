@@ -64,6 +64,9 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/container_materials/container_materials.md" in text
     assert "results/handoff/handoff_report.md" in text
     assert "results/handoff/handoff_summary.tsv" in text
+    assert "run_delivery_bundle.py" in text
+    assert "results/delivery_bundle/delivery_manifest.tsv" in text
+    assert "results/delivery_bundle/delivery_bundle.md" in text
     assert "docs/quickstart.md" in text
     assert "run_species_selection_smoke.py" in text
     assert "build_identification_inputs.py" in text
