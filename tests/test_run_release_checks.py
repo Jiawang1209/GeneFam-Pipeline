@@ -208,6 +208,7 @@ def test_write_handoff_report_uses_latest_written_release_tsv(tmp_path):
     docker_tsv = tmp_path / "docker.tsv"
     apptainer_tsv = tmp_path / "apptainer.tsv"
     out = tmp_path / "handoff_report.md"
+    summary_tsv = tmp_path / "handoff_summary.tsv"
     write_tsv(
         [
             {"check": "pytest", "required": "true", "status": "passed", "exit_code": "0", "command": "pytest", "note": ""},
@@ -250,10 +251,14 @@ def test_write_handoff_report_uses_latest_written_release_tsv(tmp_path):
         readiness_tsv,
         [docker_tsv, apptainer_tsv],
         out,
+        summary_tsv,
     )
 
     text = out.read_text(encoding="utf-8")
     assert "passed=1 failed=2 required_failed=1 optional_failed=1 release_ready=false" in text
+    summary_text = summary_tsv.read_text(encoding="utf-8")
+    assert "release\tpassed=1 failed=2 required_failed=1 optional_failed=1 release_ready=false" in summary_text
+    assert "container_smoke\tdocker=missing_runtime; apptainer=missing_runtime" in summary_text
 
 
 def test_default_checks_include_standard_branch_smoke_before_readiness():

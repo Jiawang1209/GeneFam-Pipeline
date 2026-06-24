@@ -68,6 +68,7 @@ def test_readiness_checklist_documents_command_audit():
     assert "iqtree2" in text
     assert "meme" in text
     assert "results/handoff/handoff_report.md" in text
+    assert "results/handoff/handoff_summary.tsv" in text
     assert "first file to inspect" in text
 
 
@@ -116,6 +117,7 @@ def test_readme_points_to_final_handoff_report():
     readme = Path("README.md").read_text(encoding="utf-8")
 
     assert "results/handoff/handoff_report.md" in readme
+    assert "results/handoff/handoff_summary.tsv" in readme
     assert "first file to inspect" in readme
     assert "run_release_checks.py" in readme
 

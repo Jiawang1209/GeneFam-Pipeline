@@ -100,6 +100,14 @@ def write_markdown(sections: dict[str, str], out_path: Path) -> None:
     out_path.write_text("\n".join(lines), encoding="utf-8")
 
 
+def write_summary_tsv(sections: dict[str, str], out_path: Path) -> None:
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with out_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=["section", "summary"], delimiter="\t")
+        writer.writeheader()
+        writer.writerows({"section": key, "summary": value} for key, value in sections.items())
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--release-checks", default=Path("results/release_checks/release_checks.tsv"), type=Path)
@@ -113,6 +121,7 @@ def main() -> None:
         help="Container profile smoke TSV; may be provided multiple times",
     )
     parser.add_argument("--out", default=Path("results/handoff/handoff_report.md"), type=Path)
+    parser.add_argument("--summary-tsv", default=Path("results/handoff/handoff_summary.tsv"), type=Path)
     args = parser.parse_args()
 
     container_rows: list[dict[str, str]] = []
@@ -126,6 +135,7 @@ def main() -> None:
         container_rows=container_rows,
     )
     write_markdown(sections, args.out)
+    write_summary_tsv(sections, args.summary_tsv)
 
 
 if __name__ == "__main__":

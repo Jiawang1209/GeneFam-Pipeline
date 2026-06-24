@@ -3075,9 +3075,58 @@ Verification:
 - `results/release_checks/release_checks.md` reports `Passed: 12`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
 
 Commit:
-- hash: pending
+- hash: 7df87e4b5b1e5c4ba38783e22ecf74f314286ce8
 - message: feat: add available runtime handoff summary
 - files: handoff runtime availability summary, tests, history
 
 Next:
 - Keep using the handoff report as the top-level delivery status while Docker/Apptainer remain unavailable.
+
+## 2026-06-24 - Add machine-readable handoff summary
+
+Context:
+- The final handoff report was readable for humans, but downstream scripts still needed a stable machine-readable top-level status file.
+- The release gate should write human-facing Markdown and parser-friendly TSV from the same handoff sections.
+
+Decisions:
+- Add `write_summary_tsv()` to `bin/genefam/build_handoff_report.py`.
+- Make the handoff CLI write `results/handoff/handoff_summary.tsv` by default.
+- Make `run_release_checks.py` write the Markdown report and TSV summary together after the latest release/objective/readiness evidence has been written.
+- Document both handoff outputs in README and the readiness checklist.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/readiness_checklist.md`
+- `bin/genefam/build_handoff_report.py`
+- `bin/genefam/run_release_checks.py`
+- `tests/test_build_handoff_report.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_handoff_report.py -q` first failed because `write_summary_tsv` did not exist.
+- After adding TSV writing, `python -m pytest tests/test_build_handoff_report.py -q` passed with 4 tests.
+- `python -m pytest tests/test_runtime_environment_files.py::test_readiness_checklist_documents_command_audit tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report -q` first failed because README and the readiness checklist did not mention `results/handoff/handoff_summary.tsv`.
+- After updating docs, the same command passed with 2 tests.
+- `python -m pytest tests/test_build_handoff_report.py tests/test_run_release_checks.py::test_write_handoff_report_uses_latest_written_release_tsv -q` passed with 5 tests.
+- `python -m pytest tests -q` passed with 180 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 12`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
+- `results/handoff/handoff_report.md` reports `passed=12 failed=3 required_failed=1 optional_failed=2 release_ready=false`, `achieved=11 blocked=1 missing=0 complete=false`, available runtime commands `nextflow`, `conda`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2`, and `meme`, and missing runtime commands `docker, apptainer`.
+- `results/handoff/handoff_summary.tsv` contains matching `release`, `objective`, `available_runtime`, `missing_runtime`, and `container_smoke` sections.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item is still Docker/Apptainer reproducibility.
+
+Commit:
+- hash: pending
+- message: feat: add machine-readable handoff summary
+- files: handoff summary TSV writer, release runner integration, README/readiness docs, tests, history
+
+Next:
+- Run full tests and release checks, then commit and backfill the full commit hash.

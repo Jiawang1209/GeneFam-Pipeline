@@ -84,8 +84,9 @@ The release checks runner writes TSV and Markdown summaries. The Nextflow smoke 
 After `python bin/genefam/run_release_checks.py --outdir results/release_checks`, the first file to inspect is:
 
 - `results/handoff/handoff_report.md`
+- `results/handoff/handoff_summary.tsv`
 
-It summarizes release readiness, objective completion, missing runtime commands, container-profile smoke status, and links back to the detailed evidence files.
+The Markdown report is the human-facing handoff. The TSV summary carries the same top-level sections in a stable `section` / `summary` table for scripts, dashboards, or quick release parsing. Together they summarize release readiness, objective completion, available and missing runtime commands, container-profile smoke status, and links back to the detailed evidence files.
 
 ## Reference Plotting Scripts
 

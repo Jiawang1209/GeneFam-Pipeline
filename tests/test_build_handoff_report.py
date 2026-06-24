@@ -5,6 +5,7 @@ from bin.genefam.build_handoff_report import (
     build_handoff_sections,
     read_tsv,
     write_markdown,
+    write_summary_tsv,
 )
 
 
@@ -75,7 +76,32 @@ def test_write_handoff_markdown_contains_copyable_next_steps(tmp_path):
     assert "results/objective_audit/objective_audit.md" in text
 
 
-def test_build_handoff_report_cli_writes_markdown(tmp_path):
+def test_write_handoff_summary_tsv_contains_stable_keys(tmp_path):
+    out = tmp_path / "handoff_summary.tsv"
+    sections = {
+        "release": "passed=12 failed=3 required_failed=1 optional_failed=2 release_ready=false",
+        "objective": "achieved=11 blocked=1 missing=0 complete=false",
+        "available_runtime": "nextflow, /usr/local/bin/R, hmmsearch",
+        "missing_runtime": "docker, apptainer",
+        "container_smoke": "docker=missing_runtime; apptainer=missing_runtime",
+    }
+
+    write_summary_tsv(sections, out)
+
+    rows = read_tsv(out)
+    assert rows == [
+        {
+            "section": "release",
+            "summary": "passed=12 failed=3 required_failed=1 optional_failed=2 release_ready=false",
+        },
+        {"section": "objective", "summary": "achieved=11 blocked=1 missing=0 complete=false"},
+        {"section": "available_runtime", "summary": "nextflow, /usr/local/bin/R, hmmsearch"},
+        {"section": "missing_runtime", "summary": "docker, apptainer"},
+        {"section": "container_smoke", "summary": "docker=missing_runtime; apptainer=missing_runtime"},
+    ]
+
+
+def test_build_handoff_report_cli_writes_markdown_and_summary_tsv(tmp_path):
     release = tmp_path / "release_checks.tsv"
     release.write_text(
         "check\trequired\tstatus\texit_code\tcommand\tnote\n"
@@ -87,6 +113,7 @@ def test_build_handoff_report_cli_writes_markdown(tmp_path):
     readiness = tmp_path / "readiness.tsv"
     readiness.write_text("command\tstatus\tpath\ndocker\tmissing\t\n", encoding="utf-8")
     out = tmp_path / "handoff_report.md"
+    summary_tsv = tmp_path / "handoff_summary.tsv"
 
     completed = subprocess.run(
         [
@@ -100,6 +127,8 @@ def test_build_handoff_report_cli_writes_markdown(tmp_path):
             str(readiness),
             "--out",
             str(out),
+            "--summary-tsv",
+            str(summary_tsv),
         ],
         check=False,
         capture_output=True,
@@ -108,3 +137,4 @@ def test_build_handoff_report_cli_writes_markdown(tmp_path):
 
     assert completed.returncode == 0, completed.stderr
     assert "GeneFam-Pipeline Handoff Report" in out.read_text(encoding="utf-8")
+    assert "missing_runtime\tdocker" in summary_tsv.read_text(encoding="utf-8")

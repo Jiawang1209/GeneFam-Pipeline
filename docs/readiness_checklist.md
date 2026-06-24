@@ -20,8 +20,9 @@ python bin/genefam/run_mock_mvp.py \
 After the release gate finishes, the first file to inspect is:
 
 - `results/handoff/handoff_report.md`
+- `results/handoff/handoff_summary.tsv`
 
-This handoff report summarizes release readiness, objective completion, missing runtime commands, and container-profile smoke status.
+The Markdown report is the human-facing handoff. The TSV summary carries the same top-level status sections in a stable `section` / `summary` table for automated checks. They summarize release readiness, objective completion, available and missing runtime commands, and container-profile smoke status.
 
 Expected core mock outputs:
 

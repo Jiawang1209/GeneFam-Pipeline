@@ -25,6 +25,7 @@ from bin.genefam.build_handoff_report import (
     build_handoff_sections,
     read_tsv as read_handoff_tsv,
     write_markdown as write_handoff_markdown,
+    write_summary_tsv as write_handoff_summary_tsv,
 )
 
 
@@ -300,6 +301,7 @@ def write_handoff_report(
     readiness_path: Path = Path("results/readiness/command_readiness.tsv"),
     container_smoke_paths: list[Path] | None = None,
     out_path: Path = Path("results/handoff/handoff_report.md"),
+    summary_tsv_path: Path = Path("results/handoff/handoff_summary.tsv"),
 ) -> bool:
     if not release_checks_path.exists():
         return False
@@ -317,6 +319,7 @@ def write_handoff_report(
         container_rows=container_rows,
     )
     write_handoff_markdown(sections, out_path)
+    write_handoff_summary_tsv(sections, summary_tsv_path)
     return True
 
 
