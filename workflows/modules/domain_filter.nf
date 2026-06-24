@@ -16,6 +16,7 @@ process MOCK_IDENTIFICATION_EVIDENCE {
 
 process DOMAIN_FILTER {
     tag "${species_id}"
+    publishDir "${params.outdir}/tables/domain_filter", mode: "copy", overwrite: true
 
     input:
     tuple val(species_id), path(hmmer_tsv), path(diamond_tsv)
@@ -36,6 +37,7 @@ process DOMAIN_FILTER {
 
 process CONCAT_FAMILY_CANDIDATES {
     tag "concat family candidates"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
 
     input:
     path candidate_tables

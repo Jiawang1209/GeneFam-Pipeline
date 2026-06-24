@@ -1,5 +1,6 @@
 process PLOT_FAMILY_COUNTS {
     tag "plot family counts"
+    publishDir "${params.outdir}", mode: "copy", overwrite: true
 
     input:
     path family_counts
@@ -16,6 +17,7 @@ process PLOT_FAMILY_COUNTS {
 
 process PLOT_KAKS {
     tag "plot Ka/Ks"
+    publishDir "${params.outdir}", mode: "copy", overwrite: true
 
     input:
     path kaks_pairs
@@ -31,6 +33,7 @@ process PLOT_KAKS {
 
 process PLOT_EXPRESSION_HEATMAP {
     tag "plot expression heatmap"
+    publishDir "${params.outdir}", mode: "copy", overwrite: true
 
     input:
     path expression_matrix
@@ -46,6 +49,7 @@ process PLOT_EXPRESSION_HEATMAP {
 
 process BUILD_PLOT_MANIFEST {
     tag "plot manifest"
+    publishDir "${params.outdir}/report", mode: "copy", overwrite: true
 
     output:
     path "plot_manifest.tsv"

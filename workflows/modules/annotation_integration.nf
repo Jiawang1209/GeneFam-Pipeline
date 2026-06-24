@@ -1,5 +1,6 @@
 process EXTRACT_CHROMOSOME_LOCATIONS {
     tag "chromosome locations"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
 
     input:
     path family_candidates
@@ -19,6 +20,7 @@ process EXTRACT_CHROMOSOME_LOCATIONS {
 
 process SUBSET_EXPRESSION_MATRIX {
     tag "family expression matrix"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
 
     input:
     path family_candidates

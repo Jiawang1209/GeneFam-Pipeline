@@ -2271,8 +2271,56 @@ Verification:
 - `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
 
 Commit:
-- pending
+- hash: 427b783556904c6ee321378cb21e1ccafd8b2af5
+- message: feat: add Nextflow standard branch smoke
+- files: Nextflow standard branch smoke runner, mock external evidence wiring, repo-root path rebasing for staged configs, quoted plot manifest arguments, release check integration, tests, history
 
 Next:
 - Add `publishDir` or a report copy-out strategy for the standard Nextflow branch so completed process outputs land in `results/nextflow_standard_smoke/standard` instead of remaining only in Nextflow work directories.
+- After container runtimes are installed or exposed, rerun release checks to verify Docker/Apptainer profiles.
+
+## 2026-06-24 - Publish standard Nextflow outputs
+
+Context:
+- The standard Nextflow `run_identification` smoke completed, but the user-facing outputs remained in Nextflow work directories unless the user inspected task paths.
+- A final reusable workflow needs stable `results/<run>/tables`, `sequences`, `report`, and `plots` outputs comparable to the Python standard smoke branch.
+
+Decisions:
+- Add `publishDir` copy-out rules to standard-branch modules for species manifest, candidate tables, family counts, alignment and phylogeny manifests, chromosome/expression tables, family FASTA, report index, final report, plot manifest, and plots.
+- Keep intermediate per-species domain-filter candidates under `tables/domain_filter/` while publishing the merged family candidates table at `tables/family_candidates.tsv`.
+- Make `run_nextflow_standard_smoke.py` fail if Nextflow exits zero but core published outputs are missing.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_nextflow_standard_smoke.py`
+- `tests/test_run_nextflow_standard_smoke.py`
+- `tests/test_workflow_modules.py`
+- `workflows/modules/alignment_phylogeny.nf`
+- `workflows/modules/annotation_integration.nf`
+- `workflows/modules/domain_filter.nf`
+- `workflows/modules/family_summary.nf`
+- `workflows/modules/plots.nf`
+- `workflows/modules/prepare_species.nf`
+- `workflows/modules/standard_postprocess.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_workflow_modules.py::test_domain_filter_module_can_concatenate_species_candidate_tables tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_workflow_modules.py::test_standard_nextflow_modules_publish_user_facing_outputs tests/test_run_nextflow_standard_smoke.py::test_expected_published_outputs_cover_standard_user_results -q` first failed because `expected_published_outputs` and the required `publishDir` rules did not exist.
+- After implementation, the same targeted test set passed with 5 tests.
+- `rm -rf results/nextflow_standard_smoke/standard && python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_standard_smoke` passed and published `report/final_report.md`, `report/report_index.tsv`, `report/plot_manifest.tsv`, `tables/family_candidates.tsv`, `tables/family_counts.tsv`, `tables/species_manifest.tsv`, `tables/alignment_manifest.tsv`, `tables/phylogeny_manifest.tsv`, `tables/chromosome_locations.tsv`, `sequences/family_members.faa`, `plots/family_counts.pdf`, and `plots/family_counts.png`.
+- `python -m pytest tests -q` passed with 140 tests.
+- `python -m py_compile bin/genefam/run_nextflow_standard_smoke.py` passed.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker and Apptainer are missing, but pytest, config validation, mock MVP, Python standard branch smoke, WGD event smoke, Nextflow mock MVP smoke, Nextflow standard branch smoke, and runtime bootstrap plan passed.
+- `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
+
+Commit:
+- pending
+
+Next:
+- Improve report-index paths in the Nextflow standard branch so published reports point at published `results/...` paths instead of staged task-local filenames.
 - After container runtimes are installed or exposed, rerun release checks to verify Docker/Apptainer profiles.

@@ -1,5 +1,6 @@
 process EXTRACT_FAMILY_SEQUENCES {
     tag "family member FASTA"
+    publishDir "${params.outdir}/sequences", mode: "copy", overwrite: true
 
     input:
     path family_candidates
@@ -19,6 +20,7 @@ process EXTRACT_FAMILY_SEQUENCES {
 
 process BUILD_STANDARD_REPORT_INDEX {
     tag "standard report index"
+    publishDir "${params.outdir}/report", mode: "copy", overwrite: true
 
     input:
     path species_manifest
@@ -52,6 +54,7 @@ process BUILD_STANDARD_REPORT_INDEX {
 
 process ASSEMBLE_STANDARD_REPORT {
     tag "standard final report"
+    publishDir "${params.outdir}/report", mode: "copy", overwrite: true
 
     input:
     val project_name

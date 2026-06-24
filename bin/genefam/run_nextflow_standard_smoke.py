@@ -20,6 +20,23 @@ from bin.genefam.run_nextflow_smoke import resolve_nextflow_binary
 FIELDNAMES = ["check", "status", "exit_code", "command", "note"]
 
 
+def expected_published_outputs(standard_outdir: Path) -> list[Path]:
+    return [
+        standard_outdir / "tables/species_manifest.tsv",
+        standard_outdir / "tables/family_candidates.tsv",
+        standard_outdir / "tables/family_counts.tsv",
+        standard_outdir / "tables/alignment_manifest.tsv",
+        standard_outdir / "tables/phylogeny_manifest.tsv",
+        standard_outdir / "tables/chromosome_locations.tsv",
+        standard_outdir / "sequences/family_members.faa",
+        standard_outdir / "report/report_index.tsv",
+        standard_outdir / "report/plot_manifest.tsv",
+        standard_outdir / "report/final_report.md",
+        standard_outdir / "plots/family_counts.pdf",
+        standard_outdir / "plots/family_counts.png",
+    ]
+
+
 def build_nextflow_command(
     nextflow_bin: str,
     config: str,
@@ -115,9 +132,20 @@ def run_nextflow_standard_smoke(
         env["CONDA_DEFAULT_ENV"] = conda_env
     completed = subprocess.run(command, check=False, capture_output=True, text=True, env=env)
     output = "\n".join(part for part in [completed.stdout.strip(), completed.stderr.strip()] if part)
+    standard_outdir = outdir / "standard"
+    missing_outputs = [path for path in expected_published_outputs(standard_outdir) if not path.exists()]
+    passed = completed.returncode == 0 and not missing_outputs
+    if completed.returncode == 0 and missing_outputs:
+        output = "\n".join(
+            [
+                output,
+                "Missing published outputs:",
+                *[str(path) for path in missing_outputs],
+            ]
+        )
     return {
         "check": "nextflow_standard_identification",
-        "status": "passed" if completed.returncode == 0 else "failed",
+        "status": "passed" if passed else "failed",
         "exit_code": str(completed.returncode),
         "command": " ".join(command),
         "note": " | ".join(line.strip() for line in output.splitlines() if line.strip())[:500],

@@ -1,5 +1,6 @@
 process FAMILY_SUMMARY {
     tag "family summary"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
 
     input:
     path candidates

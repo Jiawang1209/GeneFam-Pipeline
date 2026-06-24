@@ -38,6 +38,7 @@ def test_domain_filter_module_can_concatenate_species_candidate_tables():
     assert 'tuple val("mock"), path("hmmer.tsv"), path("diamond.tsv")' in module
 
     assert "process CONCAT_FAMILY_CANDIDATES" in module
+    assert 'publishDir "${params.outdir}/tables", mode: "copy", overwrite: true' in module
     assert "concat_tsv.py" in module
     assert "--inputs ${candidate_tables}" in module
     assert "--out family_candidates.tsv" in module
@@ -47,18 +48,21 @@ def test_standard_postprocess_module_extracts_family_sequences_and_report_index(
     module = Path("workflows/modules/standard_postprocess.nf").read_text(encoding="utf-8")
 
     assert "process EXTRACT_FAMILY_SEQUENCES" in module
+    assert 'publishDir "${params.outdir}/sequences", mode: "copy", overwrite: true' in module
     assert "extract_family_sequences.py" in module
     assert "--family-candidates ${family_candidates}" in module
     assert "--species-manifest ${species_manifest}" in module
     assert "--out family_members.faa" in module
 
     assert "process BUILD_STANDARD_REPORT_INDEX" in module
+    assert 'publishDir "${params.outdir}/report", mode: "copy", overwrite: true' in module
     assert "build_standard_report_index.py" in module
     assert "--family-members-faa ${family_members_faa}" in module
     assert "--phylogeny-manifest ${phylogeny_manifest}" in module
     assert "--out report_index.tsv" in module
 
     assert "process ASSEMBLE_STANDARD_REPORT" in module
+    assert 'publishDir "${params.outdir}/report", mode: "copy", overwrite: true' in module
     assert "assemble_report.py" in module
     assert "--project-name ${project_name}" in module
     assert "--gene-family ${gene_family}" in module
@@ -170,6 +174,7 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     module = Path("workflows/modules/plots.nf").read_text(encoding="utf-8")
 
     assert "process PLOT_FAMILY_COUNTS" in module
+    assert 'publishDir "${params.outdir}", mode: "copy", overwrite: true' in module
     assert "${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_family_counts.R" in module
     assert "--args ${family_counts} plots" in module
     assert 'path "plots/family_counts.pdf"' in module
@@ -186,11 +191,30 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert 'path "plots/expression_heatmap.pdf"' in module
 
     assert "process BUILD_PLOT_MANIFEST" in module
+    assert 'publishDir "${params.outdir}/report", mode: "copy", overwrite: true' in module
     assert "build_plot_manifest.py" in module
     assert '--plot "family_counts=plots/family_counts.pdf=Family member counts by species"' in module
     assert '--plot "ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs"' in module
     assert '--plot "expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap"' in module
     assert "--out plot_manifest.tsv" in module
+
+
+def test_standard_nextflow_modules_publish_user_facing_outputs():
+    expected = {
+        "workflows/modules/prepare_species.nf": ['publishDir "${params.outdir}/tables", mode: "copy", overwrite: true'],
+        "workflows/modules/family_summary.nf": ['publishDir "${params.outdir}/tables", mode: "copy", overwrite: true'],
+        "workflows/modules/alignment_phylogeny.nf": [
+            'publishDir "${params.outdir}/tables", mode: "copy", overwrite: true'
+        ],
+        "workflows/modules/annotation_integration.nf": [
+            'publishDir "${params.outdir}/tables", mode: "copy", overwrite: true'
+        ],
+    }
+
+    for module_path, snippets in expected.items():
+        module = Path(module_path).read_text(encoding="utf-8")
+        for snippet in snippets:
+            assert snippet in module, module_path
 
 
 def test_main_workflow_includes_plot_processes():

@@ -1,5 +1,6 @@
 process PREPARE_ALIGNMENT_INPUTS {
     tag "prepare alignment inputs"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
 
     input:
     val family_name
@@ -23,6 +24,7 @@ process PREPARE_ALIGNMENT_INPUTS {
 
 process RUN_ALIGNMENT {
     tag "run MAFFT alignment"
+    publishDir "${params.outdir}/alignment", mode: "copy", overwrite: true
 
     input:
     path family_members_faa
@@ -38,6 +40,7 @@ process RUN_ALIGNMENT {
 
 process PREPARE_PHYLOGENY_INPUTS {
     tag "prepare phylogeny inputs"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
 
     input:
     path alignment_manifest
@@ -59,6 +62,7 @@ process PREPARE_PHYLOGENY_INPUTS {
 
 process RUN_PHYLOGENY {
     tag "run IQ-TREE phylogeny"
+    publishDir "${params.outdir}/phylogeny", mode: "copy", overwrite: true
 
     input:
     path alignment
@@ -76,6 +80,7 @@ process RUN_PHYLOGENY {
 
 process PARSE_MEME_MOTIFS {
     tag "parse MEME motifs"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
 
     input:
     path meme_txt

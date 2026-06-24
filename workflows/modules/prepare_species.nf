@@ -1,5 +1,6 @@
 process PREPARE_SPECIES {
     tag "species manifest"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
 
     input:
     path config_file
