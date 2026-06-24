@@ -18,6 +18,8 @@ def test_quickstart_documents_minimum_verified_run_path():
         "python bin/genefam/run_quickstart.py",
         "--outdir results/quickstart",
         "results/quickstart/quickstart_summary.md",
+        "python bin/genefam/audit_objective_completion.py",
+        "results/objective_audit/objective_audit.md",
         "python bin/genefam/run_standard_smoke.py",
         "--config configs/example.config.yaml",
         "--groups configs/species_groups.yaml",

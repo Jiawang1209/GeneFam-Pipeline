@@ -41,6 +41,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
         "python bin/genefam/run_mock_mvp.py",
         "python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv",
         "python bin/genefam/plan_runtime_bootstrap.py",
+        "python bin/genefam/audit_objective_completion.py",
     ]
     for command in required_commands:
         assert command in text
@@ -48,6 +49,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "Known Gap" in text
     assert "release_checks.tsv" in text
     assert "runtime_bootstrap_plan.md" in text
+    assert "objective_audit.md" in text
     assert "docs/quickstart.md" in text
     assert "build_identification_inputs.py" in text
     assert "extract_family_sequences.py" in text

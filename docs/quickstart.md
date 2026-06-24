@@ -39,7 +39,25 @@ Key outputs:
 - `results/quickstart/standard_smoke/report/final_report.md`
 - `results/quickstart/example_prepared_wgd/report/final_report.md`
 
-## 3. Run The Standard Branch Smoke
+## 3. Audit The Long Objective
+
+After release checks and readiness audit have written their TSV files, generate a machine-readable summary of the original long-form goal.
+
+```bash
+python bin/genefam/audit_objective_completion.py \
+  --release-checks results/release_checks/release_checks.tsv \
+  --readiness results/readiness/command_readiness.tsv \
+  --outdir results/objective_audit
+```
+
+Key outputs:
+
+- `results/objective_audit/objective_audit.tsv`
+- `results/objective_audit/objective_audit.md`
+
+On the current development machine, Docker/Apptainer reproducibility is expected to remain `blocked` until a container runtime is available.
+
+## 4. Run The Standard Branch Smoke
 
 This checks the species-bank driven family identification post-processing path without requiring external HMMER or DIAMOND execution.
 
@@ -58,7 +76,7 @@ Key outputs:
 - `results/standard_smoke/sequences/family_members.faa`
 - `results/standard_smoke/report/final_report.md`
 
-## 4. Run The Prepared WGD Handoff
+## 5. Run The Prepared WGD Handoff
 
 This checks the reusable handoff from family candidates plus prepared duplication and Ka/Ks tables into WGD layer and named-event evidence.
 
@@ -78,7 +96,7 @@ Key outputs:
 
 The example verifies configured `alpha`, `beta`, `gamma`, and `theta` WGD event labels. These labels are interpreted from Ks-supported WGD layers and the configured event mapping; they are not raw MCScanX or Ka/Ks outputs.
 
-## 5. What To Read Next
+## 6. What To Read Next
 
 - `docs/input_contract.md`: species bank, YAML, and prepared-table contracts.
 - `docs/standard_to_wgd_handoff.md`: how standard branch outputs connect to WGD evidence.

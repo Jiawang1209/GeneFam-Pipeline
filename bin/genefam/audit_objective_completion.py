@@ -1,0 +1,207 @@
+#!/usr/bin/env python3
+"""Summarize the long-form GeneFam-Pipeline objective against release evidence."""
+
+from __future__ import annotations
+
+import argparse
+import csv
+from pathlib import Path
+
+
+FIELDNAMES = ["requirement", "status", "evidence", "note"]
+AVAILABLE_STATUSES = {"available", "available_in_conda"}
+
+
+def read_tsv(path: Path) -> list[dict[str, str]]:
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        return list(csv.DictReader(handle, delimiter="\t"))
+
+
+def _release_statuses(rows: list[dict[str, str]]) -> dict[str, str]:
+    return {row["check"]: row["status"] for row in rows}
+
+
+def _readiness_statuses(rows: list[dict[str, str]]) -> dict[str, str]:
+    return {row["command"]: row["status"] for row in rows}
+
+
+def _all_passed(statuses: dict[str, str], checks: list[str]) -> bool:
+    return all(statuses.get(check) == "passed" for check in checks)
+
+
+def _available(statuses: dict[str, str], command: str) -> bool:
+    return statuses.get(command) in AVAILABLE_STATUSES
+
+
+def _missing_commands(statuses: dict[str, str], commands: list[str]) -> list[str]:
+    return [command for command in commands if not _available(statuses, command)]
+
+
+def _row(requirement: str, status: str, evidence: str, note: str) -> dict[str, str]:
+    return {"requirement": requirement, "status": status, "evidence": evidence, "note": note}
+
+
+def _achieved_if(condition: bool, requirement: str, evidence: str, note: str) -> dict[str, str]:
+    return _row(requirement, "achieved" if condition else "missing", evidence, note)
+
+
+def build_objective_audit(
+    release_rows: list[dict[str, str]],
+    readiness_rows: list[dict[str, str]],
+) -> list[dict[str, str]]:
+    release = _release_statuses(release_rows)
+    readiness = _readiness_statuses(readiness_rows)
+    core_tools = ["nextflow", "/usr/local/bin/R", "hmmsearch", "diamond", "mafft", "iqtree2", "meme"]
+    missing_core_tools = _missing_commands(readiness, core_tools)
+    missing_container_tools = _missing_commands(readiness, ["docker", "apptainer"])
+
+    rows = [
+        _achieved_if(
+            _all_passed(
+                release,
+                ["Nextflow mock MVP smoke", "Nextflow standard branch smoke", "Nextflow WGD event smoke"],
+            ),
+            "Nextflow DSL2 workflow",
+            "Nextflow mock, standard, and WGD smoke checks",
+            "DSL2 entrypoints are smoke-tested through GeneFamilyFlow.",
+        ),
+        _achieved_if(
+            _all_passed(release, ["validate example config", "validate advanced config"]),
+            "YAML-driven species selection",
+            "config validation checks",
+            "Species bank selection and advanced module settings are validated from YAML.",
+        ),
+        _row(
+            "GeneFamilyFlow runtime",
+            "achieved" if not missing_core_tools else "blocked",
+            "command readiness audit",
+            "All core commands available through host/GeneFamilyFlow."
+            if not missing_core_tools
+            else "Missing core commands: " + ", ".join(missing_core_tools),
+        ),
+        _row(
+            "/usr/local/bin/R plotting",
+            "achieved" if _available(readiness, "/usr/local/bin/R") else "blocked",
+            "command readiness audit",
+            "R plotting path is available at /usr/local/bin/R."
+            if _available(readiness, "/usr/local/bin/R")
+            else "Missing /usr/local/bin/R.",
+        ),
+        _row(
+            "Docker/Apptainer reproducibility",
+            "achieved" if not missing_container_tools else "blocked",
+            "command readiness audit and runtime bootstrap plan",
+            "Container runtime route is available."
+            if not missing_container_tools
+            else "Missing container commands: " + ", ".join(missing_container_tools),
+        ),
+        _achieved_if(
+            _all_passed(release, ["standard branch smoke", "Nextflow standard branch smoke"]),
+            "standard identification branch",
+            "Python and Nextflow standard branch smoke checks",
+            "Species-bank candidates, chromosome locations, expression handoff, and final report are exercised.",
+        ),
+        _achieved_if(
+            _all_passed(
+                release,
+                ["WGD event smoke", "Nextflow WGD event smoke", "prepared WGD handoff example"],
+            ),
+            "WGD gamma beta alpha theta evidence",
+            "WGD event smoke and prepared WGD handoff checks",
+            "Named events are interpreted from configured Ks-supported WGD layers.",
+        ),
+        _achieved_if(
+            _all_passed(release, ["WGD event smoke", "prepared WGD handoff example"]),
+            "Ka/Ks and retention analysis",
+            "WGD/retention smoke outputs",
+            "Ka/Ks, retention class, family-event membership, and retention summaries are generated from prepared evidence.",
+        ),
+        _achieved_if(
+            _all_passed(release, ["standard branch smoke", "quickstart handoff"]),
+            "chromosome and expression integration",
+            "standard branch and quickstart outputs",
+            "Chromosome locations and optional expression matrices are represented in standard reports.",
+        ),
+        _achieved_if(
+            release.get("quickstart handoff") == "passed",
+            "quickstart handoff",
+            "quickstart handoff release check",
+            "One command writes standard and prepared-WGD handoff summaries.",
+        ),
+        _achieved_if(
+            _all_passed(
+                release,
+                ["standard branch smoke", "prepared WGD handoff example", "quickstart handoff"],
+            ),
+            "final reports",
+            "standard, prepared WGD, and quickstart report outputs",
+            "Final Markdown reports are produced for both standard and WGD handoff paths.",
+        ),
+        _achieved_if(
+            release.get("pytest") == "passed",
+            "history and Reference governance",
+            "pytest and documentation contracts",
+            "Development history is maintained; Reference remains a read-only source area.",
+        ),
+    ]
+    return rows
+
+
+def summarize_objective_audit(rows: list[dict[str, str]]) -> dict[str, int | bool]:
+    achieved = sum(1 for row in rows if row["status"] == "achieved")
+    blocked = sum(1 for row in rows if row["status"] == "blocked")
+    missing = sum(1 for row in rows if row["status"] == "missing")
+    return {
+        "achieved": achieved,
+        "blocked": blocked,
+        "missing": missing,
+        "complete": blocked == 0 and missing == 0,
+    }
+
+
+def write_tsv(rows: list[dict[str, str]], out_path: Path) -> None:
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with out_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=FIELDNAMES, delimiter="\t")
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def _markdown_cell(value: str) -> str:
+    return value.replace("|", "\\|").replace("\n", " ")
+
+
+def write_markdown(rows: list[dict[str, str]], out_path: Path) -> None:
+    summary = summarize_objective_audit(rows)
+    lines = [
+        "# GeneFam-Pipeline Objective Audit",
+        "",
+        f"Achieved: {summary['achieved']}",
+        f"Blocked: {summary['blocked']}",
+        f"Missing: {summary['missing']}",
+        f"Complete: {str(summary['complete']).lower()}",
+        "",
+        "| requirement | status | evidence | note |",
+        "|---|---|---|---|",
+    ]
+    for row in rows:
+        escaped = {key: _markdown_cell(value) for key, value in row.items()}
+        lines.append("| {requirement} | {status} | {evidence} | {note} |".format(**escaped))
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--release-checks", required=True, type=Path)
+    parser.add_argument("--readiness", required=True, type=Path)
+    parser.add_argument("--outdir", default=Path("results/objective_audit"), type=Path)
+    args = parser.parse_args()
+
+    rows = build_objective_audit(read_tsv(args.release_checks), read_tsv(args.readiness))
+    write_tsv(rows, args.outdir / "objective_audit.tsv")
+    write_markdown(rows, args.outdir / "objective_audit.md")
+
+
+if __name__ == "__main__":
+    main()

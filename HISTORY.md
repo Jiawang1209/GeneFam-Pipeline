@@ -2710,7 +2710,54 @@ Verification:
 - `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
 
 Commit:
-- pending
+- hash: 67ea2a7cb3f31ba44ce4a16f35cbffa4e7c73712
+- message: feat: add executable quickstart handoff
+- files: executable quickstart runner, release check gate, quickstart docs, release audit docs, tests, history
 
 Next:
 - Continue toward final runtime readiness; if Docker/Apptainer remain unavailable, keep improving reproducible user handoffs and evidence summaries.
+
+## 2026-06-24 - Add objective completion audit
+
+Context:
+- The repository now has executable quickstart, standard branch smoke, WGD event smoke, Nextflow smoke checks, release checks, readiness audit, and runtime bootstrap planning.
+- The long `/goal` still needed a compact machine-readable answer to "which requested objectives are achieved, missing, or blocked on this machine".
+- Docker and Apptainer remain unavailable locally, so the final status must preserve that blocker rather than flatten it into a generic failure.
+
+Decisions:
+- Add `bin/genefam/audit_objective_completion.py` to combine `release_checks.tsv` and `command_readiness.tsv` into objective-level status.
+- Use statuses `achieved`, `blocked`, and `missing`, with Docker/Apptainer reproducibility explicitly marked `blocked` when both container runtimes are absent.
+- Document the objective audit in quickstart and release-audit docs so it becomes part of the final handoff.
+
+Added:
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+
+Modified:
+- `HISTORY.md`
+- `docs/quickstart.md`
+- `docs/release_audit.md`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py -q` first failed because `bin.genefam.audit_objective_completion` did not exist.
+- After adding the objective audit script, `python -m pytest tests/test_audit_objective_completion.py -q` passed with 4 tests.
+- `python -m pytest tests/test_quickstart_docs.py tests/test_release_audit_docs.py -q` first failed because docs did not mention `audit_objective_completion.py`.
+- After updating quickstart and release audit docs, `python -m pytest tests/test_audit_objective_completion.py tests/test_quickstart_docs.py tests/test_release_audit_docs.py -q` passed with 7 tests.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited `0`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item is `Docker/Apptainer reproducibility` with missing commands `docker, apptainer`.
+- `python -m pytest tests -q` passed with 163 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker and Apptainer are missing, but pytest, config validation, mock MVP, Python standard branch smoke, Python WGD event smoke, Nextflow mock MVP smoke, Nextflow standard branch smoke, Nextflow WGD event smoke, prepared WGD handoff example, quickstart handoff, and runtime bootstrap plan passed.
+- `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
+
+Commit:
+- hash: pending
+- message: feat: add objective completion audit
+- files: objective audit script, objective audit tests, quickstart/release audit docs, history
+
+Next:
+- Install or expose Docker/Apptainer to clear the remaining blocked objective, then rerun release checks and objective audit.

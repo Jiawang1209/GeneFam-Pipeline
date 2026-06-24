@@ -49,6 +49,10 @@ python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/r
 python bin/genefam/plan_runtime_bootstrap.py \
   --readiness results/readiness/command_readiness.tsv \
   --outdir results/readiness
+python bin/genefam/audit_objective_completion.py \
+  --release-checks results/release_checks/release_checks.tsv \
+  --readiness results/readiness/command_readiness.tsv \
+  --outdir results/objective_audit
 ```
 
 The readiness audit may exit non-zero when runtime commands are missing; inspect the TSV for exact missing tools and use the bootstrap planner to generate next-step commands.
@@ -59,6 +63,8 @@ The release checks runner writes:
 - `results/release_checks/release_checks.md`
 - `results/readiness/runtime_bootstrap_plan.md`
 - `results/readiness/runtime_bootstrap.sh`
+- `results/objective_audit/objective_audit.tsv`
+- `results/objective_audit/objective_audit.md`
 
 ## Requirement Audit
 
@@ -69,6 +75,7 @@ The release checks runner writes:
 | GeneFamilyFlow runtime | `envs/GeneFamilyFlow.conda.yaml`; `workflows/nextflow.config`; `Dockerfile` | `python -m pytest tests/test_runtime_environment_files.py -q` |
 | `/usr/local/bin/R` plotting and reporting convention | `workflows/modules/plots.nf`; `scripts/plot_family_counts.R`; `scripts/plot_kaks.R`; `scripts/plot_expression_heatmap.R` | `python -m pytest tests/test_workflow_modules.py tests/test_runtime_environment_files.py -q` |
 | Docker/Conda reproducible running | `Dockerfile`; `envs/GeneFamilyFlow.conda.yaml`; `bin/genefam/plan_runtime_bootstrap.py`; `workflows/nextflow.config` profiles `local`, `docker`, `apptainer` | `python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv` and `python bin/genefam/plan_runtime_bootstrap.py --readiness results/readiness/command_readiness.tsv --outdir results/readiness` |
+| long objective completion audit | `bin/genefam/audit_objective_completion.py`; `results/objective_audit/objective_audit.tsv`; `results/objective_audit/objective_audit.md` | `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` |
 | quickstart handoff for users | `bin/genefam/run_quickstart.py`; `docs/quickstart.md`; `README.md`; `results/quickstart/quickstart_summary.md`; `results/release_checks/release_checks.md`; `results/standard_smoke/report/final_report.md`; `results/example_prepared_wgd/report/final_report.md` | `python bin/genefam/run_quickstart.py --conda-env GeneFamilyFlow --outdir results/quickstart` and `python -m pytest tests/test_quickstart_docs.py tests/test_release_audit_docs.py -q` |
 | species bank input model | `docs/input_contract.md`; `bin/genefam/discover_species.py`; `tests/fixtures/species_bank` | `python -m pytest tests/test_discover_species.py -q` |
 | target species selection | `configs/species_groups.yaml`; `species.include`; `species.exclude`; `run.species_group` | `python -m pytest tests/test_discover_species.py tests/test_build_run_plan.py -q` |
@@ -110,6 +117,7 @@ This means:
 - Apptainer profile execution needs Apptainer and access to the Docker image.
 - External HMMER, DIAMOND, MAFFT, IQ-TREE, MEME, and related bioinformatics commands are available through the local `GeneFamilyFlow` Conda environment; Linux/container-only helpers such as `jcvi` and `kaks_calculator` are kept in `envs/GeneFamilyFlow.linux-64.conda.yaml`.
 - `python bin/genefam/plan_runtime_bootstrap.py --readiness results/readiness/command_readiness.tsv --outdir results/readiness` writes a Markdown plan and shell script for the current machine gap.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` writes a compact goal-completion table and keeps Docker/Apptainer as an explicit blocker when unavailable.
 
 ## Release Decision
 
