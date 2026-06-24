@@ -2755,9 +2755,53 @@ Verification:
 - `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
 
 Commit:
-- hash: pending
+- hash: faf1c3c16778b8e5a38135fe0eea1ecd1791532d
 - message: feat: add objective completion audit
 - files: objective audit script, objective audit tests, quickstart/release audit docs, history
 
 Next:
 - Install or expose Docker/Apptainer to clear the remaining blocked objective, then rerun release checks and objective audit.
+
+## 2026-06-24 - Auto-write objective audit from release checks
+
+Context:
+- `audit_objective_completion.py` could generate the long-goal audit, but it still required a separate manual command after `run_release_checks.py`.
+- The final handoff should leave release checks, readiness, bootstrap plan, and objective completion evidence in one default release-gate run.
+- `HISTORY.md` also needed the actual commit hash for the previous objective audit checkpoint.
+
+Decisions:
+- Add `write_objective_audit` to `run_release_checks.py`.
+- Keep quick self-check mode lightweight and skip objective-audit generation there.
+- Write `results/objective_audit/objective_audit.tsv` and `results/objective_audit/objective_audit.md` automatically after default release checks when readiness evidence exists.
+- Reuse the existing objective audit builder instead of duplicating objective-status logic in the release runner.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_release_checks.py`
+- `docs/quickstart.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_release_checks.py::test_write_objective_audit_uses_release_rows_and_readiness_tsv tests/test_release_audit_docs.py -q` first failed because `write_objective_audit` did not exist in `run_release_checks.py`.
+- After wiring objective-audit generation, `python -m pytest tests/test_run_release_checks.py::test_write_objective_audit_uses_release_rows_and_readiness_tsv tests/test_release_audit_docs.py tests/test_quickstart_docs.py -q` passed with 4 tests.
+- `python -m pytest tests -q` then failed because direct CLI execution of `bin/genefam/run_release_checks.py` could not import `bin.genefam.audit_objective_completion`.
+- After adding the repo-root `sys.path` bootstrap to `run_release_checks.py`, `python -m pytest tests/test_run_release_checks.py::test_run_release_checks_cli_writes_outputs tests/test_run_release_checks.py::test_write_objective_audit_uses_release_rows_and_readiness_tsv -q` passed with 2 tests.
+- `python -m pytest tests -q` passed with 164 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker and Apptainer are missing, but pytest, config validation, mock MVP, Python standard branch smoke, Python WGD event smoke, Nextflow mock MVP smoke, Nextflow standard branch smoke, Nextflow WGD event smoke, prepared WGD handoff example, quickstart handoff, and runtime bootstrap plan passed.
+- The same release-gate run automatically refreshed `results/objective_audit/objective_audit.md`, which reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the blocked item is `Docker/Apptainer reproducibility`.
+- `results/readiness/command_readiness.tsv` marks `nextflow`, `/usr/local/bin/R`, `hmmsearch`, `diamond`, `mafft`, `iqtree2` via `iqtree`, and `meme` as available through the host or `GeneFamilyFlow`; only `docker` and `apptainer` are missing.
+
+Commit:
+- hash: pending
+- message: feat: auto-write objective audit in release checks
+- files: release-check objective audit integration, release-check tests, quickstart docs, history
+
+Next:
+- Install or expose Docker/Apptainer to clear the remaining blocked objective, then rerun the single release-gate command and inspect the automatically generated objective audit.

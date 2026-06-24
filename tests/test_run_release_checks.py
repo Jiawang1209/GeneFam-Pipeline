@@ -1,7 +1,14 @@
 import subprocess
 import sys
 
-from bin.genefam.run_release_checks import CheckSpec, default_checks, run_checks, summarize_checks, write_markdown
+from bin.genefam.run_release_checks import (
+    CheckSpec,
+    default_checks,
+    run_checks,
+    summarize_checks,
+    write_markdown,
+    write_objective_audit,
+)
 
 
 def test_run_checks_records_pass_and_fail_statuses():
@@ -183,3 +190,103 @@ def test_default_readiness_check_audits_genefamilyflow_conda_env():
     readiness = next(check for check in default_checks() if check.name == "readiness audit")
 
     assert "--conda-env GeneFamilyFlow" in " ".join(readiness.command)
+
+
+def test_write_objective_audit_uses_release_rows_and_readiness_tsv(tmp_path):
+    readiness = tmp_path / "command_readiness.tsv"
+    readiness.write_text(
+        "command\tstatus\tpath\n"
+        "nextflow\tavailable_in_conda\tGeneFamilyFlow:/bin/nextflow\n"
+        "/usr/local/bin/R\tavailable\t/usr/local/bin/R\n"
+        "hmmsearch\tavailable_in_conda\tGeneFamilyFlow:/bin/hmmsearch\n"
+        "diamond\tavailable_in_conda\tGeneFamilyFlow:/bin/diamond\n"
+        "mafft\tavailable_in_conda\tGeneFamilyFlow:/bin/mafft\n"
+        "iqtree2\tavailable_in_conda\tGeneFamilyFlow:/bin/iqtree\n"
+        "meme\tavailable_in_conda\tGeneFamilyFlow:/bin/meme\n"
+        "docker\tmissing\t\n"
+        "apptainer\tmissing\t\n",
+        encoding="utf-8",
+    )
+    rows = [
+        {"check": "pytest", "required": "true", "status": "passed", "exit_code": "0", "command": "pytest", "note": ""},
+        {
+            "check": "validate example config",
+            "required": "true",
+            "status": "passed",
+            "exit_code": "0",
+            "command": "validate",
+            "note": "",
+        },
+        {
+            "check": "validate advanced config",
+            "required": "true",
+            "status": "passed",
+            "exit_code": "0",
+            "command": "validate",
+            "note": "",
+        },
+        {
+            "check": "standard branch smoke",
+            "required": "true",
+            "status": "passed",
+            "exit_code": "0",
+            "command": "standard",
+            "note": "",
+        },
+        {
+            "check": "WGD event smoke",
+            "required": "true",
+            "status": "passed",
+            "exit_code": "0",
+            "command": "wgd",
+            "note": "",
+        },
+        {
+            "check": "Nextflow mock MVP smoke",
+            "required": "true",
+            "status": "passed",
+            "exit_code": "0",
+            "command": "nextflow",
+            "note": "",
+        },
+        {
+            "check": "Nextflow standard branch smoke",
+            "required": "true",
+            "status": "passed",
+            "exit_code": "0",
+            "command": "nextflow",
+            "note": "",
+        },
+        {
+            "check": "Nextflow WGD event smoke",
+            "required": "true",
+            "status": "passed",
+            "exit_code": "0",
+            "command": "nextflow",
+            "note": "",
+        },
+        {
+            "check": "prepared WGD handoff example",
+            "required": "true",
+            "status": "passed",
+            "exit_code": "0",
+            "command": "prepared",
+            "note": "",
+        },
+        {
+            "check": "quickstart handoff",
+            "required": "true",
+            "status": "passed",
+            "exit_code": "0",
+            "command": "quickstart",
+            "note": "",
+        },
+    ]
+
+    written = write_objective_audit(rows, readiness, tmp_path / "objective")
+
+    assert written is True
+    assert "Docker/Apptainer reproducibility\tblocked" in (
+        tmp_path / "objective" / "objective_audit.tsv"
+    ).read_text(encoding="utf-8")
+    assert "Complete: false" in (tmp_path / "objective" / "objective_audit.md").read_text(encoding="utf-8")

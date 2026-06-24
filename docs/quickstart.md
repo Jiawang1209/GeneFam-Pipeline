@@ -41,7 +41,7 @@ Key outputs:
 
 ## 3. Audit The Long Objective
 
-After release checks and readiness audit have written their TSV files, generate a machine-readable summary of the original long-form goal.
+The release gate writes this automatically after the readiness audit. You can also regenerate the machine-readable summary of the original long-form goal manually:
 
 ```bash
 python bin/genefam/audit_objective_completion.py \

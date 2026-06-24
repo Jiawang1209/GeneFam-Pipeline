@@ -11,6 +11,17 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from bin.genefam.audit_objective_completion import (
+    build_objective_audit,
+    read_tsv,
+    write_markdown as write_objective_markdown,
+    write_tsv as write_objective_tsv,
+)
+
 
 FIELDNAMES = ["check", "required", "status", "exit_code", "command", "note"]
 
@@ -228,6 +239,19 @@ def write_markdown(rows: list[dict[str, str]], out_path: Path) -> None:
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def write_objective_audit(
+    rows: list[dict[str, str]],
+    readiness_path: Path = Path("results/readiness/command_readiness.tsv"),
+    outdir: Path = Path("results/objective_audit"),
+) -> bool:
+    if not readiness_path.exists():
+        return False
+    objective_rows = build_objective_audit(rows, read_tsv(readiness_path))
+    write_objective_tsv(objective_rows, outdir / "objective_audit.tsv")
+    write_objective_markdown(objective_rows, outdir / "objective_audit.md")
+    return True
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--outdir", default="results/release_checks", type=Path)
@@ -237,6 +261,8 @@ def main() -> None:
     rows = run_checks(checks)
     write_tsv(rows, args.outdir / "release_checks.tsv")
     write_markdown(rows, args.outdir / "release_checks.md")
+    if not args.quick_self_check:
+        write_objective_audit(rows)
     sys.exit(0 if summarize_checks(rows)["release_ready"] else 1)
 
 
