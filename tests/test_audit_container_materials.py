@@ -10,6 +10,7 @@ def test_audit_container_materials_passes_repository_contracts():
         dockerfile=Path("Dockerfile"),
         linux_env=Path("envs/GeneFamilyFlow.linux-64.conda.yaml"),
         nextflow_config=Path("workflows/nextflow.config"),
+        dockerignore=Path(".dockerignore"),
     )
 
     assert {row["status"] for row in rows} == {"passed"}
@@ -20,6 +21,7 @@ def test_audit_container_materials_passes_repository_contracts():
         "linux_env_full_toolchain",
         "nextflow_container_profiles",
         "container_image_params",
+        "dockerignore_build_context",
     }
 
 
@@ -35,14 +37,17 @@ def test_audit_container_materials_reports_missing_required_contract(tmp_path):
         dockerfile=dockerfile,
         linux_env=env,
         nextflow_config=config,
+        dockerignore=tmp_path / ".dockerignore",
     )
 
     failed = {row["check"]: row for row in rows if row["status"] == "failed"}
     assert "dockerfile_genefamilyflow_env" in failed
     assert "linux_env_full_toolchain" in failed
     assert "nextflow_container_profiles" in failed
+    assert "dockerignore_build_context" in failed
     assert "GeneFamilyFlow.linux-64.conda.yaml" in failed["dockerfile_genefamilyflow_env"]["note"]
     assert "jcvi" in failed["linux_env_full_toolchain"]["note"]
+    assert "work/" in failed["dockerignore_build_context"]["note"]
 
 
 def test_audit_container_materials_cli_writes_tsv_and_markdown(tmp_path):

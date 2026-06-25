@@ -5517,9 +5517,52 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` now reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, with only Docker/Apptainer reproducibility blocked by missing runtimes.
 
 Commit:
-- hash: pending
+- hash: 1c5a4760def3e2a006bc99ded6c6f3777698f94b
 - message: fix: resolve manifest paths for nextflow workdirs
 - files: species manifest resolver, discovery tests, history
 
 Next:
 - Continue workflow-first polishing and keep Docker/Apptainer packaging as the remaining external-runtime blocker.
+
+## 2026-06-25 - Audit Docker build context hygiene
+
+Context:
+- The workflow itself now has `Achieved: 11`, `Missing: 0`; the remaining objective blocker is Docker/Apptainer runtime availability.
+- Before running final container封装, the static container materials should also guard against accidentally copying large runtime caches or local paper source material into Docker build context.
+- `.dockerignore` already excludes `.git`, `.nextflow*`, `work/`, `results/`, Python caches, and `Reference/`, but the release audit did not enforce that contract.
+
+Decisions:
+- Extend `bin/genefam/audit_container_materials.py` to read `.dockerignore`.
+- Add `dockerignore_build_context` to the container materials audit.
+- Require `.dockerignore` to exclude VCS metadata, Nextflow/cache outputs, generated results, Python caches, and Reference source material.
+- Keep this as static packaging evidence because Docker/Apptainer runtimes are not yet available on this machine.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_container_materials.py`
+- `tests/test_audit_container_materials.py`
+- `tests/test_release_audit_docs.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_container_materials.py -q` first failed because `audit_container_materials()` did not accept or check `.dockerignore`.
+- `python -m pytest tests/test_audit_container_materials.py -q` passed with 3 tests after adding `dockerignore_build_context`.
+- `python bin/genefam/audit_container_materials.py --outdir results/container_materials` passed and wrote `dockerignore_build_context` to the TSV and Markdown outputs.
+- `rg -n "dockerignore_build_context|\\.dockerignore" results/container_materials/container_materials.tsv results/container_materials/container_materials.md` confirmed the new static packaging check is present.
+- `python -m pytest tests/test_audit_container_materials.py tests/test_release_audit_docs.py tests/test_run_release_checks.py tests/test_runtime_environment_files.py -q` passed with 51 tests.
+- `python -m pytest tests -q` passed with 265 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` still reports `Passed: 28`, `Required failed: 1`; the only required failure remains the runtime readiness audit, while Docker and Apptainer profile smokes remain optional failures.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
+- hash: pending
+- message: test: audit docker build context hygiene
+- files: container materials audit, audit tests, release audit docs test, history
+
+Next:
+- Continue final封装 readiness work; actual Docker/Apptainer execution remains blocked until those runtimes are installed.

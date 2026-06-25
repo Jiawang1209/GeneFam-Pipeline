@@ -63,6 +63,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/container_profile_smoke/apptainer/container_profile_smoke.md" in text
     assert "results/container_materials/container_materials.tsv" in text
     assert "results/container_materials/container_materials.md" in text
+    assert ".dockerignore" in text
     assert "results/handoff/handoff_report.md" in text
     assert "results/handoff/handoff_summary.tsv" in text
     assert "run_delivery_bundle.py" in text

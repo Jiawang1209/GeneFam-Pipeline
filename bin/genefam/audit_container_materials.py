@@ -30,10 +30,12 @@ def audit_container_materials(
     dockerfile: Path,
     linux_env: Path,
     nextflow_config: Path,
+    dockerignore: Path,
 ) -> list[dict[str, str]]:
     docker_text = _read(dockerfile)
     env_text = _read(linux_env)
     config_text = _read(nextflow_config)
+    dockerignore_text = _read(dockerignore)
 
     docker_env_required = [
         "GeneFamilyFlow.linux-64.conda.yaml",
@@ -72,6 +74,15 @@ def audit_container_materials(
         'params.container_image = "genefam-pipeline:latest"',
         'params.apptainer_image = "genefam-pipeline_latest.sif"',
     ]
+    dockerignore_required = [
+        ".git",
+        ".nextflow*",
+        "work/",
+        "results/",
+        "__pycache__/",
+        ".pytest_cache/",
+        "Reference/",
+    ]
 
     checks = [
         (
@@ -103,6 +114,12 @@ def audit_container_materials(
             config_text,
             image_param_required,
             "Nextflow container image names are parameterized for Docker and Apptainer.",
+        ),
+        (
+            "dockerignore_build_context",
+            dockerignore_text,
+            dockerignore_required,
+            ".dockerignore excludes VCS metadata, Nextflow/cache outputs, generated results, Python caches, and Reference source material from container build context.",
         ),
     ]
 
@@ -152,6 +169,7 @@ def main() -> None:
     parser.add_argument("--dockerfile", default=Path("Dockerfile"), type=Path)
     parser.add_argument("--linux-env", default=Path("envs/GeneFamilyFlow.linux-64.conda.yaml"), type=Path)
     parser.add_argument("--nextflow-config", default=Path("workflows/nextflow.config"), type=Path)
+    parser.add_argument("--dockerignore", default=Path(".dockerignore"), type=Path)
     parser.add_argument("--outdir", default=Path("results/container_materials"), type=Path)
     args = parser.parse_args()
 
@@ -159,6 +177,7 @@ def main() -> None:
         dockerfile=args.dockerfile,
         linux_env=args.linux_env,
         nextflow_config=args.nextflow_config,
+        dockerignore=args.dockerignore,
     )
     write_tsv(rows, args.outdir / "container_materials.tsv")
     write_markdown(rows, args.outdir / "container_materials.md")
