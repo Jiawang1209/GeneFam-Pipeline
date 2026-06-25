@@ -45,6 +45,7 @@ def build_bootstrap_plan(rows: list[dict[str, str]]) -> dict[str, str]:
         "python bin/genefam/run_container_profile_smoke.py --profile docker --conda-env GeneFamilyFlow --outdir results/container_profile_smoke/docker",
         "python bin/genefam/run_container_profile_smoke.py --profile apptainer --conda-env GeneFamilyFlow --outdir results/container_profile_smoke/apptainer",
         "python bin/genefam/run_release_checks.py --outdir results/release_checks",
+        "bash scripts/run_local_acceptance.sh",
     ]
     markdown = "\n".join(
         [
@@ -93,6 +94,14 @@ def build_bootstrap_plan(rows: list[dict[str, str]]) -> dict[str, str]:
             "```bash",
             "python bin/genefam/run_release_checks.py --outdir results/release_checks",
             "```",
+            "",
+            "After the runtime gap is closed, rerun the local acceptance wrapper so the handoff report and delivery bundle are refreshed from the same evidence set:",
+            "",
+            "```bash",
+            "bash scripts/run_local_acceptance.sh",
+            "```",
+            "",
+            "Open `results/delivery_bundle/delivery_bundle.md` as the final user-facing index after that pass.",
             "",
         ]
     )

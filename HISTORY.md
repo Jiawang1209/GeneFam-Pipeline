@@ -4504,6 +4504,46 @@ Commit:
 Next:
 - Continue making broad objective items independently auditable while preserving Docker/Apptainer as the only current release blocker.
 
+## 2026-06-25 - Refresh runtime bootstrap final acceptance path
+
+Context:
+- The runtime bootstrap plan already described how to rebuild the `GeneFamilyFlow` environment and container artifacts.
+- After the Docker/Apptainer gap is fixed, the generated shell script and Markdown plan should also tell the user how to refresh the handoff report and delivery bundle from the same final evidence set.
+
+Decisions:
+- Keep `scripts/run_local_acceptance.sh` as the single final local acceptance wrapper after container/runtime repair.
+- Add the wrapper to `results/readiness/runtime_bootstrap.sh`.
+- Mention `results/delivery_bundle/delivery_bundle.md` as the final user-facing index after local acceptance.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/plan_runtime_bootstrap.py`
+- `tests/test_plan_runtime_bootstrap.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_plan_runtime_bootstrap.py -q` first failed because the generated bootstrap shell did not include `bash scripts/run_local_acceptance.sh`.
+- The same focused test passed with 3 tests after adding the local acceptance command and delivery-bundle note.
+- `python bin/genefam/plan_runtime_bootstrap.py --readiness results/readiness/command_readiness.tsv --outdir results/readiness` refreshed `results/readiness/runtime_bootstrap_plan.md` and `results/readiness/runtime_bootstrap.sh`.
+- `python -m pytest tests -q` passed with 244 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 25`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; the embedded pytest check reports `244 passed`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocker remains missing `docker` and `apptainer`.
+- `results/readiness/runtime_bootstrap_plan.md` now instructs the user to run `bash scripts/run_local_acceptance.sh` after the runtime gap is closed and open `results/delivery_bundle/delivery_bundle.md`.
+
+Commit:
+- hash: pending
+- message: chore: refresh runtime bootstrap acceptance path
+- files: runtime bootstrap helper, bootstrap test, history
+
+Next:
+- Commit this runtime bootstrap handoff update, then continue tightening any remaining final-delivery evidence while Docker/Apptainer remains the external runtime blocker.
+
 ## 2026-06-25 - Add final delivery bundle index
 
 Context:
@@ -4750,7 +4790,7 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocker remains missing `docker` and `apptainer`.
 
 Commit:
-- hash: pending
+- hash: ea175a8c16dc18957f8bc53d47d9877bf8dffb31
 - message: feat: include Reference governance in delivery bundle
 - files: delivery bundle helper, delivery bundle test, history
 
