@@ -5875,9 +5875,51 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
+- hash: 3cfeb5785230cc56dc5f464c657d8ca6fa8d0be5
+- message: docs: index local acceptance summary in delivery bundle
+- files: delivery bundle index, local acceptance wrapper, delivery/local-acceptance tests, history
+
+Next:
+- Commit the delivery-bundle indexing change, then continue improving the final handoff surfaces while the external container runtime blocker remains.
+
+## 2026-06-25 - Surface local acceptance summary in handoff entrypoints
+
+Context:
+- The delivery bundle now indexes `results/local_acceptance/local_acceptance_summary.md`.
+- The first human-facing handoff report and readiness checklist still did not list that compact pass/fail summary among the first files to inspect.
+
+Decisions:
+- Add the local acceptance summary to the handoff report `Key Evidence` list.
+- Add the same artifact to the README and readiness checklist first-inspection lists.
+- Describe it as the compact local acceptance pass/fail index for release, quickstart, and delivery-bundle refresh steps.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/build_handoff_report.py`
+- `docs/readiness_checklist.md`
+- `tests/test_build_handoff_report.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_handoff_report.py tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report tests/test_runtime_environment_files.py::test_readiness_checklist_points_to_local_acceptance_summary -q` first failed because `handoff_report.md` and `docs/readiness_checklist.md` did not include `results/local_acceptance/local_acceptance_summary.md`.
+- The same command passed with 7 tests after adding the local acceptance summary to handoff/report documentation entrypoints.
+- `python -m pytest tests -q` passed with 274 tests.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing handoff, local acceptance, quickstart, and delivery-bundle artifacts.
+- `rg -n "local_acceptance_summary|Passed:|Required failed:|Optional failed:" results/handoff/handoff_report.md results/delivery_bundle/delivery_bundle.md results/release_checks/release_checks.md` confirmed the generated handoff report and delivery bundle both point to `results/local_acceptance/local_acceptance_summary.md`; release checks still report `Passed: 28`, `Required failed: 1`, `Optional failed: 2`.
+- `results/local_acceptance/local_acceptance_summary.md` reports `release_gate` failed with exit code `1`, while `quickstart_handoff` and `delivery_bundle` passed.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Commit the delivery-bundle indexing change, then continue improving the final handoff surfaces while the external container runtime blocker remains.
+- Commit the handoff-entrypoint update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.

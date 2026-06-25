@@ -116,6 +116,7 @@ def write_markdown(sections: dict[str, str], out_path: Path) -> None:
         "",
         "- `results/release_checks/release_checks.md`",
         "- `results/objective_audit/objective_audit.md`",
+        "- `results/local_acceptance/local_acceptance_summary.md`",
         "- `results/readiness/command_readiness.tsv`",
         "- `results/readiness/runtime_bootstrap_plan.md`",
         "- `results/readiness/runtime_bootstrap.sh`",

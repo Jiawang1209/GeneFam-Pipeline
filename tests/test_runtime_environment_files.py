@@ -147,8 +147,16 @@ def test_readme_points_to_final_handoff_report():
 
     assert "results/handoff/handoff_report.md" in readme
     assert "results/handoff/handoff_summary.tsv" in readme
+    assert "results/local_acceptance/local_acceptance_summary.md" in readme
     assert "first file to inspect" in readme
     assert "run_release_checks.py" in readme
+
+
+def test_readiness_checklist_points_to_local_acceptance_summary():
+    text = Path("docs/readiness_checklist.md").read_text(encoding="utf-8")
+
+    assert "results/local_acceptance/local_acceptance_summary.md" in text
+    assert "local acceptance" in text
 
 
 def test_readme_current_status_matches_release_evidence():
