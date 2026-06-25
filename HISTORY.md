@@ -6297,9 +6297,52 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
-- hash: pending
+- hash: c4c5b1c4782627fb744d9ff39edc5d5da1b96c3b
 - message: feat: index primary yaml entrypoints in delivery bundle
 - files: delivery bundle generator, delivery bundle test, history
 
 Next:
-- Commit this final handoff-index improvement, then continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
+- Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Document primary YAML entrypoints in quickstart
+
+Timestamp:
+- 2026-06-25 13:42:14 CST
+
+Context:
+- The final delivery bundle now indexes the primary species-bank YAML config and the WGD named-event YAML config.
+- `docs/quickstart.md` still listed many output artifacts but did not explicitly call out which YAML files the user edits first for target species and gamma/beta/alpha/theta event mapping.
+
+Decisions:
+- Add a `Primary YAML Entrypoints` section to the quickstart.
+- Document `configs/example.config.yaml` as the primary species-bank YAML entrypoint.
+- Document `configs/wgd_events.brassicaceae.yaml` as the primary WGD event YAML entrypoint.
+- Keep `configs/manifest.example.yaml` as the manifest-mode alternative.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `docs/quickstart.md`
+- `tests/test_quickstart_docs.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_quickstart_docs.py -q` first failed because the quickstart did not include `primary species-bank YAML entrypoint`.
+- `python -m pytest tests/test_quickstart_docs.py -q` passed with 2 tests after adding the primary YAML entrypoint section.
+- `python -m pytest tests -q` passed with 274 tests.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing release, handoff, quickstart, local acceptance, and delivery-bundle evidence.
+- `grep -n -E 'Primary YAML Entrypoints|primary species-bank YAML entrypoint|primary WGD event YAML entrypoint|configs/example.config.yaml|configs/wgd_events.brassicaceae.yaml|Passed:|Required failed:|Optional failed:|Achieved:|Blocked:|Missing:' docs/quickstart.md results/release_checks/release_checks.md results/objective_audit/objective_audit.md results/local_acceptance/local_acceptance_summary.md` confirmed the quickstart and release evidence expose both primary YAML entrypoints.
+- `results/release_checks/release_checks.md` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
+- hash: pending
+- message: docs: document primary yaml entrypoints in quickstart
+- files: quickstart docs, quickstart docs test, history
+
+Next:
+- Commit this quickstart handoff improvement, then continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.

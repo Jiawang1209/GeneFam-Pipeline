@@ -95,13 +95,21 @@ Key outputs:
 - `results/delivery_bundle/delivery_manifest.tsv`
 - `results/delivery_bundle/delivery_bundle.md`
 - `configs/manifest.example.yaml`
+- `configs/example.config.yaml`
+- `configs/wgd_events.brassicaceae.yaml`
 - `tests/fixtures/species_manifest.tsv`
 - `results/species_manifest_selection_smoke/tables/species_manifest.tsv`
 - `results/nextflow_standard_manifest_smoke/nextflow_standard_smoke.tsv`
 
 On the current development machine, Docker/Apptainer reproducibility is expected to remain `blocked` until a container runtime is available.
 
-## 4. Inspect The Delivery Bundle
+## 4. Primary YAML Entrypoints
+
+- `configs/example.config.yaml`: primary species-bank YAML entrypoint for choosing target species, HMM profiles, DIAMOND references, optional expression matrix input, and enabled modules.
+- `configs/wgd_events.brassicaceae.yaml`: primary WGD event YAML entrypoint for mapping anonymous Ks-supported WGD layers to named gamma, beta, alpha, theta, or custom events.
+- `configs/manifest.example.yaml`: manifest-mode YAML entrypoint when species files are listed in a TSV instead of discovered from one folder per species.
+
+## 5. Inspect The Delivery Bundle
 
 The release gate writes the final delivery index after the objective audit. It collects species-bank and manifest-mode input entrypoints, the manifest-mode standard DSL2 smoke evidence, the standard final report, prepared WGD report, alpha/beta/gamma/theta event evidence, runtime status, and documentation entrypoints.
 
@@ -114,7 +122,7 @@ python bin/genefam/run_delivery_bundle.py \
   --outdir results/delivery_bundle
 ```
 
-## 5. Run The Standard Branch Smoke
+## 6. Run The Standard Branch Smoke
 
 This checks the species-bank driven family identification post-processing path without requiring external HMMER or DIAMOND execution.
 
@@ -134,7 +142,7 @@ Key outputs:
 - `results/standard_smoke/sequences/family_members.faa`
 - `results/standard_smoke/report/final_report.md`
 
-## 6. Run The Prepared WGD Handoff
+## 7. Run The Prepared WGD Handoff
 
 This checks the reusable handoff from family candidates plus prepared duplication and Ka/Ks tables into WGD layer and named-event evidence.
 
@@ -154,7 +162,7 @@ Key outputs:
 
 The example verifies configured `alpha`, `beta`, `gamma`, and `theta` WGD event labels. These labels are interpreted from Ks-supported WGD layers and the configured event mapping; they are not raw MCScanX or Ka/Ks outputs.
 
-## 7. Run The Nextflow Single-Tool Smoke
+## 8. Run The Nextflow Single-Tool Smoke
 
 This checks real Nextflow routing for HMMER-only and DIAMOND-only standard identification paths through `GeneFamilyFlow`.
 
@@ -172,7 +180,7 @@ Key checks in `results/nextflow_single_tool_smoke/nextflow_single_tool_smoke.tsv
 - `nextflow_standard_hmmer_only`
 - `nextflow_standard_diamond_only`
 
-## 8. What To Read Next
+## 9. What To Read Next
 
 - `docs/input_contract.md`: species bank, YAML, and prepared-table contracts.
 - `docs/standard_to_wgd_handoff.md`: how standard branch outputs connect to WGD evidence.
