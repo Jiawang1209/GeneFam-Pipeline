@@ -95,6 +95,8 @@ def test_write_handoff_markdown_contains_copyable_next_steps(tmp_path):
     assert "results/local_acceptance/local_acceptance_summary.md" in text
     assert "results/delivery_bundle/delivery_manifest.tsv" in text
     assert "results/delivery_bundle/delivery_bundle.md" in text
+    assert "Dockerfile" in text
+    assert "results/container_default_smoke" in text
 
 
 def test_write_handoff_markdown_uses_release_gate_when_no_unblock_command(tmp_path):

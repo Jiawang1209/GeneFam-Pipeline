@@ -6044,9 +6044,48 @@ Verification:
 - `results/local_acceptance/local_acceptance_summary.md` still records `release_gate` failed with exit code `1`, while `quickstart_handoff` and `delivery_bundle` passed.
 
 Commit:
+- hash: 7e2a0ec2b229f66218c9c6887a54242508b6de40
+- message: docs: surface docker default smoke in objective audit
+- files: objective audit evidence, objective audit tests, history
+
+Next:
+- Commit the objective-audit evidence update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Add Docker default smoke to handoff report
+
+Context:
+- The delivery bundle and objective audit now expose the Dockerfile default standard smoke contract.
+- The first human-facing handoff report still listed only container profile smoke outputs, so users reading just that report could miss the in-image default smoke contract.
+
+Decisions:
+- Add `Dockerfile` and `results/container_default_smoke` to the handoff report `Key Evidence` list.
+- Keep the next command focused on `runtime_bootstrap.sh` while Docker/Apptainer remain unavailable.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_handoff_report.py`
+- `tests/test_build_handoff_report.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_handoff_report.py -q` first failed because the handoff report did not include `Dockerfile` or `results/container_default_smoke`.
+- `python -m pytest tests/test_build_handoff_report.py -q` passed with 5 tests after adding both entries to `Key Evidence`.
+- `python -m pytest tests -q` passed with 274 tests.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing handoff and delivery-bundle artifacts.
+- `rg -n "Dockerfile|container_default_smoke|Passed:|Required failed:|Optional failed:|Achieved:|Blocked:|Missing:" results/handoff/handoff_report.md results/release_checks/release_checks.md results/objective_audit/objective_audit.md` confirmed the generated handoff report includes `Dockerfile` and `results/container_default_smoke`.
+- `results/release_checks/release_checks.md` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+- `results/local_acceptance/local_acceptance_summary.md` still records `release_gate` failed with exit code `1`, while `quickstart_handoff` and `delivery_bundle` passed.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Commit the objective-audit evidence update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
+- Commit the handoff-report update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
