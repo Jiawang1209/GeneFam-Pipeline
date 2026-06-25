@@ -1,5 +1,7 @@
 # GeneFam-Pipeline
 
+中文说明见 [README.zh-CN.md](README.zh-CN.md)。
+
 Reusable Nextflow pipeline for large-scale multi-species gene family analysis.
 
 The first implementation target is a YAML-driven workflow that scans a large species bank, selects a run-specific subset of species, identifies gene family members with HMMER and DIAMOND/BLAST, filters candidates, summarizes copy numbers, and writes report-ready tables and FASTA files.

@@ -6358,12 +6358,45 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
-- hash: not created yet
-- message: pending
+- hash: f9ebf37b7d6b6dacfb6ff63d45996c06b66757d9
+- message: feat: add mcscanx circlize visualization
 - files: MCScanX circlize input builder, R circlize plot, smoke runner, release checks, docs, tests, history
 
 Next:
 - Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 16:45 - Add Chinese README for first real species runs
+
+Context:
+- The user said the current README was hard to understand and asked for a Chinese version.
+- The project now needs user-facing guidance for preparing a small real 3-species run.
+
+Decisions:
+- Keep the existing English `README.md` as the detailed engineering/release surface.
+- Add `README.zh-CN.md` as a practical Chinese usage guide rather than a line-by-line translation.
+- Add a Chinese README link near the top of `README.md`.
+- Focus the Chinese guide on species-bank layout, YAML editing, preflight validation, 3-species first run strategy, result locations, MCScanX circlize outputs, and WGD event interpretation.
+
+Added:
+- `README.zh-CN.md`
+
+Modified:
+- `README.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `rg -n "README.zh-CN|validate_config|run_identification|MCScanX|gamma|beta|alpha|theta|3 个物种|GeneFamilyFlow" README.md README.zh-CN.md` confirmed the Chinese entry link and key usage sections.
+
+Commit:
+- hash: not created yet
+- message: pending
+- files: Chinese README, English README link, history
+
+Next:
+- Review the Chinese guide during the first real 3-species run and adjust examples to the user's actual species names and data paths.
 
 ## 2026-06-25 - Stabilize standard Nextflow alignment and FastTree readiness
 

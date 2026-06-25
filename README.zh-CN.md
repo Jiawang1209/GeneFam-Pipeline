@@ -1,0 +1,353 @@
+# GeneFam-Pipeline 中文说明
+
+GeneFam-Pipeline 是一个面向植物大范围、多物种基因家族分析的流程项目。目标是把一个包含很多物种的本地物种库，通过 YAML 配置选择本次要分析的物种，然后完成基因家族成员鉴定、结构与进化分析、可视化和报告输出。
+
+当前流程优先使用：
+
+- Nextflow DSL2 作为流程引擎
+- YAML 作为参数配置入口
+- Conda 环境名：`GeneFamilyFlow`
+- R 路径：`/usr/local/bin/R`
+- Python 脚本负责表格、FASTA、GFF3 等稳定格式转换
+- R 脚本负责画图
+
+## 现在能做什么
+
+目前已经开发并测试过的能力包括：
+
+- 从物种库中按物种名选择本次分析对象
+- HMMER / DIAMOND 证据输入规划
+- HMMER 结构域结果过滤
+- 基因家族候选成员合并
+- 多物种 copy number 汇总
+- 家族成员蛋白序列提取
+- MAFFT 多序列比对
+- FastTree 快速构树，适合多物种大基因家族
+- IQ-TREE 分支保留，适合更慢但更完整的模型选择或 bootstrap 分析
+- MEME motif 结果解析与统计
+- gene structure 统计
+- chromosome location 提取
+- promoter 提取与统计
+- MCScanX `.collinearity` 结果解析
+- MCScanX + `circlize` 共线性圆图可视化
+- Ka/Ks 结果解析
+- WGD layer 与 gamma / beta / alpha / theta 这类命名事件解释
+- duplicate retention enrichment
+- RNA-seq 表达矩阵整合
+- 结果汇总表、PDF/PNG 图和 Markdown 报告
+
+需要注意：Docker / Apptainer 封装材料已经有了，但这台机器当前还没有完成 Docker / Apptainer 运行时验证。所以现在的重点仍然是先把分析流程跑通，最后再封装容器。
+
+## 输入数据怎么放
+
+推荐使用一个大的物种库，每个物种一个文件夹，文件夹名就是物种名：
+
+```text
+data/species_bank/
+  Arabidopsis_thaliana/
+    Arabidopsis_thaliana.pep.fa
+    Arabidopsis_thaliana.cds.fa
+    Arabidopsis_thaliana.genome.fa
+    Arabidopsis_thaliana.gff3
+  Brassica_rapa/
+    Brassica_rapa.pep.fa
+    Brassica_rapa.cds.fa
+    Brassica_rapa.genome.fa
+    Brassica_rapa.gff3
+  Capsella_rubella/
+    Capsella_rubella.pep.fa
+    Capsella_rubella.cds.fa
+    Capsella_rubella.genome.fa
+    Capsella_rubella.gff3
+```
+
+最基础分析至少需要：
+
+- `pep`：蛋白质序列，用于 HMMER / DIAMOND / 构树
+- `gff3`：基因注释，用于 gene structure、chromosome location
+
+进阶模块还需要：
+
+- `genome`：基因组序列，用于 promoter 提取
+- `cds`：CDS 序列，用于 Ka/Ks
+- expression matrix：表达谱整合
+- MCScanX / KaKs 结果表：WGD、共线性、选择压力分析
+
+## 配置文件怎么写
+
+分析通过 YAML 文件控制。可以复制 `configs/example.config.yaml`，比如新建：
+
+```bash
+cp configs/example.config.yaml configs/my_3species.yaml
+```
+
+然后重点改这些地方：
+
+```yaml
+project:
+  name: My_gene_family
+  outdir: results/My_gene_family
+
+input:
+  mode: auto
+  root: data/species_bank
+  required:
+    pep: true
+    gff3: true
+    cds: false
+    genome: true
+
+species:
+  include:
+    - Arabidopsis_thaliana
+    - Brassica_rapa
+    - Capsella_rubella
+  exclude: []
+
+gene_family:
+  name: GDSL
+  hmm_profiles:
+    - id: PF00657
+      path: data/hmm_profiles/PF00657.hmm
+  reference_peptides: data/reference/GDSL_reference.pep.fa
+```
+
+第一轮真实试跑，建议先开这些模块：
+
+```yaml
+modules:
+  identification: true
+  domain_filtering: true
+  family_summary: true
+  phylogeny: true
+  motif: false
+  synteny: false
+  duplication_retention: false
+  kaks: false
+  chromosome_location: true
+  expression: false
+  report: true
+```
+
+为什么第一轮不建议全开？因为第一次真实数据最容易出问题的是路径、物种名、GFF3 gene ID、HMM profile 和 reference peptide。先把主线跑通，再逐步加 promoter、motif、expression、MCScanX、Ka/Ks 和 WGD 解释，会更稳。
+
+## 跑前检查是干什么的
+
+正式跑之前，先做配置体检：
+
+```bash
+python bin/genefam/validate_config.py configs/my_3species.yaml --check-paths
+```
+
+它不会真正分析数据，只检查：
+
+- YAML 是否能读
+- `input.root` 是否存在
+- 你选择的物种能不能找到
+- 每个物种是否有必须的 `pep` / `gff3` / `genome` / `cds`
+- HMM profile 是否存在
+- DIAMOND reference peptide 是否存在
+- 模块依赖是否合理
+- expression matrix、WGD event map 等路径是否存在
+
+通过时会显示：
+
+```text
+Configuration OK
+```
+
+如果失败，会直接告诉你缺哪个路径或哪个模块配置不合理。这个步骤的作用是避免 Nextflow 跑了很久之后才因为一个文件路径写错而失败。
+
+## 第一轮真实分析怎么跑
+
+如果 `GeneFamilyFlow` 环境已经可用，可以跑标准识别分支：
+
+```bash
+nextflow run workflows/main.nf \
+  -c workflows/nextflow.config \
+  -profile activated \
+  --config configs/my_3species.yaml \
+  --run_identification true \
+  --tree_builder fasttree \
+  --final_rule intersection
+```
+
+建议第一轮使用 `fasttree`，因为它快，适合多物种大基因家族。等结果稳定后，如果你需要更正式的系统发育树，再考虑 `iqtree`。
+
+## 结果在哪里看
+
+常见结果会在你的 `project.outdir` 下面，例如：
+
+```text
+results/My_gene_family/
+  tables/
+  sequences/
+  alignment/
+  phylogeny/
+  plots/
+  report/
+```
+
+重点看：
+
+- `tables/family_candidates.tsv`：候选基因家族成员
+- `tables/family_counts.tsv`：每个物种的成员数量
+- `sequences/family_members.faa`：家族成员蛋白序列
+- `tables/gene_structure_summary.tsv`：基因结构统计
+- `tables/chromosome_locations.tsv`：染色体位置
+- `alignment/*.aln.faa`：多序列比对结果
+- `phylogeny/*.treefile`：进化树
+- `report/final_report.md`：最终报告
+
+如果运行 promoter 模块或相关 smoke，会看到：
+
+- `tables/promoters.bed`
+- `sequences/promoters.fa`
+- `plots/feature_summary.pdf`
+
+如果运行 MCScanX + circlize 可视化，会看到：
+
+- `tables/circlize_chromosomes.tsv`
+- `tables/circlize_links.tsv`
+- `tables/circlize_skipped_links.tsv`
+- `plots/mcscanx_circlize.pdf`
+- `plots/mcscanx_circlize.png`
+
+## 单物种、3 个物种、很多物种该怎么选
+
+单物种适合检查：
+
+- 输入文件格式
+- HMMER / DIAMOND 能否识别家族成员
+- GFF3 gene ID 是否匹配
+- chromosome location / gene structure 是否正常
+- promoter 是否能提取
+
+3 个物种更适合第一轮真实试跑，因为它可以额外检查：
+
+- 多物种 copy number 对比
+- 多物种家族成员 FASTA 汇总
+- MAFFT + FastTree 是否能跑通
+- 初步多物种报告是否合理
+
+很多物种适合最后正式分析。建议顺序是：
+
+```text
+1 个物种 -> 3 个物种 -> 10 个物种 -> 全部物种
+```
+
+## 关于 gamma / beta / alpha / theta
+
+这些不是软件直接“测出来”的事件名，而是对 WGD/WGT 层的生物学解释。
+
+流程里会先做更底层的证据：
+
+- MCScanX 共线性
+- duplicate type
+- Ka/Ks
+- WGD layer
+
+然后再通过 YAML 里的事件配置，把某些 WGD layer 解释成：
+
+- `gamma`
+- `beta`
+- `alpha`
+- `theta`
+- 或你自己定义的事件名
+
+也就是说：
+
+```text
+synteny + Ks + layer classification -> anonymous WGD layers
+anonymous WGD layers + event YAML/literature metadata -> gamma/beta/alpha/theta
+```
+
+这样做的好处是流程不会把事件名当成原始事实，而是明确区分“观测证据”和“文献解释”。
+
+## MCScanX + circlize 可视化
+
+目前已经有一个专门的 smoke：
+
+```bash
+python bin/genefam/run_mcscanx_circlize_smoke.py \
+  --r-bin /usr/local/bin/R \
+  --outdir results/mcscanx_circlize_smoke
+```
+
+它会生成：
+
+- `results/mcscanx_circlize_smoke/tables/circlize_chromosomes.tsv`
+- `results/mcscanx_circlize_smoke/tables/circlize_links.tsv`
+- `results/mcscanx_circlize_smoke/tables/circlize_skipped_links.tsv`
+- `results/mcscanx_circlize_smoke/plots/mcscanx_circlize.pdf`
+- `results/mcscanx_circlize_smoke/plots/mcscanx_circlize.png`
+
+真实数据中，如果某些 MCScanX gene pair 找不到坐标，不会直接崩掉，而是写入 `circlize_skipped_links.tsv`，方便你检查是不是 gene ID 不一致。
+
+## 开发和验收状态
+
+常用检查命令：
+
+```bash
+python -m pytest tests -q
+python bin/genefam/run_release_checks.py --outdir results/release_checks
+```
+
+当前已知状态：
+
+- Python / R / Nextflow 主流程开发已基本成型
+- `GeneFamilyFlow` 环境用于本地运行
+- `/usr/local/bin/R` 用于 R 图
+- Docker / Apptainer 是最后的封装和可重复运行验证，不是当前第一轮真实数据试跑的前置条件
+
+查看总体验收状态：
+
+```text
+results/release_checks/release_checks.md
+results/objective_audit/objective_audit.md
+results/handoff/handoff_report.md
+```
+
+## 重要文件
+
+- `configs/example.config.yaml`：最基础配置示例
+- `configs/advanced_modules.example.yaml`：高级模块配置示例
+- `docs/input_contract.md`：输入文件规范
+- `docs/quickstart.md`：快速运行说明
+- `docs/release_audit.md`：开发目标和证据对照表
+- `docs/wgd_event_evidence.md`：WGD 事件解释说明
+- `docs/standard_to_wgd_handoff.md`：标准分析到 WGD 分析的衔接说明
+- `HISTORY.md`：开发日记和 commit 记录
+- `Reference/`：论文和参考脚本，只作为参考材料，不直接修改
+
+## 推荐你下一步怎么做
+
+我建议你下一步准备 3 个物种的数据，然后新建一个 `configs/my_3species.yaml`。
+
+先跑：
+
+```bash
+python bin/genefam/validate_config.py configs/my_3species.yaml --check-paths
+```
+
+通过后再跑：
+
+```bash
+nextflow run workflows/main.nf \
+  -c workflows/nextflow.config \
+  -profile activated \
+  --config configs/my_3species.yaml \
+  --run_identification true \
+  --tree_builder fasttree \
+  --final_rule intersection
+```
+
+第一轮目标不是把所有高级模块一次性跑完，而是先确认：
+
+- 3 个物种能被识别
+- HMMER / DIAMOND 能找到候选成员
+- 候选成员数量合理
+- GFF3 坐标能匹配
+- family_members.faa 能生成
+- FastTree 能生成树
+- final_report.md 能打开阅读
