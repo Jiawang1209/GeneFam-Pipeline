@@ -6257,6 +6257,63 @@ Commit:
 Next:
 - Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
 
+## 2026-06-25 - Stabilize standard Nextflow alignment and FastTree readiness
+
+Timestamp:
+- 2026-06-25 15:36:23 CST
+
+Context:
+- Full standard Nextflow smoke failed inside `RUN_ALIGNMENT` because MAFFT tried to write to `/dev/stderr` in the managed execution environment.
+- The workflow now defaults to FastTree, but readiness and bootstrap checks did not yet treat FastTree as a first-class runtime command.
+- Objective audit still reported the Nextflow and standard-branch requirements as missing because the standard Nextflow smokes were failing.
+
+Decisions:
+- Run MAFFT with `--quiet --auto` inside the Nextflow alignment process.
+- Add `FastTree` to the default readiness command set and Conda-scoped lookup.
+- Add FastTree verification to the runtime bootstrap plan and readiness checklist.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_readiness.py`
+- `bin/genefam/plan_runtime_bootstrap.py`
+- `docs/readiness_checklist.md`
+- `tests/test_audit_readiness.py`
+- `tests/test_plan_runtime_bootstrap.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_workflow_modules.py`
+- `workflows/modules/alignment_phylogeny.nf`
+
+Deleted:
+- none
+
+Verification:
+- `/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin/mafft --quiet --auto tests/fixtures/alignment/family_members.faa > /private/tmp/genefam_mafft_quiet_test.aln.faa` passed.
+- `python -m pytest tests/test_workflow_modules.py -q` first failed because `RUN_ALIGNMENT` did not use quiet MAFFT.
+- `python -m pytest tests/test_workflow_modules.py -q` passed with 17 tests after adding `mafft --quiet --auto`.
+- `/Users/liuyue/miniforge3/bin/python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --outdir /private/tmp/genefam_nextflow_standard_debug2` passed and published `alignment/GDSL.mafft.aln.faa`, `phylogeny/GDSL.fasttree.treefile`, `report/report_index.tsv`, and `report/final_report.md`.
+- `/Users/liuyue/miniforge3/bin/python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --config configs/manifest.example.yaml --outdir /private/tmp/genefam_nextflow_manifest_debug2` passed.
+- `python -m pytest tests/test_audit_readiness.py -q` first failed because `DEFAULT_COMMANDS` did not include `FastTree`.
+- `python -m pytest tests/test_audit_readiness.py -q` passed with 8 tests after adding FastTree readiness.
+- `/Users/liuyue/miniforge3/bin/python bin/genefam/audit_readiness.py --command FastTree --conda-env GeneFamilyFlow --out /private/tmp/genefam_fasttree_readiness.tsv` passed and reported `FastTree` as `available_in_conda`.
+- `python -m pytest tests/test_plan_runtime_bootstrap.py -q` first failed because the bootstrap plan did not verify FastTree.
+- `python -m pytest tests/test_plan_runtime_bootstrap.py -q` passed with 3 tests after adding the FastTree bootstrap check.
+- `python -m pytest tests/test_runtime_environment_files.py -q` first failed because the readiness checklist did not document FastTree.
+- `python -m pytest tests/test_runtime_environment_files.py -q` passed with 13 tests after updating the checklist.
+- `/Users/liuyue/miniforge3/bin/python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 1 with `passed=28`, `failed=3`, `required_failed=1`, and `optional_failed=2`; the only remaining required failure is the readiness audit because Docker and Apptainer are missing.
+- Refreshed `results/objective_audit/objective_audit.md` now reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited 1 after refreshing release, quickstart, local acceptance, handoff, and delivery-bundle outputs; `results/handoff/handoff_report.md` reports only `Docker/Apptainer reproducibility` as blocked.
+
+Commit:
+- hash: pending
+- message: fix: stabilize standard nextflow phylogeny runtime
+- files: alignment/phylogeny module, readiness audit, runtime bootstrap plan, readiness checklist, tests, history
+
+Next:
+- Continue toward the final container-runtime verification.
+
 ## 2026-06-25 - Add real alignment and tree outputs to the standard report index
 
 Timestamp:
@@ -6298,7 +6355,7 @@ Verification:
 - `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited 1 after refreshing release, quickstart, local acceptance, and delivery-bundle outputs; the release gate remains blocked by external runtime readiness, with details in `results/handoff/handoff_report.md`.
 
 Commit:
-- hash: pending
+- hash: a710df741ec7faf022b45e7ce1792556ffbf6c07
 - message: feat: index standard alignment and tree outputs
 - files: standard report index, standard postprocess module, main workflow, README, release audit docs, tests, history
 

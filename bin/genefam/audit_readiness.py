@@ -22,10 +22,11 @@ DEFAULT_COMMANDS = [
     "hmmsearch",
     "diamond",
     "mafft",
+    "FastTree",
     "iqtree2",
     "meme",
 ]
-CONDA_SCOPED_COMMANDS = {"nextflow", "hmmsearch", "diamond", "mafft", "iqtree2", "iqtree", "meme"}
+CONDA_SCOPED_COMMANDS = {"nextflow", "hmmsearch", "diamond", "mafft", "FastTree", "fasttree", "iqtree2", "iqtree", "meme"}
 COMMAND_ALIASES = {"iqtree2": ["iqtree"]}
 
 

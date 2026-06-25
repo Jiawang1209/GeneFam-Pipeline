@@ -1,7 +1,7 @@
 import subprocess
 import sys
 
-from bin.genefam.audit_readiness import audit_commands, summarize_status
+from bin.genefam.audit_readiness import DEFAULT_COMMANDS, audit_commands, summarize_status
 
 
 def test_audit_commands_marks_available_and_missing_commands():
@@ -48,6 +48,27 @@ def test_audit_commands_accepts_iqtree_alias_for_iqtree2():
             "command": "iqtree2",
             "status": "available_in_conda",
             "path": "GeneFamilyFlow:/envs/GeneFamilyFlow/bin/iqtree",
+        }
+    ]
+
+
+def test_default_readiness_commands_include_fasttree_default_builder():
+    assert "FastTree" in DEFAULT_COMMANDS
+
+
+def test_audit_commands_finds_fasttree_inside_conda_env():
+    rows = audit_commands(
+        required_commands=["FastTree"],
+        which=lambda command: "",
+        conda_env="GeneFamilyFlow",
+        conda_which=lambda env_name, command: "/envs/GeneFamilyFlow/bin/FastTree" if command == "FastTree" else "",
+    )
+
+    assert rows == [
+        {
+            "command": "FastTree",
+            "status": "available_in_conda",
+            "path": "GeneFamilyFlow:/envs/GeneFamilyFlow/bin/FastTree",
         }
     ]
 

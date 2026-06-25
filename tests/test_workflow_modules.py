@@ -322,7 +322,7 @@ def test_alignment_phylogeny_module_covers_alignment_tree_and_motif_steps():
     assert "process RUN_ALIGNMENT" in module
     assert "val family_name" in module
     assert "val aligner" in module
-    assert "mafft --auto ${family_members_faa} > ${family_name}.${aligner}.aln.faa" in module
+    assert "mafft --quiet --auto ${family_members_faa} > ${family_name}.${aligner}.aln.faa" in module
     assert 'path "${family_name}.${aligner}.aln.faa"' in module
 
     assert "process PREPARE_PHYLOGENY_INPUTS" in module

@@ -36,7 +36,7 @@ process RUN_ALIGNMENT {
 
     script:
     """
-    mafft --auto ${family_members_faa} > ${family_name}.${aligner}.aln.faa
+    mafft --quiet --auto ${family_members_faa} > ${family_name}.${aligner}.aln.faa
     """
 }
 

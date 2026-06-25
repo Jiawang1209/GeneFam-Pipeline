@@ -73,6 +73,7 @@ def test_readiness_checklist_documents_command_audit():
     assert "nextflow" in text
     assert "/usr/local/bin/R" in text
     assert "mafft" in text
+    assert "FastTree" in text
     assert "iqtree2" in text
     assert "meme" in text
     assert "results/handoff/handoff_report.md" in text
