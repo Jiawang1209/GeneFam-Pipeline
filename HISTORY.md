@@ -6123,9 +6123,49 @@ Verification:
 - `results/local_acceptance/local_acceptance_summary.md` still records `release_gate` failed with exit code `1`, while `quickstart_handoff` and `delivery_bundle` passed.
 
 Commit:
+- hash: 0f6dc778dd3c39efe24aa53a2e72b14e841c9390
+- message: docs: expose docker default smoke in handoff summary
+- files: handoff summary builder, handoff summary tests, history
+
+Next:
+- Commit the handoff-summary update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Document container default smoke handoff key
+
+Context:
+- `results/handoff/handoff_summary.tsv` now includes a stable `container_default_smoke` key.
+- README and the readiness checklist still described the handoff TSV generically, so users and scripts did not have a documented stable key to look for.
+
+Decisions:
+- Document `container_default_smoke` in README and `docs/readiness_checklist.md`.
+- Use the same stable value as the TSV: `Dockerfile -> results/container_default_smoke`.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/readiness_checklist.md`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report tests/test_runtime_environment_files.py::test_readiness_checklist_points_to_local_acceptance_summary -q` first failed because README and the readiness checklist did not document `container_default_smoke`.
+- The same command passed with 2 tests after documenting the stable handoff summary key.
+- `python -m pytest tests -q` passed with 274 tests.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing handoff and delivery-bundle artifacts.
+- `rg -n "container_default_smoke|Dockerfile -> results/container_default_smoke|Passed:|Required failed:|Optional failed:|Achieved:|Blocked:|Missing:" README.md docs/readiness_checklist.md results/handoff/handoff_summary.tsv results/release_checks/release_checks.md results/objective_audit/objective_audit.md` confirmed README, readiness checklist, and the generated handoff TSV all document the stable key.
+- `results/release_checks/release_checks.md` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+- `results/local_acceptance/local_acceptance_summary.md` still records `release_gate` failed with exit code `1`, while `quickstart_handoff` and `delivery_bundle` passed.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Commit the handoff-summary update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
+- Commit the handoff-key documentation update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.

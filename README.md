@@ -105,7 +105,7 @@ After `python bin/genefam/run_release_checks.py --outdir results/release_checks`
 - `results/delivery_bundle/delivery_bundle.md`
 - `results/delivery_bundle/delivery_manifest.tsv`
 
-The handoff Markdown is the human-facing status summary. The local acceptance summary is the compact pass/fail index for release, quickstart, and delivery-bundle refresh steps. The delivery bundle is the final user-facing index for species-bank and manifest-mode input, standard reports, WGD event evidence, Reference governance, runtime availability, runtime recovery, and documentation. The TSV summaries carry stable machine-readable tables for scripts, dashboards, or quick release parsing.
+The handoff Markdown is the human-facing status summary. The local acceptance summary is the compact pass/fail index for release, quickstart, and delivery-bundle refresh steps. The delivery bundle is the final user-facing index for species-bank and manifest-mode input, standard reports, WGD event evidence, Reference governance, runtime availability, runtime recovery, and documentation. The TSV summaries carry stable machine-readable tables for scripts, dashboards, or quick release parsing; `results/handoff/handoff_summary.tsv` includes `container_default_smoke` as `Dockerfile -> results/container_default_smoke`.
 
 ## Reference Plotting Scripts
 

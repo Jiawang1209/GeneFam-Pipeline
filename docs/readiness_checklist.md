@@ -25,7 +25,7 @@ After the release gate finishes, the first file to inspect is:
 - `results/delivery_bundle/delivery_manifest.tsv`
 - `results/delivery_bundle/delivery_bundle.md`
 
-The handoff Markdown is the human-facing status summary. The local acceptance summary is the compact local acceptance pass/fail index for release, quickstart, and delivery-bundle refresh steps. The delivery bundle is the final index for standard reports, prepared WGD reports, alpha/beta/gamma/theta event evidence, Reference governance, runtime availability, runtime recovery, and documentation entrypoints. The TSV summaries carry stable machine-readable tables for automated checks. Together they summarize release readiness, objective completion, available and missing runtime commands, container-profile smoke status, runtime recovery artifacts, and the report/evidence files to open first.
+The handoff Markdown is the human-facing status summary. The local acceptance summary is the compact local acceptance pass/fail index for release, quickstart, and delivery-bundle refresh steps. The delivery bundle is the final index for standard reports, prepared WGD reports, alpha/beta/gamma/theta event evidence, Reference governance, runtime availability, runtime recovery, and documentation entrypoints. The TSV summaries carry stable machine-readable tables for automated checks; `results/handoff/handoff_summary.tsv` includes `container_default_smoke` as `Dockerfile -> results/container_default_smoke`. Together they summarize release readiness, objective completion, available and missing runtime commands, container-profile smoke status, runtime recovery artifacts, and the report/evidence files to open first.
 
 Expected core mock outputs:
 
