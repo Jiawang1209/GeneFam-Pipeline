@@ -17,7 +17,7 @@ from bin.genefam.assemble_report import assemble_report, write_report
 from bin.genefam.build_plot_manifest import build_plot_manifest, write_tsv as write_plot_manifest_tsv
 from bin.genefam.build_run_config_snapshot import build_snapshot, write_tsv as write_snapshot_tsv
 from bin.genefam.build_standard_report_index import DESCRIPTIONS, build_report_index, write_tsv as write_report_index_tsv
-from bin.genefam.discover_species import _select_species, discover_species, write_manifest
+from bin.genefam.discover_species import species_rows_from_config, write_manifest
 from bin.genefam.extract_family_sequences import extract_family_sequences, read_tsv as read_table, write_fasta
 from bin.genefam.extract_chromosome_locations import extract_locations_for_manifest, write_tsv as write_locations_tsv
 from bin.genefam.merge_identification_evidence import merge_evidence, read_tsv, write_tsv
@@ -69,18 +69,10 @@ def run_standard_smoke(
 ) -> dict[str, Path]:
     config = _load_yaml(config_path)
     groups = _load_yaml(groups_path) if groups_path and groups_path.exists() else {}
-    include, exclude = _select_species(config, groups)
-    input_config = config.get("input", {}) or {}
     gene_family = (config.get("gene_family", {}) or {}).get("name", "family")
     project_name = (config.get("project", {}) or {}).get("name", "GeneFam standard smoke")
     final_rule = (config.get("identification", {}) or {}).get("final_rule", "intersection")
-    manifest_rows = discover_species(
-        root=Path(input_config["root"]),
-        include=include,
-        exclude=exclude,
-        patterns=input_config.get("patterns", {}),
-        required=input_config.get("required", {}),
-    )
+    manifest_rows = species_rows_from_config(config, groups)
 
     tables_dir = outdir / "tables"
     sequences_dir = outdir / "sequences"

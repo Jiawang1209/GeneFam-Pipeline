@@ -144,6 +144,34 @@ def test_run_mock_mvp_cli_works_when_invoked_by_script_path(tmp_path):
     assert "family_counts" in completed.stdout
 
 
+def test_run_mock_mvp_cli_supports_manifest_input_mode(tmp_path):
+    outdir = tmp_path / "manifest_cli_results"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "bin/genefam/run_mock_mvp.py",
+            "--config",
+            "configs/manifest.example.yaml",
+            "--groups",
+            "configs/species_groups.yaml",
+            "--mock-evidence-dir",
+            "tests/fixtures/mock_evidence",
+            "--outdir",
+            str(outdir),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    species_manifest = (outdir / "tables/species_manifest.tsv").read_text(encoding="utf-8")
+    assert "Arabidopsis_thaliana\ttests/fixtures/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.pep.fa" in species_manifest
+    assert (outdir / "tables/family_candidates.tsv").exists()
+    assert (outdir / "report/final_report.md").exists()
+
+
 def test_run_mock_mvp_cli_resolves_config_paths_against_base_dir(tmp_path):
     staged_config = tmp_path / "example.config.yaml"
     staged_groups = tmp_path / "species_groups.yaml"

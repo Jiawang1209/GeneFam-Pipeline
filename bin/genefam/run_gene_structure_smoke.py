@@ -12,7 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from bin.genefam.discover_species import _select_species, discover_species, write_manifest
+from bin.genefam.discover_species import species_rows_from_config, write_manifest
 from bin.genefam.extract_gene_structure import summarize_structure, write_tsv as write_structure_tsv
 from bin.genefam.merge_identification_evidence import merge_evidence, read_tsv, write_tsv as write_candidates_tsv
 from bin.genefam.run_mock_mvp import _load_yaml
@@ -39,16 +39,8 @@ def run_gene_structure_smoke(
     }
     config = _load_yaml(config_path)
     groups = _load_yaml(groups_path) if groups_path and groups_path.exists() else {}
-    include, exclude = _select_species(config, groups)
-    input_config = config.get("input", {}) or {}
     final_rule = (config.get("identification", {}) or {}).get("final_rule", "intersection")
-    manifest_rows = discover_species(
-        root=Path(input_config["root"]),
-        include=include,
-        exclude=exclude,
-        patterns=input_config.get("patterns", {}),
-        required=input_config.get("required", {}),
-    )
+    manifest_rows = species_rows_from_config(config, groups)
     candidates = merge_evidence(
         read_tsv(mock_evidence_dir / "hmmer.tsv"),
         read_tsv(mock_evidence_dir / "diamond.tsv"),

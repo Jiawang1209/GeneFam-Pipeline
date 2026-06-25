@@ -5265,9 +5265,65 @@ Verification:
 - `python -m pytest tests -q` passed with 252 tests.
 
 Commit:
-- hash: pending
+- hash: 8c5272c644bb9be369f84caf20840ac28d499ba7
 - message: feat: surface manifest input in delivery bundle
 - files: delivery bundle helper, quickstart, README, tests, history
 
 Next:
 - Continue improving user-facing workflow handoff and evidence surfaces; keep Docker/Apptainer packaging for the final封装 step.
+
+## 2026-06-25 - Support manifest mode in standard smoke paths
+
+Context:
+- The workflow is still being developed before final container packaging.
+- `input.mode: manifest` was validated and visible in delivery outputs, but several Python smoke entrypoints still hard-read `input.root`.
+- The standard branch, chromosome-location smoke, gene-structure smoke, and mock MVP should behave consistently with Nextflow `PREPARE_SPECIES` for both auto and manifest input modes.
+
+Decisions:
+- Add `species_rows_from_config` as the shared resolver for YAML-driven species rows across auto and manifest modes.
+- Route standard smoke, chromosome smoke, gene-structure smoke, and mock MVP through the shared resolver.
+- Record `input.mode` and `input.manifest` in the standard run configuration snapshot so final reports explain whether species came from a folder bank or a prebuilt manifest.
+- Keep generated `results/standard_manifest_smoke` out of git and use it only as verification evidence.
+
+Added:
+- `species_rows_from_config` in `bin/genefam/discover_species.py`.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_run_config_snapshot.py`
+- `bin/genefam/discover_species.py`
+- `bin/genefam/run_chromosome_smoke.py`
+- `bin/genefam/run_gene_structure_smoke.py`
+- `bin/genefam/run_mock_mvp.py`
+- `bin/genefam/run_standard_smoke.py`
+- `tests/test_build_run_config_snapshot.py`
+- `tests/test_discover_species.py`
+- `tests/test_run_chromosome_smoke.py`
+- `tests/test_run_gene_structure_smoke.py`
+- `tests/test_run_mock_mvp.py`
+- `tests/test_run_standard_smoke.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_standard_smoke.py::test_run_standard_smoke_supports_manifest_input_mode -q` first failed with `KeyError: root`, proving standard smoke did not support manifest-mode configs.
+- `python -m pytest tests/test_build_run_config_snapshot.py -q` first failed because `input.mode` and `input.manifest` were missing from the run snapshot.
+- `python -m pytest tests/test_run_chromosome_smoke.py::test_run_chromosome_smoke_supports_manifest_input_mode -q` first failed with `KeyError: root`.
+- `python -m pytest tests/test_run_gene_structure_smoke.py::test_run_gene_structure_smoke_supports_manifest_input_mode -q` first failed with `KeyError: root`.
+- `python -m pytest tests/test_run_mock_mvp.py::test_run_mock_mvp_cli_supports_manifest_input_mode -q` first failed with `KeyError: root`.
+- `python -m pytest tests/test_discover_species.py tests/test_build_run_config_snapshot.py -q` passed with 10 tests.
+- `python -m pytest tests/test_run_standard_smoke.py tests/test_run_chromosome_smoke.py tests/test_run_gene_structure_smoke.py -q` passed with 7 tests.
+- `python -m pytest tests/test_run_mock_mvp.py -q` passed with 4 tests.
+- `python -m pytest tests/test_run_standard_smoke.py tests/test_run_chromosome_smoke.py tests/test_run_gene_structure_smoke.py tests/test_discover_species.py tests/test_build_run_config_snapshot.py -q` passed with 17 tests.
+- `python -m pytest tests -q` passed with 258 tests.
+- `python bin/genefam/run_standard_smoke.py --config configs/manifest.example.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/standard_manifest_smoke` passed and wrote the standard branch outputs.
+- `rg -n "input.mode|input.manifest|selected_species|Run Configuration Snapshot" results/standard_manifest_smoke/tables/run_config_snapshot.tsv results/standard_manifest_smoke/report/final_report.md` confirmed the manifest-mode run configuration appears in both the TSV and final report.
+
+Commit:
+- hash: pending
+- message: feat: support manifest mode in smoke paths
+- files: species resolver, standard/mock/annotation smoke paths, run snapshot, tests, history
+
+Next:
+- Continue closing workflow-entry consistency gaps while leaving Docker/Apptainer packaging for the final封装 step.

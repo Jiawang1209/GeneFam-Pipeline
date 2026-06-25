@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from bin.genefam.discover_species import discover_species, load_species_manifest
+from bin.genefam.discover_species import discover_species, load_species_manifest, species_rows_from_config
 
 
 PATTERNS = {
@@ -119,3 +119,27 @@ def test_load_species_manifest_reports_missing_requested_species(tmp_path):
             exclude=[],
             required=REQUIRED,
         )
+
+
+def test_species_rows_from_config_uses_manifest_mode():
+    rows = species_rows_from_config(
+        {
+            "input": {
+                "mode": "manifest",
+                "manifest": "tests/fixtures/species_manifest.tsv",
+                "required": REQUIRED,
+            },
+            "species": {"include": ["Arabidopsis_thaliana"], "exclude": []},
+        },
+        groups={},
+    )
+
+    assert rows == [
+        {
+            "species_id": "Arabidopsis_thaliana",
+            "pep": "tests/fixtures/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.pep.fa",
+            "gff3": "tests/fixtures/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.gff3",
+            "cds": "",
+            "genome": "",
+        }
+    ]

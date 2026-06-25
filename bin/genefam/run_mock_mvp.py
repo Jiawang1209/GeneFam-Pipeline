@@ -18,7 +18,7 @@ try:
 except ImportError:  # pragma: no cover
     yaml = None
 
-from bin.genefam.discover_species import _select_species, discover_species, write_manifest
+from bin.genefam.discover_species import species_rows_from_config, write_manifest
 from bin.genefam.assemble_report import assemble_report, write_report
 from bin.genefam.build_run_plan import build_run_plan, write_tsv as write_run_plan_tsv
 from bin.genefam.extract_sequences import extract_fasta_records
@@ -166,18 +166,7 @@ def run_mock_mvp(
 
     config = _load_yaml(config_path)
     groups = _load_yaml(groups_path) if groups_path and Path(groups_path).exists() else {}
-    include, exclude = _select_species(config, groups)
-    input_config = config.get("input", {}) or {}
-    species_root = Path(input_config["root"])
-    if base_dir is not None and not species_root.is_absolute():
-        species_root = Path(base_dir) / species_root
-    manifest_rows = discover_species(
-        root=species_root,
-        include=include,
-        exclude=exclude,
-        patterns=input_config.get("patterns", {}),
-        required=input_config.get("required", {}),
-    )
+    manifest_rows = species_rows_from_config(config, groups, base_dir=base_dir)
 
     tables_dir = Path(outdir) / "tables"
     sequences_dir = Path(outdir) / "sequences"

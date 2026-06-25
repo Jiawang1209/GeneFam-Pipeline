@@ -93,6 +93,34 @@ def load_species_manifest(
     return _filter_manifest_rows(rows, include=include, exclude=exclude, required=required)
 
 
+def species_rows_from_config(
+    config: dict[str, Any],
+    groups: dict[str, Any],
+    base_dir: Path | None = None,
+) -> list[dict[str, str]]:
+    """Resolve selected species rows from either auto or manifest input mode."""
+
+    include, exclude = _select_species(config, groups)
+    input_config = config.get("input", {}) or {}
+    input_mode = input_config.get("mode", "auto")
+    if input_mode == "manifest":
+        return load_species_manifest(
+            manifest=Path(input_config["manifest"]),
+            include=include,
+            exclude=exclude,
+            required=input_config.get("required", {}),
+            base_dir=base_dir,
+        )
+    return discover_species(
+        root=Path(input_config["root"]),
+        include=include,
+        exclude=exclude,
+        patterns=input_config.get("patterns", {}),
+        required=input_config.get("required", {}),
+        base_dir=base_dir,
+    )
+
+
 def _match_one(species_dir: Path, file_type: str, patterns: dict[str, list[str]]) -> str:
     matches: list[Path] = []
     for pattern in patterns.get(file_type, []):
@@ -178,26 +206,7 @@ def main() -> None:
 
     config = _load_yaml(args.config)
     groups = _load_yaml(args.groups) if args.groups and args.groups.exists() else {}
-    include, exclude = _select_species(config, groups)
-    input_config = config.get("input", {})
-    input_mode = input_config.get("mode", "auto")
-    if input_mode == "manifest":
-        rows = load_species_manifest(
-            manifest=Path(input_config["manifest"]),
-            include=include,
-            exclude=exclude,
-            required=input_config.get("required", {}),
-            base_dir=args.base_dir,
-        )
-    else:
-        rows = discover_species(
-            root=Path(input_config["root"]),
-            include=include,
-            exclude=exclude,
-            patterns=input_config.get("patterns", {}),
-            required=input_config.get("required", {}),
-            base_dir=args.base_dir,
-        )
+    rows = species_rows_from_config(config, groups, base_dir=args.base_dir)
     write_manifest(rows, args.out)
 
 

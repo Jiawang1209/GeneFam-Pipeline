@@ -9,7 +9,7 @@ def test_build_snapshot_records_species_selection_and_runtime_context():
         {
             "project": {"name": "demo"},
             "runtime": {"environment": "GeneFamilyFlow", "r_bin": "/usr/local/bin/R"},
-            "input": {"root": "data/species_bank"},
+            "input": {"mode": "auto", "root": "data/species_bank"},
             "species": {"include": ["A", "B"], "exclude": ["C"]},
             "run": {"species_group": "brassicaceae"},
             "gene_family": {
@@ -38,6 +38,9 @@ def test_build_snapshot_records_species_selection_and_runtime_context():
     assert by_key["project.name"] == "demo"
     assert by_key["runtime.environment"] == "GeneFamilyFlow"
     assert by_key["runtime.r_bin"] == "/usr/local/bin/R"
+    assert by_key["input.mode"] == "auto"
+    assert by_key["input.root"] == "data/species_bank"
+    assert by_key["input.manifest"] == ""
     assert by_key["selected_species"] == "A,B"
     assert by_key["selected_species_count"] == "2"
     assert by_key["species.include"] == "A,B"
@@ -46,6 +49,29 @@ def test_build_snapshot_records_species_selection_and_runtime_context():
     assert by_key["identification.use_hmmer"] == "True"
     assert by_key["identification.use_diamond"] == "False"
     assert by_key["modules.enabled"] == "identification,report"
+
+
+def test_build_snapshot_records_manifest_input_mode():
+    rows = build_snapshot(
+        {
+            "project": {"name": "manifest-demo"},
+            "runtime": {"environment": "GeneFamilyFlow", "r_bin": "/usr/local/bin/R"},
+            "input": {"mode": "manifest", "manifest": "tests/fixtures/species_manifest.tsv"},
+            "species": {"include": ["Arabidopsis_thaliana"], "exclude": []},
+            "gene_family": {"name": "GDSL"},
+            "identification": {"final_rule": "intersection"},
+            "modules": {"identification": True},
+        },
+        ["Arabidopsis_thaliana"],
+        source_config="configs/manifest.example.yaml",
+        species_manifest="results/run/tables/species_manifest.tsv",
+    )
+
+    by_key = {row["key"]: row["value"] for row in rows}
+
+    assert by_key["input.mode"] == "manifest"
+    assert by_key["input.root"] == ""
+    assert by_key["input.manifest"] == "tests/fixtures/species_manifest.tsv"
 
 
 def test_build_run_config_snapshot_cli_writes_key_value_tsv(tmp_path):

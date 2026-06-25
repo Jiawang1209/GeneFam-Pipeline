@@ -33,3 +33,31 @@ def test_run_chromosome_smoke_writes_locations_from_species_bank(tmp_path):
     summary = (outdir / "chromosome_smoke.md").read_text(encoding="utf-8")
     assert "Located genes: 2" in summary
     assert "Species represented: 2" in summary
+
+
+def test_run_chromosome_smoke_supports_manifest_input_mode(tmp_path):
+    outdir = tmp_path / "chromosome_manifest_smoke"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "bin/genefam/run_chromosome_smoke.py",
+            "--config",
+            "configs/manifest.example.yaml",
+            "--groups",
+            "configs/species_groups.yaml",
+            "--mock-evidence-dir",
+            "tests/fixtures/mock_evidence",
+            "--outdir",
+            str(outdir),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    species_manifest = (outdir / "tables/species_manifest.tsv").read_text(encoding="utf-8")
+    assert "Arabidopsis_thaliana\ttests/fixtures/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.pep.fa" in species_manifest
+    locations = (outdir / "tables/chromosome_locations.tsv").read_text(encoding="utf-8")
+    assert "Brassica_rapa\tBraA010001\tA01\t200\t900\t-\n" in locations

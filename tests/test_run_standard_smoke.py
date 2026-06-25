@@ -75,6 +75,38 @@ def test_run_standard_smoke_writes_standard_branch_outputs(tmp_path):
     assert "| identification.final_rule | intersection |" in final_report
 
 
+def test_run_standard_smoke_supports_manifest_input_mode(tmp_path):
+    outdir = tmp_path / "standard_manifest_smoke"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "bin/genefam/run_standard_smoke.py",
+            "--config",
+            "configs/manifest.example.yaml",
+            "--groups",
+            "configs/species_groups.yaml",
+            "--mock-evidence-dir",
+            "tests/fixtures/mock_evidence",
+            "--outdir",
+            str(outdir),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    species_manifest = (outdir / "tables/species_manifest.tsv").read_text(encoding="utf-8")
+    assert "Arabidopsis_thaliana\ttests/fixtures/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.pep.fa" in species_manifest
+    assert "Brassica_rapa\ttests/fixtures/species_bank/Brassica_rapa/Brassica_rapa.pep.fa" in species_manifest
+    run_config = (outdir / "tables/run_config_snapshot.tsv").read_text(encoding="utf-8")
+    assert "input.mode\tmanifest\n" in run_config
+    assert "input.root\t\n" in run_config
+    final_report = (outdir / "report/final_report.md").read_text(encoding="utf-8")
+    assert "| input.mode | manifest |" in final_report
+
+
 def test_run_standard_smoke_writes_family_expression_when_matrix_is_provided(tmp_path):
     outdir = tmp_path / "standard_smoke"
     expression_matrix = tmp_path / "expression.tsv"

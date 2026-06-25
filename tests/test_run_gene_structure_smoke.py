@@ -35,3 +35,31 @@ def test_run_gene_structure_smoke_writes_structure_summary_from_species_bank(tmp
     summary = (outdir / "gene_structure_smoke.md").read_text(encoding="utf-8")
     assert "Structured genes: 2" in summary
     assert "Species represented: 2" in summary
+
+
+def test_run_gene_structure_smoke_supports_manifest_input_mode(tmp_path):
+    outdir = tmp_path / "gene_structure_manifest_smoke"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "bin/genefam/run_gene_structure_smoke.py",
+            "--config",
+            "configs/manifest.example.yaml",
+            "--groups",
+            "configs/species_groups.yaml",
+            "--mock-evidence-dir",
+            "tests/fixtures/mock_evidence",
+            "--outdir",
+            str(outdir),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    species_manifest = (outdir / "tables/species_manifest.tsv").read_text(encoding="utf-8")
+    assert "Brassica_rapa\ttests/fixtures/species_bank/Brassica_rapa/Brassica_rapa.pep.fa" in species_manifest
+    structure = (outdir / "tables/gene_structure_summary.tsv").read_text(encoding="utf-8")
+    assert "Arabidopsis_thaliana\tAT1G01010\t401\t0\t0\t0\t0\t0\n" in structure
