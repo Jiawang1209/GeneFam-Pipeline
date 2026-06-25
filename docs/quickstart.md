@@ -20,6 +20,8 @@ For a local acceptance pass that runs the release gate and then still writes the
 bash scripts/run_local_acceptance.sh
 ```
 
+The wrapper also writes `results/local_acceptance/local_acceptance_summary.tsv` and `results/local_acceptance/local_acceptance_summary.md`, which record the release, quickstart, and delivery-bundle exit status in one place.
+
 Optional overrides:
 
 ```bash

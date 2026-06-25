@@ -5791,9 +5791,52 @@ Verification:
 - `rg -n "config_preflight|strict config path preflight" results/delivery_bundle/delivery_manifest.tsv results/delivery_bundle/delivery_bundle.md` confirmed the delivery bundle now exposes the Nextflow preflight evidence.
 
 Commit:
-- hash: pending
+- hash: 70c7bbf7de693891d0d15b38107e2f524ee9c535
 - message: docs: expose nextflow preflight in delivery bundle
 - files: delivery bundle builder, delivery bundle test, history
 
 Next:
 - Run focused delivery/docs tests, full pytest, and release gate before committing.
+
+## 2026-06-25 - Add local acceptance summary output
+
+Context:
+- The local acceptance wrapper already refreshes release, quickstart, and delivery-bundle evidence, but the user still has to inspect several files to see which step failed.
+- The current development machine is expected to remain blocked by missing Docker/Apptainer, so the final morning handoff should preserve partial success evidence in one compact file.
+
+Decisions:
+- Add a small Python summary writer for local acceptance results.
+- Keep `scripts/run_local_acceptance.sh` as the single entrypoint, and have it write a TSV plus Markdown summary after release, quickstart, and delivery bundle steps.
+- Document `results/local_acceptance/local_acceptance_summary.md` as the compact pass/fail index.
+
+Added:
+- `bin/genefam/write_local_acceptance_summary.py`
+- `tests/test_write_local_acceptance_summary.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/quickstart.md`
+- `scripts/run_local_acceptance.sh`
+- `tests/test_local_acceptance_script.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_local_acceptance_script.py tests/test_write_local_acceptance_summary.py -q` first failed because `bin.genefam.write_local_acceptance_summary` did not exist.
+- `python -m pytest tests/test_local_acceptance_script.py tests/test_write_local_acceptance_summary.py -q` passed with 4 tests after adding the summary writer and wiring it into the local acceptance script.
+- `python -m pytest tests -q` passed with 273 tests.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected on this machine, after release gate failed on the known runtime blocker.
+- The same local acceptance run still completed quickstart, refreshed `results/delivery_bundle/`, and wrote `results/local_acceptance/local_acceptance_summary.tsv` plus `results/local_acceptance/local_acceptance_summary.md`.
+- `results/local_acceptance/local_acceptance_summary.md` records `release_gate` as `failed` with exit code `1`, and records `quickstart_handoff` and `delivery_bundle` as `passed`.
+- `results/release_checks/release_checks.md` reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`; the only required failure remains the readiness audit.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
+- hash: pending
+- message: pending
+- files: pending
+
+Next:
+- Commit the acceptance-summary enhancement, then continue polishing final handoff surfaces while Docker/Apptainer remains the only external runtime blocker.
