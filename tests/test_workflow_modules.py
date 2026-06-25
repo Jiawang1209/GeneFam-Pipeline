@@ -89,6 +89,8 @@ def test_standard_postprocess_module_extracts_family_sequences_and_report_index(
     assert "--run-config-snapshot ${run_config_snapshot}" in module
     assert "--family-members-faa ${family_members_faa}" in module
     assert "--phylogeny-manifest ${phylogeny_manifest}" in module
+    assert "--alignment-file ${alignment_file}" in module
+    assert "--phylogeny-tree ${phylogeny_tree}" in module
     assert "--wgd-handoff-manifest ${wgd_handoff_manifest}" in module
     assert "--published-outdir ${params.outdir}" in module
     assert "--out report_index.tsv" in module
@@ -374,6 +376,8 @@ def test_main_workflow_includes_remaining_standard_analysis_processes():
     assert "PREPARE_PHYLOGENY_INPUTS" in workflow
     assert "RUN_PHYLOGENY" in workflow
     assert "RUN_PHYLOGENY(family_name_ch, RUN_ALIGNMENT.out, tree_builder_ch)" in workflow
+    assert "RUN_ALIGNMENT.out," in workflow
+    assert "RUN_PHYLOGENY.out," in workflow
     assert "PARSE_MEME_MOTIFS" in workflow
     assert "PARSE_MEME_MOTIFS(" in workflow
     assert "PARSE_MEME_MOTIFS.out" in workflow

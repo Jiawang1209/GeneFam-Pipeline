@@ -70,7 +70,9 @@ process BUILD_STANDARD_REPORT_INDEX {
     path family_counts
     path family_members_faa
     path alignment_manifest
+    path alignment_file
     path phylogeny_manifest
+    path phylogeny_tree
     path motif_summary
     path gene_structure_summary
     path chromosome_locations
@@ -90,7 +92,9 @@ process BUILD_STANDARD_REPORT_INDEX {
       --family-counts ${family_counts} \\
       --family-members-faa ${family_members_faa} \\
       --alignment-manifest ${alignment_manifest} \\
+      --alignment-file ${alignment_file} \\
       --phylogeny-manifest ${phylogeny_manifest} \\
+      --phylogeny-tree ${phylogeny_tree} \\
       --motif-summary ${motif_summary} \\
       --gene-structure-summary ${gene_structure_summary} \\
       --chromosome-locations ${chromosome_locations} \\

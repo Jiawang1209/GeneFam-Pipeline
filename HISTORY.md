@@ -6257,6 +6257,54 @@ Commit:
 Next:
 - Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
 
+## 2026-06-25 - Add real alignment and tree outputs to the standard report index
+
+Timestamp:
+- 2026-06-25 15:18:14 CST
+
+Context:
+- The standard Nextflow branch now publishes real MAFFT alignment and FastTree/IQ-TREE output files.
+- The final standard report still indexed only `alignment_manifest` and `phylogeny_manifest`, so users had to infer where the real alignment and tree files were.
+
+Decisions:
+- Add `alignment_file` and `phylogeny_tree` to the standard report index.
+- Pass `RUN_ALIGNMENT.out` and `RUN_PHYLOGENY.out` into `BUILD_STANDARD_REPORT_INDEX`.
+- Keep manifest rows in the report index because they document preparation parameters and planned output paths.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/build_standard_report_index.py`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_standard_branch_report_index.py -q` first failed because `alignment_file` and `phylogeny_tree` were missing from the report index and CLI.
+- `python -m pytest tests/test_standard_branch_report_index.py -q` passed with 4 tests after adding the new report index keys.
+- `python -m pytest tests/test_workflow_modules.py -q` passed with 17 tests after wiring the real alignment/tree outputs into `BUILD_STANDARD_REPORT_INDEX`.
+- `python -m pytest tests/test_standard_branch_report_index.py tests/test_workflow_modules.py tests/test_release_audit_docs.py -q` passed with 22 tests.
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py -q` passed with 9 tests.
+- `python -m pytest tests -q` passed with 280 tests in 25.85 seconds; pytest emitted a non-fatal temporary-directory cleanup warning.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited 1 after refreshing release, quickstart, local acceptance, and delivery-bundle outputs; the release gate remains blocked by external runtime readiness, with details in `results/handoff/handoff_report.md`.
+
+Commit:
+- hash: pending
+- message: feat: index standard alignment and tree outputs
+- files: standard report index, standard postprocess module, main workflow, README, release audit docs, tests, history
+
+Next:
+- Continue hardening final report evidence before final container packaging.
+
 ## 2026-06-25 - Wire real standard-branch alignment and phylogeny execution
 
 Timestamp:
@@ -6303,7 +6351,7 @@ Verification:
 - `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited 1 after refreshing release, quickstart, local acceptance, and delivery-bundle outputs; the release gate remains blocked by external runtime readiness, with details in `results/handoff/handoff_report.md`.
 
 Commit:
-- hash: pending
+- hash: 9d419afa5a514f28b44807192f74254a9f563366
 - message: feat: run standard alignment and phylogeny
 - files: standard Nextflow workflow, alignment/phylogeny module, Nextflow config, standard-smoke expected outputs, README, release audit docs, tests, history
 

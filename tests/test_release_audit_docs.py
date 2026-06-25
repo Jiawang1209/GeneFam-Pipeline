@@ -93,6 +93,8 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "RUN_PHYLOGENY" in text
     assert "alignment/GDSL.mafft.aln.faa" in text
     assert "phylogeny/GDSL.fasttree.treefile" in text
+    assert "alignment_file" in text
+    assert "phylogeny_tree" in text
     assert "subset_expression_matrix.py" in text
     assert "build_standard_report_index.py" in text
     assert "assemble_report.py" in text
