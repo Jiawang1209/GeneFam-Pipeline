@@ -2,6 +2,7 @@ import csv
 import subprocess
 import sys
 
+from bin.genefam.validate_config import load_config, validate_config
 from bin.genefam.run_nextflow_single_tool_smoke import (
     FIELDNAMES,
     build_single_tool_configs,
@@ -26,11 +27,21 @@ def test_build_single_tool_configs_writes_non_mock_hmmer_and_diamond_configs(tmp
     assert "use_diamond: false" in hmmer_text
     assert "final_rule: hmmer_only" in hmmer_text
     assert "mock_external_tools: false" in hmmer_text
+    assert "tests/fixtures/hmmer_profiles" not in hmmer_text
+    assert "tests/fixtures/reference" not in hmmer_text
 
     assert "use_hmmer: false" in diamond_text
     assert "use_diamond: true" in diamond_text
     assert "final_rule: union" in diamond_text
     assert "mock_external_tools: false" in diamond_text
+    assert "tests/fixtures/hmmer_profiles" not in diamond_text
+    assert "tests/fixtures/reference" not in diamond_text
+
+    for config in configs:
+        assert validate_config(load_config(config.config_path), check_paths=True) == []
+
+    assert (tmp_path / "data/hmm_profiles/PF00657.demo.hmm").exists()
+    assert (tmp_path / "data/reference/GDSL_reference.pep.fa").exists()
 
 
 def test_write_outputs_record_both_single_tool_rows(tmp_path):

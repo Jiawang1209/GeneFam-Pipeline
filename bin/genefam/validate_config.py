@@ -161,8 +161,14 @@ def main() -> None:
         action="store_true",
         help="Also require configured runtime input paths to exist relative to the current working directory.",
     )
+    parser.add_argument(
+        "--base-dir",
+        default=Path("."),
+        type=Path,
+        help="Base directory for resolving relative runtime paths when --check-paths is set.",
+    )
     args = parser.parse_args()
-    errors = validate_config(load_config(args.config), check_paths=args.check_paths, base_dir=Path("."))
+    errors = validate_config(load_config(args.config), check_paths=args.check_paths, base_dir=args.base_dir)
     if errors:
         raise SystemExit("\n".join(errors))
     print("Configuration OK")

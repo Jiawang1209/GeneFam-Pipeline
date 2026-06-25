@@ -195,6 +195,45 @@ def test_validate_config_cli_check_paths_accepts_fixture_configs():
     assert completed.stdout.strip() == "Configuration OK"
 
 
+def test_validate_config_cli_check_paths_resolves_against_base_dir(tmp_path):
+    config = tmp_path / "config.yaml"
+    config.write_text(
+        "project: {}\n"
+        "runtime:\n"
+        "  environment: GeneFamilyFlow\n"
+        "  r_bin: /usr/local/bin/R\n"
+        "input:\n"
+        "  mode: auto\n"
+        "  root: species_bank\n"
+        "species: {}\n"
+        "gene_family: {}\n"
+        "identification:\n"
+        "  final_rule: intersection\n"
+        "plotting:\n"
+        "  reuse_policy: adapt_not_modify\n"
+        "modules: {}\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "species_bank").mkdir()
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "bin/genefam/validate_config.py",
+            str(config),
+            "--check-paths",
+            "--base-dir",
+            str(tmp_path),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout.strip() == "Configuration OK"
+
+
 def test_validate_config_reports_invalid_domain_filtering_thresholds():
     errors = validate_config(
         {

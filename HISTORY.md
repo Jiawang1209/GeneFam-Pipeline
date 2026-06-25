@@ -5698,9 +5698,62 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
-- hash: pending
+- hash: e362bd49888847d0b60c9daa2ce2a7b2c34ded9c
 - message: feat: add strict config path preflight
 - files: config validator, release checks, input docs, quickstart/release docs, validation tests, history
 
 Next:
 - Run focused docs tests, full pytest, and release gate before committing.
+
+## 2026-06-25 - Wire strict config preflight into Nextflow
+
+Context:
+- `validate_config.py --check-paths` can now catch missing runtime inputs before a real run, but users launching `workflows/main.nf` directly would still enter downstream processes first.
+- Nextflow processes execute in task work directories, so strict path validation also needs a repository `--base-dir` to resolve YAML paths correctly.
+- The final reusable workflow should fail early with configuration errors before species discovery, mock MVP, or identification branches start.
+
+Decisions:
+- Add `--base-dir` to the config validator CLI for workdir-safe relative path resolution.
+- Add a `VALIDATE_CONFIG` Nextflow module that runs `validate_config.py --check-paths --base-dir ${projectDir}/..`.
+- Wire `VALIDATE_CONFIG` into `workflows/main.nf` immediately after loading `params.config`.
+- Pass the validated config artifact into mock MVP, species preparation, identification input generation, and run-config snapshots.
+
+Added:
+- `workflows/modules/config_validation.nf`
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/validate_config.py`
+- `docs/input_contract.md`
+- `docs/release_audit.md`
+- `tests/test_validate_config.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_validate_config.py::test_validate_config_cli_check_paths_resolves_against_base_dir -q` first failed because the CLI did not accept `--base-dir`.
+- `python -m pytest tests/test_validate_config.py::test_validate_config_cli_check_paths_resolves_against_base_dir -q` passed after adding `--base-dir`.
+- `python -m pytest tests/test_workflow_modules.py::test_config_validation_module_runs_strict_path_preflight tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q` first failed because `workflows/modules/config_validation.nf` and the main workflow wiring did not exist.
+- `python -m pytest tests/test_workflow_modules.py::test_config_validation_module_runs_strict_path_preflight tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q` passed after adding the module and wiring.
+- `python -m pytest tests/test_validate_config.py -q` passed with 21 tests.
+- `python bin/genefam/run_nextflow_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_smoke` passed.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --config configs/manifest.example.yaml --outdir results/nextflow_standard_manifest_smoke` passed.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` initially regressed to `Passed: 27`, `Required failed: 2`, because `run_nextflow_single_tool_smoke.py` generated non-mock configs that still pointed HMMER/DIAMOND inputs at `tests/fixtures/`.
+- Root cause: the new Nextflow `VALIDATE_CONFIG` preflight correctly rejected fixture-backed non-mock single-tool smoke configs before HMMER-only and DIAMOND-only routing began.
+- `python -m pytest tests/test_run_nextflow_single_tool_smoke.py::test_build_single_tool_configs_writes_non_mock_hmmer_and_diamond_configs -q` first failed because the generated non-mock smoke configs still contained `tests/fixtures/hmmer_profiles` and `tests/fixtures/reference`.
+- `python -m pytest tests/test_run_nextflow_single_tool_smoke.py -q` passed with 3 tests after copying fixture inputs into smoke-local `data/hmm_profiles/` and `data/reference/` paths.
+- `python bin/genefam/run_nextflow_single_tool_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_single_tool_smoke` passed after the smoke config fix.
+- `python -m pytest tests -q` passed with 271 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` now reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`; the only required failure is again the runtime readiness audit.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` is restored to `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
+- hash: pending
+- message: feat: validate configs before nextflow runs
+- files: Nextflow config preflight module, workflow wiring, config validator CLI, docs, tests, history
+
+Next:
+- Run focused docs/workflow tests, full pytest, and release gate before committing.

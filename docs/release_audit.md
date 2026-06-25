@@ -154,6 +154,7 @@ This means:
 
 - Mock MVP and Python/R/report helpers can be validated locally.
 - Full Nextflow mock-MVP execution now works through `GeneFamilyFlow` with the `activated` profile.
+- The Nextflow entrypoint runs `validate_config.py --check-paths --base-dir` before species discovery, mock MVP, or standard identification branches.
 - Docker profile execution needs Docker plus the `genefam-pipeline:latest` image.
 - Apptainer profile execution needs Apptainer and access to the Docker image.
 - External HMMER, DIAMOND, MAFFT, IQ-TREE, MEME, and related bioinformatics commands are available through the local `GeneFamilyFlow` Conda environment; Linux/container-only helpers such as `jcvi` and `kaks_calculator` are kept in `envs/GeneFamilyFlow.linux-64.conda.yaml`.

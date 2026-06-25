@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import shutil
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -38,6 +39,22 @@ def _write_yaml(data: dict, out_path: Path) -> None:
     out_path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
 
 
+def _prepare_non_mock_input_files(outdir: Path) -> dict[str, str]:
+    hmm_dir = outdir / "data" / "hmm_profiles"
+    reference_dir = outdir / "data" / "reference"
+    hmm_dir.mkdir(parents=True, exist_ok=True)
+    reference_dir.mkdir(parents=True, exist_ok=True)
+
+    hmm_profile = hmm_dir / "PF00657.demo.hmm"
+    reference_peptides = reference_dir / "GDSL_reference.pep.fa"
+    shutil.copyfile("tests/fixtures/hmmer_profiles/PF00657.demo.hmm", hmm_profile)
+    shutil.copyfile("tests/fixtures/reference/GDSL_reference.pep.fa", reference_peptides)
+    return {
+        "hmm_profile": str(hmm_profile),
+        "reference_peptides": str(reference_peptides),
+    }
+
+
 def _single_tool_config(base_config: dict, case_name: str, use_hmmer: bool, use_diamond: bool, final_rule: str) -> dict:
     config = dict(base_config)
     config["project"] = dict((base_config.get("project", {}) or {}))
@@ -53,6 +70,7 @@ def _single_tool_config(base_config: dict, case_name: str, use_hmmer: bool, use_
 
 def build_single_tool_configs(base_config_path: str | Path, outdir: Path) -> list[SingleToolConfig]:
     base_config = load_config(Path(base_config_path))
+    prepared_inputs = _prepare_non_mock_input_files(outdir)
     config_dir = outdir / "configs"
     cases = [
         ("hmmer_only", True, False, "hmmer_only"),
@@ -61,7 +79,13 @@ def build_single_tool_configs(base_config_path: str | Path, outdir: Path) -> lis
     written: list[SingleToolConfig] = []
     for case_name, use_hmmer, use_diamond, final_rule in cases:
         out_path = config_dir / f"{case_name}.config.yaml"
-        _write_yaml(_single_tool_config(base_config, case_name, use_hmmer, use_diamond, final_rule), out_path)
+        config = _single_tool_config(base_config, case_name, use_hmmer, use_diamond, final_rule)
+        config["gene_family"] = dict((config.get("gene_family", {}) or {}))
+        config["gene_family"]["hmm_profiles"] = [
+            {"id": "PF00657", "path": prepared_inputs["hmm_profile"]}
+        ]
+        config["gene_family"]["reference_peptides"] = prepared_inputs["reference_peptides"]
+        _write_yaml(config, out_path)
         written.append(SingleToolConfig(case_name, out_path))
     return written
 

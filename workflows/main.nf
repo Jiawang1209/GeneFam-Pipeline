@@ -1,6 +1,7 @@
 nextflow.enable.dsl = 2
 
 include { PREPARE_SPECIES } from './modules/prepare_species.nf'
+include { VALIDATE_CONFIG } from './modules/config_validation.nf'
 include { BUILD_IDENTIFICATION_INPUTS } from './modules/identification_inputs.nf'
 include { HMMER_SEARCH } from './modules/hmmer_search.nf'
 include { DIAMOND_SEARCH } from './modules/diamond_search.nf'
@@ -54,12 +55,14 @@ workflow {
     }
 
     config_ch = Channel.value(file(params.config))
+    VALIDATE_CONFIG(config_ch)
+    validated_config_ch = VALIDATE_CONFIG.out
     groups_ch = Channel.value(file(params.groups))
 
     if (params.mock_mvp) {
         mock_evidence_ch = Channel.value(file(params.mock_evidence_dir))
         outdir_ch = Channel.value(params.outdir)
-        MOCK_MVP(config_ch, groups_ch, mock_evidence_ch, outdir_ch)
+        MOCK_MVP(validated_config_ch, groups_ch, mock_evidence_ch, outdir_ch)
 
         MOCK_MVP.out.view { outputs -> "Mock MVP output index: ${outputs}" }
     } else if (params.run_duplication_retention) {
@@ -97,7 +100,7 @@ workflow {
         RETENTION_ENRICHMENT.out.view { enrichment -> "Retention enrichment: ${enrichment}" }
         ASSEMBLE_WGD_REPORT.out.view { report -> "WGD final report: ${report}" }
     } else if (params.run_identification) {
-        PREPARE_SPECIES(config_ch, groups_ch)
+        PREPARE_SPECIES(validated_config_ch, groups_ch)
 
         final_rule_ch = Channel.value(params.final_rule)
         family_name_ch = Channel.value(params.gene_family)
@@ -112,7 +115,7 @@ workflow {
             MOCK_IDENTIFICATION_EVIDENCE(mock_evidence_ch)
             joined_evidence_ch = MOCK_IDENTIFICATION_EVIDENCE.out
         } else {
-            BUILD_IDENTIFICATION_INPUTS(config_ch, PREPARE_SPECIES.out)
+            BUILD_IDENTIFICATION_INPUTS(validated_config_ch, PREPARE_SPECIES.out)
 
             species_ids_ch = PREPARE_SPECIES.out
                 .splitCsv(header: true, sep: '\t')
@@ -155,7 +158,7 @@ workflow {
         CONCAT_FAMILY_CANDIDATES.out.view { candidates -> "Family candidates: ${candidates}" }
 
         if (!asBooleanParam(params.standard_stop_after_family_candidates)) {
-            BUILD_RUN_CONFIG_SNAPSHOT(config_ch, PREPARE_SPECIES.out)
+            BUILD_RUN_CONFIG_SNAPSHOT(validated_config_ch, PREPARE_SPECIES.out)
             FAMILY_SUMMARY(CONCAT_FAMILY_CANDIDATES.out)
             EXTRACT_FAMILY_SEQUENCES(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
             BUILD_WGD_HANDOFF_MANIFEST(CONCAT_FAMILY_CANDIDATES.out)
@@ -195,7 +198,7 @@ workflow {
             ASSEMBLE_STANDARD_REPORT.out.view { report -> "Final report: ${report}" }
         }
     } else {
-        PREPARE_SPECIES(config_ch, groups_ch)
+        PREPARE_SPECIES(validated_config_ch, groups_ch)
 
         PREPARE_SPECIES.out.view { manifest -> "Species manifest: ${manifest}" }
     }

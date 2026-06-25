@@ -29,6 +29,16 @@ def test_identification_inputs_module_builds_hmmer_and_diamond_tables():
     assert 'path "identification_inputs/diamond_inputs.tsv"' in module
 
 
+def test_config_validation_module_runs_strict_path_preflight():
+    module = Path("workflows/modules/config_validation.nf").read_text(encoding="utf-8")
+
+    assert "process VALIDATE_CONFIG" in module
+    assert "validate_config.py" in module
+    assert "--check-paths" in module
+    assert "--base-dir ${projectDir}/.." in module
+    assert "validated_config.yaml" in module
+
+
 def test_domain_filter_module_can_concatenate_species_candidate_tables():
     module = Path("workflows/modules/domain_filter.nf").read_text(encoding="utf-8")
 
@@ -98,6 +108,9 @@ def test_main_workflow_wires_standard_identification_branch():
     workflow = Path("workflows/main.nf").read_text(encoding="utf-8")
 
     assert "def asBooleanParam(value)" in workflow
+    assert "include { VALIDATE_CONFIG } from './modules/config_validation.nf'" in workflow
+    assert "VALIDATE_CONFIG(config_ch)" in workflow
+    assert "validated_config_ch = VALIDATE_CONFIG.out" in workflow
     assert "if (asBooleanParam(params.mock_external_tools))" in workflow
     assert "include { BUILD_IDENTIFICATION_INPUTS } from './modules/identification_inputs.nf'" in workflow
     assert "include { BUILD_RUN_CONFIG_SNAPSHOT; EXTRACT_FAMILY_SEQUENCES; BUILD_WGD_HANDOFF_MANIFEST; BUILD_STANDARD_REPORT_INDEX; ASSEMBLE_STANDARD_REPORT } from './modules/standard_postprocess.nf'" in workflow
@@ -111,7 +124,7 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "} from './modules/domain_filter.nf'" in workflow
     assert "include { FAMILY_SUMMARY } from './modules/family_summary.nf'" in workflow
     assert "} else if (params.run_identification) {" in workflow
-    assert "BUILD_IDENTIFICATION_INPUTS(config_ch, PREPARE_SPECIES.out)" in workflow
+    assert "BUILD_IDENTIFICATION_INPUTS(validated_config_ch, PREPARE_SPECIES.out)" in workflow
     assert "species_ids_ch = PREPARE_SPECIES.out" in workflow
     assert "if (asBooleanParam(params.use_hmmer))" in workflow
     assert "if (asBooleanParam(params.use_diamond))" in workflow
@@ -127,7 +140,7 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "DOMAIN_FILTER(joined_evidence_ch, final_rule_ch)" in workflow
     assert "CONCAT_FAMILY_CANDIDATES(candidate_tables_ch.collect())" in workflow
     assert "if (!asBooleanParam(params.standard_stop_after_family_candidates))" in workflow
-    assert "BUILD_RUN_CONFIG_SNAPSHOT(config_ch, PREPARE_SPECIES.out)" in workflow
+    assert "BUILD_RUN_CONFIG_SNAPSHOT(validated_config_ch, PREPARE_SPECIES.out)" in workflow
     assert "BUILD_WGD_HANDOFF_MANIFEST(CONCAT_FAMILY_CANDIDATES.out)" in workflow
     assert "FAMILY_SUMMARY(CONCAT_FAMILY_CANDIDATES.out)" in workflow
     assert "EXTRACT_FAMILY_SEQUENCES(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)" in workflow
