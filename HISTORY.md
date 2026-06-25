@@ -6304,8 +6304,8 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
-- hash: not created yet
-- message: pending
+- hash: 4a28750cffab52e873f86af31dc14941917b2e76
+- message: feat: add promoter and feature summary visualization
 - files: promoter extraction, feature-summary statistics, R visualization, release checks, docs, tests, history
 
 Next:
