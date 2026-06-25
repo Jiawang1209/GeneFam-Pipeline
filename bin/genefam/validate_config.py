@@ -26,8 +26,16 @@ def load_config(path: Path) -> dict[str, Any]:
     return data
 
 
-def validate_config(config: dict[str, Any]) -> list[str]:
+def _path_exists(value: str, base_dir: Path) -> bool:
+    path = Path(value)
+    if path.is_absolute():
+        return path.exists()
+    return (base_dir / path).exists()
+
+
+def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir: Path | None = None) -> list[str]:
     errors: list[str] = []
+    base_dir = Path(".") if base_dir is None else base_dir
     for section in REQUIRED_SECTIONS:
         if section not in config:
             errors.append(f"Missing required section: {section}")
@@ -40,6 +48,15 @@ def validate_config(config: dict[str, Any]) -> list[str]:
         errors.append("input.root is required when input.mode is auto")
     if input_mode == "manifest" and not input_config.get("manifest"):
         errors.append("input.manifest is required when input.mode is manifest")
+    if check_paths:
+        if input_mode == "auto" and input_config.get("root") and not _path_exists(str(input_config["root"]), base_dir):
+            errors.append(f"input.root path does not exist: {input_config['root']}")
+        if (
+            input_mode == "manifest"
+            and input_config.get("manifest")
+            and not _path_exists(str(input_config["manifest"]), base_dir)
+        ):
+            errors.append(f"input.manifest path does not exist: {input_config['manifest']}")
 
     runtime = config.get("runtime", {}) or {}
     if runtime.get("environment") != "GeneFamilyFlow":
@@ -74,6 +91,16 @@ def validate_config(config: dict[str, Any]) -> list[str]:
                 errors.append(
                     "gene_family.reference_peptides must not use tests/fixtures paths when dev.mock_external_tools is false"
                 )
+    if check_paths:
+        if identification.get("use_hmmer", True) is not False:
+            for profile in gene_family.get("hmm_profiles", []) or []:
+                profile_path = str(profile.get("path", ""))
+                if profile_path and not _path_exists(profile_path, base_dir):
+                    errors.append(f"gene_family.hmm_profiles path does not exist: {profile_path}")
+        if identification.get("use_diamond", True) is not False:
+            reference_peptides = str(gene_family.get("reference_peptides", ""))
+            if reference_peptides and not _path_exists(reference_peptides, base_dir):
+                errors.append(f"gene_family.reference_peptides path does not exist: {reference_peptides}")
 
     domain_filtering = config.get("domain_filtering", {}) or {}
     min_bitscore = domain_filtering.get("hmmer_min_bitscore")
@@ -110,6 +137,8 @@ def validate_config(config: dict[str, Any]) -> list[str]:
         errors.append("modules.chromosome_location requires input.required.gff3: true")
     if modules.get("expression") is True and not expression.get("matrix"):
         errors.append("modules.expression requires expression.matrix")
+    if check_paths and expression.get("matrix") and not _path_exists(str(expression["matrix"]), base_dir):
+        errors.append(f"expression.matrix path does not exist: {expression['matrix']}")
 
     if modules.get("phylogeny") is True and modules.get("family_summary") is not True:
         errors.append("modules.phylogeny requires modules.family_summary: true")
@@ -127,8 +156,13 @@ def validate_config(config: dict[str, Any]) -> list[str]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("config", type=Path)
+    parser.add_argument(
+        "--check-paths",
+        action="store_true",
+        help="Also require configured runtime input paths to exist relative to the current working directory.",
+    )
     args = parser.parse_args()
-    errors = validate_config(load_config(args.config))
+    errors = validate_config(load_config(args.config), check_paths=args.check_paths, base_dir=Path("."))
     if errors:
         raise SystemExit("\n".join(errors))
     print("Configuration OK")

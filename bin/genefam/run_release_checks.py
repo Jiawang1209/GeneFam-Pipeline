@@ -44,14 +44,17 @@ def default_checks() -> list[CheckSpec]:
     python = sys.executable
     return [
         CheckSpec("pytest", [python, "-m", "pytest", "tests", "-q"]),
-        CheckSpec("validate example config", [python, "bin/genefam/validate_config.py", "configs/example.config.yaml"]),
+        CheckSpec(
+            "validate example config",
+            [python, "bin/genefam/validate_config.py", "configs/example.config.yaml", "--check-paths"],
+        ),
         CheckSpec(
             "validate advanced config",
             [python, "bin/genefam/validate_config.py", "configs/advanced_modules.example.yaml"],
         ),
         CheckSpec(
             "validate manifest config",
-            [python, "bin/genefam/validate_config.py", "configs/manifest.example.yaml"],
+            [python, "bin/genefam/validate_config.py", "configs/manifest.example.yaml", "--check-paths"],
         ),
         CheckSpec(
             "species selection smoke",

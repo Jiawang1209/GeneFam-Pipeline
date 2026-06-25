@@ -5653,9 +5653,54 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
-- hash: pending
+- hash: 715a6501dff0d3bd36eee3cf9f4b108c705f7a2d
 - message: fix: reject fixture inputs for non-mock runs
 - files: config validation, advanced config, input docs, quickstart, validation tests, history
 
 Next:
 - Run focused config/docs tests, full pytest, and release gate before committing.
+
+## 2026-06-25 - Add strict config path preflight
+
+Context:
+- The workflow is increasingly usable for real species-bank runs, but `validate_config.py` still only checked structure and module dependencies.
+- For real non-mock analyses, missing species-bank roots, manifests, HMM profiles, DIAMOND reference peptides, or expression matrices should be detected before Nextflow starts.
+- The advanced config remains a reusable template, so strict path checks should be opt-in rather than forced for every template validation.
+
+Decisions:
+- Add an optional `--check-paths` mode to `bin/genefam/validate_config.py`.
+- In strict mode, validate `input.root` or `input.manifest`, enabled HMMER profile paths, enabled DIAMOND reference peptides, and `expression.matrix` when present.
+- Keep `configs/advanced_modules.example.yaml` under structure/dependency validation only because it intentionally points to user-supplied `data/` paths.
+- Use strict path validation in the release gate for the runnable fixture-backed example and manifest configs.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/validate_config.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/input_contract.md`
+- `docs/quickstart.md`
+- `docs/release_audit.md`
+- `tests/test_validate_config.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_validate_config.py::test_validate_config_check_paths_reports_missing_runtime_inputs tests/test_validate_config.py::test_validate_config_cli_check_paths_accepts_fixture_configs -q` first failed because `validate_config()` had no `check_paths` argument and the CLI did not accept `--check-paths`.
+- `python -m pytest tests/test_validate_config.py::test_validate_config_check_paths_reports_missing_runtime_inputs tests/test_validate_config.py::test_validate_config_cli_check_paths_accepts_fixture_configs -q` passed after adding strict path mode.
+- `python -m pytest tests/test_validate_config.py tests/test_run_release_checks.py -q` passed with 55 tests.
+- `python -m pytest tests/test_validate_config.py tests/test_run_release_checks.py tests/test_quickstart_docs.py tests/test_release_audit_docs.py -q` passed with 58 tests.
+- `python -m pytest tests -q` passed with 269 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`; the runnable example and manifest config validations now use `--check-paths`, and the only required failure remains the runtime readiness audit.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
+- hash: pending
+- message: feat: add strict config path preflight
+- files: config validator, release checks, input docs, quickstart/release docs, validation tests, history
+
+Next:
+- Run focused docs tests, full pytest, and release gate before committing.

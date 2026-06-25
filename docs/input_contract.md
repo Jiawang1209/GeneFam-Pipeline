@@ -48,6 +48,8 @@ Later modules add more requirements:
 - `modules.motif: true` requires `modules.family_summary: true`.
 - `modules.duplication_retention: true` requires both `modules.synteny: true` and `modules.kaks: true`.
 
+Use `python bin/genefam/validate_config.py <config.yaml> --check-paths` before a real run to require configured runtime inputs to exist. This strict mode checks `input.root` or `input.manifest`, enabled HMMER profiles, DIAMOND reference peptides, and `expression.matrix` when present.
+
 ## Species Selection
 
 The species bank can contain many species. Each run chooses a subset with YAML:

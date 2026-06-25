@@ -1,3 +1,7 @@
+import subprocess
+import sys
+from pathlib import Path
+
 from bin.genefam.validate_config import validate_config
 
 
@@ -151,6 +155,44 @@ def test_validate_config_reports_fixture_inputs_in_non_mock_identification():
 
     assert "gene_family.hmm_profiles must not use tests/fixtures paths when dev.mock_external_tools is false" in errors
     assert "gene_family.reference_peptides must not use tests/fixtures paths when dev.mock_external_tools is false" in errors
+
+
+def test_validate_config_check_paths_reports_missing_runtime_inputs(tmp_path):
+    config = _valid_base_config()
+    config["input"]["root"] = "missing_species_bank"
+    config["dev"] = {"mock_external_tools": False}
+    config["gene_family"] = {
+        "hmm_profiles": [{"id": "PF00657", "path": "data/hmm_profiles/PF00657.hmm"}],
+        "reference_peptides": "data/reference/GDSL_reference.pep.fa",
+    }
+    config["identification"]["use_hmmer"] = True
+    config["identification"]["use_diamond"] = True
+    config["modules"]["expression"] = True
+    config["expression"] = {"matrix": "data/expression/family_expression.tsv"}
+
+    errors = validate_config(config, check_paths=True, base_dir=tmp_path)
+
+    assert "input.root path does not exist: missing_species_bank" in errors
+    assert "gene_family.hmm_profiles path does not exist: data/hmm_profiles/PF00657.hmm" in errors
+    assert "gene_family.reference_peptides path does not exist: data/reference/GDSL_reference.pep.fa" in errors
+    assert "expression.matrix path does not exist: data/expression/family_expression.tsv" in errors
+
+
+def test_validate_config_cli_check_paths_accepts_fixture_configs():
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "bin/genefam/validate_config.py",
+            "configs/example.config.yaml",
+            "--check-paths",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout.strip() == "Configuration OK"
 
 
 def test_validate_config_reports_invalid_domain_filtering_thresholds():

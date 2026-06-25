@@ -9,9 +9,9 @@ Repository-level checks:
 ```bash
 python bin/genefam/run_release_checks.py --outdir results/release_checks
 python -m pytest tests -q
-python bin/genefam/validate_config.py configs/example.config.yaml
+python bin/genefam/validate_config.py configs/example.config.yaml --check-paths
 python bin/genefam/validate_config.py configs/advanced_modules.example.yaml
-python bin/genefam/validate_config.py configs/manifest.example.yaml
+python bin/genefam/validate_config.py configs/manifest.example.yaml --check-paths
 python bin/genefam/run_species_selection_smoke.py \
   --config configs/manifest.example.yaml \
   --groups configs/species_groups.yaml \

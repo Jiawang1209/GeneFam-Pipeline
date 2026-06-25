@@ -32,6 +32,12 @@ bash scripts/run_local_acceptance.sh
 python bin/genefam/run_release_checks.py --outdir results/release_checks
 ```
 
+For a single config preflight with path existence checks:
+
+```bash
+python bin/genefam/validate_config.py configs/example.config.yaml --check-paths
+```
+
 Expected on the current Mac development machine:
 
 - Python tests, config validation, mock MVP, standard smoke, WGD smoke, Nextflow mock MVP, Nextflow standard smoke, Nextflow standard single-tool smoke, Nextflow WGD smoke, and prepared WGD handoff example should pass through `GeneFamilyFlow`.
