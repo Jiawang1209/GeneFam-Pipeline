@@ -39,6 +39,15 @@ echo "[GeneFam] Writing local acceptance summary into ${ACCEPTANCE_OUTDIR}"
   --outdir "$ACCEPTANCE_OUTDIR"
 acceptance_summary_status=$?
 
+echo "[GeneFam] Refreshing delivery bundle with local acceptance summary"
+"$PYTHON_BIN" bin/genefam/run_delivery_bundle.py \
+  --release-checks "$RELEASE_OUTDIR/release_checks.tsv" \
+  --objective-audit results/objective_audit/objective_audit.tsv \
+  --readiness results/readiness/command_readiness.tsv \
+  --quickstart "$QUICKSTART_OUTDIR/quickstart_summary.tsv" \
+  --outdir "$DELIVERY_OUTDIR"
+final_delivery_status=$?
+
 echo "[GeneFam] Primary handoff files:"
 echo "- results/handoff/handoff_report.md"
 echo "- results/handoff/handoff_summary.tsv"
@@ -66,6 +75,10 @@ if [ "$acceptance_summary_status" -ne 0 ]; then
   echo "[GeneFam] Local acceptance summary exited with status ${acceptance_summary_status}."
 fi
 
+if [ "$final_delivery_status" -ne 0 ]; then
+  echo "[GeneFam] Final delivery bundle refresh exited with status ${final_delivery_status}."
+fi
+
 if [ "$release_status" -ne 0 ]; then
   exit "$release_status"
 fi
@@ -76,6 +89,10 @@ fi
 
 if [ "$delivery_status" -ne 0 ]; then
   exit "$delivery_status"
+fi
+
+if [ "$final_delivery_status" -ne 0 ]; then
+  exit "$final_delivery_status"
 fi
 
 exit "$acceptance_summary_status"

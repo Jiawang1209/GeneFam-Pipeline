@@ -23,6 +23,10 @@ def test_local_acceptance_script_runs_release_gate_and_quickstart():
     assert "--outdir \"$ACCEPTANCE_OUTDIR\"" in text
     assert text.index("bin/genefam/run_quickstart.py") < text.index("bin/genefam/run_delivery_bundle.py")
     assert text.index("bin/genefam/run_delivery_bundle.py") < text.index("bin/genefam/write_local_acceptance_summary.py")
+    assert text.count("bin/genefam/run_delivery_bundle.py") == 2
+    assert text.rindex("bin/genefam/write_local_acceptance_summary.py") < text.rindex(
+        "bin/genefam/run_delivery_bundle.py"
+    )
     assert "results/handoff/handoff_report.md" in text
     assert "${DELIVERY_OUTDIR}/delivery_manifest.tsv" in text
     assert "${DELIVERY_OUTDIR}/delivery_bundle.md" in text

@@ -96,6 +96,13 @@ def build_delivery_manifest(
             "note": f"blocked_or_missing={blockers}",
         },
         {
+            "section": "status",
+            "item": "local_acceptance_summary",
+            "status": "available",
+            "path": "results/local_acceptance/local_acceptance_summary.md",
+            "note": "compact local acceptance pass/fail index",
+        },
+        {
             "section": "input",
             "item": "manifest_config",
             "status": "available",

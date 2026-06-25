@@ -136,6 +136,10 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         "runtime_recovery\tlocal_acceptance\tavailable\tscripts/run_local_acceptance.sh\trefreshes release, handoff, quickstart, and delivery bundle outputs"
         in manifest_text
     )
+    assert (
+        "status\tlocal_acceptance_summary\tavailable\tresults/local_acceptance/local_acceptance_summary.md\tcompact local acceptance pass/fail index"
+        in manifest_text
+    )
 
     summary_text = summary.read_text(encoding="utf-8")
     assert "# GeneFam-Pipeline Delivery Bundle" in summary_text
@@ -146,4 +150,5 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "alpha, beta, gamma, theta" in summary_text
     assert "Reference governance" in summary_text
     assert "runtime recovery" in summary_text
+    assert "compact local acceptance pass/fail index" in summary_text
     assert "Docker/Apptainer reproducibility" in summary_text

@@ -5834,9 +5834,50 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
+- hash: 78b7261696d18d39ea1906cf3718c1673e6524dc
+- message: feat: add local acceptance summary
+- files: local acceptance summary writer, local acceptance wrapper, quickstart docs, README, tests, history
+
+Next:
+- Commit the acceptance-summary enhancement, then continue polishing final handoff surfaces while Docker/Apptainer remains the only external runtime blocker.
+
+## 2026-06-25 - Index local acceptance summary in delivery bundle
+
+Context:
+- The local acceptance wrapper now writes `results/local_acceptance/local_acceptance_summary.md`, but the delivery bundle still only pointed to the wrapper script.
+- Because the summary is generated after the first delivery-bundle refresh inside `scripts/run_local_acceptance.sh`, the final bundle needs one more refresh after the summary exists.
+
+Decisions:
+- Add `status/local_acceptance_summary` to the delivery manifest so the compact pass/fail index is part of the final handoff.
+- Refresh the delivery bundle a second time at the end of `scripts/run_local_acceptance.sh`, after writing the local acceptance summary.
+- Preserve the existing release-gate exit semantics so the script still exits with the known runtime blocker while leaving all handoff artifacts refreshed.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_delivery_bundle.py`
+- `scripts/run_local_acceptance.sh`
+- `tests/test_local_acceptance_script.py`
+- `tests/test_run_delivery_bundle.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py tests/test_local_acceptance_script.py -q` first failed because the delivery bundle did not include `status/local_acceptance_summary` and the local acceptance script refreshed the delivery bundle only once.
+- `python -m pytest tests/test_run_delivery_bundle.py tests/test_local_acceptance_script.py -q` passed with 3 tests after adding the manifest row and final refresh.
+- `python -m pytest tests -q` passed with 273 tests.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected while Docker/Apptainer remain unavailable, after completing quickstart and both delivery-bundle refreshes.
+- `rg -n "local_acceptance_summary|Passed:|Required failed:|Optional failed:" results/delivery_bundle/delivery_manifest.tsv results/delivery_bundle/delivery_bundle.md results/release_checks/release_checks.md` confirmed the final delivery bundle indexes `results/local_acceptance/local_acceptance_summary.md` and release checks still report `Passed: 28`, `Required failed: 1`, `Optional failed: 2`.
+- `results/local_acceptance/local_acceptance_summary.md` reports `release_gate` failed with exit code `1`, while `quickstart_handoff` and `delivery_bundle` passed.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Commit the acceptance-summary enhancement, then continue polishing final handoff surfaces while Docker/Apptainer remains the only external runtime blocker.
+- Commit the delivery-bundle indexing change, then continue improving the final handoff surfaces while the external container runtime blocker remains.
