@@ -167,6 +167,32 @@ def build_delivery_manifest(
     rows.extend(
         [
             {
+                "section": "runtime_recovery",
+                "item": "bootstrap_plan",
+                "status": "available",
+                "path": "results/readiness/runtime_bootstrap_plan.md",
+                "note": "container/runtime recovery plan",
+            },
+            {
+                "section": "runtime_recovery",
+                "item": "bootstrap_shell",
+                "status": "available",
+                "path": "results/readiness/runtime_bootstrap.sh",
+                "note": "executable recovery and verification script",
+            },
+            {
+                "section": "runtime_recovery",
+                "item": "local_acceptance",
+                "status": "available",
+                "path": "scripts/run_local_acceptance.sh",
+                "note": "refreshes release, handoff, quickstart, and delivery bundle outputs",
+            },
+        ]
+    )
+
+    rows.extend(
+        [
+            {
                 "section": "docs",
                 "item": "quickstart",
                 "status": "available",
@@ -210,7 +236,7 @@ def write_markdown(rows: list[dict[str, str]], out_path: Path) -> None:
         "",
         f"Objective blockers: {blockers}",
         "",
-        "This bundle is the final handoff index for standard gene-family analysis, WGD event evidence, Reference governance, runtime status, and documentation.",
+        "This bundle is the final handoff index for standard gene-family analysis, WGD event evidence, Reference governance, runtime status, runtime recovery, and documentation.",
         "",
         "Named WGD event evidence: alpha, beta, gamma, theta.",
         "",

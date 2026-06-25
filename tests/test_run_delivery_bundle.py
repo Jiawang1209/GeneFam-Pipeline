@@ -94,10 +94,23 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "runtime\t/usr/local/bin/R\tavailable\t/usr/local/bin/R" in manifest_text
     assert "runtime\tdocker\tmissing\t" in manifest_text
     assert "runtime\tapptainer\tmissing\t" in manifest_text
+    assert (
+        "runtime_recovery\tbootstrap_plan\tavailable\tresults/readiness/runtime_bootstrap_plan.md\tcontainer/runtime recovery plan"
+        in manifest_text
+    )
+    assert (
+        "runtime_recovery\tbootstrap_shell\tavailable\tresults/readiness/runtime_bootstrap.sh\texecutable recovery and verification script"
+        in manifest_text
+    )
+    assert (
+        "runtime_recovery\tlocal_acceptance\tavailable\tscripts/run_local_acceptance.sh\trefreshes release, handoff, quickstart, and delivery bundle outputs"
+        in manifest_text
+    )
 
     summary_text = summary.read_text(encoding="utf-8")
     assert "# GeneFam-Pipeline Delivery Bundle" in summary_text
     assert "standard report" in summary_text
     assert "alpha, beta, gamma, theta" in summary_text
     assert "Reference governance" in summary_text
+    assert "runtime recovery" in summary_text
     assert "Docker/Apptainer reproducibility" in summary_text
