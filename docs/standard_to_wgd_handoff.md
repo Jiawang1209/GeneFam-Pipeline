@@ -15,13 +15,14 @@ nextflow run workflows/main.nf \
   --outdir results/<run>
 ```
 
-The handoff file for the next branch is:
+The standard branch writes two handoff files for the next branch:
 
 ```text
 results/<run>/tables/family_candidates.tsv
+results/<run>/tables/wgd_handoff_manifest.tsv
 ```
 
-It contains the family member gene IDs used by chromosome mapping, expression subsetting, and duplication-retention analysis.
+`family_candidates.tsv` contains the family member gene IDs used by chromosome mapping, expression subsetting, and duplication-retention analysis. `wgd_handoff_manifest.tsv` is the machine-readable checklist for the WGD branch: it marks the standard-branch family members as available, records the configured WGD event map and Ks bins, and marks duplicate-type plus Ka/Ks pair tables as pending until they are prepared from MCScanX, JCVI/SynMap-style preprocessing, KaKs_Calculator, or curated evidence.
 
 ## Step 2: Prepare Duplication Inputs
 

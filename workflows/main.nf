@@ -12,7 +12,7 @@ include {
     EMPTY_DIAMOND_EVIDENCE
 } from './modules/domain_filter.nf'
 include { FAMILY_SUMMARY } from './modules/family_summary.nf'
-include { BUILD_RUN_CONFIG_SNAPSHOT; EXTRACT_FAMILY_SEQUENCES; BUILD_STANDARD_REPORT_INDEX; ASSEMBLE_STANDARD_REPORT } from './modules/standard_postprocess.nf'
+include { BUILD_RUN_CONFIG_SNAPSHOT; EXTRACT_FAMILY_SEQUENCES; BUILD_WGD_HANDOFF_MANIFEST; BUILD_STANDARD_REPORT_INDEX; ASSEMBLE_STANDARD_REPORT } from './modules/standard_postprocess.nf'
 include { MOCK_MVP } from './modules/mock_mvp.nf'
 include { ASSEMBLE_REPORT } from './modules/report.nf'
 include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
@@ -158,6 +158,7 @@ workflow {
             BUILD_RUN_CONFIG_SNAPSHOT(config_ch, PREPARE_SPECIES.out)
             FAMILY_SUMMARY(CONCAT_FAMILY_CANDIDATES.out)
             EXTRACT_FAMILY_SEQUENCES(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
+            BUILD_WGD_HANDOFF_MANIFEST(CONCAT_FAMILY_CANDIDATES.out)
             PREPARE_ALIGNMENT_INPUTS(family_name_ch, EXTRACT_FAMILY_SEQUENCES.out, aligner_ch, alignment_outdir_ch)
             PREPARE_PHYLOGENY_INPUTS(PREPARE_ALIGNMENT_INPUTS.out, tree_builder_ch, phylogeny_outdir_ch)
             meme_txt_ch = Channel.value(file(params.meme_txt))
@@ -184,6 +185,7 @@ workflow {
                 EXTRACT_GENE_STRUCTURE.out,
                 EXTRACT_CHROMOSOME_LOCATIONS.out,
                 family_expression_report_ch,
+                BUILD_WGD_HANDOFF_MANIFEST.out,
                 BUILD_PLOT_MANIFEST.out
             )
             ASSEMBLE_STANDARD_REPORT(project_name_ch, family_name_ch, BUILD_STANDARD_REPORT_INDEX.out, BUILD_RUN_CONFIG_SNAPSHOT.out, BUILD_PLOT_MANIFEST.out)

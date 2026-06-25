@@ -21,6 +21,7 @@ DESCRIPTIONS = {
     "gene_structure_summary": "Gene structure summary from GFF3 annotation",
     "chromosome_locations": "Family member chromosome coordinates",
     "family_expression": "Family member RNA-seq expression matrix",
+    "wgd_handoff_manifest": "Standard-to-WGD handoff manifest for duplication and WGD event analysis",
     "plot_manifest": "Generated plot inventory",
 }
 
@@ -51,6 +52,7 @@ def published_paths(published_outdir: str, family_expression_available: bool) ->
         "gene_structure_summary": str(outdir / "tables/gene_structure_summary.tsv"),
         "chromosome_locations": str(outdir / "tables/chromosome_locations.tsv"),
         "family_expression": str(outdir / "tables/family_expression.tsv") if family_expression_available else "",
+        "wgd_handoff_manifest": str(outdir / "tables/wgd_handoff_manifest.tsv"),
         "plot_manifest": str(outdir / "report/plot_manifest.tsv"),
     }
 

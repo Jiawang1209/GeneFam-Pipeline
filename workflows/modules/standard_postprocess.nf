@@ -38,6 +38,27 @@ process EXTRACT_FAMILY_SEQUENCES {
     """
 }
 
+process BUILD_WGD_HANDOFF_MANIFEST {
+    tag "standard to WGD handoff manifest"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
+
+    input:
+    path family_candidates
+
+    output:
+    path "wgd_handoff_manifest.tsv"
+
+    script:
+    """
+    python ${projectDir}/../bin/genefam/build_wgd_handoff_manifest.py \\
+      --family-candidates ${family_candidates} \\
+      --events-config ${params.events_config} \\
+      --ks-bins ${params.ks_bins} \\
+      --wgd-event-args "${params.wgd_event_args}" \\
+      --out wgd_handoff_manifest.tsv
+    """
+}
+
 process BUILD_STANDARD_REPORT_INDEX {
     tag "standard report index"
     publishDir "${params.outdir}/report", mode: "copy", overwrite: true
@@ -54,6 +75,7 @@ process BUILD_STANDARD_REPORT_INDEX {
     path gene_structure_summary
     path chromosome_locations
     val family_expression
+    path wgd_handoff_manifest
     path plot_manifest
 
     output:
@@ -73,6 +95,7 @@ process BUILD_STANDARD_REPORT_INDEX {
       --gene-structure-summary ${gene_structure_summary} \\
       --chromosome-locations ${chromosome_locations} \\
       --family-expression "${family_expression}" \\
+      --wgd-handoff-manifest ${wgd_handoff_manifest} \\
       --plot-manifest ${plot_manifest} \\
       --published-outdir ${params.outdir} \\
       --out report_index.tsv

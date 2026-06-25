@@ -5409,9 +5409,72 @@ Verification:
 - `rg -n "nextflow_standard_manifest_smoke|manifest-mode standard DSL2 smoke" results/delivery_bundle/delivery_manifest.tsv results/delivery_bundle/delivery_bundle.md` confirmed the new row is present; current local evidence reports it as `missing` until the runtime can pass that release check.
 
 Commit:
-- hash: pending
+- hash: 66bce42eb90b6552a77b43c1ee91fce7bdf03425
 - message: feat: surface nextflow manifest smoke in delivery bundle
 - files: delivery bundle, quickstart docs, tests, history
 
 Next:
 - Continue workflow-first development, especially strengthening DSL2/report evidence; defer Docker/Apptainer封装 until the analysis flow is complete.
+
+## 2026-06-25 - Add standard-to-WGD handoff manifest
+
+Context:
+- The workflow-first development phase should make the standard identification branch hand off cleanly into the duplication/WGD event branch before final container封装.
+- The standard branch already produced `family_candidates.tsv`, but users still had to read documentation to know which prepared MCScanX/KaKs inputs were required next.
+- A machine-readable manifest makes the family identification to gamma/beta/alpha/theta evidence path easier to audit and automate.
+
+Decisions:
+- Add `bin/genefam/build_wgd_handoff_manifest.py` to write a standard-to-WGD checklist.
+- Mark standard family candidates as `available`, configured WGD event metadata as `configured`, and duplicate-type plus Ka/Ks pair tables as `pending_user_preparation`.
+- Publish `tables/wgd_handoff_manifest.tsv` from Python standard smoke and the Nextflow DSL2 standard branch.
+- Include the manifest in the standard report index, final report, Nextflow standard smoke output checks, delivery bundle, quickstart, release audit, README, and handoff documentation.
+
+Added:
+- `bin/genefam/build_wgd_handoff_manifest.py`
+- `tests/test_build_wgd_handoff_manifest.py`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_delivery_bundle.py`
+- `bin/genefam/run_nextflow_standard_smoke.py`
+- `bin/genefam/run_standard_smoke.py`
+- `docs/quickstart.md`
+- `docs/release_audit.md`
+- `docs/standard_to_wgd_handoff.md`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_run_nextflow_standard_smoke.py`
+- `tests/test_run_standard_smoke.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_wgd_handoff_manifest.py -q` first failed with `ModuleNotFoundError`, proving the manifest builder was absent.
+- `python -m pytest tests/test_run_standard_smoke.py::test_run_standard_smoke_writes_standard_branch_outputs -q` first failed because `tables/wgd_handoff_manifest.tsv` was not written by the standard branch.
+- `python -m pytest tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q` first failed because the DSL2 standard branch did not include `BUILD_WGD_HANDOFF_MANIFEST`.
+- `python -m pytest tests/test_quickstart_docs.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py::test_standard_to_wgd_handoff_doc_links_identification_and_wgd_branches -q` first failed because the docs did not mention `wgd_handoff_manifest.tsv`.
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py::test_expected_published_outputs_cover_standard_user_results -q` first failed because the Nextflow standard smoke output check did not require the handoff manifest.
+- `python -m pytest tests/test_run_delivery_bundle.py -q` first failed because the delivery manifest lacked the standard-to-WGD handoff row.
+- `python -m pytest tests/test_build_wgd_handoff_manifest.py tests/test_run_standard_smoke.py tests/test_standard_branch_report_index.py tests/test_workflow_modules.py tests/test_run_nextflow_standard_smoke.py tests/test_run_delivery_bundle.py tests/test_quickstart_docs.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py::test_standard_to_wgd_handoff_doc_links_identification_and_wgd_branches -q` passed with 39 tests.
+- `python -m pytest tests -q` passed with 263 tests.
+- `python bin/genefam/run_standard_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/standard_smoke` refreshed the standard branch outputs and printed `wgd_handoff_manifest`.
+- `rg -n "family_members|duplicate_types|kaks_pairs|events_config|wgd_handoff_manifest" results/standard_smoke/tables/wgd_handoff_manifest.tsv results/standard_smoke/report/report_index.tsv results/standard_smoke/report/final_report.md` confirmed the handoff manifest is in the table, report index, and final report.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` refreshed the delivery bundle.
+- `rg -n "wgd_handoff_manifest|standard-to-WGD handoff" results/delivery_bundle/delivery_manifest.tsv results/delivery_bundle/delivery_bundle.md results/standard_smoke/report/final_report.md` confirmed the final delivery index points to the handoff manifest.
+
+Commit:
+- hash: pending
+- message: feat: add standard to wgd handoff manifest
+- files: standard-to-WGD manifest builder, standard and Nextflow branch wiring, delivery bundle, docs, tests, history
+
+Next:
+- Continue closing workflow-first gaps before final Docker/Apptainer packaging.

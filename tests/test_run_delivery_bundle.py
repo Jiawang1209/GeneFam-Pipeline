@@ -85,6 +85,10 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         "standard\trun_config_snapshot\tavailable\tresults/quickstart/standard_smoke/tables/run_config_snapshot.tsv\tstandard branch run configuration"
         in manifest_text
     )
+    assert (
+        "standard\twgd_handoff_manifest\tavailable\tresults/quickstart/standard_smoke/tables/wgd_handoff_manifest.tsv\tstandard-to-WGD handoff checklist"
+        in manifest_text
+    )
     assert "input\tmanifest_config\tavailable\tconfigs/manifest.example.yaml\tmanifest-mode YAML example" in manifest_text
     assert (
         "input\tmanifest_fixture\tavailable\ttests/fixtures/species_manifest.tsv\tprebuilt species manifest fixture"

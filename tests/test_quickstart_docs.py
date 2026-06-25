@@ -42,6 +42,7 @@ def test_quickstart_documents_minimum_verified_run_path():
         "--example-dir examples/prepared_wgd_handoff",
         "--outdir results/example_prepared_wgd",
         "results/standard_smoke/report/final_report.md",
+        "results/standard_smoke/tables/wgd_handoff_manifest.tsv",
         "results/quickstart/standard_smoke/tables/run_config_snapshot.tsv",
         "results/example_prepared_wgd/report/final_report.md",
         "results/quickstart/example_prepared_wgd/tables/wgd_run_config_snapshot.tsv",

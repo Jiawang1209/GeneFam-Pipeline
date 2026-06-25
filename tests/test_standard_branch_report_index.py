@@ -18,6 +18,7 @@ def test_build_standard_report_index_marks_core_outputs_available():
             "gene_structure_summary": "tables/gene_structure_summary.tsv",
             "chromosome_locations": "tables/chromosome_locations.tsv",
             "family_expression": "",
+            "wgd_handoff_manifest": "tables/wgd_handoff_manifest.tsv",
             "plot_manifest": "tables/plot_manifest.tsv",
         }
     )
@@ -37,6 +38,7 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "gene_structure_summary",
         "chromosome_locations",
         "family_expression",
+        "wgd_handoff_manifest",
     }
     assert next(row for row in rows if row["key"] == "family_expression")["status"] == "missing"
 
@@ -56,6 +58,7 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
         "gene_structure_summary": "results/nextflow_standard_smoke/standard/tables/gene_structure_summary.tsv",
         "chromosome_locations": "results/nextflow_standard_smoke/standard/tables/chromosome_locations.tsv",
         "family_expression": "",
+        "wgd_handoff_manifest": "results/nextflow_standard_smoke/standard/tables/wgd_handoff_manifest.tsv",
         "plot_manifest": "results/nextflow_standard_smoke/standard/report/plot_manifest.tsv",
     }
 
@@ -89,6 +92,8 @@ def test_build_standard_report_index_cli_writes_tsv(tmp_path):
             "chromosome_locations.tsv",
             "--family-expression",
             "",
+            "--wgd-handoff-manifest",
+            "wgd_handoff_manifest.tsv",
             "--plot-manifest",
             "plot_manifest.tsv",
             "--out",
@@ -137,6 +142,8 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
             "chromosome_locations.tsv",
             "--family-expression",
             "",
+            "--wgd-handoff-manifest",
+            "wgd_handoff_manifest.tsv",
             "--plot-manifest",
             "plot_manifest.tsv",
             "--published-outdir",
@@ -156,4 +163,5 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
     assert rows["family_members_faa"]["path"] == "results/demo/sequences/family_members.faa"
     assert rows["motif_summary"]["path"] == "results/demo/tables/motif_summary.tsv"
     assert rows["gene_structure_summary"]["path"] == "results/demo/tables/gene_structure_summary.tsv"
+    assert rows["wgd_handoff_manifest"]["path"] == "results/demo/tables/wgd_handoff_manifest.tsv"
     assert rows["plot_manifest"]["path"] == "results/demo/report/plot_manifest.tsv"

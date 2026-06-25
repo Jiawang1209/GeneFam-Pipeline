@@ -35,6 +35,7 @@ def test_run_standard_smoke_writes_standard_branch_outputs(tmp_path):
         "tables/motif_summary.tsv",
         "tables/gene_structure_summary.tsv",
         "tables/chromosome_locations.tsv",
+        "tables/wgd_handoff_manifest.tsv",
         "report/report_index.tsv",
         "report/final_report.md",
     ]
@@ -51,6 +52,15 @@ def test_run_standard_smoke_writes_standard_branch_outputs(tmp_path):
     assert "gene_structure_summary" in report_index
     assert "gene_structure_summary.tsv\tavailable" in report_index
     assert "family_expression" in report_index
+    assert "wgd_handoff_manifest" in report_index
+    assert "wgd_handoff_manifest.tsv\tavailable" in report_index
+    wgd_handoff = (outdir / "tables/wgd_handoff_manifest.tsv").read_text(encoding="utf-8")
+    assert wgd_handoff.startswith("item\tpath\tstatus\trequired_for\tdescription\n")
+    assert "family_members\t" in wgd_handoff
+    assert "family_candidates.tsv\tavailable\tduplication_retention" in wgd_handoff
+    assert "duplicate_types\t\tpending_user_preparation\tduplication_retention" in wgd_handoff
+    assert "kaks_pairs\t\tpending_user_preparation\twgd_layer_classification" in wgd_handoff
+    assert "events_config\tconfigs/wgd_events.brassicaceae.yaml\tconfigured\tnamed_wgd_events" in wgd_handoff
     motif_summary = (outdir / "tables/motif_summary.tsv").read_text(encoding="utf-8")
     assert motif_summary.startswith("family_name\tmotif_id\tmotif_name\twidth\tsites\tevalue\n")
     assert "GDSL_motif_1" in motif_summary

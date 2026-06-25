@@ -177,7 +177,7 @@ nextflow run workflows/main.nf \
   --final_rule intersection
 ```
 
-This branch builds HMMER and DIAMOND input tables from the YAML config and species manifest, runs evidence detection per species, merges candidate evidence, concatenates family candidate tables, writes `run_config_snapshot.tsv` for the selected species and tool settings, summarizes copy numbers, extracts `family_members.faa`, prepares alignment and phylogeny manifests, parses `motif_summary.tsv` from the MEME text file supplied by `--meme_txt`, summarizes `gene_structure_summary.tsv` from species-bank GFF3 annotations, extracts `chromosome_locations.tsv`, optionally subsets a `family_expression` matrix when `--expression_matrix` is supplied, creates the family-count plot, writes a standard report index, and assembles `final_report.md`.
+This branch builds HMMER and DIAMOND input tables from the YAML config and species manifest, runs evidence detection per species, merges candidate evidence, concatenates family candidate tables, writes `run_config_snapshot.tsv` for the selected species and tool settings, summarizes copy numbers, extracts `family_members.faa`, prepares alignment and phylogeny manifests, parses `motif_summary.tsv` from the MEME text file supplied by `--meme_txt`, summarizes `gene_structure_summary.tsv` from species-bank GFF3 annotations, extracts `chromosome_locations.tsv`, writes `wgd_handoff_manifest.tsv` for the standard-to-WGD branch handoff, optionally subsets a `family_expression` matrix when `--expression_matrix` is supplied, creates the family-count plot, writes a standard report index, and assembles `final_report.md`.
 
 The domain filter smoke validates the normalized HMMER evidence thresholding step before standard candidate merging:
 

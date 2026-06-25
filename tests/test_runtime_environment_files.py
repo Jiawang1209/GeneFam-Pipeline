@@ -174,6 +174,7 @@ def test_standard_to_wgd_handoff_doc_links_identification_and_wgd_branches():
 
     required_snippets = [
         "results/<run>/tables/family_candidates.tsv",
+        "results/<run>/tables/wgd_handoff_manifest.tsv",
         "--run_identification true",
         "--run_duplication_retention true",
         "--duplicates path/to/duplicate_types.tsv",

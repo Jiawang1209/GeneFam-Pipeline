@@ -54,6 +54,7 @@ def expected_published_outputs(standard_outdir: Path) -> list[Path]:
         standard_outdir / "tables/motif_summary.tsv",
         standard_outdir / "tables/gene_structure_summary.tsv",
         standard_outdir / "tables/chromosome_locations.tsv",
+        standard_outdir / "tables/wgd_handoff_manifest.tsv",
         standard_outdir / "sequences/family_members.faa",
         standard_outdir / "report/report_index.tsv",
         standard_outdir / "report/plot_manifest.tsv",

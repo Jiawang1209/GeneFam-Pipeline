@@ -17,6 +17,7 @@ from bin.genefam.assemble_report import assemble_report, write_report
 from bin.genefam.build_plot_manifest import build_plot_manifest, write_tsv as write_plot_manifest_tsv
 from bin.genefam.build_run_config_snapshot import build_snapshot, write_tsv as write_snapshot_tsv
 from bin.genefam.build_standard_report_index import DESCRIPTIONS, build_report_index, write_tsv as write_report_index_tsv
+from bin.genefam.build_wgd_handoff_manifest import build_handoff_manifest, write_tsv as write_handoff_tsv
 from bin.genefam.discover_species import species_rows_from_config, write_manifest
 from bin.genefam.extract_family_sequences import extract_family_sequences, read_tsv as read_table, write_fasta
 from bin.genefam.extract_chromosome_locations import extract_locations_for_manifest, write_tsv as write_locations_tsv
@@ -88,6 +89,7 @@ def run_standard_smoke(
         "motif_summary": tables_dir / "motif_summary.tsv",
         "gene_structure_summary": tables_dir / "gene_structure_summary.tsv",
         "chromosome_locations": tables_dir / "chromosome_locations.tsv",
+        "wgd_handoff_manifest": tables_dir / "wgd_handoff_manifest.tsv",
         "plot_manifest": report_dir / "plot_manifest.tsv",
         "report_index": report_dir / "report_index.tsv",
         "standard_final_report": report_dir / "final_report.md",
@@ -138,6 +140,16 @@ def run_standard_smoke(
     write_motif_tsv(parse_meme_text(meme_text, family_name=gene_family), outputs["motif_summary"])
     write_gene_structure_tsv(summarize_structure(candidates, manifest_rows), outputs["gene_structure_summary"])
     write_locations_tsv(extract_locations_for_manifest(candidates, manifest_rows), outputs["chromosome_locations"])
+    events_config = (config.get("wgd_events", {}) or {}).get("event_map") or "configs/wgd_events.brassicaceae.yaml"
+    write_handoff_tsv(
+        build_handoff_manifest(
+            family_candidates=str(outputs["family_candidates"]),
+            events_config=str(events_config),
+            ks_bins="0.3,0.8,1.5",
+            wgd_event_args="--event WGD_layer_1=alpha --event WGD_layer_2=beta --event WGD_layer_3=gamma --event WGD_layer_4=theta",
+        ),
+        outputs["wgd_handoff_manifest"],
+    )
     if expression_matrix is not None:
         write_expression_tsv(
             subset_expression(read_expression_tsv(expression_matrix), gene_ids_from_family_candidates(candidates)),

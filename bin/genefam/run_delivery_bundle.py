@@ -149,6 +149,13 @@ def build_delivery_manifest(
             "note": "standard branch run configuration",
         },
         {
+            "section": "standard",
+            "item": "wgd_handoff_manifest",
+            "status": "available",
+            "path": "results/quickstart/standard_smoke/tables/wgd_handoff_manifest.tsv",
+            "note": "standard-to-WGD handoff checklist",
+        },
+        {
             "section": "wgd",
             "item": "final_report",
             "status": _status_from_step(quickstart_rows, "prepared_wgd_handoff"),

@@ -119,6 +119,7 @@ python bin/genefam/run_standard_smoke.py \
 Key outputs:
 
 - `results/standard_smoke/tables/family_candidates.tsv`
+- `results/standard_smoke/tables/wgd_handoff_manifest.tsv`
 - `results/standard_smoke/tables/chromosome_locations.tsv`
 - `results/standard_smoke/sequences/family_members.faa`
 - `results/standard_smoke/report/final_report.md`
