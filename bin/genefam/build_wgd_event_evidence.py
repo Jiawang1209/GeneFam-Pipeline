@@ -84,7 +84,13 @@ def load_event_metadata(path: Path | None) -> dict[str, dict[str, str]]:
     with Path(path).open("r", encoding="utf-8") as handle:
         data: dict[str, Any] = yaml.safe_load(handle) or {}
     events = data.get("wgd_events", []) or []
-    return {event["name"]: event for event in events}
+    metadata: dict[str, dict[str, str]] = {}
+    for event in events:
+        name = event["name"]
+        if name in metadata:
+            raise ValueError(f"Duplicate WGD event name: {name}")
+        metadata[name] = event
+    return metadata
 
 
 def main() -> None:

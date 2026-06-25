@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import pytest
+
 from bin.genefam.build_wgd_event_evidence import build_event_evidence, load_event_metadata
 
 
@@ -77,3 +79,27 @@ def test_load_event_metadata_reads_brassicaceae_named_events():
     assert set(metadata) == {"gamma", "beta", "alpha", "theta"}
     assert metadata["gamma"]["scope"] == "core_eudicots"
     assert metadata["theta"]["expected_relative_age"] == "lineage_specific_recent"
+
+
+def test_load_event_metadata_rejects_duplicate_named_events(tmp_path):
+    events_config = tmp_path / "wgd_events.yaml"
+    events_config.write_text(
+        "\n".join(
+            [
+                "wgd_events:",
+                "  - name: alpha",
+                "    scope: Arabidopsis_Brassicaceae",
+                "    evidence: literature",
+                "    expected_relative_age: recent",
+                "  - name: alpha",
+                "    scope: duplicate_scope",
+                "    evidence: literature",
+                "    expected_relative_age: duplicate",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="Duplicate WGD event name: alpha"):
+        load_event_metadata(events_config)

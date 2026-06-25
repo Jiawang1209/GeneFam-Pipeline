@@ -6340,9 +6340,55 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
-- hash: pending
+- hash: 8430514116ac5ad212adf448b6312dfcfc3b065a
 - message: docs: document primary yaml entrypoints in quickstart
 - files: quickstart docs, quickstart docs test, history
 
 Next:
-- Commit this quickstart handoff improvement, then continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
+- Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Reject duplicate WGD event names
+
+Timestamp:
+- 2026-06-25 13:52:22 CST
+
+Context:
+- `configs/wgd_events.brassicaceae.yaml` is the primary configuration for mapping anonymous WGD layers to gamma, beta, alpha, theta, or custom event labels.
+- The event metadata loader accepted duplicate event names, which could silently overwrite a biological event label's scope or expected age.
+
+Decisions:
+- Reject duplicate WGD event names in `load_event_metadata`.
+- Document the uniqueness rule in the WGD event evidence model and release audit.
+- Keep the validation focused on duplicate names in this step.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_wgd_event_evidence.py`
+- `docs/wgd_event_evidence.md`
+- `docs/release_audit.md`
+- `tests/test_build_wgd_event_evidence.py`
+- `tests/test_release_audit_docs.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_wgd_event_evidence.py -q` first failed because duplicate `alpha` WGD events were accepted without error.
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because the release audit did not document that WGD event names must be unique.
+- `python -m pytest tests/test_build_wgd_event_evidence.py tests/test_release_audit_docs.py -q` passed with 5 tests after adding duplicate-name validation and documentation.
+- `python -m pytest tests -q` passed with 275 tests.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing release, handoff, quickstart, local acceptance, and delivery-bundle evidence.
+- `grep -n -E 'WGD event names must be unique|Passed:|Required failed:|Optional failed:|Achieved:|Blocked:|Missing:|release_gate|quickstart_handoff|delivery_bundle' docs/wgd_event_evidence.md docs/release_audit.md results/release_checks/release_checks.md results/objective_audit/objective_audit.md results/local_acceptance/local_acceptance_summary.md` confirmed the uniqueness rule and current release evidence.
+- `results/release_checks/release_checks.md` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
+- hash: pending
+- message: fix: reject duplicate wgd event names
+- files: WGD event evidence loader, WGD event docs, release audit docs, WGD event tests, history
+
+Next:
+- Commit this WGD event config validation improvement, then continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.

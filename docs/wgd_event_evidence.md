@@ -31,6 +31,8 @@ Names such as `gamma`, `beta`, `alpha`, and `theta` are interpreted labels. They
 
 The pipeline must not automatically rename a layer to one of these events unless the event metadata is supplied.
 
+WGD event names must be unique within the event YAML. Duplicate names are rejected so one biological event label cannot silently overwrite another scope or expected age.
+
 Example:
 
 ```bash
