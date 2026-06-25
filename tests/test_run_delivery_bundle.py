@@ -91,6 +91,10 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     )
     assert "input\tmanifest_config\tavailable\tconfigs/manifest.example.yaml\tmanifest-mode YAML example" in manifest_text
     assert (
+        "input\tspecies_bank_config\tavailable\tconfigs/example.config.yaml\tspecies-bank YAML example with selected species"
+        in manifest_text
+    )
+    assert (
         "input\tmanifest_fixture\tavailable\ttests/fixtures/species_manifest.tsv\tprebuilt species manifest fixture"
         in manifest_text
     )
@@ -109,6 +113,10 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "wgd\tfinal_report\tavailable\tresults/quickstart/example_prepared_wgd/report/final_report.md" in manifest_text
     assert (
         "wgd\trun_config_snapshot\tavailable\tresults/quickstart/example_prepared_wgd/tables/wgd_run_config_snapshot.tsv\tWGD branch run configuration"
+        in manifest_text
+    )
+    assert (
+        "wgd\tevents_config\tavailable\tconfigs/wgd_events.brassicaceae.yaml\tgamma beta alpha theta named-event YAML mapping"
         in manifest_text
     )
     assert "wgd\tevent_evidence\tavailable\tresults/wgd_smoke/tables/wgd_event_evidence.tsv\talpha,beta,gamma,theta" in manifest_text
@@ -149,8 +157,10 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "# GeneFam-Pipeline Delivery Bundle" in summary_text
     assert "standard report" in summary_text
     assert "manifest-mode YAML example" in summary_text
+    assert "species-bank YAML example with selected species" in summary_text
     assert "manifest-mode standard DSL2 smoke" in summary_text
     assert "strict config path preflight" in summary_text
+    assert "gamma beta alpha theta named-event YAML mapping" in summary_text
     assert "alpha, beta, gamma, theta" in summary_text
     assert "Reference governance" in summary_text
     assert "runtime recovery" in summary_text

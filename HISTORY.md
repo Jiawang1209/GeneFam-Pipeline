@@ -6250,9 +6250,56 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
-- hash: pending
+- hash: 8857c70168566b958f5a4e3075d39e58405ff970
 - message: docs: document bootstrap docker default smoke command
 - files: README, runtime docs, readiness checklist, release audit, runtime docs tests, release audit tests, history
 
 Next:
-- Commit this documentation/test contract update, then continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
+- Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Index primary YAML entrypoints in delivery bundle
+
+Timestamp:
+- 2026-06-25 13:34:04 CST
+
+Context:
+- The delivery bundle already indexed manifest-mode input, reports, WGD evidence, Reference governance, runtime status, and recovery commands.
+- The final user-facing index did not directly list the primary species-bank config or the named WGD event config, even though those are the files a user edits first for selected species and gamma/beta/alpha/theta event mapping.
+
+Decisions:
+- Add `configs/example.config.yaml` as the species-bank YAML entrypoint with selected species.
+- Add `configs/wgd_events.brassicaceae.yaml` as the gamma/beta/alpha/theta named-event YAML mapping.
+- Keep the change in the delivery bundle generator so regenerated handoff artifacts stay aligned.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_run_delivery_bundle.py`
+
+Generated/refreshed but not staged:
+- `results/delivery_bundle/delivery_manifest.tsv`
+- `results/delivery_bundle/delivery_bundle.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py -q` first failed because `species_bank_config` and `events_config` were missing from the generated delivery manifest.
+- `python -m pytest tests/test_run_delivery_bundle.py -q` passed with 1 test after adding the two primary YAML entrypoints.
+- `python bin/genefam/run_delivery_bundle.py --outdir results/delivery_bundle` refreshed the generated delivery manifest and Markdown bundle.
+- `python -m pytest tests -q` passed with 274 tests.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing release, handoff, quickstart, local acceptance, and delivery-bundle evidence.
+- `rg -n 'species_bank_config|events_config|configs/example.config.yaml|configs/wgd_events.brassicaceae.yaml|Passed:|Required failed:|Optional failed:|Achieved:|Blocked:|Missing:' results/delivery_bundle/delivery_manifest.tsv results/delivery_bundle/delivery_bundle.md results/release_checks/release_checks.md results/objective_audit/objective_audit.md results/local_acceptance/local_acceptance_summary.md` confirmed the final delivery index exposes both primary YAML entrypoints.
+- `results/release_checks/release_checks.md` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
+- hash: pending
+- message: feat: index primary yaml entrypoints in delivery bundle
+- files: delivery bundle generator, delivery bundle test, history
+
+Next:
+- Commit this final handoff-index improvement, then continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.

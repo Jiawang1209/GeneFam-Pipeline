@@ -111,6 +111,13 @@ def build_delivery_manifest(
         },
         {
             "section": "input",
+            "item": "species_bank_config",
+            "status": "available",
+            "path": "configs/example.config.yaml",
+            "note": "species-bank YAML example with selected species",
+        },
+        {
+            "section": "input",
             "item": "manifest_fixture",
             "status": "available",
             "path": "tests/fixtures/species_manifest.tsv",
@@ -186,6 +193,13 @@ def build_delivery_manifest(
             "status": "available",
             "path": "results/quickstart/example_prepared_wgd/tables/wgd_run_config_snapshot.tsv",
             "note": "WGD branch run configuration",
+        },
+        {
+            "section": "wgd",
+            "item": "events_config",
+            "status": "available",
+            "path": "configs/wgd_events.brassicaceae.yaml",
+            "note": "gamma beta alpha theta named-event YAML mapping",
         },
         {
             "section": "wgd",
