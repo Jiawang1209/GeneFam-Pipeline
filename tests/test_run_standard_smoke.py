@@ -68,6 +68,11 @@ def test_run_standard_smoke_writes_standard_branch_outputs(tmp_path):
     assert "identification.use_hmmer\tTrue\n" in run_config
     assert "identification.use_diamond\tTrue\n" in run_config
     assert "selected_species\tArabidopsis_thaliana,Brassica_rapa\n" in run_config
+    final_report = (outdir / "report/final_report.md").read_text(encoding="utf-8")
+    assert "## Run Configuration Snapshot" in final_report
+    assert "| runtime.environment | GeneFamilyFlow |" in final_report
+    assert "| selected_species | Arabidopsis_thaliana,Brassica_rapa |" in final_report
+    assert "| identification.final_rule | intersection |" in final_report
 
 
 def test_run_standard_smoke_writes_family_expression_when_matrix_is_provided(tmp_path):

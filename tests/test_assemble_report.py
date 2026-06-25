@@ -65,11 +65,18 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
         {"plot_key": "family_counts", "path": "plots/family_counts.pdf", "description": "Family counts"},
         {"plot_key": "kaks", "path": "plots/ks_distribution.pdf", "description": "Ks distribution"},
     ]
+    run_config_snapshot = [
+        {"key": "project.name", "value": "GeneFam demo"},
+        {"key": "runtime.environment", "value": "GeneFamilyFlow"},
+        {"key": "selected_species", "value": "Arabidopsis_thaliana,Brassica_rapa"},
+        {"key": "identification.final_rule", "value": "intersection"},
+    ]
 
     report = assemble_report(
         project_name="GeneFam demo",
         gene_family="GDSL",
         report_index_rows=report_index,
+        run_config_snapshot=run_config_snapshot,
         wgd_event_evidence=wgd_event_evidence,
         family_event_retention=family_event_retention,
         retention_enrichment=retention_enrichment,
@@ -79,6 +86,10 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
     assert "# GeneFam-Pipeline Final Report" in report
     assert "Project: GeneFam demo" in report
     assert "Gene family: GDSL" in report
+    assert "## Run Configuration Snapshot" in report
+    assert "| runtime.environment | GeneFamilyFlow |" in report
+    assert "| selected_species | Arabidopsis_thaliana,Brassica_rapa |" in report
+    assert "| identification.final_rule | intersection |" in report
     assert "| family_counts | available | tables/family_counts.tsv | Per-species gene family member counts |" in report
     assert "## WGD Event Evidence" in report
     assert (
@@ -96,12 +107,17 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
 
 def test_assemble_report_cli_writes_markdown(tmp_path):
     report_index = tmp_path / "report_index.tsv"
+    run_config = tmp_path / "run_config_snapshot.tsv"
     wgd_events = tmp_path / "wgd_event_evidence.tsv"
     plot_manifest = tmp_path / "plot_manifest.tsv"
     out_path = tmp_path / "final_report.md"
     report_index.write_text(
         "key\tpath\tstatus\tdescription\n"
-        "family_counts\ttables/family_counts.tsv\tavailable\tPer-species counts\n",
+            "family_counts\ttables/family_counts.tsv\tavailable\tPer-species counts\n",
+        encoding="utf-8",
+    )
+    run_config.write_text(
+        "key\tvalue\nruntime.environment\tGeneFamilyFlow\nselected_species\tArabidopsis_thaliana,Brassica_rapa\n",
         encoding="utf-8",
     )
     wgd_events.write_text(
@@ -124,6 +140,8 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
             "GDSL",
             "--report-index",
             str(report_index),
+            "--run-config-snapshot",
+            str(run_config),
             "--wgd-event-evidence",
             str(wgd_events),
             "--plot-manifest",
@@ -139,6 +157,8 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
     assert completed.returncode == 0, completed.stderr
     text = out_path.read_text(encoding="utf-8")
     assert "# GeneFam-Pipeline Final Report" in text
+    assert "| runtime.environment | GeneFamilyFlow |" in text
+    assert "| selected_species | Arabidopsis_thaliana,Brassica_rapa |" in text
     assert "| WGD_layer_1 | alpha | 12 | 0.1800 | configured_named_event | literature | Brassicaceae | recent |" in text
     assert "| family_counts | plots/family_counts.pdf | Family counts |" in text
 

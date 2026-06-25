@@ -190,6 +190,7 @@ process ASSEMBLE_WGD_REPORT {
     val project_name
     val gene_family
     path report_index
+    path wgd_run_config_snapshot
     path wgd_event_evidence
     path family_event_retention
     path retention_enrichment
@@ -203,6 +204,7 @@ process ASSEMBLE_WGD_REPORT {
       --project-name ${project_name} \\
       --gene-family ${gene_family} \\
       --report-index ${report_index} \\
+      --run-config-snapshot ${wgd_run_config_snapshot} \\
       --wgd-event-evidence ${wgd_event_evidence} \\
       --family-event-retention ${family_event_retention} \\
       --retention-enrichment ${retention_enrichment} \\

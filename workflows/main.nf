@@ -86,6 +86,7 @@ workflow {
             project_name_ch,
             family_name_ch,
             BUILD_WGD_REPORT_INDEX.out,
+            BUILD_WGD_RUN_CONFIG_SNAPSHOT.out,
             BUILD_WGD_EVENT_EVIDENCE.out,
             SUMMARIZE_FAMILY_EVENT_RETENTION.out,
             RETENTION_ENRICHMENT.out
@@ -185,7 +186,7 @@ workflow {
                 family_expression_report_ch,
                 BUILD_PLOT_MANIFEST.out
             )
-            ASSEMBLE_STANDARD_REPORT(project_name_ch, family_name_ch, BUILD_STANDARD_REPORT_INDEX.out, BUILD_PLOT_MANIFEST.out)
+            ASSEMBLE_STANDARD_REPORT(project_name_ch, family_name_ch, BUILD_STANDARD_REPORT_INDEX.out, BUILD_RUN_CONFIG_SNAPSHOT.out, BUILD_PLOT_MANIFEST.out)
 
             FAMILY_SUMMARY.out.view { counts -> "Family counts: ${counts}" }
             BUILD_STANDARD_REPORT_INDEX.out.view { report_index -> "Report index: ${report_index}" }

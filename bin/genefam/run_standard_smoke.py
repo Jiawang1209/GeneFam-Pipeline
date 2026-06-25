@@ -168,6 +168,7 @@ def run_standard_smoke(
             project_name=project_name,
             gene_family=gene_family,
             report_index_rows=read_table(outputs["report_index"]),
+            run_config_snapshot=read_table(outputs["run_config_snapshot"]),
             plot_manifest=read_table(outputs["plot_manifest"]),
         ),
         outputs["standard_final_report"],

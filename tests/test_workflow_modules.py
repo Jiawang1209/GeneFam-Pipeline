@@ -79,6 +79,7 @@ def test_standard_postprocess_module_extracts_family_sequences_and_report_index(
     assert "--project-name ${project_name}" in module
     assert "--gene-family ${gene_family}" in module
     assert "--report-index ${report_index}" in module
+    assert "--run-config-snapshot ${run_config_snapshot}" in module
     assert "--plot-manifest ${plot_manifest}" in module
     assert "--out final_report.md" in module
 
@@ -125,7 +126,7 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "BUILD_PLOT_MANIFEST()" in workflow
     assert "BUILD_STANDARD_REPORT_INDEX(" in workflow
     assert "BUILD_RUN_CONFIG_SNAPSHOT.out" in workflow
-    assert "ASSEMBLE_STANDARD_REPORT(project_name_ch, family_name_ch, BUILD_STANDARD_REPORT_INDEX.out, BUILD_PLOT_MANIFEST.out)" in workflow
+    assert "ASSEMBLE_STANDARD_REPORT(project_name_ch, family_name_ch, BUILD_STANDARD_REPORT_INDEX.out, BUILD_RUN_CONFIG_SNAPSHOT.out, BUILD_PLOT_MANIFEST.out)" in workflow
 
 
 def test_duplication_retention_module_exposes_wgd_helper_processes():
@@ -185,6 +186,7 @@ def test_duplication_retention_module_exposes_wgd_helper_processes():
     assert "process ASSEMBLE_WGD_REPORT" in module
     assert "assemble_report.py" in module
     assert "--wgd-event-evidence ${wgd_event_evidence}" in module
+    assert "--run-config-snapshot ${wgd_run_config_snapshot}" in module
     assert "--family-event-retention ${family_event_retention}" in module
     assert "--retention-enrichment ${retention_enrichment}" in module
     assert "--out final_report.md" in module
@@ -203,6 +205,7 @@ def test_main_workflow_includes_duplication_retention_processes():
     assert "SUMMARIZE_FAMILY_EVENT_RETENTION" in workflow
     assert "RETENTION_ENRICHMENT" in workflow
     assert "BUILD_WGD_REPORT_INDEX(outdir_ch)" in workflow
+    assert "BUILD_WGD_RUN_CONFIG_SNAPSHOT.out," in workflow
     assert "ASSEMBLE_WGD_REPORT(" in workflow
 
 

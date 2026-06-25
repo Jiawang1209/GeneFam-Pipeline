@@ -87,6 +87,7 @@ process ASSEMBLE_STANDARD_REPORT {
     val project_name
     val gene_family
     path report_index
+    path run_config_snapshot
     path plot_manifest
 
     output:
@@ -98,6 +99,7 @@ process ASSEMBLE_STANDARD_REPORT {
       --project-name ${project_name} \\
       --gene-family ${gene_family} \\
       --report-index ${report_index} \\
+      --run-config-snapshot ${run_config_snapshot} \\
       --plot-manifest ${plot_manifest} \\
       --out final_report.md
     """

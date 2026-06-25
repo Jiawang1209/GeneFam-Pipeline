@@ -4656,12 +4656,62 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocker remains missing `docker` and `apptainer`.
 
 Commit:
-- hash: pending
+- hash: b66dd5e317860c0dd09d2b0fe5ad9c3827366094
 - message: feat: expose WGD event provenance in report
 - files: final report assembler, report tests, history
 
 Next:
 - Commit the WGD event provenance report update, then continue only with work that can improve the final deliverable without requiring Docker/Apptainer.
+
+## 2026-06-25 - Add run configuration snapshot to final reports
+
+Context:
+- Standard and WGD branches already generated `run_config_snapshot.tsv` or `wgd_run_config_snapshot.tsv`.
+- The final Markdown reports listed those files as available outputs, but did not display the key runtime, species selection, identification rule, Ks-bin, or WGD event mapping parameters inline.
+
+Decisions:
+- Add an optional `run_config_snapshot` input to `assemble_report.py`.
+- Render a `Run Configuration Snapshot` section near the top of every final report when a key/value snapshot is supplied.
+- Wire the standard Nextflow report module to pass `BUILD_RUN_CONFIG_SNAPSHOT.out`.
+- Wire the WGD Nextflow report module to pass `BUILD_WGD_RUN_CONFIG_SNAPSHOT.out`.
+- Update the Python standard smoke so local smoke reports expose the same run configuration section.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/assemble_report.py`
+- `bin/genefam/run_standard_smoke.py`
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/modules/duplication_retention.nf`
+- `tests/test_assemble_report.py`
+- `tests/test_run_standard_smoke.py`
+- `tests/test_workflow_modules.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_assemble_report.py tests/test_run_standard_smoke.py tests/test_workflow_modules.py -q` first failed because `assemble_report.py` had no `run_config_snapshot` argument or CLI option, standard smoke final reports did not display a run configuration section, and Nextflow report modules were not passing run config snapshots.
+- The same focused test passed with 21 tests after adding the report section and Nextflow wiring.
+- `python bin/genefam/run_standard_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/standard_smoke` exited `0`.
+- `python bin/genefam/run_prepared_wgd_handoff_example.py --conda-env GeneFamilyFlow --example-dir examples/prepared_wgd_handoff --outdir results/example_prepared_wgd` exited `0`.
+- `results/standard_smoke/report/final_report.md` now displays `runtime.environment`, `selected_species`, and `identification.final_rule` in `Run Configuration Snapshot`.
+- `results/example_prepared_wgd/report/final_report.md` now displays `ks_bins` and `event.WGD_layer_*` mappings in `Run Configuration Snapshot`.
+- `python -m pytest tests -q` passed with 244 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 25`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; the embedded pytest check reports `244 passed`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocker remains missing `docker` and `apptainer`.
+
+Commit:
+- hash: pending
+- message: feat: show run configuration in final reports
+- files: report assembler, standard smoke, Nextflow report wiring, tests, history
+
+Next:
+- Commit the run-configuration report update, then continue preserving Docker/Apptainer as the only release blocker.
 
 ## 2026-06-25 - Add final delivery bundle index
 

@@ -28,6 +28,7 @@ def assemble_report(
     project_name: str,
     gene_family: str,
     report_index_rows: list[dict[str, str]],
+    run_config_snapshot: list[dict[str, str]] | None = None,
     wgd_event_evidence: list[dict[str, str]] | None = None,
     family_event_retention: list[dict[str, str]] | None = None,
     retention_enrichment: list[dict[str, str]] | None = None,
@@ -41,6 +42,14 @@ def assemble_report(
         "",
     ]
 
+    lines.extend(
+        _section_or_empty(
+            "Run Configuration Snapshot",
+            ["key", "value"],
+            [[row["key"], row.get("value", "")] for row in (run_config_snapshot or [])],
+            "No run configuration snapshot was available for this run.",
+        )
+    )
     lines.extend(
         _section_or_empty(
             "Output Availability",
@@ -155,6 +164,7 @@ def main() -> None:
     parser.add_argument("--project-name", required=True)
     parser.add_argument("--gene-family", required=True)
     parser.add_argument("--report-index", required=True, type=Path)
+    parser.add_argument("--run-config-snapshot", default=None, type=Path)
     parser.add_argument("--wgd-event-evidence", default=None, type=Path)
     parser.add_argument("--family-event-retention", default=None, type=Path)
     parser.add_argument("--retention-enrichment", default=None, type=Path)
@@ -166,6 +176,7 @@ def main() -> None:
             project_name=args.project_name,
             gene_family=args.gene_family,
             report_index_rows=read_tsv(args.report_index),
+            run_config_snapshot=read_tsv(args.run_config_snapshot),
             wgd_event_evidence=read_tsv(args.wgd_event_evidence),
             family_event_retention=read_tsv(args.family_event_retention),
             retention_enrichment=read_tsv(args.retention_enrichment),
