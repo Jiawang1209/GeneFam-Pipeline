@@ -6163,9 +6163,51 @@ Verification:
 - `results/local_acceptance/local_acceptance_summary.md` still records `release_gate` failed with exit code `1`, while `quickstart_handoff` and `delivery_bundle` passed.
 
 Commit:
+- hash: 69c46a74d770bb4bcd70ac5c8048f1accd699edb
+- message: docs: document docker default smoke handoff key
+- files: README, readiness checklist, runtime docs tests, history
+
+Next:
+- Commit the handoff-key documentation update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Run Docker default smoke in runtime bootstrap
+
+Context:
+- The Dockerfile default command now runs the standard branch smoke and writes `results/container_default_smoke`.
+- The generated runtime bootstrap script built the Docker image but did not run that default smoke before Apptainer build and container-profile smoke checks.
+
+Decisions:
+- Add `docker run --rm -v "$PWD/results:/opt/GeneFam-Pipeline/results" genefam-pipeline:latest` to the generated bootstrap shell.
+- Place it immediately after `docker build -t genefam-pipeline:latest .`.
+- Document the command and `results/container_default_smoke` output in the generated bootstrap Markdown plan.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/plan_runtime_bootstrap.py`
+- `tests/test_plan_runtime_bootstrap.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_plan_runtime_bootstrap.py -q` first failed because the generated bootstrap plan did not run the Docker image default smoke.
+- `python -m pytest tests/test_plan_runtime_bootstrap.py -q` passed with 3 tests after adding the `docker run` default smoke command and documentation.
+- `python -m pytest tests -q` passed with 274 tests.
+- `python bin/genefam/plan_runtime_bootstrap.py --readiness results/readiness/command_readiness.tsv --outdir results/readiness` regenerated the bootstrap Markdown and shell outputs.
+- `rg -n "docker build|docker run --rm|container_default_smoke|apptainer build" results/readiness/runtime_bootstrap.sh results/readiness/runtime_bootstrap_plan.md` confirmed the generated bootstrap script runs the Docker default smoke immediately after image build and before Apptainer build.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing readiness, objective, handoff, quickstart, and delivery-bundle artifacts.
+- `rg -n "docker run --rm|container_default_smoke|Passed:|Required failed:|Optional failed:|Achieved:|Blocked:|Missing:" results/readiness/runtime_bootstrap.sh results/readiness/runtime_bootstrap_plan.md results/release_checks/release_checks.md results/objective_audit/objective_audit.md results/handoff/handoff_summary.tsv` confirmed generated evidence contains the Docker default smoke command and stable handoff key.
+- `results/release_checks/release_checks.md` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+- `results/local_acceptance/local_acceptance_summary.md` still records `release_gate` failed with exit code `1`, while `quickstart_handoff` and `delivery_bundle` passed.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Commit the handoff-key documentation update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
+- Commit the runtime-bootstrap update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.

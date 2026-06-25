@@ -23,7 +23,14 @@ def test_build_bootstrap_plan_groups_missing_commands_into_actionable_steps():
     assert "conda env update -n GeneFamilyFlow -f envs/GeneFamilyFlow.conda.yaml --prune" in plan["shell"]
     assert "conda run -n GeneFamilyFlow nextflow -version" in plan["shell"]
     assert "docker build -t genefam-pipeline:latest ." in plan["shell"]
+    assert "docker run --rm -v \"$PWD/results:/opt/GeneFam-Pipeline/results\" genefam-pipeline:latest" in plan["shell"]
+    assert plan["shell"].index("docker build -t genefam-pipeline:latest .") < plan["shell"].index(
+        "docker run --rm -v \"$PWD/results:/opt/GeneFam-Pipeline/results\" genefam-pipeline:latest"
+    )
     assert "apptainer build --force genefam-pipeline_latest.sif docker-daemon://genefam-pipeline:latest" in plan["shell"]
+    assert plan["shell"].index(
+        "docker run --rm -v \"$PWD/results:/opt/GeneFam-Pipeline/results\" genefam-pipeline:latest"
+    ) < plan["shell"].index("apptainer build --force genefam-pipeline_latest.sif docker-daemon://genefam-pipeline:latest")
     assert "python bin/genefam/run_container_profile_smoke.py --profile docker --conda-env GeneFamilyFlow --outdir results/container_profile_smoke/docker" in plan["shell"]
     assert "python bin/genefam/run_container_profile_smoke.py --profile apptainer --conda-env GeneFamilyFlow --outdir results/container_profile_smoke/apptainer" in plan["shell"]
     assert "python bin/genefam/run_release_checks.py --outdir results/release_checks" in plan["shell"]
@@ -32,6 +39,8 @@ def test_build_bootstrap_plan_groups_missing_commands_into_actionable_steps():
     assert "GeneFamilyFlow" in plan["markdown"]
     assert "/usr/local/bin/R" in plan["markdown"]
     assert "genefam-pipeline_latest.sif" in plan["markdown"]
+    assert "docker run --rm -v \"$PWD/results:/opt/GeneFam-Pipeline/results\" genefam-pipeline:latest" in plan["markdown"]
+    assert "results/container_default_smoke" in plan["markdown"]
     assert "run_container_profile_smoke.py --profile docker" in plan["markdown"]
     assert "run_container_profile_smoke.py --profile apptainer" in plan["markdown"]
     assert "scripts/run_local_acceptance.sh" in plan["markdown"]
