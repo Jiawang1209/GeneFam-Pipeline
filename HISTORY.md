@@ -5607,9 +5607,55 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
-- hash: pending
+- hash: 7f5e925ad09dce8d7f7e7740df90112fe34855ec
 - message: fix: keep example hmm paths container safe
 - files: container materials audit, example configs, HMM fixture, quickstart/release docs, history
 
 Next:
 - Run the focused release/docs tests and full pytest suite before committing.
+
+## 2026-06-25 - Guard non-mock identification configs from test fixtures
+
+Context:
+- The workflow-first priority exposed a follow-up issue after moving example HMM paths out of `Reference/`.
+- Mock demo configs can safely use lightweight fixture paths, but the non-mock advanced template should not point HMMER or DIAMOND inputs at `tests/fixtures/`.
+- Without a config-level guard, a real biological run could accidentally use test fixtures instead of curated HMM profiles and reference peptides.
+
+Decisions:
+- Keep `configs/example.config.yaml` and `configs/manifest.example.yaml` as mock-friendly smoke examples.
+- Change `configs/advanced_modules.example.yaml` to use `data/hmm_profiles/PF00657.hmm` for the HMM profile placeholder.
+- Add validation errors when `dev.mock_external_tools: false` and enabled HMMER/DIAMOND inputs point into `tests/fixtures/`.
+- Document the distinction between mock fixture inputs and real project data inputs.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/validate_config.py`
+- `configs/advanced_modules.example.yaml`
+- `docs/input_contract.md`
+- `docs/quickstart.md`
+- `tests/test_validate_config.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_validate_config.py::test_validate_config_reports_fixture_inputs_in_non_mock_identification -q` first failed because no validation error was emitted for fixture-backed non-mock HMMER/DIAMOND inputs.
+- `python -m pytest tests/test_validate_config.py::test_validate_config_reports_fixture_inputs_in_non_mock_identification -q` passed after adding the validation rule.
+- `python bin/genefam/validate_config.py configs/example.config.yaml` passed.
+- `python bin/genefam/validate_config.py configs/manifest.example.yaml` passed.
+- `python bin/genefam/validate_config.py configs/advanced_modules.example.yaml` passed after moving the advanced HMM placeholder to `data/hmm_profiles/PF00657.hmm`.
+- `python -m pytest tests/test_validate_config.py tests/test_quickstart_docs.py tests/test_release_audit_docs.py tests/test_run_release_checks.py -q` passed with 56 tests.
+- `python -m pytest tests -q` passed with 267 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`; the only required failure remains the runtime readiness audit while Docker and Apptainer profile smokes remain optional failures.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
+- hash: pending
+- message: fix: reject fixture inputs for non-mock runs
+- files: config validation, advanced config, input docs, quickstart, validation tests, history
+
+Next:
+- Run focused config/docs tests, full pytest, and release gate before committing.

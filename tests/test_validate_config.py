@@ -136,6 +136,23 @@ def test_validate_config_reports_mock_mode_without_evidence_dir():
     assert "dev.mock_evidence_dir is required when dev.mock_external_tools is true" in errors
 
 
+def test_validate_config_reports_fixture_inputs_in_non_mock_identification():
+    config = _valid_base_config()
+    config["input"]["root"] = "data/species_bank"
+    config["dev"] = {"mock_external_tools": False}
+    config["gene_family"] = {
+        "hmm_profiles": [{"id": "PF00657", "path": "tests/fixtures/hmmer_profiles/PF00657.demo.hmm"}],
+        "reference_peptides": "tests/fixtures/reference/GDSL_reference.pep.fa",
+    }
+    config["identification"]["use_hmmer"] = True
+    config["identification"]["use_diamond"] = True
+
+    errors = validate_config(config)
+
+    assert "gene_family.hmm_profiles must not use tests/fixtures paths when dev.mock_external_tools is false" in errors
+    assert "gene_family.reference_peptides must not use tests/fixtures paths when dev.mock_external_tools is false" in errors
+
+
 def test_validate_config_reports_invalid_domain_filtering_thresholds():
     errors = validate_config(
         {

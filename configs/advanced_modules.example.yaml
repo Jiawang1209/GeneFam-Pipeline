@@ -44,7 +44,7 @@ gene_family:
   name: GDSL
   hmm_profiles:
     - id: PF00657
-      path: tests/fixtures/hmmer_profiles/PF00657.demo.hmm
+      path: data/hmm_profiles/PF00657.hmm
   reference_peptides: data/reference/GDSL_reference.pep.fa
   min_length: null
   max_length: null

@@ -95,6 +95,8 @@ For offline development, `dev.mock_external_tools: true` can point to a director
 
 These files use the same normalized columns as the parser and evidence merger. The fixture directory `tests/fixtures/mock_evidence/` demonstrates the required format.
 
+When `dev.mock_external_tools: false`, identification inputs must come from project data rather than `tests/fixtures/`. Use paths such as `data/hmm_profiles/PF00657.hmm` for `gene_family.hmm_profiles` and `data/reference/GDSL_reference.pep.fa` for `gene_family.reference_peptides`, then replace those paths with curated profiles and reference sequences for the target gene family.
+
 ## Identification Tool Flags
 
 The standard identification branch can enable or disable external search input generation through:

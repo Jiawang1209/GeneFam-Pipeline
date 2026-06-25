@@ -55,6 +55,26 @@ def validate_config(config: dict[str, Any]) -> list[str]:
     if dev.get("mock_external_tools") is True and not dev.get("mock_evidence_dir"):
         errors.append("dev.mock_evidence_dir is required when dev.mock_external_tools is true")
 
+    gene_family = config.get("gene_family", {}) or {}
+    identification = config.get("identification", {}) or {}
+    if dev.get("mock_external_tools") is False:
+        if identification.get("use_hmmer", True) is not False:
+            fixture_profiles = [
+                str(profile.get("path", ""))
+                for profile in gene_family.get("hmm_profiles", []) or []
+                if str(profile.get("path", "")).startswith("tests/fixtures/")
+            ]
+            if fixture_profiles:
+                errors.append(
+                    "gene_family.hmm_profiles must not use tests/fixtures paths when dev.mock_external_tools is false"
+                )
+        if identification.get("use_diamond", True) is not False:
+            reference_peptides = str(gene_family.get("reference_peptides", ""))
+            if reference_peptides.startswith("tests/fixtures/"):
+                errors.append(
+                    "gene_family.reference_peptides must not use tests/fixtures paths when dev.mock_external_tools is false"
+                )
+
     domain_filtering = config.get("domain_filtering", {}) or {}
     min_bitscore = domain_filtering.get("hmmer_min_bitscore")
     if min_bitscore is not None and float(min_bitscore) < 0:
@@ -63,12 +83,11 @@ def validate_config(config: dict[str, Any]) -> list[str]:
     if min_domain_coverage is not None and not 0 <= float(min_domain_coverage) <= 1:
         errors.append("domain_filtering.hmmer_min_domain_coverage must be between 0 and 1")
 
-    final_rule = (config.get("identification", {}) or {}).get("final_rule")
+    final_rule = identification.get("final_rule")
     if final_rule not in {"intersection", "union", "hmmer_only"}:
         errors.append("identification.final_rule must be intersection, union, or hmmer_only")
 
     modules = config.get("modules", {}) or {}
-    identification = config.get("identification", {}) or {}
     if modules.get("identification") is True:
         if identification.get("use_hmmer", True) is False and identification.get("use_diamond", True) is False:
             errors.append("identification requires at least one enabled search tool: use_hmmer or use_diamond")
