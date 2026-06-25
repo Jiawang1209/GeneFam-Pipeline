@@ -95,6 +95,8 @@ def test_input_contract_and_schema_document_identification_tool_flags():
         assert "identification.use_hmmer" in text
         assert "identification.use_diamond" in text
         assert "at least one" in text
+        assert "wgd_events.event_map" in text
+        assert "duplicate WGD event names" in text
 
 
 def test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file():

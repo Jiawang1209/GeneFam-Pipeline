@@ -28,6 +28,7 @@ fields:
   domain_filtering.hmmer_min_bitscore: minimum accepted HMMER bitscore
   domain_filtering.hmmer_min_domain_coverage: minimum HMM coordinate coverage from 0 to 1
   wgd_events.named_event_annotation: boolean
+  wgd_events.event_map: YAML path required when named_event_annotation is true; duplicate WGD event names are invalid
   plotting.reuse_reference_scripts: boolean
   plotting.reference_script_roots: list of Reference directories containing reusable plotting scripts
   plotting.reuse_policy: adapt_not_modify

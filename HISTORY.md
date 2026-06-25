@@ -6386,9 +6386,55 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
-- hash: pending
+- hash: 6d1b22c157151fa6211acb52d8d5921d5aba22cd
 - message: fix: reject duplicate wgd event names
 - files: WGD event evidence loader, WGD event docs, release audit docs, WGD event tests, history
 
 Next:
-- Commit this WGD event config validation improvement, then continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
+- Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Validate named WGD event maps during config preflight
+
+Timestamp:
+- 2026-06-25 14:08:49 CST
+
+Context:
+- The WGD event metadata loader now rejects duplicate event names.
+- The main YAML preflight still did not require `wgd_events.event_map` when named event annotation was enabled, and strict `--check-paths` did not validate the event-map YAML before a run.
+
+Decisions:
+- Require `wgd_events.event_map` when `wgd_events.named_event_annotation: true`.
+- In strict `--check-paths` mode, require the event-map path to exist and validate it with `load_event_metadata`.
+- Document this preflight behavior in `docs/input_contract.md` and `schemas/config.schema.yaml`.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/validate_config.py`
+- `docs/input_contract.md`
+- `schemas/config.schema.yaml`
+- `tests/test_validate_config.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_validate_config.py::test_validate_config_reports_named_wgd_events_without_event_map tests/test_validate_config.py::test_validate_config_check_paths_rejects_duplicate_wgd_event_names -q` first failed because `validate_config` did not check `wgd_events.event_map`.
+- `python -m pytest tests/test_runtime_environment_files.py::test_input_contract_and_schema_document_identification_tool_flags -q` first failed because the input contract and schema did not document `wgd_events.event_map` or duplicate WGD event names.
+- `python -m pytest tests/test_validate_config.py tests/test_runtime_environment_files.py::test_input_contract_and_schema_document_identification_tool_flags -q` passed with 24 tests after adding preflight validation and documentation.
+- `python -m pytest tests -q` passed with 277 tests.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing release, handoff, quickstart, local acceptance, and delivery-bundle evidence.
+- `grep -n -E 'wgd_events.event_map|duplicate WGD event names|Passed:|Required failed:|Optional failed:|Achieved:|Blocked:|Missing:|release_gate|quickstart_handoff|delivery_bundle' docs/input_contract.md schemas/config.schema.yaml results/release_checks/release_checks.md results/objective_audit/objective_audit.md results/local_acceptance/local_acceptance_summary.md` confirmed the event-map preflight documentation and current release evidence.
+- `results/release_checks/release_checks.md` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
+- hash: pending
+- message: feat: validate named wgd event maps in config preflight
+- files: config validator, input contract, config schema, validator tests, runtime docs tests, history
+
+Next:
+- Commit this WGD event-map preflight improvement, then continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.

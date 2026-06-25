@@ -8,6 +8,11 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from bin.genefam.build_wgd_event_evidence import load_event_metadata
+except ModuleNotFoundError:  # pragma: no cover - supports direct script execution
+    from build_wgd_event_evidence import load_event_metadata
+
+try:
     import yaml
 except ImportError:  # pragma: no cover
     yaml = None
@@ -149,6 +154,22 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
             errors.append("modules.duplication_retention requires modules.synteny: true")
         if modules.get("kaks") is not True:
             errors.append("modules.duplication_retention requires modules.kaks: true")
+
+    wgd_events = config.get("wgd_events", {}) or {}
+    if wgd_events.get("named_event_annotation") is True:
+        event_map = wgd_events.get("event_map")
+        if not event_map:
+            errors.append("wgd_events.event_map is required when wgd_events.named_event_annotation is true")
+        elif check_paths:
+            event_map_path = Path(str(event_map))
+            resolved_event_map = event_map_path if event_map_path.is_absolute() else base_dir / event_map_path
+            if not resolved_event_map.exists():
+                errors.append(f"wgd_events.event_map path does not exist: {event_map}")
+            else:
+                try:
+                    load_event_metadata(resolved_event_map)
+                except Exception as exc:
+                    errors.append(f"wgd_events.event_map is invalid: {exc}")
 
     return errors
 

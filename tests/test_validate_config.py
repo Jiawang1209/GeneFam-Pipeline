@@ -353,3 +353,42 @@ def test_validate_config_reports_duplication_retention_requires_synteny_and_kaks
 
     assert "modules.duplication_retention requires modules.synteny: true" in errors
     assert "modules.duplication_retention requires modules.kaks: true" in errors
+
+
+def test_validate_config_reports_named_wgd_events_without_event_map():
+    config = _valid_base_config()
+    config["input"]["root"] = "tests/fixtures/species_bank"
+    config["wgd_events"] = {"named_event_annotation": True, "event_map": None}
+
+    errors = validate_config(config)
+
+    assert "wgd_events.event_map is required when wgd_events.named_event_annotation is true" in errors
+
+
+def test_validate_config_check_paths_rejects_duplicate_wgd_event_names(tmp_path):
+    event_map = tmp_path / "duplicate_events.yaml"
+    event_map.write_text(
+        "\n".join(
+            [
+                "wgd_events:",
+                "  - name: alpha",
+                "    scope: Arabidopsis_Brassicaceae",
+                "    evidence: literature",
+                "    expected_relative_age: recent",
+                "  - name: alpha",
+                "    scope: duplicate_scope",
+                "    evidence: literature",
+                "    expected_relative_age: duplicate",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    config = _valid_base_config()
+    config["input"]["root"] = "species_bank"
+    config["wgd_events"] = {"named_event_annotation": True, "event_map": "duplicate_events.yaml"}
+    (tmp_path / "species_bank").mkdir()
+
+    errors = validate_config(config, check_paths=True, base_dir=tmp_path)
+
+    assert "wgd_events.event_map is invalid: Duplicate WGD event name: alpha" in errors
