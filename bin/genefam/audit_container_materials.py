@@ -70,6 +70,13 @@ def audit_container_materials(
     docker_r_required = [
         "ln -sf /opt/conda/envs/GeneFamilyFlow/bin/R /usr/local/bin/R",
     ]
+    docker_default_smoke_required = [
+        'CMD ["python", "bin/genefam/run_standard_smoke.py"',
+        '"--config", "configs/example.config.yaml"',
+        '"--groups", "configs/species_groups.yaml"',
+        '"--mock-evidence-dir", "tests/fixtures/mock_evidence"',
+        '"--outdir", "results/container_default_smoke"',
+    ]
     linux_toolchain_required = [
         "name: GeneFamilyFlow",
         "nextflow",
@@ -120,6 +127,12 @@ def audit_container_materials(
             docker_text,
             docker_r_required,
             "Dockerfile links GeneFamilyFlow R to /usr/local/bin/R.",
+        ),
+        (
+            "dockerfile_default_standard_smoke",
+            docker_text,
+            docker_default_smoke_required,
+            "Dockerfile default command runs the standard branch smoke inside the image.",
         ),
         (
             "linux_env_full_toolchain",

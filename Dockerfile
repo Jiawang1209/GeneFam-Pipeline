@@ -15,4 +15,4 @@ RUN ln -sf /opt/conda/envs/GeneFamilyFlow/bin/R /usr/local/bin/R
 
 COPY . /opt/GeneFam-Pipeline
 
-CMD ["python", "bin/genefam/validate_config.py", "configs/example.config.yaml"]
+CMD ["python", "bin/genefam/run_standard_smoke.py", "--config", "configs/example.config.yaml", "--groups", "configs/species_groups.yaml", "--mock-evidence-dir", "tests/fixtures/mock_evidence", "--outdir", "results/container_default_smoke"]

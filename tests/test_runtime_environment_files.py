@@ -107,6 +107,8 @@ def test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file():
     assert "python bin/genefam/run_container_profile_smoke.py --profile apptainer" in text
     assert "results/container_profile_smoke/docker/container_profile_smoke.md" in text
     assert "results/container_profile_smoke/apptainer/container_profile_smoke.md" in text
+    assert "results/container_default_smoke" in text
+    assert "run_standard_smoke.py" in text
     assert "scripts/run_local_acceptance.sh" in text
     assert "results/delivery_bundle/delivery_bundle.md" in text
 

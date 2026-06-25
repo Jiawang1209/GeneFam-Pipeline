@@ -23,6 +23,7 @@ def test_audit_container_materials_passes_repository_contracts():
     assert checks == {
         "dockerfile_genefamilyflow_env",
         "dockerfile_usr_local_r",
+        "dockerfile_default_standard_smoke",
         "linux_env_full_toolchain",
         "nextflow_container_profiles",
         "container_image_params",
@@ -48,6 +49,7 @@ def test_audit_container_materials_reports_missing_required_contract(tmp_path):
 
     failed = {row["check"]: row for row in rows if row["status"] == "failed"}
     assert "dockerfile_genefamilyflow_env" in failed
+    assert "dockerfile_default_standard_smoke" in failed
     assert "linux_env_full_toolchain" in failed
     assert "nextflow_container_profiles" in failed
     assert "dockerignore_build_context" in failed
@@ -63,7 +65,8 @@ def test_audit_container_materials_reports_reference_backed_example_hmm_profiles
         "micromamba create -y -f\n"
         "CONDA_DEFAULT_ENV=GeneFamilyFlow\n"
         "/opt/conda/envs/GeneFamilyFlow/bin\n"
-        "ln -sf /opt/conda/envs/GeneFamilyFlow/bin/R /usr/local/bin/R\n",
+        "ln -sf /opt/conda/envs/GeneFamilyFlow/bin/R /usr/local/bin/R\n"
+        'CMD ["python", "bin/genefam/run_standard_smoke.py", "--config", "configs/example.config.yaml", "--groups", "configs/species_groups.yaml", "--mock-evidence-dir", "tests/fixtures/mock_evidence", "--outdir", "results/container_default_smoke"]\n',
         encoding="utf-8",
     )
     env = tmp_path / "GeneFamilyFlow.linux-64.conda.yaml"
@@ -151,3 +154,4 @@ def test_audit_container_materials_cli_writes_tsv_and_markdown(tmp_path):
     markdown = (outdir / "container_materials.md").read_text(encoding="utf-8")
     assert "# Container Materials Audit" in markdown
     assert "container_image_params" in markdown
+    assert "dockerfile_default_standard_smoke" in markdown

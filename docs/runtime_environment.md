@@ -83,6 +83,14 @@ The Docker image creates the `GeneFamilyFlow` environment and links:
 
 This preserves the project-wide R binary contract inside the container.
 
+The image default command runs `bin/genefam/run_standard_smoke.py` for the standard branch smoke and writes:
+
+```text
+results/container_default_smoke
+```
+
+That gives `docker run genefam-pipeline:latest` a lightweight in-image workflow check without requiring Docker-in-Docker or Apptainer inside the container.
+
 Container image names are parameterized in `workflows/nextflow.config`:
 
 ```text

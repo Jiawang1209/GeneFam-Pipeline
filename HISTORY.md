@@ -5917,9 +5917,57 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
+- hash: 1e522aedfe052d4afaf4e998c94c88e060a630be
+- message: docs: surface local acceptance summary in handoff
+- files: handoff report, readiness checklist, README, handoff/docs tests, history
+
+Next:
+- Commit the handoff-entrypoint update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Add Docker default standard smoke contract
+
+Context:
+- The container materials audit checked that Dockerfile creates `GeneFamilyFlow`, links `/usr/local/bin/R`, and wires container profiles, but the image default command only validated YAML.
+- For a final reusable workflow image, `docker run genefam-pipeline:latest` should execute a lightweight in-image workflow smoke without needing Docker-in-Docker or Apptainer.
+
+Decisions:
+- Change the Dockerfile default `CMD` to run `bin/genefam/run_standard_smoke.py` on bundled fixture data.
+- Write the default smoke output under `results/container_default_smoke`.
+- Extend `audit_container_materials.py` so the static container-materials audit enforces this default standard smoke contract.
+- Document the default smoke output in runtime and release-audit docs.
+
+Added:
+- none
+
+Modified:
+- `Dockerfile`
+- `HISTORY.md`
+- `bin/genefam/audit_container_materials.py`
+- `docs/release_audit.md`
+- `docs/runtime_environment.md`
+- `tests/test_audit_container_materials.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_container_materials.py -q` first failed because the audit did not expose or enforce `dockerfile_default_standard_smoke`.
+- `python -m pytest tests/test_runtime_environment_files.py::test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` first failed because runtime and release-audit docs did not mention `results/container_default_smoke`.
+- `python -m pytest tests/test_audit_container_materials.py tests/test_runtime_environment_files.py::test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` passed with 6 tests after updating Dockerfile, static audit, and docs.
+- `python -m pytest tests -q` passed with 274 tests.
+- `python bin/genefam/audit_container_materials.py --outdir results/container_materials` passed.
+- `results/container_materials/container_materials.md` now reports `Passed: 8`, `Failed: 0`, including `dockerfile_default_standard_smoke`.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing release, quickstart, local acceptance, and delivery-bundle artifacts.
+- `results/release_checks/release_checks.md` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+- `rg -n "container_default_smoke|dockerfile_default_standard_smoke|local_acceptance_summary" docs/runtime_environment.md docs/release_audit.md results/delivery_bundle/delivery_bundle.md results/handoff/handoff_report.md` confirmed the runtime/release docs mention the default container smoke and the generated handoff surfaces still expose the local acceptance summary.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Commit the handoff-entrypoint update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
+- Commit the Docker default smoke contract, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
