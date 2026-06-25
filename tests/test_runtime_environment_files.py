@@ -55,6 +55,7 @@ def test_nextflow_config_has_container_profiles():
     assert "process.container = params.container_image" in config
     assert "process.container = params.apptainer_image" in config
     assert 'params.meme_txt = "tests/fixtures/mock_evidence/meme.txt"' in config
+    assert 'params.tree_builder = "fasttree"' in config
     assert "params.use_hmmer = true" in config
     assert "params.use_diamond = true" in config
 

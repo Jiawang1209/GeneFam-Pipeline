@@ -6257,6 +6257,59 @@ Commit:
 Next:
 - Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
 
+## 2026-06-25 - Wire real standard-branch alignment and phylogeny execution
+
+Timestamp:
+- 2026-06-25 15:07:11 CST
+
+Context:
+- The standard Nextflow branch prepared alignment and phylogeny manifests, but it did not call `RUN_ALIGNMENT` or `RUN_PHYLOGENY`.
+- `RUN_ALIGNMENT` and `RUN_PHYLOGENY` also emitted generic filenames, which did not match the report-ready manifest paths.
+- Large multi-species runs should use FastTree by default while keeping IQ-TREE available as an explicit slower option.
+
+Decisions:
+- Wire `RUN_ALIGNMENT` and `RUN_PHYLOGENY` into the non-truncated standard identification branch.
+- Publish real alignment and tree outputs with manifest-compatible names: `GDSL.mafft.aln.faa` and `GDSL.fasttree.treefile` by default.
+- Change the Nextflow default tree builder to `fasttree`; users can still pass `--tree_builder iqtree`.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/run_nextflow_standard_smoke.py`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_nextflow_standard_smoke.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/alignment_phylogeny.nf`
+- `workflows/nextflow.config`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_workflow_modules.py -q` first failed because the standard branch did not call `RUN_ALIGNMENT` or `RUN_PHYLOGENY`, and alignment/tree outputs were generic filenames.
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py -q` first failed because full standard-smoke expected outputs did not include real alignment/tree files.
+- `python -m pytest tests/test_runtime_environment_files.py -q` first failed because `workflows/nextflow.config` still defaulted to `params.tree_builder = "iqtree"`.
+- `python -m pytest tests/test_workflow_modules.py -q` passed with 17 tests after wiring real execution and manifest-compatible output names.
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py -q` passed with 9 tests after adding expected published alignment/tree outputs.
+- `python -m pytest tests/test_runtime_environment_files.py -q` passed with 13 tests after switching the Nextflow default tree builder to FastTree.
+- `python -m pytest tests/test_release_audit_docs.py -q` passed with 1 test after documenting real alignment/phylogeny execution.
+- `python -m pytest tests -q` passed with 280 tests in 79.39 seconds.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited 1 after refreshing release, quickstart, local acceptance, and delivery-bundle outputs; the release gate remains blocked by external runtime readiness, with details in `results/handoff/handoff_report.md`.
+
+Commit:
+- hash: pending
+- message: feat: run standard alignment and phylogeny
+- files: standard Nextflow workflow, alignment/phylogeny module, Nextflow config, standard-smoke expected outputs, README, release audit docs, tests, history
+
+Next:
+- Continue closing release-gate gaps before final container packaging.
+
 ## 2026-06-25 - Add FastTree phylogeny branch for large multi-species runs
 
 Timestamp:
@@ -6295,7 +6348,7 @@ Verification:
 - `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited 1 after refreshing release, quickstart, local acceptance, and delivery-bundle outputs; the release gate remains blocked by external runtime readiness, with details in `results/handoff/handoff_report.md`.
 
 Commit:
-- hash: pending
+- hash: 9441ffb38f96556e58a1378a5518c4b777af703a
 - message: feat: add fasttree phylogeny branch
 - files: alignment/phylogeny Nextflow module, README, release audit docs, workflow module test, release audit test, history
 

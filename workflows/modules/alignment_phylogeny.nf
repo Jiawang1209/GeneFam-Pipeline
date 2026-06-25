@@ -27,14 +27,16 @@ process RUN_ALIGNMENT {
     publishDir "${params.outdir}/alignment", mode: "copy", overwrite: true
 
     input:
+    val family_name
+    val aligner
     path family_members_faa
 
     output:
-    path "raw_alignment.faa"
+    path "${family_name}.${aligner}.aln.faa"
 
     script:
     """
-    mafft --auto ${family_members_faa} > raw_alignment.faa
+    mafft --auto ${family_members_faa} > ${family_name}.${aligner}.aln.faa
     """
 }
 
@@ -65,21 +67,22 @@ process RUN_PHYLOGENY {
     publishDir "${params.outdir}/phylogeny", mode: "copy", overwrite: true
 
     input:
+    val family_name
     path alignment
     val tree_builder
 
     output:
-    path "treefile.nwk"
+    path "${family_name}.${tree_builder}.treefile"
 
     script:
     """
     if [ "${tree_builder}" = "fasttree" ]; then
       FASTTREE_BIN=\$(command -v FastTree || command -v fasttree)
-      "\${FASTTREE_BIN}" -wag ${alignment} > treefile.nwk
+      "\${FASTTREE_BIN}" -wag ${alignment} > ${family_name}.${tree_builder}.treefile
     else
       IQTREE_BIN=\$(command -v iqtree2 || command -v iqtree)
       "\${IQTREE_BIN}" -s ${alignment} -m MFP -bb 1000 -nt AUTO
-      cp ${alignment}.treefile treefile.nwk
+      cp ${alignment}.treefile ${family_name}.${tree_builder}.treefile
     fi
     """
 }

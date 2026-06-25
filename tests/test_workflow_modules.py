@@ -318,8 +318,10 @@ def test_alignment_phylogeny_module_covers_alignment_tree_and_motif_steps():
     assert "--out alignment_manifest.tsv" in module
 
     assert "process RUN_ALIGNMENT" in module
-    assert "mafft --auto ${family_members_faa} > raw_alignment.faa" in module
-    assert 'path "raw_alignment.faa"' in module
+    assert "val family_name" in module
+    assert "val aligner" in module
+    assert "mafft --auto ${family_members_faa} > ${family_name}.${aligner}.aln.faa" in module
+    assert 'path "${family_name}.${aligner}.aln.faa"' in module
 
     assert "process PREPARE_PHYLOGENY_INPUTS" in module
     assert "prepare_phylogeny_inputs.py" in module
@@ -327,13 +329,15 @@ def test_alignment_phylogeny_module_covers_alignment_tree_and_motif_steps():
     assert "--out phylogeny_manifest.tsv" in module
 
     assert "process RUN_PHYLOGENY" in module
+    assert "val family_name" in module
     assert "val tree_builder" in module
     assert 'if [ "${tree_builder}" = "fasttree" ]; then' in module
     assert "FASTTREE_BIN=\\$(command -v FastTree || command -v fasttree)" in module
-    assert '"\\${FASTTREE_BIN}" -wag ${alignment} > treefile.nwk' in module
+    assert '"\\${FASTTREE_BIN}" -wag ${alignment} > ${family_name}.${tree_builder}.treefile' in module
     assert "IQTREE_BIN=\\$(command -v iqtree2 || command -v iqtree)" in module
     assert '"\\${IQTREE_BIN}" -s ${alignment} -m MFP -bb 1000 -nt AUTO' in module
-    assert 'path "treefile.nwk"' in module
+    assert "cp ${alignment}.treefile ${family_name}.${tree_builder}.treefile" in module
+    assert 'path "${family_name}.${tree_builder}.treefile"' in module
 
     assert "process PARSE_MEME_MOTIFS" in module
     assert "parse_meme_motifs.py" in module
@@ -366,8 +370,10 @@ def test_main_workflow_includes_remaining_standard_analysis_processes():
 
     assert "PREPARE_ALIGNMENT_INPUTS" in workflow
     assert "RUN_ALIGNMENT" in workflow
+    assert "RUN_ALIGNMENT(family_name_ch, aligner_ch, EXTRACT_FAMILY_SEQUENCES.out)" in workflow
     assert "PREPARE_PHYLOGENY_INPUTS" in workflow
     assert "RUN_PHYLOGENY" in workflow
+    assert "RUN_PHYLOGENY(family_name_ch, RUN_ALIGNMENT.out, tree_builder_ch)" in workflow
     assert "PARSE_MEME_MOTIFS" in workflow
     assert "PARSE_MEME_MOTIFS(" in workflow
     assert "PARSE_MEME_MOTIFS.out" in workflow
