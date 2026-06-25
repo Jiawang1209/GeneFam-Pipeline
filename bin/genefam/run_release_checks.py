@@ -283,6 +283,19 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "Nextflow standard manifest smoke",
+            [
+                python,
+                "bin/genefam/run_nextflow_standard_smoke.py",
+                "--conda-env",
+                "GeneFamilyFlow",
+                "--config",
+                "configs/manifest.example.yaml",
+                "--outdir",
+                "results/nextflow_standard_manifest_smoke",
+            ],
+        ),
+        CheckSpec(
             "Nextflow standard single-tool smoke",
             [
                 python,

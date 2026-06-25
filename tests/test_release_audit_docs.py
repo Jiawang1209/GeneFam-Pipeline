@@ -96,6 +96,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "build_wgd_run_config_snapshot.py" in text
     assert "run_nextflow_smoke.py" in text
     assert "run_nextflow_single_tool_smoke.py" in text
+    assert "results/nextflow_standard_manifest_smoke" in text
     assert "run_container_profile_smoke.py" in text
     assert "run_nextflow_wgd_smoke.py" in text
     assert "run_prepared_wgd_handoff_example.py" in text

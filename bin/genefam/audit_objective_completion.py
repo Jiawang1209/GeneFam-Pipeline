@@ -62,14 +62,15 @@ def build_objective_audit(
                 [
                     "Nextflow mock MVP smoke",
                     "Nextflow standard branch smoke",
+                    "Nextflow standard manifest smoke",
                     "Nextflow standard single-tool smoke",
                     "Nextflow WGD event smoke",
                     "alignment phylogeny smoke",
                 ],
             ),
             "Nextflow DSL2 workflow",
-            "Nextflow mock, standard, single-tool, WGD, and alignment phylogeny smoke checks",
-            "DSL2 entrypoints, including HMMER-only and DIAMOND-only single-tool routing plus alignment/phylogeny manifests, are smoke-tested through GeneFamilyFlow evidence.",
+            "Nextflow mock, standard, manifest-standard, single-tool, WGD, and alignment phylogeny smoke checks",
+            "DSL2 entrypoints, including species-bank standard runs, manifest-mode standard runs, HMMER-only and DIAMOND-only single-tool routing, plus alignment/phylogeny manifests, are smoke-tested through GeneFamilyFlow evidence.",
         ),
         _achieved_if(
             _all_passed(

@@ -33,6 +33,10 @@ python bin/genefam/run_nextflow_smoke.py --outdir results/nextflow_smoke
 python bin/genefam/run_nextflow_single_tool_smoke.py \
   --conda-env GeneFamilyFlow \
   --outdir results/nextflow_single_tool_smoke
+python bin/genefam/run_nextflow_standard_smoke.py \
+  --conda-env GeneFamilyFlow \
+  --config configs/manifest.example.yaml \
+  --outdir results/nextflow_standard_manifest_smoke
 python bin/genefam/run_nextflow_wgd_smoke.py --outdir results/nextflow_wgd_smoke
 python bin/genefam/run_prepared_wgd_handoff_example.py \
   --conda-env GeneFamilyFlow \
@@ -104,7 +108,7 @@ The Markdown summary reports `Required failed` and `Optional failed` separately.
 
 | Requirement | Evidence | Verification |
 |---|---|---|
-| Nextflow DSL2 workflow | `workflows/main.nf`; modules under `workflows/modules/`; `bin/genefam/run_nextflow_smoke.py`; `bin/genefam/run_nextflow_single_tool_smoke.py`; `results/nextflow_smoke/nextflow_smoke.md`; `results/nextflow_single_tool_smoke/nextflow_single_tool_smoke.tsv` | `python -m pytest tests/test_workflow_modules.py tests/test_run_nextflow_smoke.py tests/test_run_nextflow_single_tool_smoke.py -q` |
+| Nextflow DSL2 workflow | `workflows/main.nf`; modules under `workflows/modules/`; `bin/genefam/run_nextflow_smoke.py`; `bin/genefam/run_nextflow_standard_smoke.py`; `bin/genefam/run_nextflow_single_tool_smoke.py`; `results/nextflow_smoke/nextflow_smoke.md`; `results/nextflow_standard_manifest_smoke/nextflow_standard_smoke.tsv`; `results/nextflow_single_tool_smoke/nextflow_single_tool_smoke.tsv` | `python -m pytest tests/test_workflow_modules.py tests/test_run_nextflow_smoke.py tests/test_run_nextflow_standard_smoke.py tests/test_run_nextflow_single_tool_smoke.py -q` |
 | YAML-driven parameters | `configs/example.config.yaml`; `configs/advanced_modules.example.yaml`; `configs/manifest.example.yaml`; `tests/fixtures/species_manifest.tsv`; `bin/genefam/build_run_plan.py`; `bin/genefam/run_species_selection_smoke.py`; `results/species_selection_smoke/tables/species_manifest.tsv`; `results/species_selection_smoke/tables/run_plan.tsv`; `results/species_manifest_selection_smoke/tables/species_manifest.tsv`; `results/species_manifest_selection_smoke/species_selection_smoke.md` | `python bin/genefam/run_species_selection_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --outdir results/species_selection_smoke`, `python bin/genefam/run_species_selection_smoke.py --config configs/manifest.example.yaml --groups configs/species_groups.yaml --outdir results/species_manifest_selection_smoke`, and `python bin/genefam/build_run_plan.py --config configs/example.config.yaml --out results/mock_mvp/tables/run_plan.tsv` |
 | GeneFamilyFlow runtime | `envs/GeneFamilyFlow.conda.yaml`; `workflows/nextflow.config`; `Dockerfile` | `python -m pytest tests/test_runtime_environment_files.py -q` |
 | `/usr/local/bin/R` plotting and reporting convention | `workflows/modules/plots.nf`; `scripts/plot_family_counts.R`; `scripts/plot_kaks.R`; `scripts/plot_expression_heatmap.R` | `python -m pytest tests/test_workflow_modules.py tests/test_runtime_environment_files.py -q` |

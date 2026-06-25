@@ -5321,9 +5321,55 @@ Verification:
 - `rg -n "input.mode|input.manifest|selected_species|Run Configuration Snapshot" results/standard_manifest_smoke/tables/run_config_snapshot.tsv results/standard_manifest_smoke/report/final_report.md` confirmed the manifest-mode run configuration appears in both the TSV and final report.
 
 Commit:
-- hash: pending
+- hash: 02bf8c61edaad85d1aa59f6e93ac7246caa88900
 - message: feat: support manifest mode in smoke paths
 - files: species resolver, standard/mock/annotation smoke paths, run snapshot, tests, history
 
 Next:
 - Continue closing workflow-entry consistency gaps while leaving Docker/Apptainer packaging for the final封装 step.
+
+## 2026-06-25 - Add Nextflow manifest-mode standard smoke evidence
+
+Context:
+- The workflow is still being developed before final container packaging.
+- Python standard and annotation smoke paths now support `input.mode: manifest`, but the Nextflow standard release evidence still only covered `configs/example.config.yaml`.
+- The DSL2 workflow should prove both folder-per-species and manifest-mode standard entrypoints before final封装.
+
+Decisions:
+- Add `Nextflow standard manifest smoke` to the release gate after the standard branch smoke and before WGD smoke.
+- Run the new check with `configs/manifest.example.yaml` and publish results under `results/nextflow_standard_manifest_smoke`.
+- Require this manifest-mode Nextflow smoke in the long-objective audit for the `Nextflow DSL2 workflow` requirement.
+- Document the new command and output path in the release audit.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_nextflow_standard_smoke.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_nextflow_standard_manifest_smoke_before_wgd -q` first failed because `Nextflow standard manifest smoke` was not in release checks.
+- `python -m pytest tests/test_audit_objective_completion.py::test_nextflow_dsl2_requires_manifest_standard_smoke_evidence -q` first failed because the objective audit still accepted Nextflow DSL2 completion without manifest-mode standard evidence.
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because `results/nextflow_standard_manifest_smoke` was absent from the release audit.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_nextflow_standard_manifest_smoke_before_wgd tests/test_audit_objective_completion.py::test_nextflow_dsl2_requires_manifest_standard_smoke_evidence tests/test_release_audit_docs.py tests/test_run_nextflow_standard_smoke.py::test_build_nextflow_command_supports_manifest_config -q` passed with 4 tests.
+- `python bin/genefam/run_nextflow_standard_smoke.py --nextflow-bin /definitely/missing/nextflow --config configs/manifest.example.yaml --outdir results/nextflow_standard_manifest_smoke` exited `1` as expected for missing Nextflow; the generated TSV records `configs/manifest.example.yaml` and `results/nextflow_standard_manifest_smoke/standard` in the command.
+- `python -m pytest tests/test_run_release_checks.py tests/test_audit_objective_completion.py tests/test_release_audit_docs.py tests/test_run_nextflow_standard_smoke.py -q` passed with 61 tests.
+- `python -m pytest tests -q` passed with 261 tests.
+
+Commit:
+- hash: pending
+- message: feat: add nextflow manifest standard smoke
+- files: release checks, objective audit, release docs, Nextflow standard smoke tests, history
+
+Next:
+- Continue strengthening DSL2 and report evidence while leaving Docker/Apptainer packaging for the final封装 step.

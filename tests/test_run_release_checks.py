@@ -473,6 +473,18 @@ def test_default_checks_include_nextflow_standard_smoke_before_readiness():
     assert "--outdir results/nextflow_standard_smoke" in " ".join(smoke.command)
 
 
+def test_default_checks_include_nextflow_standard_manifest_smoke_before_wgd():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("Nextflow standard manifest smoke") > names.index("Nextflow standard branch smoke")
+    assert names.index("Nextflow standard manifest smoke") < names.index("Nextflow WGD event smoke")
+    smoke = next(check for check in default_checks() if check.name == "Nextflow standard manifest smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_nextflow_standard_smoke.py" in command
+    assert "--config configs/manifest.example.yaml" in command
+    assert "--outdir results/nextflow_standard_manifest_smoke" in command
+
+
 def test_default_checks_include_nextflow_wgd_smoke_before_readiness():
     names = [check.name for check in default_checks()]
 

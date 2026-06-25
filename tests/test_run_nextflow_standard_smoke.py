@@ -94,6 +94,19 @@ def test_build_nextflow_command_passes_identification_params():
     assert command[command.index("--standard_stop_after_family_candidates") + 1] == "true"
 
 
+def test_build_nextflow_command_supports_manifest_config():
+    command = build_nextflow_command(
+        nextflow_bin="nextflow",
+        config="configs/manifest.example.yaml",
+        groups="configs/species_groups.yaml",
+        mock_evidence_dir="tests/fixtures/mock_evidence",
+        outdir="results/nextflow_standard_manifest_smoke/standard",
+    )
+
+    assert command[command.index("--config") + 1] == "configs/manifest.example.yaml"
+    assert command[command.index("--outdir") + 1] == "results/nextflow_standard_manifest_smoke/standard"
+
+
 def test_build_nextflow_command_preserves_string_boolean_params():
     command = build_nextflow_command(
         nextflow_bin="nextflow",

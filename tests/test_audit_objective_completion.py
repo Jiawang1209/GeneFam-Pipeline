@@ -49,6 +49,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
         _release_row("WGD event smoke"),
         _release_row("Nextflow mock MVP smoke"),
         _release_row("Nextflow standard branch smoke"),
+        _release_row("Nextflow standard manifest smoke"),
         _release_row("Nextflow standard single-tool smoke"),
         _release_row("Nextflow WGD event smoke"),
         _release_row("prepared WGD handoff example"),
@@ -354,6 +355,33 @@ def test_nextflow_dsl2_requires_single_tool_smoke_evidence():
 
     assert by_requirement["Nextflow DSL2 workflow"]["status"] == "missing"
     assert "single-tool" in by_requirement["Nextflow DSL2 workflow"]["note"]
+
+
+def test_nextflow_dsl2_requires_manifest_standard_smoke_evidence():
+    release_rows = [
+        _release_row("Nextflow mock MVP smoke"),
+        _release_row("Nextflow standard branch smoke"),
+        _release_row("Nextflow standard single-tool smoke"),
+        _release_row("Nextflow WGD event smoke"),
+        _release_row("alignment phylogeny smoke"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["Nextflow DSL2 workflow"]["status"] == "missing"
+    assert "manifest" in by_requirement["Nextflow DSL2 workflow"]["evidence"]
 
 
 def test_summarize_objective_audit_counts_statuses():
