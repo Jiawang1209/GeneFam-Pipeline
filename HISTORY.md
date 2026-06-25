@@ -6257,6 +6257,51 @@ Commit:
 Next:
 - Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
 
+## 2026-06-25 - Add FastTree phylogeny branch for large multi-species runs
+
+Timestamp:
+- 2026-06-25 14:55:44 CST
+
+Context:
+- Large multi-species gene-family phylogenies can be too slow if every run depends on IQ-TREE model selection and bootstrap settings.
+- The alignment and phylogeny manifest layer already accepted `tree_builder = fasttree`, and the GeneFamilyFlow environment files already included `fasttree`.
+- The actual Nextflow `RUN_PHYLOGENY` process still hard-coded IQ-TREE, so selecting FastTree was not executable at the workflow-module level.
+
+Decisions:
+- Add a FastTree branch to `RUN_PHYLOGENY` using `FastTree`/`fasttree` and WAG protein distances.
+- Keep the IQ-TREE branch available for slower model-selection/bootstrap analyses.
+- Document `--tree-builder fasttree` as the recommended fast path for large multi-species family trees.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_workflow_modules.py`
+- `workflows/modules/alignment_phylogeny.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_workflow_modules.py -q` first failed because `RUN_PHYLOGENY` had no FastTree branch.
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because the release audit did not mention FastTree or `--tree-builder fasttree`.
+- `python -m pytest tests/test_workflow_modules.py -q` passed with 17 tests after adding the FastTree branch.
+- `python -m pytest tests/test_release_audit_docs.py -q` passed with 1 test after documenting FastTree.
+- `python -m pytest tests -q` passed with 280 tests.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited 1 after refreshing release, quickstart, local acceptance, and delivery-bundle outputs; the release gate remains blocked by external runtime readiness, with details in `results/handoff/handoff_report.md`.
+
+Commit:
+- hash: pending
+- message: feat: add fasttree phylogeny branch
+- files: alignment/phylogeny Nextflow module, README, release audit docs, workflow module test, release audit test, history
+
+Next:
+- Continue wiring larger standard-analysis execution paths before final container packaging.
+
 ## 2026-06-25 - Reject WGD event labels without metadata
 
 Timestamp:
@@ -6293,7 +6338,7 @@ Verification:
 - `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited 1 after refreshing release, quickstart, local acceptance, and delivery-bundle outputs; the release gate remains blocked by external runtime readiness, with details in `results/handoff/handoff_report.md`.
 
 Commit:
-- hash: pending
+- hash: 132b34b1958e87ae35080330d20a7521b1be15f1
 - message: fix: reject wgd event labels without metadata
 - files: WGD event evidence loader, WGD event docs, release audit docs, WGD event tests, history
 

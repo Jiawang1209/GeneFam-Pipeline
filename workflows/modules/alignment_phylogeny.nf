@@ -61,20 +61,26 @@ process PREPARE_PHYLOGENY_INPUTS {
 }
 
 process RUN_PHYLOGENY {
-    tag "run IQ-TREE phylogeny"
+    tag "run ${tree_builder} phylogeny"
     publishDir "${params.outdir}/phylogeny", mode: "copy", overwrite: true
 
     input:
     path alignment
+    val tree_builder
 
     output:
     path "treefile.nwk"
 
     script:
     """
-    IQTREE_BIN=\$(command -v iqtree2 || command -v iqtree)
-    "\${IQTREE_BIN}" -s ${alignment} -m MFP -bb 1000 -nt AUTO
-    cp ${alignment}.treefile treefile.nwk
+    if [ "${tree_builder}" = "fasttree" ]; then
+      FASTTREE_BIN=\$(command -v FastTree || command -v fasttree)
+      "\${FASTTREE_BIN}" -wag ${alignment} > treefile.nwk
+    else
+      IQTREE_BIN=\$(command -v iqtree2 || command -v iqtree)
+      "\${IQTREE_BIN}" -s ${alignment} -m MFP -bb 1000 -nt AUTO
+      cp ${alignment}.treefile treefile.nwk
+    fi
     """
 }
 

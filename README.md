@@ -239,11 +239,11 @@ python bin/genefam/run_alignment_phylogeny_smoke.py \
   --family-name GDSL \
   --fasta tests/fixtures/alignment/family_members.faa \
   --aligner mafft \
-  --tree-builder iqtree \
+  --tree-builder fasttree \
   --outdir results/alignment_phylogeny_smoke
 ```
 
-It writes `results/alignment_phylogeny_smoke/tables/alignment_manifest.tsv` and `results/alignment_phylogeny_smoke/tables/phylogeny_manifest.tsv`, then records those paths in `results/alignment_phylogeny_smoke/alignment_phylogeny_smoke.md`. This check is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+It writes `results/alignment_phylogeny_smoke/tables/alignment_manifest.tsv` and `results/alignment_phylogeny_smoke/tables/phylogeny_manifest.tsv`, then records those paths in `results/alignment_phylogeny_smoke/alignment_phylogeny_smoke.md`. Use `--tree-builder fasttree` for large multi-species family trees when speed is the priority; use `--tree-builder iqtree` for slower model-selection/bootstrap runs. This check is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
 
 The chromosome-location smoke validates the species-bank GFF3 coordinate bridge for identified family candidates:
 

@@ -327,6 +327,10 @@ def test_alignment_phylogeny_module_covers_alignment_tree_and_motif_steps():
     assert "--out phylogeny_manifest.tsv" in module
 
     assert "process RUN_PHYLOGENY" in module
+    assert "val tree_builder" in module
+    assert 'if [ "${tree_builder}" = "fasttree" ]; then' in module
+    assert "FASTTREE_BIN=\\$(command -v FastTree || command -v fasttree)" in module
+    assert '"\\${FASTTREE_BIN}" -wag ${alignment} > treefile.nwk' in module
     assert "IQTREE_BIN=\\$(command -v iqtree2 || command -v iqtree)" in module
     assert '"\\${IQTREE_BIN}" -s ${alignment} -m MFP -bb 1000 -nt AUTO' in module
     assert 'path "treefile.nwk"' in module
