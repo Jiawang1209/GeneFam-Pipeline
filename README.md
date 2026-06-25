@@ -90,6 +90,8 @@ When Docker and Apptainer are available, run the generated bootstrap script to b
 bash results/readiness/runtime_bootstrap.sh
 ```
 
+The generated script also runs the Docker image default smoke with `docker run --rm -v "$PWD/results:/opt/GeneFam-Pipeline/results" genefam-pipeline:latest`, which writes `results/container_default_smoke` after the image is built.
+
 Container image defaults are configurable from Nextflow:
 
 ```text

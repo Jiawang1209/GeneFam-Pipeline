@@ -57,6 +57,8 @@ The bootstrap planner reads the TSV and writes:
 - `results/readiness/runtime_bootstrap_plan.md`
 - `results/readiness/runtime_bootstrap.sh`
 
+After the Docker image is built, the generated shell runs `docker run --rm -v "$PWD/results:/opt/GeneFam-Pipeline/results" genefam-pipeline:latest` so the image default smoke writes `results/container_default_smoke`.
+
 After a missing runtime is installed, rerun `scripts/run_local_acceptance.sh` to refresh `results/handoff/handoff_report.md`, `results/local_acceptance/local_acceptance_summary.md`, `results/delivery_bundle/delivery_manifest.tsv`, and `results/delivery_bundle/delivery_bundle.md` from the same evidence set.
 
 Default audited commands:

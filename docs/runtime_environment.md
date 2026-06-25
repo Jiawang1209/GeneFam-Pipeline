@@ -89,7 +89,13 @@ The image default command runs `bin/genefam/run_standard_smoke.py` for the stand
 results/container_default_smoke
 ```
 
-That gives `docker run genefam-pipeline:latest` a lightweight in-image workflow check without requiring Docker-in-Docker or Apptainer inside the container.
+Run the same default smoke after building the image:
+
+```bash
+docker run --rm -v "$PWD/results:/opt/GeneFam-Pipeline/results" genefam-pipeline:latest
+```
+
+That gives the image a lightweight in-image workflow check without requiring Docker-in-Docker or Apptainer inside the container.
 
 Container image names are parameterized in `workflows/nextflow.config`:
 

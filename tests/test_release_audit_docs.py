@@ -64,6 +64,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/container_materials/container_materials.tsv" in text
     assert "results/container_materials/container_materials.md" in text
     assert "results/container_default_smoke" in text
+    assert 'docker run --rm -v "$PWD/results:/opt/GeneFam-Pipeline/results" genefam-pipeline:latest' in text
     assert "run_standard_smoke.py" in text
     assert ".dockerignore" in text
     assert "results/handoff/handoff_report.md" in text

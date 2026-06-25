@@ -81,6 +81,8 @@ def test_readiness_checklist_documents_command_audit():
     assert "runtime recovery" in text
     assert "results/readiness/runtime_bootstrap_plan.md" in text
     assert "results/readiness/runtime_bootstrap.sh" in text
+    assert 'docker run --rm -v "$PWD/results:/opt/GeneFam-Pipeline/results" genefam-pipeline:latest' in text
+    assert "results/container_default_smoke" in text
     assert "scripts/run_local_acceptance.sh" in text
     assert "first file to inspect" in text
 
@@ -109,6 +111,7 @@ def test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file():
     assert "results/container_profile_smoke/apptainer/container_profile_smoke.md" in text
     assert "results/container_default_smoke" in text
     assert "run_standard_smoke.py" in text
+    assert 'docker run --rm -v "$PWD/results:/opt/GeneFam-Pipeline/results" genefam-pipeline:latest' in text
     assert "scripts/run_local_acceptance.sh" in text
     assert "results/delivery_bundle/delivery_bundle.md" in text
 
@@ -179,6 +182,7 @@ def test_readme_current_status_matches_release_evidence():
     assert "bash results/readiness/runtime_bootstrap.sh" in readme
     assert "runtime recovery" in readme
     assert "scripts/run_local_acceptance.sh" in readme
+    assert 'docker run --rm -v "$PWD/results:/opt/GeneFam-Pipeline/results" genefam-pipeline:latest' in readme
     assert "params.container_image" in readme
     assert "params.apptainer_image" in readme
 

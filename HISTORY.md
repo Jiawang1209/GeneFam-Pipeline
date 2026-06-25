@@ -6205,9 +6205,54 @@ Verification:
 - `results/local_acceptance/local_acceptance_summary.md` still records `release_gate` failed with exit code `1`, while `quickstart_handoff` and `delivery_bundle` passed.
 
 Commit:
-- hash: pending
-- message: pending
-- files: pending
+- hash: 1e824c5dba3cc97d7316e8990665834ee36378c9
+- message: feat: run docker default smoke in runtime bootstrap
+- files: runtime bootstrap planner, runtime bootstrap tests, history
 
 Next:
-- Commit the runtime-bootstrap update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
+- Continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Document bootstrap Docker default smoke command
+
+Timestamp:
+- 2026-06-25 13:27:56 CST
+
+Context:
+- The runtime bootstrap script already generates a Docker image default smoke command.
+- README, readiness, runtime, and release docs still described the bootstrap broadly, which could make the container step look like premature packaging instead of final runtime verification.
+
+Decisions:
+- Expose the exact Docker default smoke command in the human-facing docs: `docker run --rm -v "$PWD/results:/opt/GeneFam-Pipeline/results" genefam-pipeline:latest`.
+- Keep Docker/Apptainer framed as the remaining external runtime blocker, while the analysis workflow and Conda/local evidence remain the current development focus.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/runtime_environment.md`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_release_audit_docs.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_runtime_environment_files.py::test_readiness_checklist_documents_command_audit tests/test_runtime_environment_files.py::test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file tests/test_runtime_environment_files.py::test_readme_current_status_matches_release_evidence tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` first failed with 4 tests because the docs did not include the exact Docker default smoke command.
+- The same command passed with 4 tests after documenting the bootstrap Docker default smoke command.
+- `python -m pytest tests -q` passed with 274 tests.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing release, handoff, quickstart, local acceptance, and delivery-bundle evidence.
+- `rg -n 'docker run --rm|container_default_smoke|Passed:|Required failed:|Optional failed:|Achieved:|Blocked:|Missing:' README.md docs/runtime_environment.md docs/readiness_checklist.md docs/release_audit.md results/readiness/runtime_bootstrap.sh results/readiness/runtime_bootstrap_plan.md results/release_checks/release_checks.md results/objective_audit/objective_audit.md results/local_acceptance/local_acceptance_summary.md` confirmed README, runtime docs, readiness checklist, release audit, and generated bootstrap outputs all expose the Docker default smoke command and `container_default_smoke` output.
+- `results/release_checks/release_checks.md` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
+- hash: pending
+- message: docs: document bootstrap docker default smoke command
+- files: README, runtime docs, readiness checklist, release audit, runtime docs tests, release audit tests, history
+
+Next:
+- Commit this documentation/test contract update, then continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
