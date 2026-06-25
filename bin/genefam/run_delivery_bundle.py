@@ -124,6 +124,13 @@ def build_delivery_manifest(
             "note": "manifest-mode standard DSL2 smoke",
         },
         {
+            "section": "nextflow",
+            "item": "config_preflight",
+            "status": "available",
+            "path": "workflows/modules/config_validation.nf",
+            "note": "strict config path preflight before Nextflow branches",
+        },
+        {
             "section": "standard",
             "item": "final_report",
             "status": _status_from_step(quickstart_rows, "standard_branch_smoke"),

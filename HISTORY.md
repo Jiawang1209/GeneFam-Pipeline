@@ -5751,9 +5751,49 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` is restored to `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
-- hash: pending
+- hash: 3cb6fa89ffef1753a65f3ad22f081c98e56315c7
 - message: feat: validate configs before nextflow runs
 - files: Nextflow config preflight module, workflow wiring, config validator CLI, docs, tests, history
 
 Next:
 - Run focused docs/workflow tests, full pytest, and release gate before committing.
+
+## 2026-06-25 - Add Nextflow preflight evidence to delivery bundle
+
+Context:
+- The Nextflow entrypoint now runs strict config path preflight before mock MVP, species discovery, and standard identification.
+- The final delivery bundle did not yet expose this as a user-facing artifact, so a user reading only `results/delivery_bundle/delivery_manifest.tsv` could miss the new safety guard.
+
+Decisions:
+- Add a `nextflow/config_preflight` row to the delivery manifest.
+- Point the row at `workflows/modules/config_validation.nf`.
+- Describe it as strict config path preflight before Nextflow branches.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_run_delivery_bundle.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index -q` first failed because the delivery manifest did not contain the Nextflow config preflight row.
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index -q` passed after adding the row.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` passed and refreshed `results/delivery_bundle/delivery_manifest.tsv`.
+- `python -m pytest tests/test_run_delivery_bundle.py tests/test_release_audit_docs.py tests/test_quickstart_docs.py -q` passed with 4 tests.
+- `python -m pytest tests -q` passed with 271 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`; the only required failure remains the runtime readiness audit.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+- `rg -n "config_preflight|strict config path preflight" results/delivery_bundle/delivery_manifest.tsv results/delivery_bundle/delivery_bundle.md` confirmed the delivery bundle now exposes the Nextflow preflight evidence.
+
+Commit:
+- hash: pending
+- message: docs: expose nextflow preflight in delivery bundle
+- files: delivery bundle builder, delivery bundle test, history
+
+Next:
+- Run focused delivery/docs tests, full pytest, and release gate before committing.
