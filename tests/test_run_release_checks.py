@@ -450,6 +450,18 @@ def test_default_checks_include_nextflow_smoke_before_readiness():
     assert "--outdir results/nextflow_smoke" in " ".join(smoke.command)
 
 
+def test_default_checks_include_manifest_species_selection_smoke_before_mock_mvp():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("species manifest selection smoke") > names.index("species selection smoke")
+    assert names.index("species manifest selection smoke") < names.index("mock MVP")
+    smoke = next(check for check in default_checks() if check.name == "species manifest selection smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_species_selection_smoke.py" in command
+    assert "--config configs/manifest.example.yaml" in command
+    assert "--outdir results/species_manifest_selection_smoke" in command
+
+
 def test_default_checks_include_nextflow_standard_smoke_before_readiness():
     names = [check.name for check in default_checks()]
 

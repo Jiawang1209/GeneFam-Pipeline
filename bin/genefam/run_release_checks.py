@@ -50,6 +50,10 @@ def default_checks() -> list[CheckSpec]:
             [python, "bin/genefam/validate_config.py", "configs/advanced_modules.example.yaml"],
         ),
         CheckSpec(
+            "validate manifest config",
+            [python, "bin/genefam/validate_config.py", "configs/manifest.example.yaml"],
+        ),
+        CheckSpec(
             "species selection smoke",
             [
                 python,
@@ -60,6 +64,19 @@ def default_checks() -> list[CheckSpec]:
                 "configs/species_groups.yaml",
                 "--outdir",
                 "results/species_selection_smoke",
+            ],
+        ),
+        CheckSpec(
+            "species manifest selection smoke",
+            [
+                python,
+                "bin/genefam/run_species_selection_smoke.py",
+                "--config",
+                "configs/manifest.example.yaml",
+                "--groups",
+                "configs/species_groups.yaml",
+                "--outdir",
+                "results/species_manifest_selection_smoke",
             ],
         ),
         CheckSpec(

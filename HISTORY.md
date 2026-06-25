@@ -5172,9 +5172,59 @@ Verification:
 - `python -m pytest tests -q` passed with 251 tests.
 
 Commit:
-- hash: pending
+- hash: af90baed16b38c4e088aec7abbd66f99c8101c4c
 - message: feat: enable manifest input mode
 - files: species discovery, species selection smoke, config validation, docs, schema, tests, history
 
 Next:
 - Run the full test suite, then commit the manifest-mode input contract.
+
+## 2026-06-25 - Add manifest-mode release evidence
+
+Context:
+- The workflow is still being developed before final container packaging.
+- `input.mode: manifest` was implemented, but release checks and objective audit still treated auto-mode species-bank scanning as the only species-selection evidence.
+- Large multi-species runs need both folder-per-species discovery and curated manifest reuse to be visible in the release evidence chain.
+
+Decisions:
+- Add `configs/manifest.example.yaml` as a reusable manifest-mode YAML example.
+- Add `tests/fixtures/species_manifest.tsv` as the stable manifest fixture.
+- Add `validate manifest config` and `species manifest selection smoke` to release checks before downstream workflow smokes.
+- Require manifest-mode evidence in the long-objective audit for YAML-driven species selection.
+- Update release audit documentation to list manifest-mode commands and outputs.
+
+Added:
+- `configs/manifest.example.yaml`
+- `tests/fixtures/species_manifest.tsv`
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_manifest_species_selection_smoke_before_mock_mvp -q` first failed because `species manifest selection smoke` was not in release checks.
+- `python -m pytest tests/test_audit_objective_completion.py::test_yaml_driven_species_selection_requires_species_selection_smokes -q` first failed because the objective audit still accepted YAML-driven species selection without manifest-mode evidence.
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because `configs/manifest.example.yaml` and manifest-mode outputs were absent from the release audit.
+- `python bin/genefam/validate_config.py configs/manifest.example.yaml` passed with `Configuration OK`.
+- `python bin/genefam/run_species_selection_smoke.py --config configs/manifest.example.yaml --groups configs/species_groups.yaml --outdir results/species_manifest_selection_smoke` passed and wrote `run_plan`, `species_manifest`, and `summary`.
+- `python -m pytest tests/test_run_release_checks.py tests/test_audit_objective_completion.py tests/test_release_audit_docs.py tests/test_validate_config.py tests/test_run_species_selection_smoke.py tests/test_discover_species.py -q` passed with 75 tests.
+- `python -m pytest tests -q` passed with 252 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`; `results/release_checks/release_checks.md` reports `Passed: 27`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`.
+- The new `validate manifest config` and `species manifest selection smoke` release checks passed.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocker remains missing `docker` and `apptainer`.
+
+Commit:
+- hash: pending
+- message: feat: add manifest mode release evidence
+- files: manifest example, manifest fixture, release checks, objective audit, release docs, tests, history
+
+Next:
+- Continue strengthening workflow-level handoff and evidence surfaces; keep Docker/Apptainer packaging for the final封装 step.

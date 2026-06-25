@@ -1,0 +1,3 @@
+species_id	pep	gff3	cds	genome
+Arabidopsis_thaliana	tests/fixtures/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.pep.fa	tests/fixtures/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.gff3		
+Brassica_rapa	tests/fixtures/species_bank/Brassica_rapa/Brassica_rapa.pep.fa	tests/fixtures/species_bank/Brassica_rapa/Brassica_rapa.gff3		

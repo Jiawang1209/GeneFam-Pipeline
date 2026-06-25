@@ -33,7 +33,9 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
         _release_row("pytest"),
         _release_row("validate example config"),
         _release_row("validate advanced config"),
+        _release_row("validate manifest config"),
         _release_row("species selection smoke"),
+        _release_row("species manifest selection smoke"),
         _release_row("mock MVP"),
         _release_row("domain filter smoke"),
         _release_row("motif parser smoke"),
@@ -81,10 +83,11 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
     assert by_requirement["quickstart handoff"]["status"] == "achieved"
 
 
-def test_yaml_driven_species_selection_requires_species_selection_smoke():
+def test_yaml_driven_species_selection_requires_species_selection_smokes():
     release_rows = [
         _release_row("validate example config"),
         _release_row("validate advanced config"),
+        _release_row("species selection smoke"),
     ]
     readiness_rows = [
         _readiness_row("nextflow"),
@@ -102,7 +105,7 @@ def test_yaml_driven_species_selection_requires_species_selection_smoke():
     by_requirement = {row["requirement"]: row for row in rows}
 
     assert by_requirement["YAML-driven species selection"]["status"] == "missing"
-    assert "species selection smoke" in by_requirement["YAML-driven species selection"]["evidence"]
+    assert "species manifest selection smoke" in by_requirement["YAML-driven species selection"]["evidence"]
 
 
 def test_history_and_reference_governance_requires_reference_audit():

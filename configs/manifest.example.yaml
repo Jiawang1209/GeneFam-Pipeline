@@ -1,0 +1,60 @@
+project:
+  name: GDSL_manifest_demo
+  outdir: results/GDSL_manifest_demo
+
+runtime:
+  environment: GeneFamilyFlow
+  r_bin: /usr/local/bin/R
+
+input:
+  mode: manifest
+  manifest: tests/fixtures/species_manifest.tsv
+  required:
+    pep: true
+    gff3: true
+    cds: false
+    genome: false
+
+species:
+  include:
+    - Arabidopsis_thaliana
+    - Brassica_rapa
+  exclude: []
+
+run:
+  species_group: null
+
+gene_family:
+  name: GDSL
+  hmm_profiles:
+    - id: PF00657
+      path: Reference/Long_Weixiong_20240323_1_GDSL/PF00657.hmm
+  reference_peptides: tests/fixtures/reference/GDSL_reference.pep.fa
+
+identification:
+  use_hmmer: true
+  use_diamond: true
+  final_rule: intersection
+
+plotting:
+  reuse_reference_scripts: true
+  reference_script_roots:
+    - Reference/Long_Weixiong_20240323_1_GDSL/R
+  reuse_policy: adapt_not_modify
+
+dev:
+  mock_external_tools: true
+  mock_evidence_dir: tests/fixtures/mock_evidence
+
+modules:
+  identification: true
+  domain_filtering: true
+  family_summary: true
+  phylogeny: false
+  motif: false
+  synteny: false
+  duplication_retention: false
+  kaks: false
+  chromosome_location: false
+  expression: false
+  report: true
