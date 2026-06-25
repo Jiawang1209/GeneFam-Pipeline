@@ -84,12 +84,15 @@ Key outputs:
 - `results/handoff/handoff_report.md`
 - `results/delivery_bundle/delivery_manifest.tsv`
 - `results/delivery_bundle/delivery_bundle.md`
+- `configs/manifest.example.yaml`
+- `tests/fixtures/species_manifest.tsv`
+- `results/species_manifest_selection_smoke/tables/species_manifest.tsv`
 
 On the current development machine, Docker/Apptainer reproducibility is expected to remain `blocked` until a container runtime is available.
 
 ## 4. Inspect The Delivery Bundle
 
-The release gate writes the final delivery index after the objective audit. It collects the standard final report, prepared WGD report, alpha/beta/gamma/theta event evidence, runtime status, and documentation entrypoints.
+The release gate writes the final delivery index after the objective audit. It collects species-bank and manifest-mode input entrypoints, the standard final report, prepared WGD report, alpha/beta/gamma/theta event evidence, runtime status, and documentation entrypoints.
 
 ```bash
 python bin/genefam/run_delivery_bundle.py \

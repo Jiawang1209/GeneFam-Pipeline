@@ -5222,9 +5222,52 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocker remains missing `docker` and `apptainer`.
 
 Commit:
-- hash: pending
+- hash: 2acc8e51c4c17ab647b7120f5a2374f92d893dfc
 - message: feat: add manifest mode release evidence
 - files: manifest example, manifest fixture, release checks, objective audit, release docs, tests, history
 
 Next:
 - Continue strengthening workflow-level handoff and evidence surfaces; keep Docker/Apptainer packaging for the final封装 step.
+
+## 2026-06-25 - Surface manifest input in delivery bundle
+
+Context:
+- The workflow is still being developed before final container packaging.
+- Manifest-mode input is now validated and release-tested, but the final delivery bundle did not expose the manifest example or manifest-mode smoke output.
+- Users need the final handoff index to point directly to both folder-per-species and prebuilt manifest input routes.
+
+Decisions:
+- Add input rows to the delivery manifest for `configs/manifest.example.yaml`, `tests/fixtures/species_manifest.tsv`, and the manifest-mode selected species output.
+- Update the delivery bundle Markdown framing to mention species-bank and manifest-mode input.
+- Keep generated `results/` evidence out of git while using it for verification.
+- Update quickstart and README handoff language so users know the final index includes manifest-mode input entries.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/run_delivery_bundle.py`
+- `docs/quickstart.md`
+- `tests/test_quickstart_docs.py`
+- `tests/test_run_delivery_bundle.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py -q` first failed because delivery manifest rows for manifest-mode input were missing.
+- `python -m pytest tests/test_quickstart_docs.py -q` first failed because quickstart did not mention `configs/manifest.example.yaml`, `tests/fixtures/species_manifest.tsv`, or the manifest-mode smoke output.
+- `python -m pytest tests/test_run_delivery_bundle.py tests/test_quickstart_docs.py -q` passed with 3 tests.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` passed and refreshed the delivery bundle.
+- `rg -n "manifest_config|manifest_fixture|manifest_selection_smoke|manifest-mode" results/delivery_bundle/delivery_manifest.tsv results/delivery_bundle/delivery_bundle.md` confirmed manifest-mode rows in generated handoff outputs.
+- `python -m pytest tests -q` passed with 252 tests.
+
+Commit:
+- hash: pending
+- message: feat: surface manifest input in delivery bundle
+- files: delivery bundle helper, quickstart, README, tests, history
+
+Next:
+- Continue improving user-facing workflow handoff and evidence surfaces; keep Docker/Apptainer packaging for the final封装 step.

@@ -84,6 +84,15 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         "standard\trun_config_snapshot\tavailable\tresults/quickstart/standard_smoke/tables/run_config_snapshot.tsv\tstandard branch run configuration"
         in manifest_text
     )
+    assert "input\tmanifest_config\tavailable\tconfigs/manifest.example.yaml\tmanifest-mode YAML example" in manifest_text
+    assert (
+        "input\tmanifest_fixture\tavailable\ttests/fixtures/species_manifest.tsv\tprebuilt species manifest fixture"
+        in manifest_text
+    )
+    assert (
+        "input\tmanifest_selection_smoke\tavailable\tresults/species_manifest_selection_smoke/tables/species_manifest.tsv\tmanifest-mode selected species"
+        in manifest_text
+    )
     assert "wgd\tfinal_report\tavailable\tresults/quickstart/example_prepared_wgd/report/final_report.md" in manifest_text
     assert (
         "wgd\trun_config_snapshot\tavailable\tresults/quickstart/example_prepared_wgd/tables/wgd_run_config_snapshot.tsv\tWGD branch run configuration"
@@ -118,6 +127,7 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     summary_text = summary.read_text(encoding="utf-8")
     assert "# GeneFam-Pipeline Delivery Bundle" in summary_text
     assert "standard report" in summary_text
+    assert "manifest-mode YAML example" in summary_text
     assert "alpha, beta, gamma, theta" in summary_text
     assert "Reference governance" in summary_text
     assert "runtime recovery" in summary_text
