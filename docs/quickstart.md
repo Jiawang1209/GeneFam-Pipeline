@@ -60,7 +60,11 @@ Key outputs:
 - `results/quickstart/quickstart_summary.tsv`
 - `results/quickstart/quickstart_summary.md`
 - `results/quickstart/standard_smoke/report/final_report.md`
+- `results/quickstart/standard_smoke/tables/run_config_snapshot.tsv`
 - `results/quickstart/example_prepared_wgd/report/final_report.md`
+- `results/quickstart/example_prepared_wgd/tables/wgd_run_config_snapshot.tsv`
+
+Both final reports include a `Run Configuration Snapshot` section so the selected species, runtime, identification rule, Ks bins, and WGD event mappings can be reviewed without opening the raw TSV first.
 
 ## 3. Audit The Long Objective
 

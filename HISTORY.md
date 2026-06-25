@@ -4746,12 +4746,48 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocker remains missing `docker` and `apptainer`.
 
 Commit:
-- hash: pending
+- hash: 968a126431140602ef6b82938944427bfc1a3942
 - message: feat: index run configuration snapshots
 - files: delivery bundle helper, delivery bundle test, history
 
 Next:
 - Commit the delivery-bundle run configuration index update, then keep Docker/Apptainer as the only unresolved release blocker.
+
+## 2026-06-25 - Document run configuration snapshots in quickstart
+
+Context:
+- The current development boundary is to finish the analysis workflow first, then do container packaging and runtime verification at the end.
+- Final reports and the delivery bundle now expose standard and WGD run configuration snapshots, but the quickstart did not yet list those files or explain the report section.
+
+Decisions:
+- Keep container work as a final packaging/verification step, not the next development focus.
+- Add standard and WGD run configuration snapshot paths to the quickstart handoff outputs.
+- State that final reports include a `Run Configuration Snapshot` section for selected species, runtime, identification rules, Ks bins, and WGD event mappings.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `docs/quickstart.md`
+- `tests/test_quickstart_docs.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_quickstart_docs.py -q` first failed because `docs/quickstart.md` did not list `results/quickstart/standard_smoke/tables/run_config_snapshot.tsv`.
+- The same focused test passed with 2 tests after adding the standard/WGD run configuration snapshot paths and report-section note.
+- `python -m pytest tests/test_release_audit_docs.py tests/test_run_delivery_bundle.py -q` passed with 2 tests.
+- `python -m pytest tests -q` passed with 244 tests.
+
+Commit:
+- hash: pending
+- message: docs: document quickstart run configuration snapshots
+- files: quickstart docs, quickstart doc test, history
+
+Next:
+- Continue improving analysis-flow usability and evidence surfaces; leave Docker/Apptainer packaging for the final封装 step.
 
 ## 2026-06-25 - Add final delivery bundle index
 
