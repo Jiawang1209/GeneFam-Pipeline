@@ -106,10 +106,11 @@ def build_objective_audit(
         _row(
             "Docker/Apptainer reproducibility",
             "achieved" if not missing_container_tools else "blocked",
-            "container materials audit, command readiness audit, and runtime bootstrap plan",
+            "container materials audit, Dockerfile default standard smoke contract, command readiness audit, and runtime bootstrap plan",
             "Container runtime route is available."
             if not missing_container_tools
-            else "Missing container commands: " + ", ".join(missing_container_tools),
+            else "Dockerfile default standard smoke writes results/container_default_smoke; missing container commands: "
+            + ", ".join(missing_container_tools),
         ),
         _achieved_if(
             _all_passed(

@@ -79,6 +79,8 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
     assert by_requirement["GeneFamilyFlow runtime"]["status"] == "achieved"
     assert by_requirement["Docker/Apptainer reproducibility"]["status"] == "blocked"
     assert "container materials audit" in by_requirement["Docker/Apptainer reproducibility"]["evidence"]
+    assert "Dockerfile default standard smoke" in by_requirement["Docker/Apptainer reproducibility"]["evidence"]
+    assert "results/container_default_smoke" in by_requirement["Docker/Apptainer reproducibility"]["note"]
     assert "docker, apptainer" in by_requirement["Docker/Apptainer reproducibility"]["note"]
     assert by_requirement["WGD gamma beta alpha theta evidence"]["status"] == "achieved"
     assert by_requirement["quickstart handoff"]["status"] == "achieved"

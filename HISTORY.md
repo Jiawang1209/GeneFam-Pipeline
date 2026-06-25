@@ -6005,9 +6005,48 @@ Verification:
 - `results/local_acceptance/local_acceptance_summary.md` still records `release_gate` failed with exit code `1`, while `quickstart_handoff` and `delivery_bundle` passed.
 
 Commit:
+- hash: 9fd7e5d28157d7fa3e2d2df8683fc113c9a9c75f
+- message: docs: index docker default smoke in delivery bundle
+- files: delivery bundle index, delivery bundle test, history
+
+Next:
+- Commit the delivery-bundle indexing update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Surface Docker default smoke in objective audit
+
+Context:
+- The delivery bundle now indexes the Dockerfile default standard smoke contract.
+- The long objective audit still summarized Docker/Apptainer reproducibility as container materials plus runtime readiness, without mentioning the new default in-image workflow smoke.
+
+Decisions:
+- Add the Dockerfile default standard smoke contract to the Docker/Apptainer reproducibility evidence text.
+- Mention `results/container_default_smoke` in the blocked note so the audit distinguishes the static image contract from the missing host runtime commands.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py -q` first failed because the Docker/Apptainer reproducibility row did not mention `Dockerfile default standard smoke` or `results/container_default_smoke`.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 16 tests after updating the audit evidence and note.
+- `python -m pytest tests -q` passed with 274 tests.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing objective, handoff, quickstart, and delivery-bundle artifacts.
+- `rg -n "Dockerfile default standard smoke|container_default_smoke|Passed:|Required failed:|Optional failed:|Achieved:|Blocked:|Missing:" results/objective_audit/objective_audit.md results/release_checks/release_checks.md results/delivery_bundle/delivery_bundle.md` confirmed the generated objective audit includes the Docker default smoke contract and `results/container_default_smoke`.
+- `results/release_checks/release_checks.md` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+- `results/local_acceptance/local_acceptance_summary.md` still records `release_gate` failed with exit code `1`, while `quickstart_handoff` and `delivery_bundle` passed.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Commit the delivery-bundle indexing update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
+- Commit the objective-audit evidence update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
