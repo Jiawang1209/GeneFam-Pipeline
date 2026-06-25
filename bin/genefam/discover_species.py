@@ -69,6 +69,20 @@ def _filter_manifest_rows(
     return filtered
 
 
+def _resolve_manifest_file_paths(rows: list[dict[str, str]], base_dir: Path | None) -> list[dict[str, str]]:
+    if base_dir is None:
+        return rows
+    resolved: list[dict[str, str]] = []
+    for source_row in rows:
+        row = dict(source_row)
+        for file_type in FILE_TYPES:
+            value = row.get(file_type, "")
+            if value and not Path(value).is_absolute():
+                row[file_type] = str(Path(base_dir) / value)
+        resolved.append(row)
+    return resolved
+
+
 def load_species_manifest(
     manifest: Path,
     include: str | list[str] | tuple[str, ...] | None,
@@ -90,6 +104,7 @@ def load_species_manifest(
         if missing_columns:
             raise ValueError(f"Species manifest is missing required columns: {', '.join(missing_columns)}")
         rows = list(reader)
+    rows = _resolve_manifest_file_paths(rows, base_dir)
     return _filter_manifest_rows(rows, include=include, exclude=exclude, required=required)
 
 

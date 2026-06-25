@@ -5472,9 +5472,54 @@ Verification:
 - `rg -n "wgd_handoff_manifest|standard-to-WGD handoff" results/delivery_bundle/delivery_manifest.tsv results/delivery_bundle/delivery_bundle.md results/standard_smoke/report/final_report.md` confirmed the final delivery index points to the handoff manifest.
 
 Commit:
-- hash: pending
+- hash: 0a29cc1c37f44ec7a69e427339d2b02209459cc1
 - message: feat: add standard to wgd handoff manifest
 - files: standard-to-WGD manifest builder, standard and Nextflow branch wiring, delivery bundle, docs, tests, history
 
 Next:
 - Continue closing workflow-first gaps before final Docker/Apptainer packaging.
+
+## 2026-06-25 - Fix manifest-mode paths for Nextflow workdirs
+
+Context:
+- After adding the standard-to-WGD handoff manifest, the refreshed release gate showed `Nextflow standard manifest smoke` failing while the folder-per-species Nextflow standard branch passed.
+- The objective audit still marked `Nextflow DSL2 workflow` as missing until the manifest-mode DSL2 standard path passed.
+- The project is still in workflow-first development; Docker/Apptainer封装 remains the final step.
+
+Root cause:
+- `tests/fixtures/species_manifest.tsv` stores file paths relative to the repository root.
+- Python smoke tests run from the repository root, so those relative paths worked there.
+- Nextflow processes execute inside per-task `work/` directories; the same manifest-relative values were no longer reachable, causing missing peptide/GFF3 files in downstream standard processes.
+
+Decisions:
+- Resolve non-empty manifest file columns (`pep`, `gff3`, `cds`, `genome`) against `--base-dir` when loading a prebuilt species manifest.
+- Keep the existing behavior unchanged when no `base_dir` is supplied.
+- Add both function-level and CLI-level tests so the Nextflow `PREPARE_SPECIES --base-dir ${projectDir}/..` contract is protected.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/discover_species.py`
+- `tests/test_discover_species.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_discover_species.py::test_load_species_manifest_resolves_relative_file_paths_against_base_dir -q` first failed because manifest file paths stayed relative.
+- `python -m pytest tests/test_discover_species.py -q` passed with 8 tests after the fix.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --config configs/manifest.example.yaml --outdir results/nextflow_standard_manifest_smoke` passed and produced the full standard output set, including `tables/wgd_handoff_manifest.tsv`.
+- `cat results/nextflow_standard_manifest_smoke/nextflow_standard_smoke.tsv` showed `nextflow_standard_identification` status `passed`.
+- `python -m pytest tests/test_discover_species.py tests/test_run_nextflow_standard_smoke.py -q` passed with 18 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` now reports `Passed: 28`, `Required failed: 1`, with the only required failure being `readiness audit`; Docker and Apptainer profile smokes remain optional failures.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` now reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, with only Docker/Apptainer reproducibility blocked by missing runtimes.
+
+Commit:
+- hash: pending
+- message: fix: resolve manifest paths for nextflow workdirs
+- files: species manifest resolver, discovery tests, history
+
+Next:
+- Continue workflow-first polishing and keep Docker/Apptainer packaging as the remaining external-runtime blocker.

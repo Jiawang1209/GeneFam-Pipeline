@@ -1,4 +1,6 @@
 from pathlib import Path
+import subprocess
+import sys
 
 import pytest
 
@@ -105,6 +107,34 @@ def test_load_species_manifest_filters_include_and_exclude(tmp_path):
     ]
 
 
+def test_load_species_manifest_resolves_relative_file_paths_against_base_dir(tmp_path):
+    manifest = tmp_path / "manifests" / "species_manifest.tsv"
+    manifest.parent.mkdir()
+    manifest.write_text(
+        "species_id\tpep\tgff3\tcds\tgenome\n"
+        "Demo_species\tdata/demo.pep.fa\tdata/demo.gff3\tdata/demo.cds.fa\t\n",
+        encoding="utf-8",
+    )
+
+    rows = load_species_manifest(
+        Path("manifests/species_manifest.tsv"),
+        include="all",
+        exclude=[],
+        required=REQUIRED,
+        base_dir=tmp_path,
+    )
+
+    assert rows == [
+        {
+            "species_id": "Demo_species",
+            "pep": str(tmp_path / "data/demo.pep.fa"),
+            "gff3": str(tmp_path / "data/demo.gff3"),
+            "cds": str(tmp_path / "data/demo.cds.fa"),
+            "genome": "",
+        }
+    ]
+
+
 def test_load_species_manifest_reports_missing_requested_species(tmp_path):
     manifest = tmp_path / "species_manifest.tsv"
     manifest.write_text(
@@ -143,3 +173,54 @@ def test_species_rows_from_config_uses_manifest_mode():
             "genome": "",
         }
     ]
+
+
+def test_discover_species_cli_base_dir_resolves_manifest_file_paths_for_nextflow_workdirs(tmp_path):
+    manifest = tmp_path / "species_manifest.tsv"
+    manifest.write_text(
+        "species_id\tpep\tgff3\tcds\tgenome\n"
+        "Demo_species\tdata/demo.pep.fa\tdata/demo.gff3\t\t\n",
+        encoding="utf-8",
+    )
+    config = tmp_path / "config.yaml"
+    config.write_text(
+        "\n".join(
+            [
+                "input:",
+                "  mode: manifest",
+                "  manifest: species_manifest.tsv",
+                "  required:",
+                "    pep: true",
+                "    gff3: true",
+                "species:",
+                "  include: all",
+                "  exclude: []",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    groups = tmp_path / "groups.yaml"
+    groups.write_text("species_groups: {}\n", encoding="utf-8")
+    out = tmp_path / "selected.tsv"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "bin/genefam/discover_species.py",
+            "--config",
+            str(config),
+            "--groups",
+            str(groups),
+            "--base-dir",
+            str(tmp_path),
+            "--out",
+            str(out),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    text = out.read_text(encoding="utf-8")
+    assert f"Demo_species\t{tmp_path / 'data/demo.pep.fa'}\t{tmp_path / 'data/demo.gff3'}\t\t\n" in text
