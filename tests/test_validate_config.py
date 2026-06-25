@@ -168,6 +168,34 @@ def test_validate_config_reports_kaks_requires_cds_inputs():
     assert "modules.kaks requires input.required.cds: true" in errors
 
 
+def test_validate_config_reports_identification_modules_require_pep_inputs():
+    config = _valid_base_config()
+    config["input"]["required"]["pep"] = False
+    config["modules"]["identification"] = True
+    config["modules"]["domain_filtering"] = True
+    config["modules"]["phylogeny"] = True
+    config["modules"]["motif"] = True
+
+    errors = validate_config(config)
+
+    assert "modules.identification requires input.required.pep: true" in errors
+    assert "modules.domain_filtering requires input.required.pep: true" in errors
+    assert "modules.phylogeny requires input.required.pep: true" in errors
+    assert "modules.motif requires input.required.pep: true" in errors
+
+
+def test_validate_config_reports_synteny_requires_pep_and_gff3_inputs():
+    config = _valid_base_config()
+    config["input"]["required"]["pep"] = False
+    config["input"]["required"]["gff3"] = False
+    config["modules"]["synteny"] = True
+
+    errors = validate_config(config)
+
+    assert "modules.synteny requires input.required.pep: true" in errors
+    assert "modules.synteny requires input.required.gff3: true" in errors
+
+
 def test_validate_config_reports_chromosome_location_requires_gff3_inputs():
     config = _valid_base_config()
     config["input"]["required"]["gff3"] = False

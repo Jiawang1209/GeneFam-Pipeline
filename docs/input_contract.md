@@ -36,6 +36,11 @@ Later modules add more requirements:
 
 `bin/genefam/validate_config.py` checks module dependencies before a run starts:
 
+- `modules.identification: true` requires `input.required.pep: true`.
+- `modules.domain_filtering: true` requires `input.required.pep: true`.
+- `modules.phylogeny: true` requires `input.required.pep: true`.
+- `modules.motif: true` requires `input.required.pep: true`.
+- `modules.synteny: true` requires both `input.required.pep: true` and `input.required.gff3: true`.
 - `modules.kaks: true` requires `input.required.cds: true`.
 - `modules.chromosome_location: true` requires `input.required.gff3: true`.
 - `modules.expression: true` requires `expression.matrix`.

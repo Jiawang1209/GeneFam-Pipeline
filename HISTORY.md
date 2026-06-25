@@ -4782,7 +4782,7 @@ Verification:
 - `python -m pytest tests -q` passed with 244 tests.
 
 Commit:
-- hash: pending
+- hash: b5b16d1f5f0f44e7041a7b37c3dc895936201c95
 - message: docs: document quickstart run configuration snapshots
 - files: quickstart docs, quickstart doc test, history
 
@@ -5092,3 +5092,42 @@ Commit:
 
 Next:
 - Continue making broad objective items independently auditable while preserving Docker/Apptainer as the only current release blocker.
+
+## 2026-06-25 - Tighten module input validation
+
+Context:
+- The workflow is being developed before final container packaging.
+- Species-bank discovery already records peptide, GFF3, CDS, and genome paths, but config validation did not yet reject several module/input mismatches before runtime.
+- Large multi-species runs should fail early when a selected module requires protein or coordinate inputs that the YAML marks as optional or unavailable.
+
+Decisions:
+- Keep this as workflow-entry validation, not container work.
+- Require `input.required.pep: true` for identification, domain filtering, phylogeny, and motif modules.
+- Require both `input.required.pep: true` and `input.required.gff3: true` for synteny, matching the protein-search plus coordinate-block evidence model used by MCScanX-style workflows.
+- Document the expanded module dependency validation in `docs/input_contract.md`.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/validate_config.py`
+- `docs/input_contract.md`
+- `tests/test_validate_config.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_validate_config.py -q` first failed with 2 failures because module/input checks for peptide-dependent modules and synteny were not implemented.
+- `python -m pytest tests/test_validate_config.py -q` passed with 15 tests after adding the module/input dependency checks.
+- `python -m pytest tests/test_discover_species.py tests/test_run_species_selection_smoke.py tests/test_release_audit_docs.py -q` passed with 6 tests.
+- `python -m pytest tests -q` passed with 246 tests.
+
+Commit:
+- hash: pending
+- message: feat: tighten module input validation
+- files: config validator, input contract docs, validator tests, history
+
+Next:
+- Run focused and full tests, then commit the validation hardening while leaving container packaging for the final step.

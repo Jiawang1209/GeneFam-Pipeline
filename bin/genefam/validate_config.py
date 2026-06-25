@@ -71,6 +71,15 @@ def validate_config(config: dict[str, Any]) -> list[str]:
     input_required = (config.get("input", {}) or {}).get("required", {}) or {}
     expression = config.get("expression", {}) or {}
 
+    pep_dependent_modules = ("identification", "domain_filtering", "phylogeny", "motif")
+    for module_name in pep_dependent_modules:
+        if modules.get(module_name) is True and input_required.get("pep") is not True:
+            errors.append(f"modules.{module_name} requires input.required.pep: true")
+    if modules.get("synteny") is True:
+        if input_required.get("pep") is not True:
+            errors.append("modules.synteny requires input.required.pep: true")
+        if input_required.get("gff3") is not True:
+            errors.append("modules.synteny requires input.required.gff3: true")
     if modules.get("kaks") is True and input_required.get("cds") is not True:
         errors.append("modules.kaks requires input.required.cds: true")
     if modules.get("chromosome_location") is True and input_required.get("gff3") is not True:
