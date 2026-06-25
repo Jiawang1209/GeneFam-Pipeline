@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from bin.genefam.discover_species import discover_species
+from bin.genefam.discover_species import discover_species, load_species_manifest
 
 
 PATTERNS = {
@@ -73,5 +73,49 @@ def test_discover_species_fails_for_missing_required_file(tmp_path):
             include="all",
             exclude=[],
             patterns=PATTERNS,
+            required=REQUIRED,
+        )
+
+
+def test_load_species_manifest_filters_include_and_exclude(tmp_path):
+    manifest = tmp_path / "species_manifest.tsv"
+    manifest.write_text(
+        "species_id\tpep\tgff3\tcds\tgenome\n"
+        "Arabidopsis_thaliana\tath.pep.fa\tath.gff3\tath.cds.fa\tath.genome.fa\n"
+        "Brassica_rapa\tbra.pep.fa\tbra.gff3\tbra.cds.fa\tbra.genome.fa\n"
+        "Camelina_sativa\tcam.pep.fa\tcam.gff3\tcam.cds.fa\tcam.genome.fa\n",
+        encoding="utf-8",
+    )
+
+    rows = load_species_manifest(
+        manifest,
+        include=["Arabidopsis_thaliana", "Brassica_rapa"],
+        exclude=["Brassica_rapa"],
+        required=REQUIRED,
+    )
+
+    assert rows == [
+        {
+            "species_id": "Arabidopsis_thaliana",
+            "pep": "ath.pep.fa",
+            "gff3": "ath.gff3",
+            "cds": "ath.cds.fa",
+            "genome": "ath.genome.fa",
+        }
+    ]
+
+
+def test_load_species_manifest_reports_missing_requested_species(tmp_path):
+    manifest = tmp_path / "species_manifest.tsv"
+    manifest.write_text(
+        "species_id\tpep\tgff3\tcds\tgenome\nArabidopsis_thaliana\tath.pep.fa\tath.gff3\t\t\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="Requested species not found: Brassica_rapa"):
+        load_species_manifest(
+            manifest,
+            include=["Brassica_rapa"],
+            exclude=[],
             required=REQUIRED,
         )

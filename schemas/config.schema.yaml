@@ -15,6 +15,7 @@ fields:
   runtime.r_bin: absolute R binary path, default /usr/local/bin/R
   input.mode: auto or manifest
   input.root: path to species bank when input.mode is auto
+  input.manifest: path to a species manifest TSV when input.mode is manifest
   species.include: all or list of species IDs
   species.exclude: list of species IDs
   run.species_group: null or a key from configs/species_groups.yaml
@@ -34,6 +35,11 @@ fields:
   dev.mock_evidence_dir: directory containing hmmer.tsv and diamond.tsv when mock mode is enabled
 module_dependency_rules:
   modules.identification: requires at least one enabled search tool, identification.use_hmmer or identification.use_diamond
+  modules.identification.inputs: requires input.required.pep true
+  modules.domain_filtering.inputs: requires input.required.pep true
+  modules.phylogeny.inputs: requires input.required.pep true
+  modules.motif.inputs: requires input.required.pep true
+  modules.synteny.inputs: requires input.required.pep true and input.required.gff3 true
   modules.kaks: requires input.required.cds true
   modules.chromosome_location: requires input.required.gff3 true
   modules.expression: requires expression.matrix

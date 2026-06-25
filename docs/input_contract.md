@@ -62,6 +62,22 @@ species:
 
 Named groups can be selected through `run.species_group` when present in `configs/species_groups.yaml`.
 
+## Input Modes
+
+`input.mode: auto` scans a folder-per-species bank and requires `input.root`.
+
+`input.mode: manifest` reads a prebuilt tab-separated manifest and requires `input.manifest`. The manifest must contain:
+
+```text
+species_id
+pep
+gff3
+cds
+genome
+```
+
+Manifest mode still applies `species.include`, `species.exclude`, and `run.species_group`, so a large manifest can be reused while selecting a smaller target species set in YAML.
+
 ## Runtime
 
 The default shared environment is `GeneFamilyFlow`. R-language steps should use `/usr/local/bin/R`.
@@ -263,5 +279,5 @@ Selection category is derived from `Ka/Ks`:
 - File matching uses the pattern lists in `configs/example.config.yaml`.
 - If multiple files match the same file type, the pipeline fails and asks for a manifest.
 - Broad genome patterns such as `*.fa` are intentionally avoided in the example config because they can accidentally match protein FASTA files.
-- Use manifest mode when genome files have ambiguous names.
+- Use `input.mode: manifest` when genome or annotation files have ambiguous names, or when a curated species manifest should be reused across runs.
 - Reference data under `Reference/` is not modified by the pipeline.

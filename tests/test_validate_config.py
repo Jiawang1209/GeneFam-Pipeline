@@ -6,7 +6,7 @@ def test_validate_config_accepts_minimal_valid_config():
         {
             "project": {},
             "runtime": {"environment": "GeneFamilyFlow", "r_bin": "/usr/local/bin/R"},
-            "input": {"mode": "auto"},
+            "input": {"mode": "auto", "root": "tests/fixtures/species_bank"},
             "species": {},
             "gene_family": {},
             "identification": {"final_rule": "intersection"},
@@ -23,7 +23,7 @@ def test_validate_config_reports_invalid_final_rule():
         {
             "project": {},
             "runtime": {"environment": "GeneFamilyFlow", "r_bin": "/usr/local/bin/R"},
-            "input": {"mode": "auto"},
+            "input": {"mode": "auto", "root": "tests/fixtures/species_bank"},
             "species": {},
             "gene_family": {},
             "identification": {"final_rule": "ambiguous"},
@@ -33,6 +33,26 @@ def test_validate_config_reports_invalid_final_rule():
     )
 
     assert "identification.final_rule must be intersection, union, or hmmer_only" in errors
+
+
+def test_validate_config_reports_auto_mode_without_species_bank_root():
+    config = _valid_base_config()
+    config["input"].pop("root", None)
+    config["input"]["mode"] = "auto"
+
+    errors = validate_config(config)
+
+    assert "input.root is required when input.mode is auto" in errors
+
+
+def test_validate_config_reports_manifest_mode_without_manifest_path():
+    config = _valid_base_config()
+    config["input"].pop("root", None)
+    config["input"]["mode"] = "manifest"
+
+    errors = validate_config(config)
+
+    assert "input.manifest is required when input.mode is manifest" in errors
 
 
 def test_validate_config_reports_identification_without_any_enabled_search_tool():
@@ -50,7 +70,7 @@ def test_validate_config_reports_wrong_runtime():
         {
             "project": {},
             "runtime": {"environment": "base", "r_bin": "/usr/bin/R"},
-            "input": {"mode": "auto"},
+            "input": {"mode": "auto", "root": "tests/fixtures/species_bank"},
             "species": {},
             "gene_family": {},
             "identification": {"final_rule": "intersection"},
@@ -68,7 +88,7 @@ def test_validate_config_reports_wrong_plotting_reuse_policy():
         {
             "project": {},
             "runtime": {"environment": "GeneFamilyFlow", "r_bin": "/usr/local/bin/R"},
-            "input": {"mode": "auto"},
+            "input": {"mode": "auto", "root": "tests/fixtures/species_bank"},
             "species": {},
             "gene_family": {},
             "identification": {"final_rule": "intersection"},
@@ -85,7 +105,7 @@ def test_validate_config_accepts_mock_mode_with_evidence_dir():
         {
             "project": {},
             "runtime": {"environment": "GeneFamilyFlow", "r_bin": "/usr/local/bin/R"},
-            "input": {"mode": "auto"},
+            "input": {"mode": "auto", "root": "tests/fixtures/species_bank"},
             "species": {},
             "gene_family": {},
             "identification": {"final_rule": "intersection"},

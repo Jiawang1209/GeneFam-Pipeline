@@ -5125,9 +5125,56 @@ Verification:
 - `python -m pytest tests -q` passed with 246 tests.
 
 Commit:
-- hash: pending
+- hash: 07a13b74d129aa44745eb1f414cd689fb24c9cb7
 - message: feat: tighten module input validation
 - files: config validator, input contract docs, validator tests, history
 
 Next:
 - Run focused and full tests, then commit the validation hardening while leaving container packaging for the final step.
+
+## 2026-06-25 - Enable manifest input mode
+
+Context:
+- The workflow is being developed before final container packaging.
+- `input.mode` already allowed `auto` and `manifest`, but validation did not require mode-specific fields and species-selection smoke still always scanned `input.root`.
+- Large species banks may need a curated reusable manifest when file names are ambiguous or manually curated.
+
+Decisions:
+- Keep `input.mode: auto` as the species-bank scanning path and require `input.root`.
+- Make `input.mode: manifest` a first-class path that requires `input.manifest`.
+- Reuse the same species include, exclude, group selection, and required-file checks for prebuilt manifests.
+- Let `run_species_selection_smoke.py` exercise both auto mode and manifest mode so the entrypoint contract is tested.
+- Document manifest columns and mode-specific fields in the input contract and config schema.
+
+Added:
+- `load_species_manifest` in `bin/genefam/discover_species.py`.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/discover_species.py`
+- `bin/genefam/run_species_selection_smoke.py`
+- `bin/genefam/validate_config.py`
+- `docs/input_contract.md`
+- `schemas/config.schema.yaml`
+- `tests/test_discover_species.py`
+- `tests/test_run_species_selection_smoke.py`
+- `tests/test_validate_config.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_validate_config.py -q` first failed because `input.root` and `input.manifest` were not checked for `auto` and `manifest` modes.
+- `python -m pytest tests/test_discover_species.py -q` first failed because `load_species_manifest` did not exist.
+- After implementation, `python -m pytest tests/test_validate_config.py -q` passed with 17 tests.
+- `python -m pytest tests/test_discover_species.py tests/test_run_species_selection_smoke.py -q` passed with 8 tests.
+- `python -m pytest tests/test_validate_config.py tests/test_discover_species.py tests/test_run_species_selection_smoke.py -q` passed with 25 tests after the final cleanup.
+- `python -m pytest tests -q` passed with 251 tests.
+
+Commit:
+- hash: pending
+- message: feat: enable manifest input mode
+- files: species discovery, species selection smoke, config validation, docs, schema, tests, history
+
+Next:
+- Run the full test suite, then commit the manifest-mode input contract.

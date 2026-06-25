@@ -32,9 +32,14 @@ def validate_config(config: dict[str, Any]) -> list[str]:
         if section not in config:
             errors.append(f"Missing required section: {section}")
 
-    input_mode = (config.get("input", {}) or {}).get("mode")
+    input_config = config.get("input", {}) or {}
+    input_mode = input_config.get("mode")
     if input_mode not in {"auto", "manifest"}:
         errors.append("input.mode must be 'auto' or 'manifest'")
+    if input_mode == "auto" and not input_config.get("root"):
+        errors.append("input.root is required when input.mode is auto")
+    if input_mode == "manifest" and not input_config.get("manifest"):
+        errors.append("input.manifest is required when input.mode is manifest")
 
     runtime = config.get("runtime", {}) or {}
     if runtime.get("environment") != "GeneFamilyFlow":

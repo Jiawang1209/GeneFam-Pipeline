@@ -15,6 +15,7 @@ except ImportError:  # pragma: no cover - exercised only on minimal installs
 
 
 FILE_TYPES = ("pep", "gff3", "cds", "genome")
+MANIFEST_FIELDNAMES = ("species_id", *FILE_TYPES)
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
@@ -33,6 +34,63 @@ def _normalize_include(include: str | list[str] | tuple[str, ...] | None) -> str
     if isinstance(include, str):
         return {include}
     return set(include)
+
+
+def _filter_manifest_rows(
+    rows: list[dict[str, str]],
+    include: str | list[str] | tuple[str, ...] | None,
+    exclude: list[str] | tuple[str, ...] | None,
+    required: dict[str, bool],
+) -> list[dict[str, str]]:
+    include_set = _normalize_include(include)
+    exclude_set = set(exclude or [])
+    filtered: list[dict[str, str]] = []
+
+    for source_row in rows:
+        species_id = source_row.get("species_id", "")
+        if not species_id:
+            raise ValueError("Species manifest contains a row without species_id")
+        if include_set != "all" and species_id not in include_set:
+            continue
+        if species_id in exclude_set:
+            continue
+        row = {field: source_row.get(field, "") for field in MANIFEST_FIELDNAMES}
+        for file_type in FILE_TYPES:
+            if required.get(file_type, False) and not row[file_type]:
+                raise ValueError(f"Missing required {file_type} file for species {species_id}")
+        filtered.append(row)
+
+    if include_set != "all":
+        discovered = {row["species_id"] for row in filtered}
+        missing = sorted(include_set - discovered - exclude_set)
+        if missing:
+            raise ValueError(f"Requested species not found: {', '.join(missing)}")
+
+    return filtered
+
+
+def load_species_manifest(
+    manifest: Path,
+    include: str | list[str] | tuple[str, ...] | None,
+    exclude: list[str] | tuple[str, ...] | None,
+    required: dict[str, bool],
+    base_dir: Path | None = None,
+) -> list[dict[str, str]]:
+    """Read and filter a prebuilt species manifest."""
+
+    manifest = Path(manifest)
+    if base_dir and not manifest.is_absolute():
+        manifest = Path(base_dir) / manifest
+    if not manifest.exists():
+        raise ValueError(f"Species manifest does not exist: {manifest}")
+
+    with manifest.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle, delimiter="\t")
+        missing_columns = [field for field in MANIFEST_FIELDNAMES if field not in (reader.fieldnames or [])]
+        if missing_columns:
+            raise ValueError(f"Species manifest is missing required columns: {', '.join(missing_columns)}")
+        rows = list(reader)
+    return _filter_manifest_rows(rows, include=include, exclude=exclude, required=required)
 
 
 def _match_one(species_dir: Path, file_type: str, patterns: dict[str, list[str]]) -> str:
@@ -84,13 +142,7 @@ def discover_species(
                 raise ValueError(f"Missing required {file_type} file for species {species_id}")
         rows.append(row)
 
-    if include_set != "all":
-        discovered = {row["species_id"] for row in rows}
-        missing = sorted(include_set - discovered)
-        if missing:
-            raise ValueError(f"Requested species not found: {', '.join(missing)}")
-
-    return rows
+    return _filter_manifest_rows(rows, include=include, exclude=exclude, required=required)
 
 
 def _select_species(config: dict[str, Any], groups: dict[str, Any]) -> tuple[str | list[str], list[str]]:
@@ -128,14 +180,24 @@ def main() -> None:
     groups = _load_yaml(args.groups) if args.groups and args.groups.exists() else {}
     include, exclude = _select_species(config, groups)
     input_config = config.get("input", {})
-    rows = discover_species(
-        root=Path(input_config["root"]),
-        include=include,
-        exclude=exclude,
-        patterns=input_config.get("patterns", {}),
-        required=input_config.get("required", {}),
-        base_dir=args.base_dir,
-    )
+    input_mode = input_config.get("mode", "auto")
+    if input_mode == "manifest":
+        rows = load_species_manifest(
+            manifest=Path(input_config["manifest"]),
+            include=include,
+            exclude=exclude,
+            required=input_config.get("required", {}),
+            base_dir=args.base_dir,
+        )
+    else:
+        rows = discover_species(
+            root=Path(input_config["root"]),
+            include=include,
+            exclude=exclude,
+            patterns=input_config.get("patterns", {}),
+            required=input_config.get("required", {}),
+            base_dir=args.base_dir,
+        )
     write_manifest(rows, args.out)
 
 

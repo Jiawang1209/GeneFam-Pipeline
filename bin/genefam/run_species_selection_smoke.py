@@ -13,7 +13,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from bin.genefam.build_run_plan import build_run_plan, write_tsv as write_run_plan_tsv
-from bin.genefam.discover_species import _load_yaml, _select_species, discover_species, write_manifest
+from bin.genefam.discover_species import _load_yaml, _select_species, discover_species, load_species_manifest, write_manifest
 
 
 def _print_outputs(outputs: dict[str, Path]) -> None:
@@ -37,13 +37,22 @@ def run_species_selection_smoke(
     groups = _load_yaml(groups_path) if groups_path and groups_path.exists() else {}
     include, exclude = _select_species(config, groups)
     input_config = config.get("input", {}) or {}
-    manifest_rows = discover_species(
-        root=Path(input_config["root"]),
-        include=include,
-        exclude=exclude,
-        patterns=input_config.get("patterns", {}),
-        required=input_config.get("required", {}),
-    )
+    input_mode = input_config.get("mode", "auto")
+    if input_mode == "manifest":
+        manifest_rows = load_species_manifest(
+            manifest=Path(input_config["manifest"]),
+            include=include,
+            exclude=exclude,
+            required=input_config.get("required", {}),
+        )
+    else:
+        manifest_rows = discover_species(
+            root=Path(input_config["root"]),
+            include=include,
+            exclude=exclude,
+            patterns=input_config.get("patterns", {}),
+            required=input_config.get("required", {}),
+        )
     write_manifest(manifest_rows, outputs["species_manifest"])
     write_run_plan_tsv(build_run_plan(config), outputs["run_plan"])
 
@@ -56,7 +65,9 @@ def run_species_selection_smoke(
                 "",
                 f"Config: `{config_path}`",
                 f"Groups: `{groups_path}`",
+                f"Input mode: `{input_mode}`",
                 f"Species bank: `{input_config.get('root', '')}`",
+                f"Species manifest input: `{input_config.get('manifest', '')}`",
                 f"Selected species: {len(species_ids)}",
                 ", ".join(species_ids),
                 f"Species manifest: `{outputs['species_manifest']}`",
