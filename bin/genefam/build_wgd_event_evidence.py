@@ -29,6 +29,8 @@ FIELDNAMES = [
     "expected_relative_age",
 ]
 
+EVENT_METADATA_REQUIRED_FIELDS = ("name", "scope", "evidence", "expected_relative_age")
+
 
 def build_event_evidence(
     rows: list[dict[str, str]],
@@ -89,6 +91,9 @@ def load_event_metadata(path: Path | None) -> dict[str, dict[str, str]]:
         name = event["name"]
         if name in metadata:
             raise ValueError(f"Duplicate WGD event name: {name}")
+        for field in EVENT_METADATA_REQUIRED_FIELDS:
+            if not event.get(field):
+                raise ValueError(f"WGD event {name} is missing required field: {field}")
         metadata[name] = event
     return metadata
 

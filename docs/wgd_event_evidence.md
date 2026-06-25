@@ -33,6 +33,8 @@ The pipeline must not automatically rename a layer to one of these events unless
 
 WGD event names must be unique within the event YAML. Duplicate names are rejected so one biological event label cannot silently overwrite another scope or expected age.
 
+WGD event metadata requires name, scope, evidence, and expected_relative_age for every configured event.
+
 Example:
 
 ```bash

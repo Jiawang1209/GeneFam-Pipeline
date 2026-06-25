@@ -103,3 +103,22 @@ def test_load_event_metadata_rejects_duplicate_named_events(tmp_path):
 
     with pytest.raises(ValueError, match="Duplicate WGD event name: alpha"):
         load_event_metadata(events_config)
+
+
+def test_load_event_metadata_rejects_named_events_missing_required_fields(tmp_path):
+    events_config = tmp_path / "wgd_events.yaml"
+    events_config.write_text(
+        "\n".join(
+            [
+                "wgd_events:",
+                "  - name: alpha",
+                "    evidence: literature",
+                "    expected_relative_age: recent",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="WGD event alpha is missing required field: scope"):
+        load_event_metadata(events_config)

@@ -6477,9 +6477,54 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
-- hash: pending
+- hash: e5e6b664bcb3035d913563f56a41f74ebb67de75
 - message: feat: require duplication retention for named wgd events
 - files: config validator, input contract, config schema, validator tests, runtime docs tests, history
 
 Next:
-- Commit this config dependency improvement, then continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
+- Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Require complete WGD event metadata fields
+
+Timestamp:
+- 2026-06-25 14:31:50 CST
+
+Context:
+- WGD event names were unique, but event metadata entries could still omit fields such as `scope`.
+- Missing metadata fields would make gamma/beta/alpha/theta interpretation tables look configured while leaving report columns blank.
+
+Decisions:
+- Require every configured WGD event to provide `name`, `scope`, `evidence`, and `expected_relative_age`.
+- Document the required metadata fields in the WGD event evidence model and release audit.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_wgd_event_evidence.py`
+- `docs/wgd_event_evidence.md`
+- `docs/release_audit.md`
+- `tests/test_build_wgd_event_evidence.py`
+- `tests/test_release_audit_docs.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_wgd_event_evidence.py -q` first failed because an `alpha` event without `scope` was accepted.
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because the release audit did not document the required WGD event metadata fields.
+- `python -m pytest tests/test_build_wgd_event_evidence.py tests/test_release_audit_docs.py -q` passed with 6 tests after adding required-field validation and documentation.
+- `python -m pytest tests -q` passed with 279 tests.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing release, handoff, quickstart, local acceptance, and delivery-bundle evidence.
+- `grep -n -E 'WGD event metadata requires name, scope, evidence, and expected_relative_age|Passed:|Required failed:|Optional failed:|Achieved:|Blocked:|Missing:|release_gate|quickstart_handoff|delivery_bundle' docs/wgd_event_evidence.md docs/release_audit.md results/release_checks/release_checks.md results/objective_audit/objective_audit.md results/local_acceptance/local_acceptance_summary.md` confirmed the required metadata fields and current release evidence.
+- `results/release_checks/release_checks.md` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
+- hash: pending
+- message: fix: require complete wgd event metadata
+- files: WGD event evidence loader, WGD event docs, release audit docs, WGD event tests, history
+
+Next:
+- Commit this WGD event metadata validation improvement, then continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
