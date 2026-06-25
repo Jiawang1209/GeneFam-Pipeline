@@ -25,7 +25,9 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
         "theta",
         "Ka/Ks",
         "chromosome location",
+        "promoter analysis",
         "expression integration",
+        "feature statistics",
         "final report",
         "HISTORY.md",
         "Reference/",
@@ -86,6 +88,11 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "extract_chromosome_locations.py" in text
     assert "run_chromosome_smoke.py" in text
     assert "run_gene_structure_smoke.py" in text
+    assert "run_promoter_smoke.py" in text
+    assert "run_feature_summary_smoke.py" in text
+    assert "extract_promoters.py" in text
+    assert "summarize_feature_tables.py" in text
+    assert "plot_feature_summary.R" in text
     assert "run_alignment_phylogeny_smoke.py" in text
     assert "FastTree" in text
     assert "--tree-builder fasttree" in text
@@ -125,6 +132,12 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/standard_smoke/tables/gene_structure_summary.tsv" in text
     assert "results/gene_structure_smoke/tables/gene_structure_summary.tsv" in text
     assert "results/chromosome_smoke/tables/chromosome_locations.tsv" in text
+    assert "results/promoter_smoke/tables/promoters.bed" in text
+    assert "results/promoter_smoke/sequences/promoters.fa" in text
+    assert "results/promoter_smoke/plots/feature_summary.pdf" in text
+    assert "results/feature_summary_smoke/tables/feature_summary.tsv" in text
+    assert "results/feature_summary_smoke/plots/feature_summary.pdf" in text
+    assert "results/feature_summary_smoke/plots/feature_summary.png" in text
     assert "tests/fixtures/alignment/family_members.faa" in text
     assert "results/alignment_phylogeny_smoke/tables/alignment_manifest.tsv" in text
     assert "results/alignment_phylogeny_smoke/tables/phylogeny_manifest.tsv" in text
@@ -141,6 +154,10 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "tests/fixtures/expression/family_expression.tsv" in text
     assert "tests/fixtures/mcscanx/sample.collinearity" in text
     assert "results/synteny_smoke/tables/syntenic_pairs.tsv" in text
+    assert "MCScanX syntenic pair and block summaries" in text
+    assert "MEME motif count and site summaries" in text
+    assert "gene-structure length and exon summaries" in text
+    assert "domain hit count and coverage summaries" in text
     assert "results/wgd_smoke/report/final_report.md" in text
     assert "results/wgd_smoke/tables/wgd_run_config_snapshot.tsv" in text
     assert "WGD event names must be unique" in text

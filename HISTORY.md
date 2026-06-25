@@ -6257,6 +6257,60 @@ Commit:
 Next:
 - Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
 
+## 2026-06-25 16:08 - Add promoter and feature-summary visualization smokes
+
+Context:
+- The user asked to continue filling promoter analysis and MCScanX visualization, plus MEME motif, gene structure, and domain visualization/statistics for very large gene families.
+- The user emphasized that large gene sets need statistics and summaries, not only per-gene visual outputs.
+
+Decisions:
+- Keep promoter extraction as a Python table/FASTA helper that consumes family candidates, species manifest, genome FASTA, and GFF3.
+- Add a small self-contained promoter smoke rather than changing the species-bank fixtures, preserving the current optional-genome input contract.
+- Aggregate domain, motif, gene-structure, synteny, and promoter evidence into `feature_summary.tsv` before plotting.
+- Use `/usr/local/bin/R` and a shared R script to produce compact PDF/PNG feature-summary plots.
+- Register the new promoter and feature-summary smokes in the default release checks.
+
+Added:
+- `bin/genefam/extract_promoters.py`
+- `bin/genefam/run_promoter_smoke.py`
+- `bin/genefam/summarize_feature_tables.py`
+- `bin/genefam/run_feature_summary_smoke.py`
+- `scripts/plot_feature_summary.R`
+- `tests/test_extract_promoters.py`
+- `tests/test_run_promoter_smoke.py`
+- `tests/test_summarize_feature_tables.py`
+- `tests/test_run_feature_summary_smoke.py`
+
+Modified:
+- `README.md`
+- `docs/release_audit.md`
+- `bin/genefam/run_release_checks.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_release_audit_docs.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_feature_summary_smoke.py -q` passed after adding the feature-summary smoke runner.
+- `python -m pytest tests/test_run_promoter_smoke.py tests/test_extract_promoters.py tests/test_summarize_feature_tables.py tests/test_run_feature_summary_smoke.py -q` passed with 6 tests after fixing the promoter smoke function call.
+- `python -m pytest tests/test_run_release_checks.py tests/test_release_audit_docs.py -q` passed with 38 tests after wiring the new smokes into release checks and docs.
+- `python bin/genefam/run_promoter_smoke.py --r-bin /usr/local/bin/R --outdir results/promoter_smoke` wrote promoter BED/FASTA plus feature-summary PDF/PNG.
+- `python bin/genefam/run_feature_summary_smoke.py --domains results/domain_filter_smoke/tables/filtered_domains.tsv --motifs results/motif_smoke/tables/motif_summary.tsv --gene-structures results/gene_structure_smoke/tables/gene_structure_summary.tsv --synteny results/synteny_smoke/tables/syntenic_pairs.tsv --promoters results/promoter_smoke/tables/promoters.bed --r-bin /usr/local/bin/R --outdir results/feature_summary_smoke` wrote aggregate statistics and feature-summary PDF/PNG.
+- `python -m pytest tests -q` passed with 290 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing release evidence.
+- `results/release_checks/release_checks.md` reports `Passed: 30`, `Required failed: 1`, `Optional failed: 2`; `promoter smoke` and `feature summary visualization smoke` both passed.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
+- hash: not created yet
+- message: pending
+- files: promoter extraction, feature-summary statistics, R visualization, release checks, docs, tests, history
+
+Next:
+- Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
+
 ## 2026-06-25 - Stabilize standard Nextflow alignment and FastTree readiness
 
 Timestamp:
@@ -6307,7 +6361,7 @@ Verification:
 - `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited 1 after refreshing release, quickstart, local acceptance, handoff, and delivery-bundle outputs; `results/handoff/handoff_report.md` reports only `Docker/Apptainer reproducibility` as blocked.
 
 Commit:
-- hash: pending
+- hash: dc2f9cd8e0258401baf19408e56487540f543e6f
 - message: fix: stabilize standard nextflow phylogeny runtime
 - files: alignment/phylogeny module, readiness audit, runtime bootstrap plan, readiness checklist, tests, history
 

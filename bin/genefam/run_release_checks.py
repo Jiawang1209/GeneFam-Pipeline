@@ -182,6 +182,17 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "promoter smoke",
+            [
+                python,
+                "bin/genefam/run_promoter_smoke.py",
+                "--r-bin",
+                "/usr/local/bin/R",
+                "--outdir",
+                "results/promoter_smoke",
+            ],
+        ),
+        CheckSpec(
             "standard branch expression smoke",
             [
                 python,
@@ -226,6 +237,27 @@ def default_checks() -> list[CheckSpec]:
                 "tests/fixtures/mcscanx/sample.collinearity",
                 "--outdir",
                 "results/synteny_smoke",
+            ],
+        ),
+        CheckSpec(
+            "feature summary visualization smoke",
+            [
+                python,
+                "bin/genefam/run_feature_summary_smoke.py",
+                "--domains",
+                "results/domain_filter_smoke/tables/filtered_domains.tsv",
+                "--motifs",
+                "results/motif_smoke/tables/motif_summary.tsv",
+                "--gene-structures",
+                "results/gene_structure_smoke/tables/gene_structure_summary.tsv",
+                "--synteny",
+                "results/synteny_smoke/tables/syntenic_pairs.tsv",
+                "--promoters",
+                "results/promoter_smoke/tables/promoters.bed",
+                "--r-bin",
+                "/usr/local/bin/R",
+                "--outdir",
+                "results/feature_summary_smoke",
             ],
         ),
         CheckSpec(

@@ -361,13 +361,25 @@ def test_default_checks_include_standard_branch_expression_smoke_before_readines
 def test_default_checks_include_chromosome_smoke_before_expression_smoke():
     names = [check.name for check in default_checks()]
 
-    assert names.index("chromosome location smoke") < names.index("standard branch expression smoke")
+    assert names.index("chromosome location smoke") < names.index("promoter smoke")
     assert names.index("chromosome location smoke") > names.index("standard branch smoke")
     smoke = next(check for check in default_checks() if check.name == "chromosome location smoke")
     command = " ".join(smoke.command)
     assert "bin/genefam/run_chromosome_smoke.py" in command
     assert "--config configs/example.config.yaml" in command
     assert "--outdir results/chromosome_smoke" in command
+
+
+def test_default_checks_include_promoter_smoke_before_expression_smoke():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("promoter smoke") < names.index("standard branch expression smoke")
+    assert names.index("promoter smoke") > names.index("chromosome location smoke")
+    smoke = next(check for check in default_checks() if check.name == "promoter smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_promoter_smoke.py" in command
+    assert "--r-bin /usr/local/bin/R" in command
+    assert "--outdir results/promoter_smoke" in command
 
 
 def test_default_checks_include_gene_structure_smoke_before_chromosome_smoke():
@@ -410,12 +422,29 @@ def test_default_checks_include_kaks_smoke_before_wgd_smoke():
     names = [check.name for check in default_checks()]
 
     assert names.index("Ka/Ks parser smoke") < names.index("WGD event smoke")
-    assert names.index("Ka/Ks parser smoke") > names.index("synteny parser smoke")
+    assert names.index("Ka/Ks parser smoke") > names.index("feature summary visualization smoke")
     smoke = next(check for check in default_checks() if check.name == "Ka/Ks parser smoke")
     command = " ".join(smoke.command)
     assert "bin/genefam/run_kaks_smoke.py" in command
     assert "--kaks tests/fixtures/kaks/kaks_calculator.tsv" in command
     assert "--outdir results/kaks_smoke" in command
+
+
+def test_default_checks_include_feature_summary_after_synteny_smoke():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("feature summary visualization smoke") > names.index("synteny parser smoke")
+    assert names.index("feature summary visualization smoke") < names.index("Ka/Ks parser smoke")
+    smoke = next(check for check in default_checks() if check.name == "feature summary visualization smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_feature_summary_smoke.py" in command
+    assert "--domains results/domain_filter_smoke/tables/filtered_domains.tsv" in command
+    assert "--motifs results/motif_smoke/tables/motif_summary.tsv" in command
+    assert "--gene-structures results/gene_structure_smoke/tables/gene_structure_summary.tsv" in command
+    assert "--synteny results/synteny_smoke/tables/syntenic_pairs.tsv" in command
+    assert "--promoters results/promoter_smoke/tables/promoters.bed" in command
+    assert "--r-bin /usr/local/bin/R" in command
+    assert "--outdir results/feature_summary_smoke" in command
 
 
 def test_default_checks_include_retention_enrichment_smoke_before_wgd_smoke():

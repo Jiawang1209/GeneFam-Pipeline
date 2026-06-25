@@ -257,6 +257,31 @@ python bin/genefam/run_chromosome_smoke.py \
 
 It writes `results/chromosome_smoke/tables/chromosome_locations.tsv` and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
 
+The promoter smoke validates upstream sequence extraction from a genome FASTA plus GFF3 gene coordinates, then summarizes promoter lengths and boundary clipping for large family reports:
+
+```bash
+python bin/genefam/run_promoter_smoke.py \
+  --r-bin /usr/local/bin/R \
+  --outdir results/promoter_smoke
+```
+
+It writes `results/promoter_smoke/tables/promoters.bed`, `results/promoter_smoke/sequences/promoters.fa`, `results/promoter_smoke/tables/feature_summary.tsv`, and `results/promoter_smoke/plots/feature_summary.pdf`. This check is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+
+The feature-summary smoke aggregates large-result tables before plotting, so MEME motif counts/sites, gene-structure lengths/exon counts, HMMER domain hits/coverage, MCScanX syntenic pairs/blocks, and promoter lengths can be inspected as statistics instead of only per-gene graphics:
+
+```bash
+python bin/genefam/run_feature_summary_smoke.py \
+  --domains results/domain_filter_smoke/tables/filtered_domains.tsv \
+  --motifs results/motif_smoke/tables/motif_summary.tsv \
+  --gene-structures results/gene_structure_smoke/tables/gene_structure_summary.tsv \
+  --synteny results/synteny_smoke/tables/syntenic_pairs.tsv \
+  --promoters results/promoter_smoke/tables/promoters.bed \
+  --r-bin /usr/local/bin/R \
+  --outdir results/feature_summary_smoke
+```
+
+It writes `results/feature_summary_smoke/tables/feature_summary.tsv`, `results/feature_summary_smoke/plots/feature_summary.pdf`, and `results/feature_summary_smoke/plots/feature_summary.png`. This check is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+
 The focused Nextflow single-tool smoke validates true HMMER-only and DIAMOND-only routing through `GeneFamilyFlow` without using mock evidence:
 
 ```bash
