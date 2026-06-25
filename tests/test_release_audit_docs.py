@@ -137,6 +137,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/wgd_smoke/tables/wgd_run_config_snapshot.tsv" in text
     assert "WGD event names must be unique" in text
     assert "WGD event metadata requires name, scope, evidence, and expected_relative_age" in text
+    assert "Configured WGD event labels must have matching event metadata" in text
     assert "results/nextflow_smoke/nextflow_smoke.md" in text
     assert "results/nextflow_single_tool_smoke/nextflow_single_tool_smoke.tsv" in text
     assert "results/example_prepared_wgd/report/final_report.md" in text

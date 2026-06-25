@@ -73,6 +73,22 @@ def test_build_event_evidence_adds_metadata_only_for_configured_named_events():
     assert evidence[0]["ks_median"] == "0.1600"
 
 
+def test_build_event_evidence_rejects_named_event_without_metadata():
+    rows = [
+        {
+            "gene_a": "a1",
+            "gene_b": "a2",
+            "ks": "0.12",
+            "wgd_layer": "WGD_layer_1",
+            "event_name": "alhpa",
+            "confidence": "configured",
+        }
+    ]
+
+    with pytest.raises(ValueError, match="No metadata configured for WGD event: alhpa"):
+        build_event_evidence(rows, event_metadata={"alpha": {"scope": "Arabidopsis_Brassicaceae"}})
+
+
 def test_load_event_metadata_reads_brassicaceae_named_events():
     metadata = load_event_metadata(Path("configs/wgd_events.brassicaceae.yaml"))
 

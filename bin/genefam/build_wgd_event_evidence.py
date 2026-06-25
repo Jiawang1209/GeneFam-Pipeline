@@ -47,6 +47,8 @@ def build_event_evidence(
         event_names = sorted({row.get("event_name", "unannotated") or "unannotated" for row in layer_rows})
         event_name = event_names[0] if len(event_names) == 1 else "mixed"
         metadata = event_metadata.get(event_name, {})
+        if event_name not in {"unannotated", "mixed"} and not metadata:
+            raise ValueError(f"No metadata configured for WGD event: {event_name}")
         is_named = event_name not in {"unannotated", "mixed"} and bool(metadata)
         evidence_rows.append(
             {

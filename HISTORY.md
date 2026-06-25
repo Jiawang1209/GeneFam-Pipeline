@@ -6257,6 +6257,49 @@ Commit:
 Next:
 - Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
 
+## 2026-06-25 - Reject WGD event labels without metadata
+
+Timestamp:
+- 2026-06-25 14:44:48 CST
+
+Context:
+- WGD event metadata fields are now required, but a classified layer table could still contain a misspelled event label such as `alhpa`.
+- `build_wgd_event_evidence.py` treated unknown labels as inferred layers, which could hide typos in gamma/beta/alpha/theta event mappings.
+
+Decisions:
+- Reject named WGD event labels when no matching event metadata exists.
+- Keep `unannotated` and `mixed` layers valid because they are observational/inferred states rather than configured event labels.
+- Document that configured WGD event labels must have matching metadata.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_wgd_event_evidence.py`
+- `docs/wgd_event_evidence.md`
+- `docs/release_audit.md`
+- `tests/test_build_wgd_event_evidence.py`
+- `tests/test_release_audit_docs.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_wgd_event_evidence.py -q` first failed because a misspelled `alhpa` event label was accepted without matching metadata.
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because the release audit did not document the matching-metadata rule.
+- `python -m pytest tests/test_build_wgd_event_evidence.py tests/test_release_audit_docs.py -q` passed with 7 tests after adding the validation and documentation.
+- `python -m pytest tests -q` passed with 280 tests.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited 1 after refreshing release, quickstart, local acceptance, and delivery-bundle outputs; the release gate remains blocked by external runtime readiness, with details in `results/handoff/handoff_report.md`.
+
+Commit:
+- hash: pending
+- message: fix: reject wgd event labels without metadata
+- files: WGD event evidence loader, WGD event docs, release audit docs, WGD event tests, history
+
+Next:
+- Add FastTree support for large multi-species phylogeny construction before the final container packaging stage.
+
 ## 2026-06-25 - Index primary YAML entrypoints in delivery bundle
 
 Timestamp:
@@ -6522,9 +6565,9 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
-- hash: pending
+- hash: 5cd7f293b2ff6796a98bea2248d4fc862f7a40ea
 - message: fix: require complete wgd event metadata
 - files: WGD event evidence loader, WGD event docs, release audit docs, WGD event tests, history
 
 Next:
-- Commit this WGD event metadata validation improvement, then continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
+- Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.

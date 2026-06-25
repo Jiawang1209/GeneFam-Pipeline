@@ -35,6 +35,8 @@ WGD event names must be unique within the event YAML. Duplicate names are reject
 
 WGD event metadata requires name, scope, evidence, and expected_relative_age for every configured event.
 
+Configured WGD event labels must have matching event metadata. A label such as `alpha` in the classified layer table is rejected if `alpha` is absent from the event YAML.
+
 Example:
 
 ```bash
