@@ -157,6 +157,8 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
 
     wgd_events = config.get("wgd_events", {}) or {}
     if wgd_events.get("named_event_annotation") is True:
+        if modules.get("duplication_retention") is not True:
+            errors.append("wgd_events.named_event_annotation requires modules.duplication_retention: true")
         event_map = wgd_events.get("event_map")
         if not event_map:
             errors.append("wgd_events.event_map is required when wgd_events.named_event_annotation is true")

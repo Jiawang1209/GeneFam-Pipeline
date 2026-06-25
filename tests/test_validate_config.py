@@ -365,6 +365,20 @@ def test_validate_config_reports_named_wgd_events_without_event_map():
     assert "wgd_events.event_map is required when wgd_events.named_event_annotation is true" in errors
 
 
+def test_validate_config_reports_named_wgd_events_without_duplication_retention_module():
+    config = _valid_base_config()
+    config["input"]["root"] = "tests/fixtures/species_bank"
+    config["wgd_events"] = {
+        "named_event_annotation": True,
+        "event_map": "configs/wgd_events.brassicaceae.yaml",
+    }
+    config["modules"]["duplication_retention"] = False
+
+    errors = validate_config(config)
+
+    assert "wgd_events.named_event_annotation requires modules.duplication_retention: true" in errors
+
+
 def test_validate_config_check_paths_rejects_duplicate_wgd_event_names(tmp_path):
     event_map = tmp_path / "duplicate_events.yaml"
     event_map.write_text(

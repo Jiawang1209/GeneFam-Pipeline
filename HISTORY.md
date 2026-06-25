@@ -6432,9 +6432,54 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
-- hash: pending
+- hash: 685b9cd3c21db2e57301a1bd775cd2db3016c9f1
 - message: feat: validate named wgd event maps in config preflight
 - files: config validator, input contract, config schema, validator tests, runtime docs tests, history
 
 Next:
-- Commit this WGD event-map preflight improvement, then continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
+- Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Require duplication-retention module for named WGD events
+
+Timestamp:
+- 2026-06-25 14:20:49 CST
+
+Context:
+- `wgd_events.named_event_annotation` now requires an event-map YAML and validates it in strict preflight mode.
+- The config validator still allowed named WGD event annotation while `modules.duplication_retention` was disabled, which would make gamma/beta/alpha/theta interpretation unreachable in the configured workflow.
+
+Decisions:
+- Require `modules.duplication_retention: true` when `wgd_events.named_event_annotation: true`.
+- Document the dependency in the input contract and schema.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/validate_config.py`
+- `docs/input_contract.md`
+- `schemas/config.schema.yaml`
+- `tests/test_validate_config.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_validate_config.py::test_validate_config_reports_named_wgd_events_without_duplication_retention_module -q` first failed because named WGD event annotation did not require `modules.duplication_retention`.
+- `python -m pytest tests/test_runtime_environment_files.py::test_input_contract_and_schema_document_identification_tool_flags -q` first failed because the dependency was not documented in both the input contract and schema.
+- `python -m pytest tests/test_validate_config.py tests/test_runtime_environment_files.py::test_input_contract_and_schema_document_identification_tool_flags -q` passed with 25 tests after adding the dependency and documentation.
+- `python -m pytest tests -q` passed with 278 tests.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing release, handoff, quickstart, local acceptance, and delivery-bundle evidence.
+- `grep -n -E 'wgd_events.named_event_annotation requires modules.duplication_retention|Passed:|Required failed:|Optional failed:|Achieved:|Blocked:|Missing:|release_gate|quickstart_handoff|delivery_bundle' docs/input_contract.md schemas/config.schema.yaml results/release_checks/release_checks.md results/objective_audit/objective_audit.md results/local_acceptance/local_acceptance_summary.md` confirmed the dependency documentation and current release evidence.
+- `results/release_checks/release_checks.md` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
+- hash: pending
+- message: feat: require duplication retention for named wgd events
+- files: config validator, input contract, config schema, validator tests, runtime docs tests, history
+
+Next:
+- Commit this config dependency improvement, then continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
