@@ -4617,12 +4617,51 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocker remains missing `docker` and `apptainer`.
 
 Commit:
-- hash: pending
+- hash: f650d9e4152bf99d53e3f7d4f699a4286abab976
 - message: docs: synchronize runtime recovery handoff
 - files: README, readiness/runtime docs, doc tests, history
 
 Next:
 - Commit the runtime recovery documentation sync, then continue from the clean runtime-blocked state.
+
+## 2026-06-25 - Expose WGD event provenance in final report
+
+Context:
+- The WGD event evidence builder already records `evidence_source`, `species_scope`, and `expected_relative_age` for configured events such as alpha, beta, gamma, and theta.
+- The final Markdown report only displayed the event layer, name, pair count, Ks median, interpretation status, and species scope, so part of the event interpretation evidence chain was hidden from the user-facing report.
+
+Decisions:
+- Extend the WGD Event Evidence table in `assemble_report.py` to include `evidence_source` and `expected_relative_age`.
+- Keep the change limited to final report rendering; upstream evidence tables and Nextflow wiring already carry the fields.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/assemble_report.py`
+- `tests/test_assemble_report.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_assemble_report.py -q` first failed because the final report WGD Event Evidence table did not contain `evidence_source` or `expected_relative_age`.
+- The same focused test passed with 3 tests after extending the WGD Event Evidence table.
+- `python bin/genefam/run_prepared_wgd_handoff_example.py --conda-env GeneFamilyFlow --example-dir examples/prepared_wgd_handoff --outdir results/example_prepared_wgd` exited `0`.
+- `results/example_prepared_wgd/report/final_report.md` now displays `evidence_source` and `expected_relative_age` for alpha, beta, gamma, and theta rows.
+- `python -m pytest tests -q` passed with 244 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 25`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; the embedded pytest check reports `244 passed`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocker remains missing `docker` and `apptainer`.
+
+Commit:
+- hash: pending
+- message: feat: expose WGD event provenance in report
+- files: final report assembler, report tests, history
+
+Next:
+- Commit the WGD event provenance report update, then continue only with work that can improve the final deliverable without requiring Docker/Apptainer.
 
 ## 2026-06-25 - Add final delivery bundle index
 

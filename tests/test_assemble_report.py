@@ -81,7 +81,11 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
     assert "Gene family: GDSL" in report
     assert "| family_counts | available | tables/family_counts.tsv | Per-species gene family member counts |" in report
     assert "## WGD Event Evidence" in report
-    assert "| WGD_layer_1 | alpha | 12 | 0.1800 | configured_named_event | Brassicaceae |" in report
+    assert (
+        "| wgd_layer | event_name | pair_count | ks_median | interpretation_status | evidence_source | species_scope | expected_relative_age |"
+        in report
+    )
+    assert "| WGD_layer_1 | alpha | 12 | 0.1800 | configured_named_event | literature | Brassicaceae | recent |" in report
     assert "## Family Event Retention" in report
     assert "| WGD_layer_1 | alpha | WGD/segmental | 4 | 6 | AT1,AT2,AT3,AT4 |" in report
     assert "## Duplicate-Type Retention Enrichment" in report
@@ -135,7 +139,7 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
     assert completed.returncode == 0, completed.stderr
     text = out_path.read_text(encoding="utf-8")
     assert "# GeneFam-Pipeline Final Report" in text
-    assert "| WGD_layer_1 | alpha | 12 | 0.1800 | configured_named_event | Brassicaceae |" in text
+    assert "| WGD_layer_1 | alpha | 12 | 0.1800 | configured_named_event | literature | Brassicaceae | recent |" in text
     assert "| family_counts | plots/family_counts.pdf | Family counts |" in text
 
 

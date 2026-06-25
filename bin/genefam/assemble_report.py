@@ -55,7 +55,16 @@ def assemble_report(
     lines.extend(
         _section_or_empty(
             "WGD Event Evidence",
-            ["wgd_layer", "event_name", "pair_count", "ks_median", "interpretation_status", "species_scope"],
+            [
+                "wgd_layer",
+                "event_name",
+                "pair_count",
+                "ks_median",
+                "interpretation_status",
+                "evidence_source",
+                "species_scope",
+                "expected_relative_age",
+            ],
             [
                 [
                     row["wgd_layer"],
@@ -63,7 +72,9 @@ def assemble_report(
                     row.get("pair_count", ""),
                     row.get("ks_median", ""),
                     row.get("interpretation_status", ""),
+                    row.get("evidence_source", ""),
                     row.get("species_scope", ""),
+                    row.get("expected_relative_age", ""),
                 ]
                 for row in (wgd_event_evidence or [])
             ],
