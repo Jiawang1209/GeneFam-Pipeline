@@ -257,6 +257,13 @@ def build_delivery_manifest(
                 "path": "scripts/run_local_acceptance.sh",
                 "note": "refreshes release, handoff, quickstart, and delivery bundle outputs",
             },
+            {
+                "section": "runtime_recovery",
+                "item": "container_default_smoke",
+                "status": "available",
+                "path": "Dockerfile",
+                "note": "docker run default command writes results/container_default_smoke",
+            },
         ]
     )
 

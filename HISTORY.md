@@ -5965,9 +5965,49 @@ Verification:
 - `rg -n "container_default_smoke|dockerfile_default_standard_smoke|local_acceptance_summary" docs/runtime_environment.md docs/release_audit.md results/delivery_bundle/delivery_bundle.md results/handoff/handoff_report.md` confirmed the runtime/release docs mention the default container smoke and the generated handoff surfaces still expose the local acceptance summary.
 
 Commit:
+- hash: 4ffd713aea7d0c16df436154315c5d7fa4a98a64
+- message: feat: add docker default smoke contract
+- files: Dockerfile default smoke, container materials audit, runtime/release docs, tests, history
+
+Next:
+- Commit the Docker default smoke contract, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Index Docker default smoke in delivery bundle
+
+Context:
+- The Dockerfile now defaults to the standard branch smoke and writes `results/container_default_smoke`.
+- Runtime and release-audit docs mention this default in-image smoke, but the final delivery bundle did not yet expose the contract.
+
+Decisions:
+- Add `runtime_recovery/container_default_smoke` to the delivery manifest.
+- Point the row at `Dockerfile` and describe the expected `docker run` output directory.
+- Keep this as a contract/evidence row rather than a runtime status row, because Docker is still unavailable on the current machine.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_run_delivery_bundle.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py -q` first failed because `runtime_recovery/container_default_smoke` was missing from the generated delivery manifest.
+- `python -m pytest tests/test_run_delivery_bundle.py -q` passed after adding the delivery manifest row.
+- `python -m pytest tests -q` passed with 274 tests.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing the delivery bundle.
+- `rg -n "container_default_smoke|Passed:|Required failed:|Optional failed:|Achieved:|Blocked:|Missing:" results/delivery_bundle/delivery_manifest.tsv results/delivery_bundle/delivery_bundle.md results/release_checks/release_checks.md results/objective_audit/objective_audit.md` confirmed `runtime_recovery/container_default_smoke` is present in the final delivery bundle.
+- `results/release_checks/release_checks.md` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+- `results/local_acceptance/local_acceptance_summary.md` still records `release_gate` failed with exit code `1`, while `quickstart_handoff` and `delivery_bundle` passed.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Commit the Docker default smoke contract, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
+- Commit the delivery-bundle indexing update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
