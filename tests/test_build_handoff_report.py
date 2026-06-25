@@ -58,6 +58,7 @@ def test_build_handoff_sections_summarizes_release_objective_and_runtime_state(t
     assert sections["available_runtime"] == "nextflow"
     assert sections["missing_runtime"] == "docker, apptainer"
     assert sections["container_smoke"] == "docker=missing_runtime"
+    assert sections["container_default_smoke"] == "Dockerfile -> results/container_default_smoke"
 
 
 def test_write_handoff_markdown_contains_copyable_next_steps(tmp_path):
@@ -71,6 +72,7 @@ def test_write_handoff_markdown_contains_copyable_next_steps(tmp_path):
         "available_runtime": "nextflow, /usr/local/bin/R, hmmsearch",
         "missing_runtime": "docker, apptainer",
         "container_smoke": "docker=missing_runtime; apptainer=missing_runtime",
+        "container_default_smoke": "Dockerfile -> results/container_default_smoke",
     }
 
     write_markdown(sections, out)
@@ -150,6 +152,7 @@ def test_write_handoff_summary_tsv_contains_stable_keys(tmp_path):
         {"section": "available_runtime", "summary": "nextflow, /usr/local/bin/R, hmmsearch"},
         {"section": "missing_runtime", "summary": "docker, apptainer"},
         {"section": "container_smoke", "summary": "docker=missing_runtime; apptainer=missing_runtime"},
+        {"section": "container_default_smoke", "summary": "Dockerfile -> results/container_default_smoke"},
     ]
 
 

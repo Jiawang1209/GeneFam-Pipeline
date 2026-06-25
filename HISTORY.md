@@ -6083,9 +6083,49 @@ Verification:
 - `results/local_acceptance/local_acceptance_summary.md` still records `release_gate` failed with exit code `1`, while `quickstart_handoff` and `delivery_bundle` passed.
 
 Commit:
+- hash: 2ea9b31dfb91ed698c87314c7cfe9a62b0104825
+- message: docs: add docker default smoke to handoff report
+- files: handoff report, handoff report tests, history
+
+Next:
+- Commit the handoff-report update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Add Docker default smoke to handoff summary TSV
+
+Context:
+- The handoff Markdown report now lists `Dockerfile` and `results/container_default_smoke`.
+- The machine-readable `results/handoff/handoff_summary.tsv` still lacked a stable key for the Dockerfile default standard smoke contract.
+
+Decisions:
+- Add `container_default_smoke` to `build_handoff_sections()`.
+- Make `write_summary_tsv()` include a default `container_default_smoke` row even when older callers pass a partial section dictionary.
+- Use `Dockerfile -> results/container_default_smoke` as the stable summary value.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_handoff_report.py`
+- `tests/test_build_handoff_report.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_handoff_report.py -q` first failed because `container_default_smoke` was missing from `build_handoff_sections()` and the summary TSV output.
+- `python -m pytest tests/test_build_handoff_report.py -q` passed with 5 tests after adding the stable handoff summary key.
+- `python -m pytest tests -q` passed with 274 tests.
+- `PYTHON_BIN=/Users/liuyue/miniforge3/bin/python CONDA_ENV=GeneFamilyFlow bash scripts/run_local_acceptance.sh` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing handoff and delivery-bundle artifacts.
+- `rg -n "container_default_smoke|Passed:|Required failed:|Optional failed:|Achieved:|Blocked:|Missing:" results/handoff/handoff_summary.tsv results/release_checks/release_checks.md results/objective_audit/objective_audit.md` confirmed the generated `results/handoff/handoff_summary.tsv` contains `container_default_smoke`.
+- `results/release_checks/release_checks.md` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+- `results/local_acceptance/local_acceptance_summary.md` still records `release_gate` failed with exit code `1`, while `quickstart_handoff` and `delivery_bundle` passed.
+
+Commit:
 - hash: pending
 - message: pending
 - files: pending
 
 Next:
-- Commit the handoff-report update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.
+- Commit the handoff-summary update, then continue polishing final workflow delivery while Docker/Apptainer remains the external runtime blocker.

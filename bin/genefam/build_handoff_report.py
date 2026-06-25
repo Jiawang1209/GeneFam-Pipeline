@@ -91,6 +91,7 @@ def build_handoff_sections(
         "available_runtime": _available_runtime(readiness_rows),
         "missing_runtime": _missing_runtime(readiness_rows),
         "container_smoke": _container_smoke(container_rows),
+        "container_default_smoke": "Dockerfile -> results/container_default_smoke",
     }
 
 
@@ -139,6 +140,13 @@ def write_markdown(sections: dict[str, str], out_path: Path) -> None:
 
 
 def write_summary_tsv(sections: dict[str, str], out_path: Path) -> None:
+    sections = {
+        **sections,
+        "container_default_smoke": sections.get(
+            "container_default_smoke",
+            "Dockerfile -> results/container_default_smoke",
+        ),
+    }
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=["section", "summary"], delimiter="\t")
