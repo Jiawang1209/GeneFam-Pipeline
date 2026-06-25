@@ -5367,9 +5367,51 @@ Verification:
 - `python -m pytest tests -q` passed with 261 tests.
 
 Commit:
-- hash: pending
+- hash: 5470efd3d40af89d1b8fb5fbf43685f5b80fee26
 - message: feat: add nextflow manifest standard smoke
 - files: release checks, objective audit, release docs, Nextflow standard smoke tests, history
 
 Next:
 - Continue strengthening DSL2 and report evidence while leaving Docker/Apptainer packaging for the final封装 step.
+
+## 2026-06-25 - Surface Nextflow manifest smoke in delivery bundle
+
+Context:
+- The project direction is to finish the analysis workflow before final container packaging.
+- `Nextflow standard manifest smoke` was already part of the release gate and objective audit, but the final delivery bundle did not expose that evidence row.
+- Users should be able to inspect one final handoff index and see whether the manifest-mode DSL2 standard path is available or still blocked by the local runtime.
+
+Decisions:
+- Add a release-check-based delivery bundle row for `nextflow_standard_manifest_smoke`.
+- Mark the row `available` only when the release check status is `passed`; otherwise keep it `missing` so local environment gaps are visible.
+- Document the expected output path in the quickstart key outputs.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_delivery_bundle.py`
+- `docs/quickstart.md`
+- `tests/test_quickstart_docs.py`
+- `tests/test_run_delivery_bundle.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py -q` first failed because the delivery manifest lacked the `nextflow_standard_manifest_smoke` row.
+- `python -m pytest tests/test_quickstart_docs.py -q` first failed because `docs/quickstart.md` did not mention `results/nextflow_standard_manifest_smoke/nextflow_standard_smoke.tsv`.
+- `python -m pytest tests/test_run_delivery_bundle.py -q` passed with 1 test.
+- `python -m pytest tests/test_run_delivery_bundle.py tests/test_quickstart_docs.py -q` passed with 3 tests.
+- `python -m pytest tests -q` passed with 261 tests.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` refreshed the delivery bundle.
+- `rg -n "nextflow_standard_manifest_smoke|manifest-mode standard DSL2 smoke" results/delivery_bundle/delivery_manifest.tsv results/delivery_bundle/delivery_bundle.md` confirmed the new row is present; current local evidence reports it as `missing` until the runtime can pass that release check.
+
+Commit:
+- hash: pending
+- message: feat: surface nextflow manifest smoke in delivery bundle
+- files: delivery bundle, quickstart docs, tests, history
+
+Next:
+- Continue workflow-first development, especially strengthening DSL2/report evidence; defer Docker/Apptainer封装 until the analysis flow is complete.

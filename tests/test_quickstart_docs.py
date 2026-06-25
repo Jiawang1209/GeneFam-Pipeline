@@ -28,6 +28,7 @@ def test_quickstart_documents_minimum_verified_run_path():
         "configs/manifest.example.yaml",
         "tests/fixtures/species_manifest.tsv",
         "results/species_manifest_selection_smoke/tables/species_manifest.tsv",
+        "results/nextflow_standard_manifest_smoke/nextflow_standard_smoke.tsv",
         "python bin/genefam/run_standard_smoke.py",
         "python bin/genefam/run_nextflow_single_tool_smoke.py",
         "--config configs/example.config.yaml",

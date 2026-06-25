@@ -25,6 +25,13 @@ def _status_from_step(rows: list[dict[str, str]], step: str) -> str:
     return "missing"
 
 
+def _status_from_check(rows: list[dict[str, str]], check: str) -> str:
+    for row in rows:
+        if row.get("check") == check:
+            return "available" if row.get("status") == "passed" else "missing"
+    return "missing"
+
+
 def _path_from_step(rows: list[dict[str, str]], step: str, fallback: str) -> str:
     for row in rows:
         if row.get("step") == step and row.get("path"):
@@ -108,6 +115,13 @@ def build_delivery_manifest(
             "status": "available",
             "path": "results/species_manifest_selection_smoke/tables/species_manifest.tsv",
             "note": "manifest-mode selected species",
+        },
+        {
+            "section": "nextflow",
+            "item": "nextflow_standard_manifest_smoke",
+            "status": _status_from_check(release_rows, "Nextflow standard manifest smoke"),
+            "path": "results/nextflow_standard_manifest_smoke/nextflow_standard_smoke.tsv",
+            "note": "manifest-mode standard DSL2 smoke",
         },
         {
             "section": "standard",

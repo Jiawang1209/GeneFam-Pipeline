@@ -20,6 +20,7 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         "check\trequired\tstatus\texit_code\tcommand\tnote",
         [
             "standard branch smoke\ttrue\tpassed\t0\tstandard\tfinal report",
+            "Nextflow standard manifest smoke\ttrue\tpassed\t0\tnextflow manifest\tmanifest config",
             "WGD event smoke\ttrue\tpassed\t0\twgd\talpha beta gamma theta",
             "readiness audit\ttrue\tfailed\t1\treadiness\tdocker missing",
         ],
@@ -93,6 +94,10 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         "input\tmanifest_selection_smoke\tavailable\tresults/species_manifest_selection_smoke/tables/species_manifest.tsv\tmanifest-mode selected species"
         in manifest_text
     )
+    assert (
+        "nextflow\tnextflow_standard_manifest_smoke\tavailable\tresults/nextflow_standard_manifest_smoke/nextflow_standard_smoke.tsv\tmanifest-mode standard DSL2 smoke"
+        in manifest_text
+    )
     assert "wgd\tfinal_report\tavailable\tresults/quickstart/example_prepared_wgd/report/final_report.md" in manifest_text
     assert (
         "wgd\trun_config_snapshot\tavailable\tresults/quickstart/example_prepared_wgd/tables/wgd_run_config_snapshot.tsv\tWGD branch run configuration"
@@ -128,6 +133,7 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "# GeneFam-Pipeline Delivery Bundle" in summary_text
     assert "standard report" in summary_text
     assert "manifest-mode YAML example" in summary_text
+    assert "manifest-mode standard DSL2 smoke" in summary_text
     assert "alpha, beta, gamma, theta" in summary_text
     assert "Reference governance" in summary_text
     assert "runtime recovery" in summary_text

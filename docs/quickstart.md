@@ -87,12 +87,13 @@ Key outputs:
 - `configs/manifest.example.yaml`
 - `tests/fixtures/species_manifest.tsv`
 - `results/species_manifest_selection_smoke/tables/species_manifest.tsv`
+- `results/nextflow_standard_manifest_smoke/nextflow_standard_smoke.tsv`
 
 On the current development machine, Docker/Apptainer reproducibility is expected to remain `blocked` until a container runtime is available.
 
 ## 4. Inspect The Delivery Bundle
 
-The release gate writes the final delivery index after the objective audit. It collects species-bank and manifest-mode input entrypoints, the standard final report, prepared WGD report, alpha/beta/gamma/theta event evidence, runtime status, and documentation entrypoints.
+The release gate writes the final delivery index after the objective audit. It collects species-bank and manifest-mode input entrypoints, the manifest-mode standard DSL2 smoke evidence, the standard final report, prepared WGD report, alpha/beta/gamma/theta event evidence, runtime status, and documentation entrypoints.
 
 ```bash
 python bin/genefam/run_delivery_bundle.py \
