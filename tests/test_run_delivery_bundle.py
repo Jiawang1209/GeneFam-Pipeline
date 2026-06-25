@@ -82,6 +82,14 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "standard\tfinal_report\tavailable\tresults/quickstart/standard_smoke/report/final_report.md" in manifest_text
     assert "wgd\tfinal_report\tavailable\tresults/quickstart/example_prepared_wgd/report/final_report.md" in manifest_text
     assert "wgd\tevent_evidence\tavailable\tresults/wgd_smoke/tables/wgd_event_evidence.tsv\talpha,beta,gamma,theta" in manifest_text
+    assert (
+        "governance\treference_governance\tavailable\tresults/reference_governance/reference_governance.md\ttracked Reference/ changes are release-blocking"
+        in manifest_text
+    )
+    assert (
+        "governance\treference_governance_tsv\tavailable\tresults/reference_governance/reference_governance.tsv\tmachine-readable Reference/ status"
+        in manifest_text
+    )
     assert "runtime\tGeneFamilyFlow\tavailable\tGeneFamilyFlow:/bin/nextflow" in manifest_text
     assert "runtime\t/usr/local/bin/R\tavailable\t/usr/local/bin/R" in manifest_text
     assert "runtime\tdocker\tmissing\t" in manifest_text
@@ -91,4 +99,5 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "# GeneFam-Pipeline Delivery Bundle" in summary_text
     assert "standard report" in summary_text
     assert "alpha, beta, gamma, theta" in summary_text
+    assert "Reference governance" in summary_text
     assert "Docker/Apptainer reproducibility" in summary_text

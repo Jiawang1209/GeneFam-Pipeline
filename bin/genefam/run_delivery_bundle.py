@@ -131,6 +131,20 @@ def build_delivery_manifest(
             "path": "results/wgd_smoke/tables/retention_enrichment.tsv",
             "note": "family retention enrichment evidence",
         },
+        {
+            "section": "governance",
+            "item": "reference_governance",
+            "status": "available",
+            "path": "results/reference_governance/reference_governance.md",
+            "note": "tracked Reference/ changes are release-blocking",
+        },
+        {
+            "section": "governance",
+            "item": "reference_governance_tsv",
+            "status": "available",
+            "path": "results/reference_governance/reference_governance.tsv",
+            "note": "machine-readable Reference/ status",
+        },
     ]
 
     for command, item in [
@@ -196,7 +210,7 @@ def write_markdown(rows: list[dict[str, str]], out_path: Path) -> None:
         "",
         f"Objective blockers: {blockers}",
         "",
-        "This bundle is the final handoff index for standard gene-family analysis, WGD event evidence, runtime status, and documentation.",
+        "This bundle is the final handoff index for standard gene-family analysis, WGD event evidence, Reference governance, runtime status, and documentation.",
         "",
         "Named WGD event evidence: alpha, beta, gamma, theta.",
         "",

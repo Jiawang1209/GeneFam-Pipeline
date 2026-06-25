@@ -4711,12 +4711,51 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocker remains missing `docker` and `apptainer`.
 
 Commit:
-- hash: pending
+- hash: f05290e19e4608d2b70daa607a8e88206ae26a5a
 - message: feat: add Reference governance audit
 - files: Reference governance audit, release gate, objective audit, release audit docs, tests, history
 
 Next:
 - Commit the Reference governance audit, then continue toward the final objective while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 - Add Reference governance to delivery bundle
+
+Context:
+- `Reference governance audit` is now a release-gate and objective-audit requirement.
+- The final delivery bundle still indexed reports, WGD evidence, runtime status, and docs, but omitted the new Reference governance evidence.
+
+Decisions:
+- Add `governance/reference_governance` and `governance/reference_governance_tsv` rows to the delivery manifest.
+- Update the delivery bundle Markdown description so Reference governance is named as part of the final handoff index.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_run_delivery_bundle.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py -q` first failed because `results/delivery_bundle/delivery_manifest.tsv` did not include Reference governance rows.
+- The same command passed with 1 test after adding Reference governance Markdown and TSV rows to the delivery bundle.
+- `python -m pytest tests -q` passed with 244 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 25`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; the embedded pytest check reports `244 passed`.
+- `results/delivery_bundle/delivery_manifest.tsv` now contains `governance	reference_governance	available	results/reference_governance/reference_governance.md` and `governance	reference_governance_tsv	available	results/reference_governance/reference_governance.tsv`.
+- `results/delivery_bundle/delivery_bundle.md` describes Reference governance as part of the final handoff index.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocker remains missing `docker` and `apptainer`.
+
+Commit:
+- hash: pending
+- message: feat: include Reference governance in delivery bundle
+- files: delivery bundle helper, delivery bundle test, history
+
+Next:
+- Commit the delivery bundle governance update, then continue toward the final objective while Docker/Apptainer remains the external runtime blocker.
 
 ## 2026-06-25 - Add species selection release smoke
 
