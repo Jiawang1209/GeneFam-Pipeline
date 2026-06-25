@@ -8,6 +8,8 @@ import csv
 import sys
 from pathlib import Path
 
+import yaml
+
 
 FIELDNAMES = ["check", "status", "note"]
 
@@ -26,16 +28,38 @@ def _missing(text: str, required: list[str]) -> list[str]:
     return [item for item in required if item not in text]
 
 
+def _hmm_profile_reference_paths(config_paths: list[Path]) -> list[str]:
+    reference_paths: list[str] = []
+    for config_path in config_paths:
+        if not config_path.exists():
+            reference_paths.append(f"{config_path}: missing config")
+            continue
+        config = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+        profiles = ((config.get("gene_family") or {}).get("hmm_profiles") or [])
+        for profile in profiles:
+            profile_path = str((profile or {}).get("path", ""))
+            if profile_path.startswith("Reference/") or profile_path == "Reference":
+                reference_paths.append(f"{config_path}: {profile_path}")
+    return reference_paths
+
+
 def audit_container_materials(
     dockerfile: Path,
     linux_env: Path,
     nextflow_config: Path,
     dockerignore: Path,
+    example_configs: list[Path] | None = None,
 ) -> list[dict[str, str]]:
     docker_text = _read(dockerfile)
     env_text = _read(linux_env)
     config_text = _read(nextflow_config)
     dockerignore_text = _read(dockerignore)
+    if example_configs is None:
+        example_configs = [
+            Path("configs/example.config.yaml"),
+            Path("configs/manifest.example.yaml"),
+            Path("configs/advanced_modules.example.yaml"),
+        ]
 
     docker_env_required = [
         "GeneFamilyFlow.linux-64.conda.yaml",
@@ -133,6 +157,17 @@ def audit_container_materials(
                 success_note if not missing else "Missing required snippets: " + ", ".join(missing),
             )
         )
+    reference_hmm_paths = _hmm_profile_reference_paths(example_configs)
+    rows.append(
+        _row(
+            "example_config_hmm_profiles_container_safe",
+            not reference_hmm_paths,
+            "Example HMM profile paths use files that are available in the container build context."
+            if not reference_hmm_paths
+            else "Reference-backed HMM paths are excluded from the container build context: "
+            + "; ".join(reference_hmm_paths),
+        )
+    )
     return rows
 
 
@@ -170,6 +205,13 @@ def main() -> None:
     parser.add_argument("--linux-env", default=Path("envs/GeneFamilyFlow.linux-64.conda.yaml"), type=Path)
     parser.add_argument("--nextflow-config", default=Path("workflows/nextflow.config"), type=Path)
     parser.add_argument("--dockerignore", default=Path(".dockerignore"), type=Path)
+    parser.add_argument(
+        "--example-config",
+        action="append",
+        dest="example_configs",
+        type=Path,
+        help="Example YAML config to audit for container-safe HMM profile paths. Can be repeated.",
+    )
     parser.add_argument("--outdir", default=Path("results/container_materials"), type=Path)
     args = parser.parse_args()
 
@@ -178,6 +220,7 @@ def main() -> None:
         linux_env=args.linux_env,
         nextflow_config=args.nextflow_config,
         dockerignore=args.dockerignore,
+        example_configs=args.example_configs,
     )
     write_tsv(rows, args.outdir / "container_materials.tsv")
     write_markdown(rows, args.outdir / "container_materials.md")

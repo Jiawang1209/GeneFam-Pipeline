@@ -5560,9 +5560,56 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
-- hash: pending
+- hash: 6edc7b1933424e93681a4a28ae457f0faffe722b
 - message: test: audit docker build context hygiene
 - files: container materials audit, audit tests, release audit docs test, history
 
 Next:
 - Continue final封装 readiness work; actual Docker/Apptainer execution remains blocked until those runtimes are installed.
+
+## 2026-06-25 - Decouple example HMM paths from Reference source material
+
+Context:
+- The current priority remains workflow-first development; container封装 is deferred until the analysis pipeline itself is stable.
+- Static container preparation exposed a packaging mismatch: `.dockerignore` correctly excludes `Reference/`, but the example YAML files still pointed `gene_family.hmm_profiles` at `Reference/Long_Weixiong_20240323_1_GDSL/PF00657.hmm`.
+- That would make a copied example config brittle in Docker/Apptainer builds, even though `Reference/` should stay read-only source material rather than runtime input.
+
+Decisions:
+- Keep `Reference/` excluded from Docker build context.
+- Add a container-materials audit check named `example_config_hmm_profiles_container_safe`.
+- Move the bundled example HMM profile path to a repository fixture under `tests/fixtures/hmmer_profiles/`.
+- Document that the fixture HMM path is only a lightweight example path and must be replaced by curated HMM profiles for biological runs.
+
+Added:
+- `tests/fixtures/hmmer_profiles/PF00657.demo.hmm`
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_container_materials.py`
+- `configs/example.config.yaml`
+- `configs/manifest.example.yaml`
+- `configs/advanced_modules.example.yaml`
+- `docs/quickstart.md`
+- `docs/release_audit.md`
+- `tests/test_audit_container_materials.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_container_materials.py -q` first failed because `audit_container_materials()` did not accept `example_configs`.
+- `python -m pytest tests/test_audit_container_materials.py -q` passed with 4 tests after adding the audit logic and updating example configs.
+- `python bin/genefam/audit_container_materials.py --outdir results/container_materials` passed with the new example HMM profile safety check.
+- `rg -n "Reference/.+\\.hmm|example_config_hmm_profiles_container_safe|PF00657.demo.hmm" configs docs README.md bin tests -g '!Reference/**'` confirmed runtime example configs now use `tests/fixtures/hmmer_profiles/PF00657.demo.hmm`; remaining `Reference/...hmm` matches are intentional test fixtures or historical plan text.
+- `python -m pytest tests/test_audit_container_materials.py tests/test_release_audit_docs.py tests/test_quickstart_docs.py tests/test_run_release_checks.py -q` passed with 42 tests.
+- `python -m pytest tests -q` passed with 266 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` still reports `Passed: 28`, `Required failed: 1`, `Optional failed: 2`; the only required failure remains the runtime readiness audit while Docker and Apptainer profile smokes remain optional failures.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
+- hash: pending
+- message: fix: keep example hmm paths container safe
+- files: container materials audit, example configs, HMM fixture, quickstart/release docs, history
+
+Next:
+- Run the focused release/docs tests and full pytest suite before committing.

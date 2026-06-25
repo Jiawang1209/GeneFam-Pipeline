@@ -11,6 +11,11 @@ def test_audit_container_materials_passes_repository_contracts():
         linux_env=Path("envs/GeneFamilyFlow.linux-64.conda.yaml"),
         nextflow_config=Path("workflows/nextflow.config"),
         dockerignore=Path(".dockerignore"),
+        example_configs=[
+            Path("configs/example.config.yaml"),
+            Path("configs/manifest.example.yaml"),
+            Path("configs/advanced_modules.example.yaml"),
+        ],
     )
 
     assert {row["status"] for row in rows} == {"passed"}
@@ -22,6 +27,7 @@ def test_audit_container_materials_passes_repository_contracts():
         "nextflow_container_profiles",
         "container_image_params",
         "dockerignore_build_context",
+        "example_config_hmm_profiles_container_safe",
     }
 
 
@@ -48,6 +54,79 @@ def test_audit_container_materials_reports_missing_required_contract(tmp_path):
     assert "GeneFamilyFlow.linux-64.conda.yaml" in failed["dockerfile_genefamilyflow_env"]["note"]
     assert "jcvi" in failed["linux_env_full_toolchain"]["note"]
     assert "work/" in failed["dockerignore_build_context"]["note"]
+
+
+def test_audit_container_materials_reports_reference_backed_example_hmm_profiles(tmp_path):
+    dockerfile = tmp_path / "Dockerfile"
+    dockerfile.write_text(
+        "GeneFamilyFlow.linux-64.conda.yaml\n"
+        "micromamba create -y -f\n"
+        "CONDA_DEFAULT_ENV=GeneFamilyFlow\n"
+        "/opt/conda/envs/GeneFamilyFlow/bin\n"
+        "ln -sf /opt/conda/envs/GeneFamilyFlow/bin/R /usr/local/bin/R\n",
+        encoding="utf-8",
+    )
+    env = tmp_path / "GeneFamilyFlow.linux-64.conda.yaml"
+    env.write_text(
+        "name: GeneFamilyFlow\n"
+        "dependencies:\n"
+        "  - nextflow\n"
+        "  - hmmer\n"
+        "  - diamond\n"
+        "  - mafft\n"
+        "  - iqtree\n"
+        "  - meme\n"
+        "  - mcscanx\n"
+        "  - jcvi\n"
+        "  - kaks_calculator\n"
+        "  - r-base\n"
+        "  - quarto\n",
+        encoding="utf-8",
+    )
+    config = tmp_path / "nextflow.config"
+    config.write_text(
+        "profiles\n"
+        "docker {\n"
+        "docker.enabled = true\n"
+        "process.container = params.container_image\n"
+        "process.conda = null\n"
+        "}\n"
+        "apptainer {\n"
+        "apptainer.enabled = true\n"
+        "process.container = params.apptainer_image\n"
+        "process.conda = null\n"
+        "}\n"
+        'params.container_image = "genefam-pipeline:latest"\n'
+        'params.apptainer_image = "genefam-pipeline_latest.sif"\n',
+        encoding="utf-8",
+    )
+    dockerignore = tmp_path / ".dockerignore"
+    dockerignore.write_text(
+        ".git\n.nextflow*\nwork/\nresults/\n__pycache__/\n.pytest_cache/\nReference/\n",
+        encoding="utf-8",
+    )
+    example = tmp_path / "example.config.yaml"
+    example.write_text(
+        "gene_family:\n"
+        "  hmm_profiles:\n"
+        "    - id: PF00657\n"
+        "      path: Reference/Long_Weixiong_20240323_1_GDSL/PF00657.hmm\n",
+        encoding="utf-8",
+    )
+
+    rows = audit_container_materials(
+        dockerfile=dockerfile,
+        linux_env=env,
+        nextflow_config=config,
+        dockerignore=dockerignore,
+        example_configs=[example],
+    )
+
+    failed = {row["check"]: row for row in rows if row["status"] == "failed"}
+    assert "example_config_hmm_profiles_container_safe" in failed
+    assert "Reference/Long_Weixiong_20240323_1_GDSL/PF00657.hmm" in failed[
+        "example_config_hmm_profiles_container_safe"
+    ]["note"]
 
 
 def test_audit_container_materials_cli_writes_tsv_and_markdown(tmp_path):

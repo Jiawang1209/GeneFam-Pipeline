@@ -1,0 +1,6 @@
+HMMER3/f [3.1b2 | February 2015]
+NAME  PF00657_demo
+ACC   PF00657
+DESC  Lightweight fixture path for GeneFam-Pipeline example configs; replace with a curated HMM profile for biological runs.
+LENG  1
+//

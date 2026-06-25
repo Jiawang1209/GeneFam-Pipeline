@@ -8,6 +8,7 @@ This is the shortest verified path for checking GeneFam-Pipeline on this machine
 - Use `/usr/local/bin/R` for R plotting and report helpers.
 - The default input model is a species bank: one folder per species, with protein, CDS, genome, and GFF3 files inside each species folder.
 - `Reference/` is read-only source material for papers, plotting ideas, and example scripts. Do not stage or edit it during normal development.
+- Example YAML files use `tests/fixtures/hmmer_profiles/PF00657.demo.hmm` only as a lightweight path fixture; replace `gene_family.hmm_profiles` with curated HMM profiles for biological runs.
 - Keep `HISTORY.md` updated after every development step and commit.
 
 ## 1. Run The Release Gate
