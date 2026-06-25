@@ -240,6 +240,17 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "MCScanX circlize visualization smoke",
+            [
+                python,
+                "bin/genefam/run_mcscanx_circlize_smoke.py",
+                "--r-bin",
+                "/usr/local/bin/R",
+                "--outdir",
+                "results/mcscanx_circlize_smoke",
+            ],
+        ),
+        CheckSpec(
             "feature summary visualization smoke",
             [
                 python,

@@ -18,6 +18,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
         "phylogeny",
         "motif",
         "synteny",
+        "MCScanX circlize visualization",
         "duplication retention",
         "gamma",
         "beta",
@@ -112,6 +113,9 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "run_retention_enrichment_smoke.py" in text
     assert "run_wgd_smoke.py" in text
     assert "run_synteny_smoke.py" in text
+    assert "run_mcscanx_circlize_smoke.py" in text
+    assert "build_circlize_inputs.py" in text
+    assert "plot_mcscanx_circlize.R" in text
     assert "build_wgd_run_config_snapshot.py" in text
     assert "run_nextflow_smoke.py" in text
     assert "run_nextflow_single_tool_smoke.py" in text
@@ -154,6 +158,12 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "tests/fixtures/expression/family_expression.tsv" in text
     assert "tests/fixtures/mcscanx/sample.collinearity" in text
     assert "results/synteny_smoke/tables/syntenic_pairs.tsv" in text
+    assert "results/mcscanx_circlize_smoke/tables/circlize_chromosomes.tsv" in text
+    assert "results/mcscanx_circlize_smoke/tables/circlize_links.tsv" in text
+    assert "results/mcscanx_circlize_smoke/tables/circlize_skipped_links.tsv" in text
+    assert "results/mcscanx_circlize_smoke/plots/mcscanx_circlize.pdf" in text
+    assert "results/mcscanx_circlize_smoke/plots/mcscanx_circlize.png" in text
+    assert "circlize" in text
     assert "MCScanX syntenic pair and block summaries" in text
     assert "MEME motif count and site summaries" in text
     assert "gene-structure length and exon summaries" in text

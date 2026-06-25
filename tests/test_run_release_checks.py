@@ -409,13 +409,25 @@ def test_default_checks_include_alignment_phylogeny_smoke_before_synteny_smoke()
 def test_default_checks_include_synteny_parser_smoke_before_wgd_smoke():
     names = [check.name for check in default_checks()]
 
-    assert names.index("synteny parser smoke") < names.index("WGD event smoke")
+    assert names.index("synteny parser smoke") < names.index("MCScanX circlize visualization smoke")
     assert names.index("synteny parser smoke") > names.index("standard branch expression smoke")
     smoke = next(check for check in default_checks() if check.name == "synteny parser smoke")
     command = " ".join(smoke.command)
     assert "bin/genefam/run_synteny_smoke.py" in command
     assert "--collinearity tests/fixtures/mcscanx/sample.collinearity" in command
     assert "--outdir results/synteny_smoke" in command
+
+
+def test_default_checks_include_mcscanx_circlize_after_synteny_smoke():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("MCScanX circlize visualization smoke") > names.index("synteny parser smoke")
+    assert names.index("MCScanX circlize visualization smoke") < names.index("feature summary visualization smoke")
+    smoke = next(check for check in default_checks() if check.name == "MCScanX circlize visualization smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_mcscanx_circlize_smoke.py" in command
+    assert "--r-bin /usr/local/bin/R" in command
+    assert "--outdir results/mcscanx_circlize_smoke" in command
 
 
 def test_default_checks_include_kaks_smoke_before_wgd_smoke():
@@ -433,7 +445,7 @@ def test_default_checks_include_kaks_smoke_before_wgd_smoke():
 def test_default_checks_include_feature_summary_after_synteny_smoke():
     names = [check.name for check in default_checks()]
 
-    assert names.index("feature summary visualization smoke") > names.index("synteny parser smoke")
+    assert names.index("feature summary visualization smoke") > names.index("MCScanX circlize visualization smoke")
     assert names.index("feature summary visualization smoke") < names.index("Ka/Ks parser smoke")
     smoke = next(check for check in default_checks() if check.name == "feature summary visualization smoke")
     command = " ".join(smoke.command)

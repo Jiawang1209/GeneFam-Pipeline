@@ -323,6 +323,16 @@ python bin/genefam/run_synteny_smoke.py \
 
 It writes `results/synteny_smoke/tables/syntenic_pairs.tsv` and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
 
+The MCScanX circlize smoke validates publication-style syntenic-link visualization from MCScanX pairs plus gene chromosome coordinates:
+
+```bash
+python bin/genefam/run_mcscanx_circlize_smoke.py \
+  --r-bin /usr/local/bin/R \
+  --outdir results/mcscanx_circlize_smoke
+```
+
+It writes `results/mcscanx_circlize_smoke/tables/circlize_chromosomes.tsv`, `results/mcscanx_circlize_smoke/tables/circlize_links.tsv`, `results/mcscanx_circlize_smoke/tables/circlize_skipped_links.tsv`, `results/mcscanx_circlize_smoke/plots/mcscanx_circlize.pdf`, and `results/mcscanx_circlize_smoke/plots/mcscanx_circlize.png`. This is the dedicated MCScanX + `circlize` visualization check and is included in `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+
 The Ka/Ks parser smoke validates KaKs_Calculator-style result normalization and selection-pressure categories before WGD retention summaries:
 
 ```bash

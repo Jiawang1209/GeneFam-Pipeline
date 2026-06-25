@@ -6307,6 +6307,60 @@ Commit:
 - hash: 4a28750cffab52e873f86af31dc14941917b2e76
 - message: feat: add promoter and feature summary visualization
 - files: promoter extraction, feature-summary statistics, R visualization, release checks, docs, tests, history
+- hash: b6024d63b491edfa981d346dec5922ae0dfe4cb9
+- message: docs: record promoter visualization commit hash
+- files: history commit-hash backfill
+
+Next:
+- Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-25 16:26 - Add MCScanX circlize visualization smoke
+
+Context:
+- The user asked whether MCScanX + circlize visualization had been implemented.
+- The repository only had MCScanX `.collinearity` parsing and aggregate synteny statistics, not a dedicated circlize/circos-style syntenic-link figure.
+
+Decisions:
+- Add a dedicated MCScanX circlize visualization path rather than overloading the feature-summary plot.
+- Join MCScanX syntenic gene pairs to chromosome-location coordinates before plotting.
+- Write skipped links to a separate TSV when gene coordinates are missing, so large real datasets can report annotation mismatches without failing the whole visualization step.
+- Use the installed R `circlize` package through `/usr/local/bin/R`.
+- Register the visualization smoke in the default release checks after the synteny parser smoke.
+
+Added:
+- `bin/genefam/build_circlize_inputs.py`
+- `bin/genefam/run_mcscanx_circlize_smoke.py`
+- `scripts/plot_mcscanx_circlize.R`
+- `tests/test_build_circlize_inputs.py`
+- `tests/test_run_mcscanx_circlize_smoke.py`
+
+Modified:
+- `README.md`
+- `docs/release_audit.md`
+- `bin/genefam/run_release_checks.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_release_audit_docs.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `/usr/local/bin/R --vanilla --slave -e "cat(requireNamespace('circlize', quietly=TRUE))"` returned `TRUE`.
+- `python -m pytest tests/test_build_circlize_inputs.py tests/test_run_mcscanx_circlize_smoke.py -q` first failed because `bin.genefam.build_circlize_inputs` did not exist.
+- `python -m pytest tests/test_build_circlize_inputs.py tests/test_run_mcscanx_circlize_smoke.py -q` then failed because chromosome extents used only successful links instead of all provided chromosome-location rows.
+- `python -m pytest tests/test_build_circlize_inputs.py tests/test_run_mcscanx_circlize_smoke.py -q` passed with 2 tests after using all chromosome-location rows.
+- `python bin/genefam/run_mcscanx_circlize_smoke.py --r-bin /usr/local/bin/R --outdir results/mcscanx_circlize_smoke` wrote circlize input TSVs plus `mcscanx_circlize.pdf` and `mcscanx_circlize.png`.
+- `python -m pytest tests/test_build_circlize_inputs.py tests/test_run_mcscanx_circlize_smoke.py tests/test_run_release_checks.py tests/test_release_audit_docs.py -q` passed with 41 tests.
+- `python -m pytest tests -q` passed with 293 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing release evidence.
+- `results/release_checks/release_checks.md` reports `Passed: 31`, `Required failed: 1`, `Optional failed: 2`; `MCScanX circlize visualization smoke` passed.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
+- hash: not created yet
+- message: pending
+- files: MCScanX circlize input builder, R circlize plot, smoke runner, release checks, docs, tests, history
 
 Next:
 - Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
