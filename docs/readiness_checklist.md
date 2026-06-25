@@ -24,7 +24,7 @@ After the release gate finishes, the first file to inspect is:
 - `results/delivery_bundle/delivery_manifest.tsv`
 - `results/delivery_bundle/delivery_bundle.md`
 
-The handoff Markdown is the human-facing status summary. The delivery bundle is the final index for standard reports, prepared WGD reports, alpha/beta/gamma/theta event evidence, runtime availability, and documentation entrypoints. The TSV summaries carry stable machine-readable tables for automated checks. Together they summarize release readiness, objective completion, available and missing runtime commands, container-profile smoke status, and the report/evidence files to open first.
+The handoff Markdown is the human-facing status summary. The delivery bundle is the final index for standard reports, prepared WGD reports, alpha/beta/gamma/theta event evidence, Reference governance, runtime availability, runtime recovery, and documentation entrypoints. The TSV summaries carry stable machine-readable tables for automated checks. Together they summarize release readiness, objective completion, available and missing runtime commands, container-profile smoke status, runtime recovery artifacts, and the report/evidence files to open first.
 
 Expected core mock outputs:
 
@@ -55,6 +55,8 @@ The bootstrap planner reads the TSV and writes:
 
 - `results/readiness/runtime_bootstrap_plan.md`
 - `results/readiness/runtime_bootstrap.sh`
+
+After a missing runtime is installed, rerun `scripts/run_local_acceptance.sh` to refresh `results/handoff/handoff_report.md`, `results/delivery_bundle/delivery_manifest.tsv`, and `results/delivery_bundle/delivery_bundle.md` from the same evidence set.
 
 Default audited commands:
 

@@ -144,6 +144,14 @@ The container smoke verifier writes:
 - `results/container_profile_smoke/apptainer/container_profile_smoke.tsv`
 - `results/container_profile_smoke/apptainer/container_profile_smoke.md`
 
+After the container runtime gap is closed and the profile smokes pass, run:
+
+```bash
+scripts/run_local_acceptance.sh
+```
+
+This refreshes `results/delivery_bundle/delivery_bundle.md` and the paired handoff outputs from the final local evidence set.
+
 ## Current Verification Boundary
 
 The Python helpers and mock MVP can be tested without external tools. Full Nextflow and external-tool execution requires Nextflow plus the tools from `GeneFamilyFlow` to be installed or available through Docker/Apptainer.

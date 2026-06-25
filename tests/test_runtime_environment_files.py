@@ -78,6 +78,10 @@ def test_readiness_checklist_documents_command_audit():
     assert "results/handoff/handoff_summary.tsv" in text
     assert "results/delivery_bundle/delivery_manifest.tsv" in text
     assert "results/delivery_bundle/delivery_bundle.md" in text
+    assert "runtime recovery" in text
+    assert "results/readiness/runtime_bootstrap_plan.md" in text
+    assert "results/readiness/runtime_bootstrap.sh" in text
+    assert "scripts/run_local_acceptance.sh" in text
     assert "first file to inspect" in text
 
 
@@ -103,6 +107,8 @@ def test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file():
     assert "python bin/genefam/run_container_profile_smoke.py --profile apptainer" in text
     assert "results/container_profile_smoke/docker/container_profile_smoke.md" in text
     assert "results/container_profile_smoke/apptainer/container_profile_smoke.md" in text
+    assert "scripts/run_local_acceptance.sh" in text
+    assert "results/delivery_bundle/delivery_bundle.md" in text
 
 
 def test_advanced_module_examples_document_safe_enablement():
@@ -157,6 +163,8 @@ def test_readme_current_status_matches_release_evidence():
     assert "results/handoff/handoff_summary.tsv" in readme
     assert "run_nextflow_single_tool_smoke.py" in readme
     assert "bash results/readiness/runtime_bootstrap.sh" in readme
+    assert "runtime recovery" in readme
+    assert "scripts/run_local_acceptance.sh" in readme
     assert "params.container_image" in readme
     assert "params.apptainer_image" in readme
 

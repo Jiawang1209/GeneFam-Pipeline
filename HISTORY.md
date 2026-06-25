@@ -4577,12 +4577,52 @@ Verification:
 - `results/delivery_bundle/delivery_manifest.tsv` now contains `runtime_recovery` rows for `runtime_bootstrap_plan.md`, `runtime_bootstrap.sh`, and `scripts/run_local_acceptance.sh`.
 
 Commit:
-- hash: pending
+- hash: 31f36d40138379b5aa079aaa83c5346524a348dd
 - message: feat: index runtime recovery in delivery bundle
 - files: delivery bundle helper, delivery bundle test, history
 
 Next:
 - Commit this delivery-bundle recovery index update, then keep the current project state ready for final runtime verification once Docker/Apptainer are available.
+
+## 2026-06-25 - Synchronize runtime recovery docs
+
+Context:
+- The delivery bundle now indexes runtime recovery artifacts directly.
+- README, readiness checklist, and runtime environment docs needed to describe the same final handoff shape.
+
+Decisions:
+- Document runtime recovery as part of the delivery bundle alongside standard reports, WGD evidence, Reference governance, runtime availability, and documentation.
+- Point users to `scripts/run_local_acceptance.sh` after Docker/Apptainer are repaired so handoff and delivery bundle outputs refresh from the final evidence set.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `docs/readiness_checklist.md`
+- `docs/runtime_environment.md`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_runtime_environment_files.py -q` first failed because README, readiness checklist, and runtime environment docs did not yet mention the runtime recovery contract.
+- The same focused test passed with 12 tests after synchronizing the docs.
+- `python -m pytest tests/test_quickstart_docs.py tests/test_release_audit_docs.py -q` passed with 3 tests.
+- `python -m pytest tests -q` passed with 244 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 25`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; the embedded pytest check reports `244 passed`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocker remains missing `docker` and `apptainer`.
+
+Commit:
+- hash: pending
+- message: docs: synchronize runtime recovery handoff
+- files: README, readiness/runtime docs, doc tests, history
+
+Next:
+- Commit the runtime recovery documentation sync, then continue from the clean runtime-blocked state.
 
 ## 2026-06-25 - Add final delivery bundle index
 
