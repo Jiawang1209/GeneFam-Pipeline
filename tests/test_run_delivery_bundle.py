@@ -80,7 +80,15 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     manifest_text = manifest.read_text(encoding="utf-8")
     assert manifest_text.startswith("section\titem\tstatus\tpath\tnote\n")
     assert "standard\tfinal_report\tavailable\tresults/quickstart/standard_smoke/report/final_report.md" in manifest_text
+    assert (
+        "standard\trun_config_snapshot\tavailable\tresults/quickstart/standard_smoke/tables/run_config_snapshot.tsv\tstandard branch run configuration"
+        in manifest_text
+    )
     assert "wgd\tfinal_report\tavailable\tresults/quickstart/example_prepared_wgd/report/final_report.md" in manifest_text
+    assert (
+        "wgd\trun_config_snapshot\tavailable\tresults/quickstart/example_prepared_wgd/tables/wgd_run_config_snapshot.tsv\tWGD branch run configuration"
+        in manifest_text
+    )
     assert "wgd\tevent_evidence\tavailable\tresults/wgd_smoke/tables/wgd_event_evidence.tsv\talpha,beta,gamma,theta" in manifest_text
     assert (
         "governance\treference_governance\tavailable\tresults/reference_governance/reference_governance.md\ttracked Reference/ changes are release-blocking"

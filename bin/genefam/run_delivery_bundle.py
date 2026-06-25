@@ -107,6 +107,13 @@ def build_delivery_manifest(
             "note": "species-bank candidates selected from YAML",
         },
         {
+            "section": "standard",
+            "item": "run_config_snapshot",
+            "status": "available",
+            "path": "results/quickstart/standard_smoke/tables/run_config_snapshot.tsv",
+            "note": "standard branch run configuration",
+        },
+        {
             "section": "wgd",
             "item": "final_report",
             "status": _status_from_step(quickstart_rows, "prepared_wgd_handoff"),
@@ -116,6 +123,13 @@ def build_delivery_manifest(
                 "results/quickstart/example_prepared_wgd/report/final_report.md",
             ),
             "note": _note_from_step(quickstart_rows, "prepared_wgd_handoff", "prepared WGD handoff report"),
+        },
+        {
+            "section": "wgd",
+            "item": "run_config_snapshot",
+            "status": "available",
+            "path": "results/quickstart/example_prepared_wgd/tables/wgd_run_config_snapshot.tsv",
+            "note": "WGD branch run configuration",
         },
         {
             "section": "wgd",

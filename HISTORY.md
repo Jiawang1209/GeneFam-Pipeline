@@ -4706,12 +4706,52 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocker remains missing `docker` and `apptainer`.
 
 Commit:
-- hash: pending
+- hash: f93abefe449a09adb989b79a37a12f05493851f1
 - message: feat: show run configuration in final reports
 - files: report assembler, standard smoke, Nextflow report wiring, tests, history
 
 Next:
 - Commit the run-configuration report update, then continue preserving Docker/Apptainer as the only release blocker.
+
+## 2026-06-25 - Index run configuration snapshots in delivery bundle
+
+Context:
+- Final reports now render run configuration snapshots inline.
+- The delivery bundle still pointed to final reports but did not directly index the raw standard and WGD run configuration TSV files for machine-readable review.
+
+Decisions:
+- Add `standard/run_config_snapshot` to the delivery manifest.
+- Add `wgd/run_config_snapshot` to the delivery manifest.
+- Keep these entries in the standard and WGD sections next to the final report rows.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_run_delivery_bundle.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py -q` first failed because `standard/run_config_snapshot` was absent from the delivery manifest.
+- The same focused test passed with 1 test after adding standard and WGD run configuration snapshot rows.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` exited `0`.
+- `results/delivery_bundle/delivery_manifest.tsv` now lists `results/quickstart/standard_smoke/tables/run_config_snapshot.tsv` and `results/quickstart/example_prepared_wgd/tables/wgd_run_config_snapshot.tsv`.
+- `python -m pytest tests -q` passed with 244 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`.
+- `results/release_checks/release_checks.md` reports `Passed: 25`, `Failed: 3`, `Required failed: 1`, `Optional failed: 2`, and `Release ready: false`; the embedded pytest check reports `244 passed`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the only blocker remains missing `docker` and `apptainer`.
+
+Commit:
+- hash: pending
+- message: feat: index run configuration snapshots
+- files: delivery bundle helper, delivery bundle test, history
+
+Next:
+- Commit the delivery-bundle run configuration index update, then keep Docker/Apptainer as the only unresolved release blocker.
 
 ## 2026-06-25 - Add final delivery bundle index
 
