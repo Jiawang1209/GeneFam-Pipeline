@@ -726,6 +726,34 @@ def test_kaks_and_retention_analysis_requires_duplicate_type_kaks_visualization_
     assert "duplicate-type Ka/Ks visualization smoke" in by_requirement["Ka/Ks and retention analysis"]["evidence"]
 
 
+def test_kaks_and_retention_analysis_requires_pangenome_and_nextflow_wgd_evidence():
+    release_rows = [
+        _release_row("Ka/Ks parser smoke"),
+        _release_row("duplicate-type Ka/Ks visualization smoke"),
+        _release_row("retention enrichment smoke"),
+        _release_row("WGD event smoke"),
+        _release_row("prepared WGD handoff example"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["Ka/Ks and retention analysis"]["status"] == "missing"
+    assert "pangenome-class Ka/Ks visualization smoke" in by_requirement["Ka/Ks and retention analysis"]["evidence"]
+    assert "Nextflow WGD event smoke" in by_requirement["Ka/Ks and retention analysis"]["evidence"]
+
+
 def test_chromosome_and_expression_integration_requires_chromosome_smoke():
     release_rows = [
         _release_row("standard branch smoke"),

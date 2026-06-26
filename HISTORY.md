@@ -9750,6 +9750,48 @@ Commit:
 Next:
 - Keep Docker/Apptainer runtime verification as the remaining final-stage external blocker; continue polishing Reference-level figure fidelity where useful.
 
+## 2026-06-27 - Require formal WGD evidence for Ka/Ks retention audit
+
+Timestamp:
+- 2026-06-27 07:33 CST
+
+Context:
+- The dedicated Ka/Ks/WGD visualization and aggregate paper-level visualization gates already required pangenome-class Ka/Ks and formal Nextflow WGD evidence.
+- The higher-level `Ka/Ks and retention analysis` objective row still treated the analysis branch as complete with parser, duplicate-type Ka/Ks, retention enrichment, WGD event, and prepared handoff evidence, but without pangenome-class Ka/Ks or formal Nextflow WGD branch evidence.
+
+Decisions:
+- Require `pangenome-class Ka/Ks visualization smoke` for the `Ka/Ks and retention analysis` objective row.
+- Require `Nextflow WGD event smoke` for the same row so the analysis audit is connected to the formal WGD DSL2 branch, not only prepared standalone evidence.
+- Keep `WGD publication report audit` in the report/visualization gates rather than duplicating it in this analysis row.
+
+Added:
+- Regression test proving `Ka/Ks and retention analysis` remains `missing` when pangenome-class Ka/Ks and formal Nextflow WGD evidence are absent.
+- Objective-audit evidence text naming pangenome-class Ka/Ks and formal Nextflow WGD branch evidence.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_kaks_and_retention_analysis_requires_pangenome_and_nextflow_wgd_evidence -q` first failed with the old rule because `Ka/Ks and retention analysis` was `achieved` without pangenome-class Ka/Ks or `Nextflow WGD event smoke`.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 31 tests after implementation.
+- `python -m pytest tests -q` passed with 391 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 45`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` passed and reported `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+- `rg -n "Ka/Ks and retention analysis|pangenome-class Ka/Ks visualization smoke|formal Nextflow WGD branch" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed the analysis row now names pangenome-class Ka/Ks and formal Nextflow WGD branch evidence.
+
+Commit:
+- hash: pending
+- message: test: require formal wgd evidence for kaks retention audit
+- files: objective audit rule, objective audit tests, history
+
+Next:
+- Continue final MVP hardening with Docker/Apptainer packaging still intentionally deferred to the final runtime stage.
+
 ## 2026-06-27 - Require WGD figures in paper-level visualization audit
 
 Timestamp:
