@@ -34,6 +34,46 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 06:36 - Expose publication report closure gates in objective audit
+
+Context:
+- The active `/goal` requires the machine objective audit to reflect the full paper-style report closure criteria.
+- The publication report audits already validate plot file signatures, registered-only interpretation scope, and plot manifest/interpretation path consistency, but the objective audit `final reports` note still only described the older close-reading text checks.
+
+Decisions:
+- Keep the objective audit as the human-readable completion ledger for the MVP goal.
+- Make the `final reports` row explicitly name valid plot file signatures, registered-only figure interpretation scope, and plot manifest and interpretation output path consistency.
+
+Added:
+- Regression expectations that the objective audit final-report note names all current publication report closure gates.
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+- `results/objective_audit/objective_audit.md`
+- `results/objective_audit/objective_audit.tsv`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_note_names_complete_publication_report_closure -q` first failed because the final-report note did not contain `valid plot file signatures`.
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_note_names_complete_publication_report_closure -q` passed after the audit note update.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 24 tests.
+- `python -m pytest tests -q` passed with 381 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and reported `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+- `rg -n "valid plot file signatures|registered-only figure interpretation scope|plot manifest and interpretation output path consistency" results/objective_audit/objective_audit.md` confirmed the `final reports` row names all three gates.
+
+Commit:
+- hash: pending
+- message: `test: expose report closure gates in objective audit`
+- files: objective audit wording, objective audit regression test, regenerated objective audit outputs, and history entry.
+
+Next:
+- Continue broad MVP audit only after choosing the next highest-risk remaining product gap; container packaging remains deferred until the analysis workflow is complete.
+
 ## 2026-06-27 06:29 - Reject unregistered figure interpretation rows
 
 Context:

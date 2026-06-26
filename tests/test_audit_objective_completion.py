@@ -356,6 +356,9 @@ def test_final_reports_note_names_complete_publication_report_closure():
 
     assert final_report_row["status"] == "achieved"
     assert "complete per-figure close-reading text" in final_report_row["note"]
+    assert "valid plot file signatures" in final_report_row["note"]
+    assert "registered-only figure interpretation scope" in final_report_row["note"]
+    assert "plot manifest and interpretation output path consistency" in final_report_row["note"]
     assert "input data" in final_report_row["note"]
     assert "what the figure shows" in final_report_row["note"]
     assert "key observations" in final_report_row["note"]
