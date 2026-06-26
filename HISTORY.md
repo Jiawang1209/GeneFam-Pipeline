@@ -6875,7 +6875,7 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` with `41 passed / 3 failed`; `promoter cis-element visualization smoke` passed and included the new gene-element matrix and element-annotation table, while `readiness audit` failed and Docker/Apptainer profile smokes remained optional failures.
 
 Commit:
-- hash: pending
+- hash: 64b6b16
 - message: feat: add promoter element annotation tracks
 - files: promoter cis-element table builder, R promoter plot, smoke runner, standard report index, Nextflow wiring, reference plotting docs, tests, history
 
