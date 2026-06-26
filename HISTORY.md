@@ -6824,6 +6824,46 @@ Commit:
 Next:
 - Continue toward the final container/Apptainer reproducibility stage once local runtimes are available.
 
+## 2026-06-27 - Document publication audit in readiness checklist
+
+Timestamp:
+- 2026-06-27 03:11:42 CST
+
+Context:
+- `publication_report_audit` was documented in quickstart and surfaced in local acceptance/delivery outputs, but `docs/readiness_checklist.md` still omitted it from the first files to inspect.
+- The active `/goal` requires a complete MVP handoff, so the readiness checklist should point to the same paper-style report closure evidence as the command outputs.
+
+Decisions:
+- Add `results/publication_report_audit/publication_report_audit.md` to the readiness checklist's first inspection list.
+- Document that the publication audit checks figure interpretations, QC tables, software versions, and reproducibility commands.
+- Include publication audit output in the post-runtime-refresh file list.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `docs/readiness_checklist.md`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_runtime_environment_files.py::test_readiness_checklist_documents_command_audit -q` first failed because `docs/readiness_checklist.md` did not mention `results/publication_report_audit/publication_report_audit.md`.
+- `python -m pytest tests/test_runtime_environment_files.py::test_readiness_checklist_documents_command_audit -q` passed after updating the checklist.
+- `python -m pytest tests/test_runtime_environment_files.py tests/test_quickstart_docs.py tests/test_local_acceptance_script.py tests/test_run_delivery_bundle.py -q` passed with 18 tests.
+- `python -m pytest tests -q` passed with 356 tests.
+- `rg -n "publication_report_audit|paper-style report closure|figure interpretations|software versions|reproducibility" docs/readiness_checklist.md` confirmed the documented readiness entrypoints.
+
+Commit:
+- hash: pending
+- message: pending
+- files: readiness checklist docs, runtime environment docs test, history
+
+Next:
+- Continue toward the final container/Apptainer reproducibility stage once local runtimes are available.
+
 ## 2026-06-27 - Document publication audit in quickstart
 
 Timestamp:
