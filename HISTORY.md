@@ -6857,8 +6857,8 @@ Verification:
 - `rg -n "audit_publication_report.py|publication report audit|publication_report_audit|figure interpretations|software versions|reproducibility commands" docs/release_audit.md` confirmed the publication audit evidence entries.
 
 Commit:
-- hash: pending
-- message: pending
+- hash: b9299ed4f178be4d32dd3790d04735069ad05dc2
+- message: docs: add publication audit release evidence
 - files: release audit docs, release audit docs test, history
 
 Next:
