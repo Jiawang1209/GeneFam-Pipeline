@@ -272,6 +272,17 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "promoter cis-element visualization smoke",
+            [
+                python,
+                "bin/genefam/run_promoter_cis_smoke.py",
+                "--r-bin",
+                "/usr/local/bin/R",
+                "--outdir",
+                "results/promoter_cis_smoke",
+            ],
+        ),
+        CheckSpec(
             "tree feature visualization smoke",
             [
                 python,

@@ -29,6 +29,7 @@ fields:
   domain_filtering.hmmer_min_domain_coverage: minimum HMM coordinate coverage from 0 to 1
   wgd_events.named_event_annotation: boolean
   wgd_events.event_map: YAML path required when named_event_annotation is true; duplicate WGD event names are invalid
+  promoter.cis_elements: PlantCARE-style TSV path for promoter cis-element category matrix plotting
   ppi.edges: TSV path with source, target, weight, and species columns for ggNetView PPI plotting
   ppi.nodes: optional TSV path with node, type, species, and domain columns for PPI node annotation
   plotting.reuse_reference_scripts: boolean
@@ -46,6 +47,7 @@ module_dependency_rules:
   modules.kaks: requires input.required.cds true
   modules.chromosome_location: requires input.required.gff3 true
   modules.expression: requires expression.matrix
+  modules.promoter_cis: requires promoter.cis_elements
   modules.ppi: requires ppi.edges
   modules.phylogeny: requires modules.family_summary true
   modules.motif: requires modules.family_summary true

@@ -158,6 +158,22 @@ def build_objective_audit(
         _achieved_if(
             _all_passed(
                 release,
+                [
+                    "feature summary visualization smoke",
+                    "promoter cis-element visualization smoke",
+                    "tree feature visualization smoke",
+                    "MCScanX circlize visualization smoke",
+                    "PPI ggNetView plot smoke",
+                    "standard branch expression smoke",
+                ],
+            ),
+            "paper-level visualization modules",
+            "feature summary visualization smoke, promoter cis-element visualization smoke, tree feature visualization smoke, MCScanX circlize visualization smoke, PPI ggNetView plot smoke, and standard branch expression smoke",
+            "Report-ready feature summary, promoter cis-element, tree/motif/gene-structure/domain, synteny/circlize, PPI, and expression figures are exercised by smoke checks.",
+        ),
+        _achieved_if(
+            _all_passed(
+                release,
                 ["chromosome location smoke", "standard branch smoke", "standard branch expression smoke", "quickstart handoff"],
             ),
             "chromosome and expression integration",

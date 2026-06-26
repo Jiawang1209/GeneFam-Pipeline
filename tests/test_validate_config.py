@@ -178,6 +178,21 @@ def test_validate_config_check_paths_reports_missing_runtime_inputs(tmp_path):
     assert "expression.matrix path does not exist: data/expression/family_expression.tsv" in errors
 
 
+def test_validate_config_reports_promoter_cis_requires_annotation_table_and_missing_path(tmp_path):
+    config = _valid_base_config()
+    config["input"]["root"] = "tests/fixtures/species_bank"
+    config["modules"]["promoter_cis"] = True
+
+    errors = validate_config(config)
+
+    assert "modules.promoter_cis requires promoter.cis_elements" in errors
+
+    config["promoter"] = {"cis_elements": "data/promoter/plantcare.tsv"}
+    errors = validate_config(config, check_paths=True, base_dir=tmp_path)
+
+    assert "promoter.cis_elements path does not exist: data/promoter/plantcare.tsv" in errors
+
+
 def test_validate_config_cli_check_paths_accepts_fixture_configs():
     completed = subprocess.run(
         [

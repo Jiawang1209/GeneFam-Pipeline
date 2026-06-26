@@ -42,6 +42,12 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
         _release_row("standard branch smoke"),
         _release_row("gene structure smoke"),
         _release_row("chromosome location smoke"),
+        _release_row("feature summary visualization smoke"),
+        _release_row("promoter cis-element visualization smoke"),
+        _release_row("tree feature visualization smoke"),
+        _release_row("MCScanX circlize visualization smoke"),
+        _release_row("PPI ggNetView plot smoke"),
+        _release_row("standard branch expression smoke"),
         _release_row("alignment phylogeny smoke"),
         _release_row("synteny parser smoke"),
         _release_row("Ka/Ks parser smoke"),
@@ -83,7 +89,36 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
     assert "results/container_default_smoke" in by_requirement["Docker/Apptainer reproducibility"]["note"]
     assert "docker, apptainer" in by_requirement["Docker/Apptainer reproducibility"]["note"]
     assert by_requirement["WGD gamma beta alpha theta evidence"]["status"] == "achieved"
+    assert by_requirement["paper-level visualization modules"]["status"] == "achieved"
+    assert "promoter cis-element visualization smoke" in by_requirement["paper-level visualization modules"]["evidence"]
     assert by_requirement["quickstart handoff"]["status"] == "achieved"
+
+
+def test_paper_level_visualization_modules_require_promoter_cis_smoke():
+    release_rows = [
+        _release_row("feature summary visualization smoke"),
+        _release_row("tree feature visualization smoke"),
+        _release_row("MCScanX circlize visualization smoke"),
+        _release_row("PPI ggNetView plot smoke"),
+        _release_row("standard branch expression smoke"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["paper-level visualization modules"]["status"] == "missing"
+    assert "promoter cis-element visualization smoke" in by_requirement["paper-level visualization modules"]["evidence"]
 
 
 def test_yaml_driven_species_selection_requires_species_selection_smokes():

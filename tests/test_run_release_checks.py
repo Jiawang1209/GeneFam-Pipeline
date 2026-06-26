@@ -459,6 +459,18 @@ def test_default_checks_include_feature_summary_after_synteny_smoke():
     assert "--outdir results/feature_summary_smoke" in command
 
 
+def test_default_checks_include_promoter_cis_smoke_after_feature_summary():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("promoter cis-element visualization smoke") > names.index("feature summary visualization smoke")
+    assert names.index("promoter cis-element visualization smoke") < names.index("tree feature visualization smoke")
+    smoke = next(check for check in default_checks() if check.name == "promoter cis-element visualization smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_promoter_cis_smoke.py" in command
+    assert "--r-bin /usr/local/bin/R" in command
+    assert "--outdir results/promoter_cis_smoke" in command
+
+
 def test_default_checks_include_ppi_ggnetview_smoke_after_feature_summary():
     names = [check.name for check in default_checks()]
 

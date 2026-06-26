@@ -44,12 +44,13 @@ Later modules add more requirements:
 - `modules.kaks: true` requires `input.required.cds: true`.
 - `modules.chromosome_location: true` requires `input.required.gff3: true`.
 - `modules.expression: true` requires `expression.matrix`.
+- `modules.promoter_cis: true` requires `promoter.cis_elements`.
 - `modules.ppi: true` requires `ppi.edges`.
 - `modules.phylogeny: true` requires `modules.family_summary: true`.
 - `modules.motif: true` requires `modules.family_summary: true`.
 - `modules.duplication_retention: true` requires both `modules.synteny: true` and `modules.kaks: true`.
 
-Use `python bin/genefam/validate_config.py <config.yaml> --check-paths` before a real run to require configured runtime inputs to exist. This strict mode checks `input.root` or `input.manifest`, enabled HMMER profiles, DIAMOND reference peptides, `expression.matrix`, `ppi.edges`, and optional `ppi.nodes` when present. The Nextflow entrypoint runs the same strict preflight through `workflows/modules/config_validation.nf` before species discovery or identification starts.
+Use `python bin/genefam/validate_config.py <config.yaml> --check-paths` before a real run to require configured runtime inputs to exist. This strict mode checks `input.root` or `input.manifest`, enabled HMMER profiles, DIAMOND reference peptides, `expression.matrix`, `promoter.cis_elements`, `ppi.edges`, and optional `ppi.nodes` when present. The Nextflow entrypoint runs the same strict preflight through `workflows/modules/config_validation.nf` before species discovery or identification starts.
 
 wgd_events.named_event_annotation requires modules.duplication_retention: true. When `wgd_events.named_event_annotation: true`, `wgd_events.event_map` is required. In strict `--check-paths` mode the event-map path must exist and duplicate WGD event names are rejected before the WGD branch interprets gamma, beta, alpha, theta, or custom labels.
 
@@ -144,6 +145,18 @@ AT1G01010 1.0 3.0 2.5
 ```
 
 It subsets the matrix to family member IDs before heatmap plotting.
+
+## Promoter Cis-Elements
+
+`bin/genefam/build_promoter_cis_elements.py` expects a tab-separated PlantCARE-style cis-element annotation table. The preferred normalized columns are:
+
+```text
+species_id gene_id element category position strand description
+```
+
+Common PlantCARE-like aliases are also accepted, including `Species`, `Gene ID`, `CAREs`, `Function`, and `Site`. When `category` is absent, elements and descriptions are mapped into broad report groups such as `hormone_responsive`, `stress_responsive`, `light_responsive`, `growth_development`, `core_promoter`, or `other`.
+
+Set `modules.promoter_cis: true` with `promoter.cis_elements: <path>` in YAML, or pass `--run_promoter_cis true --promoter_cis_elements <path>` to Nextflow. The module writes `promoter_cis_elements.tsv`, `promoter_cis_gene_matrix.tsv`, `promoter_cis_category_summary.tsv`, and `promoter_cis_elements.pdf/png`.
 
 ## PPI Network
 

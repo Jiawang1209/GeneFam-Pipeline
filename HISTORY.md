@@ -34,6 +34,72 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-26 23:47 - Add promoter cis-element visualization module
+
+Context:
+- The active `/goal` requires promoter cis-element visualization aligned with `Reference/Long_Weixiong_20240323_1_GDSL/R/10.promoter.R`.
+- The pipeline already extracted promoter intervals and plotted generic feature summaries, but PlantCARE-style cis-element category matrices, top-element summaries, formal Nextflow wiring, and report-index entries were still missing.
+
+Decisions:
+- Add a standalone promoter cis-element module instead of mixing cis-element annotations into the promoter-length summary.
+- Accept normalized TSV columns plus common PlantCARE-style aliases such as `Species`, `Gene ID`, `CAREs`, `Function`, and `Site`.
+- Infer broad report categories when the input lacks a category column: `hormone_responsive`, `stress_responsive`, `light_responsive`, `growth_development`, `core_promoter`, or `other`.
+- Expose the workflow as `--run_promoter_cis true --promoter_cis_elements <tsv>` and YAML validation as `modules.promoter_cis: true` with `promoter.cis_elements`.
+- Add an objective-audit row for paper-level visualization modules so tree-feature, MCScanX/circlize, promoter cis-element, PPI, expression, and feature-summary figure coverage is explicitly tracked.
+
+Added:
+- `bin/genefam/build_promoter_cis_elements.py`
+- `bin/genefam/run_promoter_cis_smoke.py`
+- `scripts/plot_promoter_cis_elements.R`
+- `tests/fixtures/promoter_cis/plantcare.tsv`
+- `tests/test_build_promoter_cis_elements.py`
+- `tests/test_run_promoter_cis_smoke.py`
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_release_checks.py`
+- `bin/genefam/validate_config.py`
+- `docs/input_contract.md`
+- `docs/reference_plotting_reuse.md`
+- `docs/release_audit.md`
+- `schemas/config.schema.yaml`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_validate_config.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/plots.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/nextflow.config`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_promoter_cis_elements.py -q` first failed because `build_promoter_cis_elements.py` did not exist, then passed after adding normalization, category inference, gene-category matrix, and summary table generation.
+- `python -m pytest tests/test_run_promoter_cis_smoke.py -q` first failed because `run_promoter_cis_smoke.py` did not exist, then passed after adding the smoke runner and `scripts/plot_promoter_cis_elements.R`.
+- `python -m pytest tests/test_runtime_environment_files.py tests/test_validate_config.py tests/test_standard_branch_report_index.py tests/test_workflow_modules.py tests/test_run_release_checks.py -q` first failed on the new formal workflow/report/config expectations, then passed with 105 tests after wiring Nextflow, schema, validation, report index, and release checks.
+- `python -m pytest tests/test_build_promoter_cis_elements.py tests/test_run_promoter_cis_smoke.py tests/test_release_audit_docs.py tests/test_reference_plotting_reuse.py -q` passed with 5 tests.
+- `/Users/liuyue/miniforge3/bin/conda run -n GeneFamilyFlow nextflow run workflows/main.nf -c workflows/nextflow.config -profile activated --config configs/example.config.yaml --groups configs/species_groups.yaml --run_identification true --use_hmmer true --use_diamond true --final_rule intersection --mock_external_tools true --standard_stop_after_family_candidates false --mock_evidence_dir tests/fixtures/mock_evidence --run_promoter_cis true --promoter_cis_elements tests/fixtures/promoter_cis/plantcare.tsv --outdir results/nextflow_standard_promoter_cis_smoke` passed and executed `PLOT_PROMOTER_CIS_ELEMENTS`.
+- `grep -n "promoter_cis\|Promoter cis" results/nextflow_standard_promoter_cis_smoke/report/report_index.tsv results/nextflow_standard_promoter_cis_smoke/report/plot_manifest.tsv results/nextflow_standard_promoter_cis_smoke/report/final_report.md results/nextflow_standard_promoter_cis_smoke/report/figure_interpretations.tsv` confirmed report index, plot manifest, final report, and figure interpretations include promoter cis-element tables and plots.
+- `python -m pytest tests -q` passed with 323 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker/Apptainer remain unavailable, but improved the release matrix to `Passed: 37`, `Required failed: 1`, `Optional failed: 2`; `promoter cis-element visualization smoke` passed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` wrote `paper-level visualization modules` as `achieved` and kept the full objective incomplete only because Docker/Apptainer reproducibility is still blocked by missing runtime commands.
+
+Commit:
+- hash: not created yet
+- message: feat: add promoter cis element visualization
+- files: promoter cis-element table builder, R plotting script, smoke runner, fixture, Nextflow/report/release/schema/docs/tests/history
+
+Next:
+- Backfill this commit hash after committing.
+- Continue Reference-level refinement with copy-number/gene-family information plots and richer MCScanX/KaKs duplicate-type panels.
+
 ## 2026-06-26 23:28 - Add ggNetView PPI plotting module
 
 Context:

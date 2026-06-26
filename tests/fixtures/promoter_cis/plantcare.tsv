@@ -1,0 +1,7 @@
+Species	Gene ID	CAREs	Function	Site
+Ath	AT1G01010	ABRE	abscisic acid responsiveness	-210
+Ath	AT1G01010	LTR	low-temperature responsiveness	-450
+Ath	AT1G01020	G-box	light responsiveness	-95
+Bra	BnaA01G0001	MYB	drought inducibility	-360
+Bra	BnaA01G0001	TATA-box	core promoter element	-31
+Bra	BnaA02G0042	Box 4	light responsiveness	-155

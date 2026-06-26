@@ -126,6 +126,7 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
 
     input_required = (config.get("input", {}) or {}).get("required", {}) or {}
     expression = config.get("expression", {}) or {}
+    promoter = config.get("promoter", {}) or {}
     ppi = config.get("ppi", {}) or {}
 
     pep_dependent_modules = ("identification", "domain_filtering", "phylogeny", "motif")
@@ -145,6 +146,10 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
         errors.append("modules.expression requires expression.matrix")
     if check_paths and expression.get("matrix") and not _path_exists(str(expression["matrix"]), base_dir):
         errors.append(f"expression.matrix path does not exist: {expression['matrix']}")
+    if modules.get("promoter_cis") is True and not promoter.get("cis_elements"):
+        errors.append("modules.promoter_cis requires promoter.cis_elements")
+    if check_paths and promoter.get("cis_elements") and not _path_exists(str(promoter["cis_elements"]), base_dir):
+        errors.append(f"promoter.cis_elements path does not exist: {promoter['cis_elements']}")
     if modules.get("ppi") is True and not ppi.get("edges"):
         errors.append("modules.ppi requires ppi.edges")
     if check_paths and ppi.get("edges") and not _path_exists(str(ppi["edges"]), base_dir):

@@ -112,6 +112,30 @@ process PLOT_TREE_FEATURES {
     """
 }
 
+process PLOT_PROMOTER_CIS_ELEMENTS {
+    tag "plot promoter cis-elements"
+    publishDir "${params.outdir}", mode: "copy", overwrite: true
+
+    input:
+    path cis_elements
+
+    output:
+    path "tables/promoter_cis_elements.tsv"
+    path "tables/promoter_cis_gene_matrix.tsv"
+    path "tables/promoter_cis_category_summary.tsv"
+    path "plots/promoter_cis_elements.pdf"
+    path "plots/promoter_cis_elements.png"
+
+    script:
+    """
+    mkdir -p tables plots
+    python ${projectDir}/../bin/genefam/build_promoter_cis_elements.py \\
+      --cis-elements ${cis_elements} \\
+      --outdir tables
+    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_promoter_cis_elements.R --args tables/promoter_cis_gene_matrix.tsv tables/promoter_cis_category_summary.tsv plots
+    """
+}
+
 process PLOT_MCSCANX_CIRCLIZE {
     tag "plot MCScanX circlize"
     publishDir "${params.outdir}", mode: "copy", overwrite: true
@@ -180,6 +204,7 @@ process BUILD_PLOT_MANIFEST {
     python ${projectDir}/../bin/genefam/build_plot_manifest.py \\
       --plot "family_counts=plots/family_counts.pdf=Family member counts by species" \\
       --plot "tree_features=plots/tree_features.pdf=Tree, motif, gene-structure, and domain composite plot" \\
+      --plot "promoter_cis_elements=plots/promoter_cis_elements.pdf=Promoter cis-element category matrix and top element summary" \\
       --plot "ppi_ggnetview=plots/ppi_ggnetview.pdf=PPI network generated with ggNetView" \\
       --plot "ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs" \\
       --plot "expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap" \\

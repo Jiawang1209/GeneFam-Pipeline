@@ -24,6 +24,11 @@ def test_build_standard_report_index_marks_core_outputs_available():
             "chromosome_locations": "tables/chromosome_locations.tsv",
             "promoters_bed": "",
             "promoters_fasta": "",
+            "promoter_cis_elements": "",
+            "promoter_cis_gene_matrix": "",
+            "promoter_cis_category_summary": "",
+            "promoter_cis_pdf": "",
+            "promoter_cis_png": "",
             "feature_summary": "",
             "feature_summary_pdf": "",
             "feature_summary_png": "",
@@ -64,6 +69,11 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "chromosome_locations",
         "promoters_bed",
         "promoters_fasta",
+        "promoter_cis_elements",
+        "promoter_cis_gene_matrix",
+        "promoter_cis_category_summary",
+        "promoter_cis_pdf",
+        "promoter_cis_png",
         "feature_summary",
         "feature_summary_pdf",
         "feature_summary_png",
@@ -82,6 +92,7 @@ def test_build_standard_report_index_marks_core_outputs_available():
     }
     assert next(row for row in rows if row["key"] == "family_expression")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "promoters_bed")["status"] == "missing"
+    assert next(row for row in rows if row["key"] == "promoter_cis_pdf")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "feature_summary_pdf")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "mcscanx_circlize_pdf")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "ppi_ggnetview_pdf")["status"] == "missing"
@@ -108,6 +119,11 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
         "chromosome_locations": "results/nextflow_standard_smoke/standard/tables/chromosome_locations.tsv",
         "promoters_bed": "",
         "promoters_fasta": "",
+        "promoter_cis_elements": "",
+        "promoter_cis_gene_matrix": "",
+        "promoter_cis_category_summary": "",
+        "promoter_cis_pdf": "",
+        "promoter_cis_png": "",
         "feature_summary": "",
         "feature_summary_pdf": "",
         "feature_summary_png": "",

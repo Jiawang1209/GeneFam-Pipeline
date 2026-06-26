@@ -24,7 +24,7 @@ include {
 } from './modules/standard_postprocess.nf'
 include { MOCK_MVP } from './modules/mock_mvp.nf'
 include { ASSEMBLE_REPORT } from './modules/report.nf'
-include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; PLOT_FEATURE_SUMMARY; PLOT_TREE_FEATURES; PLOT_MCSCANX_CIRCLIZE; PLOT_PPI_GGNETVIEW; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
+include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; PLOT_FEATURE_SUMMARY; PLOT_TREE_FEATURES; PLOT_PROMOTER_CIS_ELEMENTS; PLOT_MCSCANX_CIRCLIZE; PLOT_PPI_GGNETVIEW; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
 include {
     PREPARE_ALIGNMENT_INPUTS;
     RUN_ALIGNMENT;
@@ -236,6 +236,23 @@ workflow {
                 feature_summary_pdf_ch = PLOT_FEATURE_SUMMARY.out[1]
                 feature_summary_png_ch = PLOT_FEATURE_SUMMARY.out[2]
             }
+            promoter_cis_elements_ch = Channel.value("")
+            promoter_cis_gene_matrix_ch = Channel.value("")
+            promoter_cis_category_summary_ch = Channel.value("")
+            promoter_cis_pdf_ch = Channel.value("")
+            promoter_cis_png_ch = Channel.value("")
+            if (asBooleanParam(params.run_promoter_cis)) {
+                if (!params.promoter_cis_elements) {
+                    error "Missing required parameter for --run_promoter_cis true: --promoter_cis_elements"
+                }
+                promoter_cis_input_ch = Channel.value(file(params.promoter_cis_elements))
+                PLOT_PROMOTER_CIS_ELEMENTS(promoter_cis_input_ch)
+                promoter_cis_elements_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[0]
+                promoter_cis_gene_matrix_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[1]
+                promoter_cis_category_summary_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[2]
+                promoter_cis_pdf_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[3]
+                promoter_cis_png_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[4]
+            }
             mcscanx_circlize_pdf_ch = Channel.value("")
             mcscanx_circlize_png_ch = Channel.value("")
             if (asBooleanParam(params.run_mcscanx_circlize)) {
@@ -295,6 +312,11 @@ workflow {
                 EXTRACT_CHROMOSOME_LOCATIONS.out,
                 promoters_bed_ch,
                 promoters_fasta_ch,
+                promoter_cis_elements_ch,
+                promoter_cis_gene_matrix_ch,
+                promoter_cis_category_summary_ch,
+                promoter_cis_pdf_ch,
+                promoter_cis_png_ch,
                 feature_summary_ch,
                 feature_summary_pdf_ch,
                 feature_summary_png_ch,

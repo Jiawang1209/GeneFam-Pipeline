@@ -91,6 +91,10 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "run_chromosome_smoke.py" in text
     assert "run_gene_structure_smoke.py" in text
     assert "run_promoter_smoke.py" in text
+    assert "run_promoter_cis_smoke.py" in text
+    assert "build_promoter_cis_elements.py" in text
+    assert "plot_promoter_cis_elements.R" in text
+    assert "PLOT_PROMOTER_CIS_ELEMENTS" in text
     assert "run_feature_summary_smoke.py" in text
     assert "run_tree_feature_smoke.py" in text
     assert "build_tree_feature_matrix.py" in text
@@ -172,6 +176,11 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/promoter_smoke/tables/promoters.bed" in text
     assert "results/promoter_smoke/sequences/promoters.fa" in text
     assert "results/promoter_smoke/plots/feature_summary.pdf" in text
+    assert "results/promoter_cis_smoke/tables/promoter_cis_elements.tsv" in text
+    assert "results/promoter_cis_smoke/tables/promoter_cis_gene_matrix.tsv" in text
+    assert "results/promoter_cis_smoke/tables/promoter_cis_category_summary.tsv" in text
+    assert "results/promoter_cis_smoke/plots/promoter_cis_elements.pdf" in text
+    assert "results/promoter_cis_smoke/plots/promoter_cis_elements.png" in text
     assert "results/feature_summary_smoke/tables/feature_summary.tsv" in text
     assert "results/feature_summary_smoke/plots/feature_summary.pdf" in text
     assert "results/feature_summary_smoke/plots/feature_summary.png" in text

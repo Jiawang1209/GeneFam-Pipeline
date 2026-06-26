@@ -357,6 +357,16 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert 'path "plots/feature_summary.pdf"' in module
     assert 'path "plots/feature_summary.png"' in module
 
+    assert "process PLOT_PROMOTER_CIS_ELEMENTS" in module
+    assert "build_promoter_cis_elements.py" in module
+    assert "plot_promoter_cis_elements.R" in module
+    assert "--cis-elements ${cis_elements}" in module
+    assert 'path "tables/promoter_cis_elements.tsv"' in module
+    assert 'path "tables/promoter_cis_gene_matrix.tsv"' in module
+    assert 'path "tables/promoter_cis_category_summary.tsv"' in module
+    assert 'path "plots/promoter_cis_elements.pdf"' in module
+    assert 'path "plots/promoter_cis_elements.png"' in module
+
     assert "process PLOT_TREE_FEATURES" in module
     assert "build_tree_feature_matrix.py" in module
     assert "plot_tree_features.R" in module
@@ -391,6 +401,7 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert "build_plot_manifest.py" in module
     assert '--plot "family_counts=plots/family_counts.pdf=Family member counts by species"' in module
     assert '--plot "tree_features=plots/tree_features.pdf=Tree, motif, gene-structure, and domain composite plot"' in module
+    assert '--plot "promoter_cis_elements=plots/promoter_cis_elements.pdf=Promoter cis-element category matrix and top element summary"' in module
     assert '--plot "ppi_ggnetview=plots/ppi_ggnetview.pdf=PPI network generated with ggNetView"' in module
     assert '--plot "ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs"' in module
     assert '--plot "expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap"' in module
@@ -435,6 +446,7 @@ def test_main_workflow_includes_plot_processes():
     assert "PLOT_KAKS" in workflow
     assert "PLOT_EXPRESSION_HEATMAP" in workflow
     assert "PLOT_TREE_FEATURES" in workflow
+    assert "PLOT_PROMOTER_CIS_ELEMENTS" in workflow
     assert "BUILD_PLOT_MANIFEST" in workflow
 
 

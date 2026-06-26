@@ -59,6 +59,8 @@ def test_nextflow_config_has_container_profiles():
     assert "params.use_hmmer = true" in config
     assert "params.use_diamond = true" in config
     assert "params.run_promoter = false" in config
+    assert "params.run_promoter_cis = false" in config
+    assert "params.promoter_cis_elements = null" in config
     assert "params.promoter_upstream_bp = 2000" in config
     assert "params.promoter_downstream_bp = 0" in config
     assert "params.run_feature_summary = false" in config
@@ -113,6 +115,8 @@ def test_input_contract_and_schema_document_identification_tool_flags():
         assert "wgd_events.event_map" in text
         assert "modules.ppi" in text
         assert "ppi.edges" in text
+        assert "modules.promoter_cis" in text
+        assert "promoter.cis_elements" in text
         assert "duplicate WGD event names" in text
         assert "wgd_events.named_event_annotation requires modules.duplication_retention" in text
 
