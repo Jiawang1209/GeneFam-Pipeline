@@ -6898,7 +6898,9 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `0`; release checks reported `Passed: 43`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
 
 Commit:
-- pending
+- hash: cbff7f3e8982d58b677ceafacacb63032433e95d
+- message: fix: detect iqtree version fallback
+- files: software version collector, software version tests, history
 
 Next:
 - Continue closing paper-level report polish and keep Docker/Apptainer profile smokes as explicit final-stage packaging work.
