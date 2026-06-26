@@ -6859,8 +6859,8 @@ Verification:
 - `results/delivery_bundle/delivery_manifest.tsv` now includes `status	publication_report_audit	available	results/publication_report_audit/publication_report_audit.md	paper-style report closure: figure interpretations, QC, software versions, and reproducibility`.
 
 Commit:
-- hash: pending
-- message: pending
+- hash: 86fa69aa56462fcf5448b9346e7406fb768679b0
+- message: feat: surface publication audit in delivery bundle
 - files: delivery bundle manifest builder, delivery bundle test, history
 
 Next:
