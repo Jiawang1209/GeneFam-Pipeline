@@ -34,6 +34,47 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 03:21 - Document publication audit in README acceptance flow
+
+Context:
+- The active `/goal` requires paper-level visualization/report closure and a perfect MVP acceptance surface before final Docker/Apptainer packaging.
+- The English README already listed the publication report audit as an output to inspect, but the shortest local acceptance entrypoint still described only release, quickstart, and delivery-bundle refresh steps.
+- The Chinese README had a publication audit section but did not point users to the local acceptance script or local acceptance summary.
+
+Decisions:
+- Treat `bash scripts/run_local_acceptance.sh` as the single user-facing local MVP acceptance entrypoint in both English and Chinese docs.
+- Make the README contract explicit that local acceptance refreshes `results/publication_report_audit/publication_report_audit.md` and indexes it through `results/local_acceptance/local_acceptance_summary.md`.
+- Add tests for the README acceptance wording so future edits cannot accidentally drop the publication-report audit evidence chain.
+
+Added:
+- A Chinese README section for the local acceptance entrypoint and publication audit summary.
+- README tests covering the publication-report audit acceptance wording in English and Chinese.
+
+Modified:
+- `README.md`
+- `README.zh-CN.md`
+- `tests/test_runtime_environment_files.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report -q` first failed because the English README did not describe publication-report audit as part of local acceptance, then passed after the README update.
+- `python -m pytest tests/test_runtime_environment_files.py::test_chinese_readme_points_to_publication_audit_acceptance -q` first failed because the Chinese README did not mention `bash scripts/run_local_acceptance.sh`, then passed after the README update.
+- `python -m pytest tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report tests/test_runtime_environment_files.py::test_chinese_readme_points_to_publication_audit_acceptance -q` passed with 2 tests.
+- `python -m pytest tests -q` passed with 357 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 44`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the remaining optional failures are Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `results/publication_report_audit/publication_report_audit.md` reports `Passed: 4`, `Failed: 0`, and `Complete: true`.
+
+Commit:
+- hash: pending
+- message: docs: document publication audit acceptance flow
+- files: README acceptance wording, Chinese README local acceptance entrypoint, README tests, history
+
+Next:
+- Continue toward final packaging by installing/exposing Docker and Apptainer or running `bash results/readiness/runtime_bootstrap.sh`, then rerun the container profile smokes and release gate.
+
 ## 2026-06-27 00:35 - Add per-gene tree feature architecture tracks
 
 Context:

@@ -186,10 +186,28 @@ def test_readme_points_to_final_handoff_report():
     assert "results/handoff/handoff_report.md" in readme
     assert "results/handoff/handoff_summary.tsv" in readme
     assert "results/local_acceptance/local_acceptance_summary.md" in readme
+    assert "results/publication_report_audit/publication_report_audit.md" in readme
+    assert "release, quickstart, publication-report audit, and delivery-bundle steps" in readme
+    assert "paper-style report closure" in readme
+    assert "figure interpretation" in readme
+    assert "software/R package versions" in readme
+    assert "reproducibility commands" in readme
     assert "container_default_smoke" in readme
     assert "Dockerfile -> results/container_default_smoke" in readme
     assert "first file to inspect" in readme
     assert "run_release_checks.py" in readme
+
+
+def test_chinese_readme_points_to_publication_audit_acceptance():
+    readme = Path("README.zh-CN.md").read_text(encoding="utf-8")
+
+    assert "bash scripts/run_local_acceptance.sh" in readme
+    assert "results/local_acceptance/local_acceptance_summary.md" in readme
+    assert "results/publication_report_audit/publication_report_audit.md" in readme
+    assert "论文级报告闭环检查" in readme
+    assert "每张图的结果精读" in readme
+    assert "方法、软件和 R 包版本" in readme
+    assert "可复现命令" in readme
 
 
 def test_readiness_checklist_points_to_local_acceptance_summary():

@@ -158,6 +158,23 @@ Configuration OK
 
 如果失败，会直接告诉你缺哪个路径或哪个模块配置不合理。这个步骤的作用是避免 Nextflow 跑了很久之后才因为一个文件路径写错而失败。
 
+## 本地验收入口
+
+如果你想快速判断当前仓库是不是已经达到 MVP 交付状态，优先运行：
+
+```bash
+bash scripts/run_local_acceptance.sh
+```
+
+这个脚本会刷新 release gate、quickstart handoff、论文级报告闭环检查和最终交付索引，并生成：
+
+```text
+results/local_acceptance/local_acceptance_summary.md
+results/publication_report_audit/publication_report_audit.md
+```
+
+`results/local_acceptance/local_acceptance_summary.md` 是最短的通过/失败索引；`results/publication_report_audit/publication_report_audit.md` 用来确认最终报告是否真的把图件、QC、方法版本和复现命令闭环。
+
 ## 论文级报告闭环检查
 
 完整 release 会额外生成：
