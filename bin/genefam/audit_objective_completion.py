@@ -138,8 +138,8 @@ def build_objective_audit(
                 ],
             ),
             "WGD gamma beta alpha theta evidence",
-            "synteny parser smoke, WGD event smoke, and prepared WGD handoff checks",
-            "MCScanX collinearity parsing feeds named events interpreted from configured Ks-supported WGD layers.",
+            "synteny parser smoke, WGD event smoke, Nextflow WGD event smoke, and prepared WGD handoff checks",
+            "MCScanX collinearity parsing feeds named events interpreted from configured Ks-supported WGD layers through prepared evidence and the formal Nextflow WGD branch.",
         ),
         _achieved_if(
             _all_passed(

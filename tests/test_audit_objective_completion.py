@@ -651,6 +651,33 @@ def test_wgd_event_evidence_requires_synteny_parser_smoke():
     assert "synteny parser smoke" in by_requirement["WGD gamma beta alpha theta evidence"]["evidence"]
 
 
+def test_wgd_event_evidence_names_nextflow_wgd_branch_evidence():
+    release_rows = [
+        _release_row("synteny parser smoke"),
+        _release_row("WGD event smoke"),
+        _release_row("Nextflow WGD event smoke"),
+        _release_row("prepared WGD handoff example"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["WGD gamma beta alpha theta evidence"]["status"] == "achieved"
+    assert "Nextflow WGD event smoke" in by_requirement["WGD gamma beta alpha theta evidence"]["evidence"]
+    assert "formal Nextflow WGD branch" in by_requirement["WGD gamma beta alpha theta evidence"]["note"]
+
+
 def test_kaks_and_retention_analysis_requires_kaks_parser_smoke():
     release_rows = [
         _release_row("WGD event smoke"),

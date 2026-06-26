@@ -9750,6 +9750,46 @@ Commit:
 Next:
 - Keep Docker/Apptainer runtime verification as the remaining final-stage external blocker; continue polishing Reference-level figure fidelity where useful.
 
+## 2026-06-27 - Name Nextflow WGD evidence in WGD event audit
+
+Timestamp:
+- 2026-06-27 07:38 CST
+
+Context:
+- The `WGD gamma beta alpha theta evidence` objective row already required `Nextflow WGD event smoke` internally.
+- Its displayed evidence text still only named synteny parser, WGD event, and prepared handoff checks, so the generated objective audit understated the formal Nextflow WGD branch evidence behind gamma beta alpha theta interpretation.
+
+Decisions:
+- Keep the achieved condition unchanged because it already required the correct formal WGD smoke.
+- Update the objective-audit evidence and note so the report explicitly names `Nextflow WGD event smoke` and the formal Nextflow WGD branch.
+
+Added:
+- Regression test proving the WGD event objective row names `Nextflow WGD event smoke` in evidence and `formal Nextflow WGD branch` in the note when achieved.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_wgd_event_evidence_names_nextflow_wgd_branch_evidence -q` first failed with the old evidence text because `Nextflow WGD event smoke` was absent from the displayed WGD event evidence.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 32 tests after implementation.
+- `python -m pytest tests -q` passed with 392 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 45`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` passed and reported `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+- `rg -n "WGD gamma beta alpha theta evidence|Nextflow WGD event smoke|formal Nextflow WGD branch" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed the WGD event evidence row now names the formal Nextflow WGD branch.
+
+Commit:
+- hash: pending
+- message: test: name nextflow wgd evidence in objective audit
+- files: objective audit evidence text, objective audit tests, history
+
+Next:
+- Continue final MVP hardening with Docker/Apptainer packaging still intentionally deferred to the final runtime stage.
+
 ## 2026-06-27 - Require formal WGD evidence for Ka/Ks retention audit
 
 Timestamp:
