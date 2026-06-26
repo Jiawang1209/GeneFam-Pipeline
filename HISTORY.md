@@ -66,7 +66,7 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
 
 Commit:
-- hash: pending
+- hash: 46319a5676ed72cf81641356f51d982e86cd039c
 - message: test: add named visualization objective rows
 - files: objective audit logic, objective audit tests, history
 
