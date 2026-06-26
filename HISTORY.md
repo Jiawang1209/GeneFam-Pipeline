@@ -92,12 +92,11 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` wrote `paper-level visualization modules` as `achieved` and kept the full objective incomplete only because Docker/Apptainer reproducibility is still blocked by missing runtime commands.
 
 Commit:
-- hash: not created yet
+- hash: dfa6f8b
 - message: feat: add promoter cis element visualization
 - files: promoter cis-element table builder, R plotting script, smoke runner, fixture, Nextflow/report/release/schema/docs/tests/history
 
 Next:
-- Backfill this commit hash after committing.
 - Continue Reference-level refinement with copy-number/gene-family information plots and richer MCScanX/KaKs duplicate-type panels.
 
 ## 2026-06-26 23:28 - Add ggNetView PPI plotting module
