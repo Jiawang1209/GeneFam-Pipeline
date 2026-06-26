@@ -6928,7 +6928,7 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` with `41 passed / 3 failed`; `gene family information visualization smoke` and `Nextflow standard branch smoke` passed, while `readiness audit` failed and Docker/Apptainer profile smokes remained optional failures.
 
 Commit:
-- hash: pending
+- hash: bda976c
 - message: feat: add copy number expansion summary
 - files: gene family info builder, R plot, smoke runner, standard report index, Nextflow wiring, reference plotting docs, tests, history
 
