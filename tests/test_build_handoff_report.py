@@ -48,6 +48,7 @@ def test_build_handoff_sections_summarizes_release_objective_and_runtime_state(t
     )
 
     assert sections["release"] == "passed=1 failed=2 required_failed=1 optional_failed=1 release_ready=false"
+    assert sections["analysis_flow_status"] == "analysis_release_ready=false; final_stage_blockers=Docker/Apptainer reproducibility"
     assert sections["objective"] == "achieved=1 blocked=1 missing=0 complete=false"
     assert sections["blocked_requirements"] == "Docker/Apptainer reproducibility"
     assert (
@@ -65,6 +66,7 @@ def test_write_handoff_markdown_contains_copyable_next_steps(tmp_path):
     out = tmp_path / "handoff_report.md"
     sections = {
         "release": "passed=12 failed=3 required_failed=1 optional_failed=2 release_ready=false",
+        "analysis_flow_status": "analysis_release_ready=false; final_stage_blockers=Docker/Apptainer reproducibility",
         "objective": "achieved=11 blocked=1 missing=0 complete=false",
         "blocked_requirements": "Docker/Apptainer reproducibility",
         "next_unblock_artifacts": "results/readiness/runtime_bootstrap_plan.md, results/readiness/runtime_bootstrap.sh",
@@ -80,6 +82,7 @@ def test_write_handoff_markdown_contains_copyable_next_steps(tmp_path):
     text = out.read_text(encoding="utf-8")
     assert "# GeneFam-Pipeline Handoff Report" in text
     assert "release_ready=false" in text
+    assert "analysis_release_ready=false; final_stage_blockers=Docker/Apptainer reproducibility" in text
     assert "Available runtime commands" in text
     assert "Blocked requirements" in text
     assert "Docker/Apptainer reproducibility" in text
@@ -105,6 +108,7 @@ def test_write_handoff_markdown_uses_release_gate_when_no_unblock_command(tmp_pa
     out = tmp_path / "handoff_report.md"
     sections = {
         "release": "passed=15 failed=0 required_failed=0 optional_failed=0 release_ready=true",
+        "analysis_flow_status": "analysis_release_ready=true; final_stage_blockers=none",
         "objective": "achieved=12 blocked=0 missing=0 complete=true",
         "blocked_requirements": "none",
         "next_unblock_artifacts": "none",
@@ -125,6 +129,7 @@ def test_write_handoff_summary_tsv_contains_stable_keys(tmp_path):
     out = tmp_path / "handoff_summary.tsv"
     sections = {
         "release": "passed=12 failed=3 required_failed=1 optional_failed=2 release_ready=false",
+        "analysis_flow_status": "analysis_release_ready=false; final_stage_blockers=Docker/Apptainer reproducibility",
         "objective": "achieved=11 blocked=1 missing=0 complete=false",
         "blocked_requirements": "Docker/Apptainer reproducibility",
         "next_unblock_artifacts": "results/readiness/runtime_bootstrap_plan.md, results/readiness/runtime_bootstrap.sh",
@@ -141,6 +146,10 @@ def test_write_handoff_summary_tsv_contains_stable_keys(tmp_path):
         {
             "section": "release",
             "summary": "passed=12 failed=3 required_failed=1 optional_failed=2 release_ready=false",
+        },
+        {
+            "section": "analysis_flow_status",
+            "summary": "analysis_release_ready=false; final_stage_blockers=Docker/Apptainer reproducibility",
         },
         {"section": "objective", "summary": "achieved=11 blocked=1 missing=0 complete=false"},
         {"section": "blocked_requirements", "summary": "Docker/Apptainer reproducibility"},

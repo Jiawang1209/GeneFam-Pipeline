@@ -7025,6 +7025,46 @@ Commit:
 Next:
 - Continue final-stage container hardening; true Docker/Apptainer profile success still depends on installing or exposing those runtimes.
 
+## 2026-06-27 - Add explicit analysis-flow status to handoff report
+
+Timestamp:
+- 2026-06-27 02:44:53 CST
+
+Context:
+- The handoff report included release-check and objective-audit summaries, but the analysis-flow readiness signal was embedded inside the release summary string.
+- The user-facing handoff should clearly separate the current analysis MVP state from the final-stage Docker/Apptainer blocker.
+
+Decisions:
+- Add an `analysis_flow_status` section to the handoff summary.
+- Derive `analysis_release_ready` from required release-check failures.
+- Derive `final_stage_blockers` from blocked or missing objective requirements.
+
+Added:
+- Handoff tests requiring `analysis_flow_status` in section data, Markdown, and summary TSV outputs.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_handoff_report.py`
+- `tests/test_build_handoff_report.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_handoff_report.py -q` first failed because `analysis_flow_status` was missing from the generated sections and Markdown.
+- `python -m pytest tests/test_build_handoff_report.py -q` passed with 5 tests after implementation.
+- `python bin/genefam/build_handoff_report.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --container-smoke results/container_profile_smoke/docker/container_profile_smoke.tsv --container-smoke results/container_profile_smoke/apptainer/container_profile_smoke.tsv --out results/handoff/handoff_report.md --summary-tsv results/handoff/handoff_summary.tsv` refreshed the handoff artifacts.
+- `rg -n "analysis_flow_status|Analysis flow status|analysis_release_ready" results/handoff/handoff_report.md results/handoff/handoff_summary.tsv` confirmed the handoff now reports `analysis_release_ready=true; final_stage_blockers=Docker/Apptainer reproducibility`.
+- `python -m pytest tests -q` passed with 351 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `0`; release checks reported `Passed: 43`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- The same `rg` check confirmed release checks regenerated the enhanced handoff artifacts with the new analysis-flow status.
+
+Commit:
+- pending
+
+Next:
+- Continue final-stage container hardening; true Docker/Apptainer profile success still depends on installing or exposing those runtimes.
+
 ## 2026-06-27 - Add release-ready and container profile diagnostics to delivery bundle
 
 Timestamp:

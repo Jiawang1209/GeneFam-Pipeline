@@ -46,6 +46,14 @@ def _blocked_requirements(rows: list[dict[str, str]]) -> str:
     return ", ".join(blocked) if blocked else "none"
 
 
+def _analysis_flow_status(release_rows: list[dict[str, str]], objective_rows: list[dict[str, str]]) -> str:
+    required_failed = sum(
+        1 for row in release_rows if row.get("required") == "true" and row.get("status") == "failed"
+    )
+    blockers = _blocked_requirements(objective_rows)
+    return f"analysis_release_ready={str(required_failed == 0).lower()}; final_stage_blockers={blockers}"
+
+
 def _next_unblock_artifacts(objective_rows: list[dict[str, str]], readiness_rows: list[dict[str, str]]) -> str:
     has_objective_blocker = any(row.get("status") in {"blocked", "missing"} for row in objective_rows)
     has_missing_runtime = any(row.get("status") == "missing" for row in readiness_rows)
@@ -84,6 +92,7 @@ def build_handoff_sections(
 ) -> dict[str, str]:
     return {
         "release": _release_summary(release_rows),
+        "analysis_flow_status": _analysis_flow_status(release_rows, objective_rows),
         "objective": _objective_summary(objective_rows),
         "blocked_requirements": _blocked_requirements(objective_rows),
         "next_unblock_artifacts": _next_unblock_artifacts(objective_rows, readiness_rows),
@@ -105,6 +114,7 @@ def write_markdown(sections: dict[str, str], out_path: Path) -> None:
         "## Current Status",
         "",
         f"- Release checks: `{sections['release']}`",
+        f"- Analysis flow status: `{sections['analysis_flow_status']}`",
         f"- Objective audit: `{sections['objective']}`",
         f"- Blocked requirements: `{sections['blocked_requirements']}`",
         f"- Unblock artifacts: `{sections['next_unblock_artifacts']}`",
