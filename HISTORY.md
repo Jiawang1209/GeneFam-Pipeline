@@ -68,7 +68,7 @@ Verification:
 - `results/publication_report_audit/publication_report_audit.md` reports `Passed: 4`, `Failed: 0`, and `Complete: true`.
 
 Commit:
-- hash: pending
+- hash: 6cc9a2c935d780264b2e14d042e3fb15e6ddfd36
 - message: docs: document publication audit acceptance flow
 - files: README acceptance wording, Chinese README local acceptance entrypoint, README tests, history
 
