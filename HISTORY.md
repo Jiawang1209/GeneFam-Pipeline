@@ -66,7 +66,7 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
 
 Commit:
-- hash: pending
+- hash: cfa5ce6895b7752e72087fb1d4fd7e1770410a7f
 - message: test: clarify final report objective closure
 - files: objective audit, objective audit tests, history
 
