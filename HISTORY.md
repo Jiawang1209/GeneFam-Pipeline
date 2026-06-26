@@ -34,6 +34,46 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 05:06 - Require final reports to embed reading status
+
+Context:
+- The active `/goal` requires final reports to include per-figure close reading, QC, software/version context, and reproducibility.
+- Publication audit already required `figure-specific close reading` in the TSV, but it did not verify that the final Markdown report embedded the `result_reading_status` text.
+- A report package could therefore pass with a complete TSV while the user-facing final report omitted the close-reading status line.
+
+Decisions:
+- Treat `result_reading_status` as part of the final-report embedded publication evidence.
+- Reuse the existing `final_report_embeds_publication_sections` audit row instead of adding a new check name.
+- Keep the audit symmetric with existing QC, method/software, and reproducibility embedding checks.
+
+Added:
+- Regression test proving a missing final-report reading-status line fails publication audit even when TSV details are valid.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `tests/test_audit_publication_report.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_requires_reading_status_embedded_in_final_report -q` first failed because final-report embedding did not check `result_reading_status`; it passed after adding that field to the embedding audit.
+- `python -m pytest tests/test_audit_publication_report.py -q` passed with 6 tests.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` exited 0 and reported `Passed: 5`, `Failed: 0`, `Complete: true`.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv --software-versions results/nextflow_wgd_smoke/wgd/report/software_versions.tsv --final-report results/nextflow_wgd_smoke/wgd/report/final_report.md --out-tsv results/publication_report_audit/wgd_publication_report_audit.tsv --out-md results/publication_report_audit/wgd_publication_report_audit.md` exited 0 and reported `Passed: 5`, `Failed: 0`, `Complete: true`.
+- `python -m pytest tests/test_audit_publication_report.py tests/test_run_release_checks.py::test_default_checks_include_publication_report_audit_after_visualization_report tests/test_run_release_checks.py::test_default_checks_include_wgd_publication_report_audit_after_wgd_smoke -q` passed with 8 tests.
+- `python -m pytest tests -q` passed with 372 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the remaining optional failures are Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+
+Commit:
+- hash: pending
+- message: test: require final report reading status
+- files: publication report audit, audit tests, history
+
+Next:
+- Continue checking final report and delivery surfaces against the full objective; Docker/Apptainer profile verification remains the final external runtime step.
+
 ## 2026-06-27 04:59 - Enforce figure-specific readings in publication audit
 
 Context:

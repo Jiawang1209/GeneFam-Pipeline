@@ -123,7 +123,7 @@ def audit_publication_report(
         if not _report_contains(report_text, f"### {key}:"):
             missing_report_sections.append(f"figure:{key}")
     for row in detail_rows:
-        for field in ["qc_tables", "method_and_software", "reproducibility"]:
+        for field in ["qc_tables", "method_and_software", "reproducibility", "result_reading_status"]:
             value = row.get(field, "").strip()
             if value and not _report_contains(report_text, value):
                 missing_report_sections.append(f"{row.get('figure_key', 'unknown')}:{field}")
