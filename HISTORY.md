@@ -9783,7 +9783,7 @@ Verification:
 - `rg -n "YAML-driven species selection|Nextflow standard manifest smoke|manifest-mode Nextflow" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed the YAML species-selection row now names manifest-mode Nextflow standard evidence.
 
 Commit:
-- hash: pending
+- hash: 40fbff181d800bc5c10d88815a83d1c4a8bd9ddf
 - message: test: require manifest nextflow evidence for yaml audit
 - files: objective audit rule, objective audit tests, history
 
