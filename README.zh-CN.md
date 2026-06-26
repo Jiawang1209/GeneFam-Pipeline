@@ -173,7 +173,7 @@ results/local_acceptance/local_acceptance_summary.md
 results/publication_report_audit/publication_report_audit.md
 ```
 
-`results/local_acceptance/local_acceptance_summary.md` 是最短的通过/失败索引；`results/publication_report_audit/publication_report_audit.md` 用来确认最终报告是否真的把图件格式、图件清单与精读表路径一致性、QC、逐图方法/软件版本和复现命令闭环。
+`results/local_acceptance/local_acceptance_summary.md` 是最短的通过/失败索引；`results/publication_report_audit/publication_report_audit.md` 用来确认最终报告是否真的把图件格式、只精读已注册图件、图件清单与精读表路径一致性、QC、逐图方法/软件版本和复现命令闭环。
 
 ## 论文级报告闭环检查
 
@@ -187,6 +187,7 @@ results/publication_report_audit/publication_report_audit.md
 
 - 每张图的结果精读
 - PDF/PNG/SVG 图件格式有效性
+- 只允许精读已注册到 plot_manifest 的图件
 - 图件清单与精读表 output_path 一致
 - QC 表和限制说明
 - 方法、软件和 R 包版本

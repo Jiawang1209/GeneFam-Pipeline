@@ -144,6 +144,14 @@ def _output_path_mismatches(
     return mismatches
 
 
+def _unregistered_interpretation_keys(
+    plot_keys: list[str],
+    interpretation_rows: dict[str, dict[str, str]],
+) -> list[str]:
+    registered = set(plot_keys)
+    return sorted(key for key in interpretation_rows if key not in registered)
+
+
 def _missing_detail_fields(rows: list[dict[str, str]]) -> list[str]:
     missing: list[str] = []
     for row in rows:
@@ -231,6 +239,7 @@ def audit_publication_report(
     plot_format_issues = _plot_format_issues(plot_manifest, plots)
     interpretation_rows = _interpretation_by_key(interpretations)
     missing_interpretations = [key for key in plot_keys if key not in interpretation_rows]
+    unregistered_interpretations = _unregistered_interpretation_keys(plot_keys, interpretation_rows)
     output_path_mismatches = _output_path_mismatches(plots, interpretation_rows)
 
     detail_rows = [interpretation_rows[key] for key in plot_keys if key in interpretation_rows]
@@ -283,6 +292,15 @@ def audit_publication_report(
             "all plot_manifest figures have interpretation rows"
             if not missing_interpretations and plot_keys
             else "missing interpretation rows: " + ", ".join(missing_interpretations or ["no plots registered"]),
+        ),
+        _row(
+            "figure_interpretation_scope",
+            not unregistered_interpretations and bool(plot_keys),
+            f"{plot_manifest}; {figure_interpretations}",
+            "all figure interpretation rows correspond to registered plot_manifest figures"
+            if not unregistered_interpretations and plot_keys
+            else "unregistered interpretation rows: "
+            + ", ".join(unregistered_interpretations or ["no plots registered"]),
         ),
         _row(
             "figure_interpretation_detail",

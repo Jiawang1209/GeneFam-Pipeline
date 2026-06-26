@@ -99,6 +99,7 @@ def test_readiness_checklist_documents_command_audit():
     assert "publication_report_audit" in text
     assert "paper-style report closure" in text
     assert "valid plot file signatures" in text
+    assert "registered-only figure interpretation scope" in text
     assert "plot manifest and interpretation output path consistency" in text
     assert "complete per-figure close-reading text" in text
     assert "QC tables and warnings" in text
@@ -195,6 +196,7 @@ def test_readme_points_to_final_handoff_report():
     assert "release, quickstart, publication-report audit, and delivery-bundle steps" in readme
     assert "paper-style report closure" in readme
     assert "valid plot file signatures" in readme
+    assert "registered-only figure interpretation scope" in readme
     assert "plot manifest and interpretation output path consistency" in readme
     assert "complete per-figure close-reading text" in readme
     assert "QC tables and warnings" in readme

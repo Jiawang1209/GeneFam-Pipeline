@@ -34,6 +34,60 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 06:29 - Reject unregistered figure interpretation rows
+
+Context:
+- The active `/goal` requires final reports to provide exact close reading for every registered figure in the result package.
+- The publication report audit already checked that every `plot_manifest.tsv` plot has an interpretation row, that paths match, and that plots are valid files.
+- It did not yet reject extra `figure_interpretations.tsv` rows whose `figure_key` was not registered in `plot_manifest.tsv`, which could let a report interpret figures outside the final delivery plot inventory.
+
+Decisions:
+- Add a dedicated `figure_interpretation_scope` publication-audit row.
+- Treat `plot_manifest.tsv` as the authoritative plot inventory; every `figure_interpretations.tsv` `figure_key` must appear as a registered `plot_key`.
+- Surface this gate in delivery bundle and user-facing docs as `registered-only figure interpretation scope`.
+
+Added:
+- Regression test for an orphan `figure_interpretations.tsv` row not present in `plot_manifest.tsv`.
+- Publication audit scope check for unregistered figure interpretation rows.
+- Delivery bundle and documentation wording for registered-only figure interpretation scope.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_audit_publication_report.py`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `README.md`
+- `README.zh-CN.md`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_rejects_unregistered_figure_interpretations -q` first failed with `KeyError: 'figure_interpretation_scope'`; it passed after adding the audit row.
+- `python -m pytest tests/test_audit_publication_report.py -q` passed with 12 tests.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` exited 0 and reported `Passed: 9`, including `figure_interpretation_scope`.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv --software-versions results/nextflow_wgd_smoke/wgd/report/software_versions.tsv --final-report results/nextflow_wgd_smoke/wgd/report/final_report.md --out-tsv results/publication_report_audit/wgd_publication_report_audit.tsv --out-md results/publication_report_audit/wgd_publication_report_audit.md` exited 0 and reported `Passed: 9`, including `figure_interpretation_scope`.
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index tests/test_quickstart_docs.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py -q` first failed until delivery bundle and docs mentioned `registered-only figure interpretation scope`; it passed after the wording updates.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` exited 0 and refreshed the delivery bundle with the scope gate.
+- `python -m pytest tests -q` passed with 381 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and produced `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+
+Commit:
+- hash: pending
+- message: test: reject unregistered figure interpretations
+- files: publication audit, delivery bundle, docs/tests, history
+
+Next:
+- Continue toward the active `/goal` by auditing remaining MVP evidence surfaces; Docker/Apptainer packaging remains the final external runtime stage.
+
 ## 2026-06-27 06:18 - Match figure interpretation output paths to plot manifest
 
 Context:

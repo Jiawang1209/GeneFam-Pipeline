@@ -31,6 +31,7 @@ def test_quickstart_documents_minimum_verified_run_path():
         "paper-style report closure",
         "WGD report closure",
         "valid plot file signatures",
+        "registered-only figure interpretation scope",
         "plot manifest and interpretation output path consistency",
         "complete per-figure close-reading text",
         "QC tables and warnings",

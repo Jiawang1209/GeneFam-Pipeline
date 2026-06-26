@@ -157,11 +157,11 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         in manifest_text
     )
     assert (
-        "status\tpublication_report_audit\tavailable\tresults/publication_report_audit/publication_report_audit.md\tpaper-style report closure: valid plot file signatures, plot manifest and interpretation output path consistency, complete per-figure close-reading text, QC tables and warnings, software/R package versions, per-figure method/software version coverage, and reproducibility commands"
+        "status\tpublication_report_audit\tavailable\tresults/publication_report_audit/publication_report_audit.md\tpaper-style report closure: valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, complete per-figure close-reading text, QC tables and warnings, software/R package versions, per-figure method/software version coverage, and reproducibility commands"
         in manifest_text
     )
     assert (
-        "status\twgd_publication_report_audit\tavailable\tresults/publication_report_audit/wgd_publication_report_audit.md\tWGD report closure: valid plot file signatures, plot manifest and interpretation output path consistency, complete Ka/Ks/WGD figure close-reading text, gamma beta alpha theta interpretation, QC tables and warnings, software/R package versions, per-figure method/software version coverage, and reproducibility commands"
+        "status\twgd_publication_report_audit\tavailable\tresults/publication_report_audit/wgd_publication_report_audit.md\tWGD report closure: valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, complete Ka/Ks/WGD figure close-reading text, gamma beta alpha theta interpretation, QC tables and warnings, software/R package versions, per-figure method/software version coverage, and reproducibility commands"
         in manifest_text
     )
     assert (
@@ -196,6 +196,7 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "compact local acceptance pass/fail index" in summary_text
     assert "complete per-figure close-reading text" in summary_text
     assert "valid plot file signatures" in summary_text
+    assert "registered-only figure interpretation scope" in summary_text
     assert "plot manifest and interpretation output path consistency" in summary_text
     assert "QC tables and warnings" in summary_text
     assert "software/R package versions" in summary_text
