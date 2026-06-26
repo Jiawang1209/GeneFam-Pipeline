@@ -71,7 +71,7 @@ Verification:
 - `results/publication_report_audit/publication_report_audit.md` reports `Passed: 4`, `Failed: 0`, and `Complete: true`.
 
 Commit:
-- hash: pending
+- hash: 0642c5718fd70f1b44cab2cc0ee0395c2b420951
 - message: test: require yaml species order in standard smoke
 - files: standard smoke wrapper, example YAML, species-order fixture, standard smoke tests, history
 
