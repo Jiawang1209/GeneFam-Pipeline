@@ -34,6 +34,47 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 05:51 - Require figure method software version coverage
+
+Context:
+- The active `/goal` requires the conclusion report to explain each figure and state the software and R package versions used in the methods.
+- The publication report audit already required per-figure close-reading text and checked that the software version table was embedded in the final report, but it did not prove that software named in each figure's `method_and_software` field had a corresponding version row.
+
+Decisions:
+- Add a dedicated publication-report audit row named `figure_method_software_versions`.
+- Treat version rows with `version_not_detected` as explicit report evidence for currently unavailable external tools, while still requiring every versioned component named by a figure method to appear in `software_versions.tsv`.
+- Ignore internal scripts and the `GeneFamilyFlow` environment label for this check; enforce external tools and R packages such as FastTree, MAFFT, MCScanX, KaKs_Calculator, R, circlize, pheatmap, and ggNetView.
+
+Added:
+- Regression test proving the audit fails when figure methods mention FastTree, MAFFT, or ggNetView but the software version table only lists R.
+- Publication audit check that maps figure method/software text to expected software-version components.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `tests/test_audit_publication_report.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_requires_versions_for_figure_method_software -q` first failed with `KeyError: 'figure_method_software_versions'`; it passed after adding the audit row.
+- `python -m pytest tests/test_audit_publication_report.py -q` passed with 9 tests.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_publication_report_audit_after_visualization_report tests/test_run_release_checks.py::test_default_checks_include_wgd_publication_report_audit_after_wgd_smoke -q` passed with 2 tests.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` exited 0 and reported `figure_method_software_versions` passed.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv --software-versions results/nextflow_wgd_smoke/wgd/report/software_versions.tsv --final-report results/nextflow_wgd_smoke/wgd/report/final_report.md --out-tsv results/publication_report_audit/wgd_publication_report_audit.tsv --out-md results/publication_report_audit/wgd_publication_report_audit.md` exited 0 and reported `figure_method_software_versions` passed.
+- `python -m pytest tests -q` passed with 378 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and produced `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+
+Commit:
+- hash: pending
+- message: test: require figure method software versions
+- files: publication report audit, publication audit tests, history
+
+Next:
+- Continue toward the active `/goal` by tightening any remaining acceptance evidence that is still broader than the user-facing MVP promise, while leaving Docker/Apptainer packaging for the final stage.
+
 ## 2026-06-27 05:44 - Add named visualization objective audit rows
 
 Context:

@@ -134,12 +134,13 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
     )
     summary = summarize_audit(rows)
 
-    assert summary == {"passed": 5, "failed": 0, "complete": True}
+    assert summary == {"passed": 6, "failed": 0, "complete": True}
     assert {row["check"] for row in rows} == {
         "plot_files_exist",
         "figure_interpretation_coverage",
         "figure_interpretation_detail",
         "software_versions_present",
+        "figure_method_software_versions",
         "final_report_embeds_publication_sections",
     }
 
@@ -626,3 +627,121 @@ def test_publication_report_audit_requires_reading_status_embedded_in_final_repo
     assert by_check["figure_interpretation_detail"]["status"] == "passed"
     assert by_check["final_report_embeds_publication_sections"]["status"] == "failed"
     assert "tree_features:result_reading_status" in by_check["final_report_embeds_publication_sections"]["note"]
+
+
+def test_publication_report_audit_requires_versions_for_figure_method_software(tmp_path):
+    plot_manifest = tmp_path / "plot_manifest.tsv"
+    figure_interpretations = tmp_path / "figure_interpretations.tsv"
+    software_versions = tmp_path / "software_versions.tsv"
+    final_report = tmp_path / "final_report.md"
+    (tmp_path / "plots").mkdir()
+    (tmp_path / "plots/tree_features.pdf").write_bytes(b"%PDF tree")
+    (tmp_path / "plots/ppi_ggnetview.pdf").write_bytes(b"%PDF ppi")
+
+    _write_tsv(
+        plot_manifest,
+        ["plot_key", "path", "description"],
+        [
+            ["tree_features", "plots/tree_features.pdf", "Tree features"],
+            ["ppi_ggnetview", "plots/ppi_ggnetview.pdf", "PPI network"],
+        ],
+    )
+    _write_tsv(
+        figure_interpretations,
+        [
+            "figure_key",
+            "title",
+            "input_data",
+            "what_figure_shows",
+            "key_observations",
+            "biological_interpretation",
+            "qc_warnings",
+            "qc_tables",
+            "method_and_software",
+            "reproducibility",
+            "result_reading_status",
+            "output_path",
+        ],
+        [
+            [
+                "tree_features",
+                "Tree, motif, gene-structure, and domain composite",
+                "tree and feature tables",
+                "tree-ordered feature tracks",
+                "clades share feature architecture",
+                "conserved clade features support structural conservation",
+                "review missing feature rows",
+                "tables/tree_feature_matrix.tsv",
+                "FastTree; MAFFT; plot_tree_features.R; /usr/local/bin/R; GeneFamilyFlow",
+                "python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
+                "figure-specific close reading",
+                "plots/tree_features.pdf",
+            ],
+            [
+                "ppi_ggnetview",
+                "PPI network generated with ggNetView",
+                "PPI edges and nodes",
+                "network hubs and modules",
+                "hub genes are visible",
+                "hub genes may identify interaction centers",
+                "review interaction evidence",
+                "tables/ppi_network_qc.tsv",
+                "build_ppi_tables.py; plot_ppi_ggnetview.R; ggNetView; /usr/local/bin/R; GeneFamilyFlow",
+                "python bin/genefam/run_ppi_ggnetview_plot_smoke.py --r-bin /usr/local/bin/R --outdir results/ppi_ggnetview_plot_smoke",
+                "figure-specific close reading",
+                "plots/ppi_ggnetview.pdf",
+            ],
+        ],
+    )
+    _write_tsv(
+        software_versions,
+        ["component", "kind", "version", "status", "source"],
+        [["R", "runtime", "4.4.0", "detected", "/usr/local/bin/R --version"]],
+    )
+    final_report.write_text(
+        "\n".join(
+            [
+                "### Software Versions",
+                "| component | kind | version | status | source |",
+                "| --- | --- | --- | --- | --- |",
+                "| R | runtime | 4.4.0 | detected | /usr/local/bin/R --version |",
+                "## Figure Result Interpretations",
+                "### tree_features: Tree, motif, gene-structure, and domain composite",
+                "- Input data: tree and feature tables",
+                "- What the figure shows: tree-ordered feature tracks",
+                "- Key observations: clades share feature architecture",
+                "- Biological interpretation: conserved clade features support structural conservation",
+                "- QC warnings / limitations: review missing feature rows",
+                "- QC tables: tables/tree_feature_matrix.tsv",
+                "- Method/software: FastTree; MAFFT; plot_tree_features.R; /usr/local/bin/R; GeneFamilyFlow",
+                "- Reproducibility: python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
+                "- Result reading status: figure-specific close reading",
+                "- Output path: `plots/tree_features.pdf`",
+                "### ppi_ggnetview: PPI network generated with ggNetView",
+                "- Input data: PPI edges and nodes",
+                "- What the figure shows: network hubs and modules",
+                "- Key observations: hub genes are visible",
+                "- Biological interpretation: hub genes may identify interaction centers",
+                "- QC warnings / limitations: review interaction evidence",
+                "- QC tables: tables/ppi_network_qc.tsv",
+                "- Method/software: build_ppi_tables.py; plot_ppi_ggnetview.R; ggNetView; /usr/local/bin/R; GeneFamilyFlow",
+                "- Reproducibility: python bin/genefam/run_ppi_ggnetview_plot_smoke.py --r-bin /usr/local/bin/R --outdir results/ppi_ggnetview_plot_smoke",
+                "- Result reading status: figure-specific close reading",
+                "- Output path: `plots/ppi_ggnetview.pdf`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    rows = audit_publication_report(
+        plot_manifest=plot_manifest,
+        figure_interpretations=figure_interpretations,
+        software_versions=software_versions,
+        final_report=final_report,
+    )
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["figure_method_software_versions"]["status"] == "failed"
+    assert "tree_features:FastTree" in by_check["figure_method_software_versions"]["note"]
+    assert "tree_features:MAFFT" in by_check["figure_method_software_versions"]["note"]
+    assert "ppi_ggnetview:ggNetView" in by_check["figure_method_software_versions"]["note"]

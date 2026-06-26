@@ -22,6 +22,24 @@ REQUIRED_INTERPRETATION_FIELDS = [
     "output_path",
 ]
 REPORT_EMBEDDED_INTERPRETATION_FIELDS = REQUIRED_INTERPRETATION_FIELDS
+VERSIONED_METHOD_COMPONENTS = [
+    "Nextflow",
+    "HMMER",
+    "DIAMOND",
+    "MAFFT",
+    "FastTree",
+    "IQ-TREE",
+    "MEME",
+    "MCScanX",
+    "KaKs_Calculator",
+    "R",
+    "ggplot2",
+    "pheatmap",
+    "circlize",
+    "ggtree",
+    "treeio",
+    "ggNetView",
+]
 
 
 def read_tsv(path: Path) -> list[dict[str, str]]:
@@ -110,6 +128,44 @@ def _missing_software_versions_in_report(
     return missing
 
 
+def _versioned_components(software_rows: list[dict[str, str]]) -> set[str]:
+    return {
+        row.get("component", "").strip()
+        for row in software_rows
+        if row.get("component", "").strip()
+        and row.get("version", "").strip()
+        and row.get("status", "").strip() not in {"", "missing"}
+    }
+
+
+def _method_components(method_text: str) -> list[str]:
+    normalized = method_text.replace("/usr/local/bin/R", " R ")
+    components: list[str] = []
+    for component in VERSIONED_METHOD_COMPONENTS:
+        if component == "R":
+            if " R " in f" {normalized} ":
+                components.append(component)
+            continue
+        if component in normalized:
+            components.append(component)
+    return components
+
+
+def _missing_method_component_versions(
+    detail_rows: list[dict[str, str]],
+    software_rows: list[dict[str, str]],
+) -> list[str]:
+    available = _versioned_components(software_rows)
+    missing: list[str] = []
+    for row in detail_rows:
+        figure_key = row.get("figure_key", "").strip() or "unknown"
+        method_text = row.get("method_and_software", "")
+        for component in _method_components(method_text):
+            if component not in available:
+                missing.append(f"{figure_key}:{component}")
+    return missing
+
+
 def audit_publication_report(
     plot_manifest: Path,
     figure_interpretations: Path,
@@ -128,6 +184,7 @@ def audit_publication_report(
 
     detail_rows = [interpretation_rows[key] for key in plot_keys if key in interpretation_rows]
     missing_details = _missing_detail_fields(detail_rows)
+    missing_method_component_versions = _missing_method_component_versions(detail_rows, software)
 
     version_rows = [
         row
@@ -181,6 +238,15 @@ def audit_publication_report(
             bool(version_rows),
             str(software_versions),
             f"detected version rows={len(version_rows)}" if version_rows else "no detected software version rows",
+        ),
+        _row(
+            "figure_method_software_versions",
+            not missing_method_component_versions and bool(detail_rows),
+            f"{figure_interpretations}; {software_versions}",
+            "every versioned method/software component named by figure interpretations has a software_versions row"
+            if not missing_method_component_versions and detail_rows
+            else "missing method/software version rows: "
+            + ", ".join(missing_method_component_versions or ["no interpretation rows"]),
         ),
         _row(
             "final_report_embeds_publication_sections",
