@@ -7716,7 +7716,7 @@ Verification:
 - `rg -n "gene_family_pangenome_summary" results/nextflow_standard_smoke/standard/report/report_index.tsv results/nextflow_standard_smoke/standard/report/figure_interpretations.tsv results/nextflow_standard_smoke/standard/report/final_report.md` confirmed the new table and figure interpretation are present in the report package.
 
 Commit:
-- hash: pending
+- hash: 1a7d82315fd2bad600db6ac10495808aef86a7b5
 - message: feat: add gene family pangenome summary
 - files: gene family info builder, plotting script, smoke runner, Nextflow wiring, report index, figure interpretations, Reference/release docs, tests, history
 
