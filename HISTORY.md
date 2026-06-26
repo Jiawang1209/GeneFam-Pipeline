@@ -84,12 +84,11 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` kept `paper-level visualization modules` as `achieved` with gene-family information included, and kept full objective incomplete only because Docker/Apptainer reproducibility is still blocked by missing runtime commands.
 
 Commit:
-- hash: not created yet
+- hash: befcf7e
 - message: feat: add gene family info visualization
 - files: gene family information table builder, R plotting script, smoke runner, Nextflow/report/release/docs/tests/history
 
 Next:
-- Backfill this commit hash after committing.
 - Continue Reference-level refinement with richer MCScanX/KaKs duplicate-type panels and expression heatmap sample annotations.
 
 ## 2026-06-26 23:47 - Add promoter cis-element visualization module
