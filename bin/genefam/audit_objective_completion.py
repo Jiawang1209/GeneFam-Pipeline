@@ -121,11 +121,12 @@ def build_objective_audit(
                     "gene structure smoke",
                     "standard branch smoke",
                     "Nextflow standard branch smoke",
+                    "alignment phylogeny smoke",
                 ],
             ),
             "standard identification branch",
-            "domain filter smoke, motif parser smoke, gene structure smoke, Python standard branch, and Nextflow standard branch smoke checks",
-            "Domain-filtered evidence, motif summaries, gene-structure summaries, species-bank candidates, chromosome locations, expression handoff, and final report are exercised.",
+            "domain filter smoke, motif parser smoke, gene structure smoke, Python standard branch, Nextflow standard branch, and alignment phylogeny smoke checks",
+            "Domain-filtered evidence, motif summaries, gene-structure summaries, species-bank candidates, chromosome locations, alignment/phylogeny outputs, expression handoff, and final report are exercised.",
         ),
         _achieved_if(
             _all_passed(

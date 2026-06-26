@@ -9750,6 +9750,46 @@ Commit:
 Next:
 - Keep Docker/Apptainer runtime verification as the remaining final-stage external blocker; continue polishing Reference-level figure fidelity where useful.
 
+## 2026-06-27 - Require alignment phylogeny evidence for standard branch audit
+
+Timestamp:
+- 2026-06-27 07:50 CST
+
+Context:
+- The active MVP goal includes system phylogeny as a core analysis component.
+- `Nextflow DSL2 workflow` already required `alignment phylogeny smoke`, but the higher-level `standard identification branch` row could still be achieved without alignment/phylogeny evidence.
+
+Decisions:
+- Require `alignment phylogeny smoke` for the `standard identification branch` objective row.
+- Update the standard branch evidence and note so alignment/phylogeny outputs are explicitly represented alongside domain filtering, motif parsing, gene structure, Python standard branch, and Nextflow standard branch evidence.
+
+Added:
+- Regression test proving `standard identification branch` remains `missing` when alignment/phylogeny evidence is absent.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_standard_identification_branch_requires_alignment_phylogeny_smoke -q` first failed with the old rule because standard branch evidence was `achieved` without `alignment phylogeny smoke`.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 34 tests after implementation.
+- `python -m pytest tests -q` passed with 394 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 45`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` passed and reported `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+- `rg -n "standard identification branch|alignment phylogeny smoke|alignment/phylogeny" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed the standard identification branch row now names alignment/phylogeny evidence.
+
+Commit:
+- hash: pending
+- message: test: require alignment phylogeny evidence for standard audit
+- files: objective audit rule, objective audit tests, history
+
+Next:
+- Continue final MVP hardening with Docker/Apptainer packaging still intentionally deferred to the final runtime stage.
+
 ## 2026-06-27 - Require Nextflow and heatmap evidence for chromosome expression audit
 
 Timestamp:
