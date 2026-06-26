@@ -6979,7 +6979,9 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `0`; release checks reported `Passed: 43`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
 
 Commit:
-- pending
+- hash: 6ab7879f6eab4e98b16d4be3ed4acbb4678d6eaf
+- message: fix: clarify container runtime diagnostics
+- files: container profile smoke diagnostics, container smoke tests, history
 
 Next:
 - Continue final-stage container hardening; full Docker/Apptainer execution still requires installing or exposing those runtimes on the machine.
