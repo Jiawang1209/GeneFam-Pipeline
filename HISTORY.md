@@ -6857,7 +6857,9 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `0`; release checks reported `Passed: 43`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
 
 Commit:
-- pending
+- hash: 69d802721f41e1e4ff23a99041f75d58c30cfbca
+- message: fix: make container readiness optional
+- files: readiness audit, readiness/release docs, README, readiness tests, history
 
 Next:
 - Continue final MVP audit against the original objective, with Docker and Apptainer profile smokes preserved as explicit optional final-stage packaging work.
