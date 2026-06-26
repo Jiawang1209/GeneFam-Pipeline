@@ -9785,7 +9785,7 @@ Verification:
 - `rg -n "Ka/Ks and retention analysis|pangenome-class Ka/Ks visualization smoke|formal Nextflow WGD branch" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed the analysis row now names pangenome-class Ka/Ks and formal Nextflow WGD branch evidence.
 
 Commit:
-- hash: pending
+- hash: 5a783e45706fcf4e1e2506f49ae3169600b8978e
 - message: test: require formal wgd evidence for kaks retention audit
 - files: objective audit rule, objective audit tests, history
 
