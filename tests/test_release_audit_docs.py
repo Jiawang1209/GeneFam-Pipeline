@@ -79,6 +79,13 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/reference_governance/reference_governance.md" in text
     assert "results/delivery_bundle/delivery_manifest.tsv" in text
     assert "results/delivery_bundle/delivery_bundle.md" in text
+    assert "audit_publication_report.py" in text
+    assert "publication report audit" in text
+    assert "results/publication_report_audit/publication_report_audit.tsv" in text
+    assert "results/publication_report_audit/publication_report_audit.md" in text
+    assert "figure interpretations" in text
+    assert "software versions" in text
+    assert "reproducibility commands" in text
     assert "docs/quickstart.md" in text
     assert "run_species_selection_smoke.py" in text
     assert "configs/manifest.example.yaml" in text

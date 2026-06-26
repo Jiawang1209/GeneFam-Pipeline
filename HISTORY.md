@@ -6824,6 +6824,46 @@ Commit:
 Next:
 - Continue toward the final container/Apptainer reproducibility stage once local runtimes are available.
 
+## 2026-06-27 - Document publication audit in release audit evidence map
+
+Timestamp:
+- 2026-06-27 03:14:55 CST
+
+Context:
+- `publication_report_audit` was present in the runtime outputs and user-facing quickstart/readiness docs, but `docs/release_audit.md` still omitted it from the requirement-to-evidence map.
+- The active `/goal` requires every figure's close reading, software/R package versions, QC, and reproducibility evidence to be represented in the final validation surfaces.
+
+Decisions:
+- Add publication audit TSV/Markdown outputs to the release-output inventory.
+- Add `audit_publication_report.py` and publication audit artifacts to the quickstart handoff evidence row.
+- Expand the final report evidence row to include figure interpretations, software versions, and the publication audit artifact.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because `docs/release_audit.md` did not mention `audit_publication_report.py`.
+- `python -m pytest tests/test_release_audit_docs.py -q` passed after updating the release audit evidence map.
+- `python -m pytest tests/test_release_audit_docs.py tests/test_quickstart_docs.py tests/test_runtime_environment_files.py tests/test_audit_publication_report.py -q` passed with 19 tests.
+- `python -m pytest tests -q` passed with 356 tests.
+- `rg -n "audit_publication_report.py|publication report audit|publication_report_audit|figure interpretations|software versions|reproducibility commands" docs/release_audit.md` confirmed the publication audit evidence entries.
+
+Commit:
+- hash: pending
+- message: pending
+- files: release audit docs, release audit docs test, history
+
+Next:
+- Continue toward the final container/Apptainer reproducibility stage once local runtimes are available.
+
 ## 2026-06-27 - Document publication audit in readiness checklist
 
 Timestamp:
