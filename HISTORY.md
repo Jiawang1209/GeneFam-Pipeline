@@ -74,7 +74,7 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and produced `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
 
 Commit:
-- hash: pending
+- hash: 672f835342093baac81c5c2ed58484d365819bc0
 - message: docs: expose method software coverage gate
 - files: delivery bundle generator, delivery/docs tests, README/docs, history
 
