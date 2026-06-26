@@ -81,7 +81,7 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and produced `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
 
 Commit:
-- hash: pending
+- hash: 62949bff4af3c8a742c6f174bbadc93ff9601ada
 - message: test: reject unregistered figure interpretations
 - files: publication audit, delivery bundle, docs/tests, history
 
