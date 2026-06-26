@@ -157,11 +157,11 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         in manifest_text
     )
     assert (
-        "status\tpublication_report_audit\tavailable\tresults/publication_report_audit/publication_report_audit.md\tpaper-style report closure: figure interpretations, QC, software versions, and reproducibility"
+        "status\tpublication_report_audit\tavailable\tresults/publication_report_audit/publication_report_audit.md\tpaper-style report closure: complete per-figure close-reading text, QC tables and warnings, software/R package versions, and reproducibility commands"
         in manifest_text
     )
     assert (
-        "status\twgd_publication_report_audit\tavailable\tresults/publication_report_audit/wgd_publication_report_audit.md\tWGD report closure: Ka/Ks/WGD figures, gamma beta alpha theta interpretation, QC, software versions, and reproducibility"
+        "status\twgd_publication_report_audit\tavailable\tresults/publication_report_audit/wgd_publication_report_audit.md\tWGD report closure: complete Ka/Ks/WGD figure close-reading text, gamma beta alpha theta interpretation, QC tables and warnings, software/R package versions, and reproducibility commands"
         in manifest_text
     )
     assert (
@@ -194,9 +194,12 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "runtime recovery" in summary_text
     assert "results/container_default_smoke" in summary_text
     assert "compact local acceptance pass/fail index" in summary_text
-    assert "paper-style report closure" in summary_text
+    assert "complete per-figure close-reading text" in summary_text
+    assert "QC tables and warnings" in summary_text
+    assert "software/R package versions" in summary_text
+    assert "reproducibility commands" in summary_text
     assert "results/publication_report_audit/publication_report_audit.md" in summary_text
-    assert "WGD report closure" in summary_text
+    assert "complete Ka/Ks/WGD figure close-reading text" in summary_text
     assert "results/publication_report_audit/wgd_publication_report_audit.md" in summary_text
     assert "Docker/Apptainer reproducibility" in summary_text
     assert "final_stage_blocker" in summary_text

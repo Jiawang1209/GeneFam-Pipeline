@@ -34,6 +34,52 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 05:36 - Align delivery bundle with complete report closure
+
+Context:
+- The active `/goal` requires the final report package to prove each figure has close reading, software/R package versions, QC, and reproducibility information.
+- Publication report audit and objective audit already enforced that closure, but the user-facing delivery bundle and several docs still described report closure with older wording such as generic figure interpretations.
+- The final delivery index should use the same complete closure language as the machine audit gates.
+
+Decisions:
+- Update `publication_report_audit` and `wgd_publication_report_audit` delivery manifest notes to mention complete per-figure close-reading text, QC tables and warnings, software/R package versions, and reproducibility commands.
+- Update README, quickstart, readiness checklist, and release audit wording so user-facing instructions match the delivery bundle and publication audit gates.
+- Keep Docker/Apptainer profile failures optional because container verification remains the final external runtime stage.
+
+Added:
+- Regression expectations requiring delivery bundle and docs to use the complete report-closure vocabulary.
+
+Modified:
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_quickstart_docs.py`
+- `README.md`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index -q` first failed because the delivery manifest still used generic report-closure wording; it passed after updating the delivery bundle notes.
+- `python -m pytest tests/test_runtime_environment_files.py tests/test_release_audit_docs.py tests/test_quickstart_docs.py -q` first failed until README, quickstart, readiness checklist, and release audit used the complete report-closure vocabulary; it passed after the docs were updated.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` exited 0 and refreshed `results/delivery_bundle/delivery_manifest.tsv` and `results/delivery_bundle/delivery_bundle.md`.
+- `python -m pytest tests/test_run_delivery_bundle.py tests/test_runtime_environment_files.py tests/test_release_audit_docs.py tests/test_quickstart_docs.py -q` passed with 18 tests.
+- `python -m pytest tests -q` passed with 375 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+
+Commit:
+- hash: pending
+- message: docs: align delivery report closure wording
+- files: delivery bundle, docs, delivery/docs tests, history
+
+Next:
+- Continue final MVP audit work across remaining delivery and acceptance polish; Docker/Apptainer profile verification remains the final external runtime step.
+
 ## 2026-06-27 05:26 - Clarify final-report closure in objective audit
 
 Context:

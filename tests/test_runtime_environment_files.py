@@ -98,9 +98,10 @@ def test_readiness_checklist_documents_command_audit():
     assert "results/publication_report_audit/publication_report_audit.md" in text
     assert "publication_report_audit" in text
     assert "paper-style report closure" in text
-    assert "figure interpretations" in text
-    assert "software versions" in text
-    assert "reproducibility" in text
+    assert "complete per-figure close-reading text" in text
+    assert "QC tables and warnings" in text
+    assert "software/R package versions" in text
+    assert "reproducibility commands" in text
     assert "results/delivery_bundle/delivery_manifest.tsv" in text
     assert "results/delivery_bundle/delivery_bundle.md" in text
     assert "runtime recovery" in text
@@ -190,7 +191,8 @@ def test_readme_points_to_final_handoff_report():
     assert "results/publication_report_audit/publication_report_audit.md" in readme
     assert "release, quickstart, publication-report audit, and delivery-bundle steps" in readme
     assert "paper-style report closure" in readme
-    assert "figure interpretation" in readme
+    assert "complete per-figure close-reading text" in readme
+    assert "QC tables and warnings" in readme
     assert "software/R package versions" in readme
     assert "reproducibility commands" in readme
     assert "final_stage_blocker" in readme

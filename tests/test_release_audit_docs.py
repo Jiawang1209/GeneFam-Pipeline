@@ -101,8 +101,9 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv" in text
     assert "results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv" in text
     assert "results/nextflow_wgd_smoke/wgd/report/software_versions.tsv" in text
-    assert "figure interpretations" in text
-    assert "software versions" in text
+    assert "complete per-figure close-reading text" in text
+    assert "QC tables and warnings" in text
+    assert "software/R package versions" in text
     assert "reproducibility commands" in text
     assert "docs/quickstart.md" in text
     assert "run_species_selection_smoke.py" in text

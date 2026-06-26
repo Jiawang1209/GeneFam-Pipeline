@@ -20,7 +20,7 @@ For a local acceptance pass that runs the release gate and then still writes the
 bash scripts/run_local_acceptance.sh
 ```
 
-The wrapper also writes `results/local_acceptance/local_acceptance_summary.tsv` and `results/local_acceptance/local_acceptance_summary.md`, which record the release gate, `publication_report_audit`, quickstart, and delivery-bundle exit status in one place. The publication audit points to `results/publication_report_audit/publication_report_audit.md` and verifies paper-style report closure: figure interpretations, QC tables, software versions, and reproducibility commands.
+The wrapper also writes `results/local_acceptance/local_acceptance_summary.tsv` and `results/local_acceptance/local_acceptance_summary.md`, which record the release gate, `publication_report_audit`, quickstart, and delivery-bundle exit status in one place. The publication audit points to `results/publication_report_audit/publication_report_audit.md` and verifies paper-style report closure: complete per-figure close-reading text, QC tables and warnings, software/R package versions, and reproducibility commands.
 
 Optional overrides:
 
@@ -117,8 +117,8 @@ The release gate writes the final delivery index after the objective audit. It c
 
 The delivery bundle now records both report-closure audits:
 
-- `publication_report_audit`: standard report paper-style report closure at `results/publication_report_audit/publication_report_audit.md`
-- `wgd_publication_report_audit`: WGD report closure at `results/publication_report_audit/wgd_publication_report_audit.md`, covering Ka/Ks/WGD figures, gamma beta alpha theta interpretation, QC, software versions, and reproducibility
+- `publication_report_audit`: standard report paper-style report closure at `results/publication_report_audit/publication_report_audit.md`, covering complete per-figure close-reading text, QC tables and warnings, software/R package versions, and reproducibility commands
+- `wgd_publication_report_audit`: WGD report closure at `results/publication_report_audit/wgd_publication_report_audit.md`, covering complete Ka/Ks/WGD figure close-reading text, gamma beta alpha theta interpretation, QC tables and warnings, software/R package versions, and reproducibility commands
 
 ```bash
 python bin/genefam/run_delivery_bundle.py \
