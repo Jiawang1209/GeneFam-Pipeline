@@ -34,6 +34,60 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 06:18 - Match figure interpretation output paths to plot manifest
+
+Context:
+- The active `/goal` requires every report figure to be closed by precise interpretation, QC, methods, version, and reproducibility evidence.
+- The publication report audit already checked figure files, format signatures, and interpretation coverage, but it did not prove that `figure_interpretations.tsv` `output_path` values matched the registered `plot_manifest.tsv` paths.
+- Without that check, a final report could explain a figure key while pointing the interpretation section at a different plot file.
+
+Decisions:
+- Add a dedicated `figure_output_paths_match_manifest` publication-audit row.
+- Compare `plot_manifest.tsv` `plot_key/path` to `figure_interpretations.tsv` `figure_key/output_path` for every registered plot with an interpretation row.
+- Surface the same gate in the delivery bundle and user-facing docs as `plot manifest and interpretation output path consistency`.
+
+Added:
+- Regression test for a mismatched manifest path versus interpretation `output_path`.
+- Publication audit path-consistency check.
+- Delivery bundle and documentation wording for plot manifest and interpretation output path consistency.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_audit_publication_report.py`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `README.md`
+- `README.zh-CN.md`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_requires_interpretation_output_path_to_match_manifest -q` first failed with `KeyError: 'figure_output_paths_match_manifest'`; it passed after adding the audit row.
+- `python -m pytest tests/test_audit_publication_report.py -q` passed with 11 tests.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` exited 0 and reported `Passed: 8`, including `figure_output_paths_match_manifest`.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv --software-versions results/nextflow_wgd_smoke/wgd/report/software_versions.tsv --final-report results/nextflow_wgd_smoke/wgd/report/final_report.md --out-tsv results/publication_report_audit/wgd_publication_report_audit.tsv --out-md results/publication_report_audit/wgd_publication_report_audit.md` exited 0 and reported `Passed: 8`, including `figure_output_paths_match_manifest`.
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index tests/test_quickstart_docs.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py -q` first failed until delivery bundle and docs mentioned `plot manifest and interpretation output path consistency`; it passed after the wording updates.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` exited 0 and refreshed the delivery bundle with the path-consistency gate.
+- `python -m pytest tests -q` passed with 380 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and produced `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+
+Commit:
+- hash: pending
+- message: test: require figure output path consistency
+- files: publication audit, delivery bundle, docs/tests, history
+
+Next:
+- Continue toward the active `/goal` by auditing remaining MVP evidence surfaces; Docker/Apptainer packaging remains the final external runtime stage.
+
 ## 2026-06-27 06:08 - Validate publication plot file signatures
 
 Context:

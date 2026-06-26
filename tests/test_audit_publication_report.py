@@ -134,12 +134,13 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
     )
     summary = summarize_audit(rows)
 
-    assert summary == {"passed": 7, "failed": 0, "complete": True}
+    assert summary == {"passed": 8, "failed": 0, "complete": True}
     assert {row["check"] for row in rows} == {
         "plot_files_exist",
         "plot_file_format_valid",
         "figure_interpretation_coverage",
         "figure_interpretation_detail",
+        "figure_output_paths_match_manifest",
         "software_versions_present",
         "figure_method_software_versions",
         "final_report_embeds_publication_sections",
@@ -834,3 +835,93 @@ def test_publication_report_audit_rejects_nonempty_invalid_plot_format(tmp_path)
     assert by_check["plot_files_exist"]["status"] == "passed"
     assert by_check["plot_file_format_valid"]["status"] == "failed"
     assert "tree_features:invalid_pdf:plots/tree_features.pdf" in by_check["plot_file_format_valid"]["note"]
+
+
+def test_publication_report_audit_requires_interpretation_output_path_to_match_manifest(tmp_path):
+    plot_manifest = tmp_path / "report/plot_manifest.tsv"
+    figure_interpretations = tmp_path / "report/figure_interpretations.tsv"
+    software_versions = tmp_path / "report/software_versions.tsv"
+    final_report = tmp_path / "report/final_report.md"
+    (tmp_path / "plots").mkdir()
+    (tmp_path / "plots/tree_features.pdf").write_bytes(b"%PDF tree")
+
+    _write_tsv(
+        plot_manifest,
+        ["plot_key", "path", "description"],
+        [["tree_features", "plots/tree_features.pdf", "Tree features"]],
+    )
+    _write_tsv(
+        figure_interpretations,
+        [
+            "figure_key",
+            "input_data",
+            "what_figure_shows",
+            "key_observations",
+            "biological_interpretation",
+            "qc_warnings",
+            "qc_tables",
+            "method_and_software",
+            "reproducibility",
+            "result_reading_status",
+            "output_path",
+        ],
+        [[
+            "tree_features",
+            "tree and feature tables",
+            "tree-ordered feature tracks",
+            "clades share feature architecture",
+            "conserved clade features support structural conservation",
+            "review missing feature rows",
+            "tables/tree_feature_matrix.tsv",
+            "FastTree; MAFFT; plot_tree_features.R; /usr/local/bin/R",
+            "python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
+            "figure-specific close reading",
+            "plots/other_tree_features.pdf",
+        ]],
+    )
+    _write_tsv(
+        software_versions,
+        ["component", "kind", "version", "status", "source"],
+        [
+            ["FastTree", "tool", "2.1.11", "detected", "FastTree -help"],
+            ["MAFFT", "tool", "7.526", "detected", "mafft --version"],
+            ["R", "runtime", "4.5.1", "detected", "/usr/local/bin/R --version"],
+        ],
+    )
+    final_report.write_text(
+        "\n".join(
+            [
+                "### Software Versions",
+                "| FastTree | tool | 2.1.11 | detected | FastTree -help |",
+                "| MAFFT | tool | 7.526 | detected | mafft --version |",
+                "| R | runtime | 4.5.1 | detected | /usr/local/bin/R --version |",
+                "## Figure Result Interpretations",
+                "### tree_features: Tree features",
+                "- Input data: tree and feature tables",
+                "- What the figure shows: tree-ordered feature tracks",
+                "- Key observations: clades share feature architecture",
+                "- Biological interpretation: conserved clade features support structural conservation",
+                "- QC warnings / limitations: review missing feature rows",
+                "- QC tables: tables/tree_feature_matrix.tsv",
+                "- Method/software: FastTree; MAFFT; plot_tree_features.R; /usr/local/bin/R",
+                "- Reproducibility: python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
+                "- Result reading status: figure-specific close reading",
+                "- Output path: `plots/other_tree_features.pdf`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    rows = audit_publication_report(
+        plot_manifest=plot_manifest,
+        figure_interpretations=figure_interpretations,
+        software_versions=software_versions,
+        final_report=final_report,
+    )
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["plot_files_exist"]["status"] == "passed"
+    assert by_check["figure_output_paths_match_manifest"]["status"] == "failed"
+    assert "tree_features:manifest=plots/tree_features.pdf:interpretation=plots/other_tree_features.pdf" in (
+        by_check["figure_output_paths_match_manifest"]["note"]
+    )

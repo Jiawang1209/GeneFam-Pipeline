@@ -128,6 +128,22 @@ def _interpretation_by_key(rows: list[dict[str, str]]) -> dict[str, dict[str, st
     return {row.get("figure_key", "").strip(): row for row in rows if row.get("figure_key", "").strip()}
 
 
+def _output_path_mismatches(
+    plot_rows: list[dict[str, str]],
+    interpretation_rows: dict[str, dict[str, str]],
+) -> list[str]:
+    mismatches: list[str] = []
+    for row in plot_rows:
+        plot_key = row.get("plot_key", "").strip()
+        if not plot_key or plot_key not in interpretation_rows:
+            continue
+        manifest_path = row.get("path", "").strip()
+        interpretation_path = interpretation_rows[plot_key].get("output_path", "").strip()
+        if manifest_path != interpretation_path:
+            mismatches.append(f"{plot_key}:manifest={manifest_path}:interpretation={interpretation_path}")
+    return mismatches
+
+
 def _missing_detail_fields(rows: list[dict[str, str]]) -> list[str]:
     missing: list[str] = []
     for row in rows:
@@ -215,6 +231,7 @@ def audit_publication_report(
     plot_format_issues = _plot_format_issues(plot_manifest, plots)
     interpretation_rows = _interpretation_by_key(interpretations)
     missing_interpretations = [key for key in plot_keys if key not in interpretation_rows]
+    output_path_mismatches = _output_path_mismatches(plots, interpretation_rows)
 
     detail_rows = [interpretation_rows[key] for key in plot_keys if key in interpretation_rows]
     missing_details = _missing_detail_fields(detail_rows)
@@ -274,6 +291,14 @@ def audit_publication_report(
             "all figure interpretation rows include close-reading text, QC tables, method/software, reproducibility, status, and output path"
             if not missing_details and detail_rows
             else "missing required interpretation details: " + ", ".join(missing_details or ["no interpretation rows"]),
+        ),
+        _row(
+            "figure_output_paths_match_manifest",
+            not output_path_mismatches and bool(detail_rows),
+            f"{plot_manifest}; {figure_interpretations}",
+            "all figure interpretation output_path values match plot_manifest paths"
+            if not output_path_mismatches and detail_rows
+            else "figure output_path mismatches: " + ", ".join(output_path_mismatches or ["no interpretation rows"]),
         ),
         _row(
             "software_versions_present",
