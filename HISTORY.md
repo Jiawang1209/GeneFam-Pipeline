@@ -9783,7 +9783,7 @@ Verification:
 - `rg -n "standard identification branch|alignment phylogeny smoke|alignment/phylogeny" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed the standard identification branch row now names alignment/phylogeny evidence.
 
 Commit:
-- hash: pending
+- hash: 5498fe18a2d06c3a9ac30791bc6eb157e7264b84
 - message: test: require alignment phylogeny evidence for standard audit
 - files: objective audit rule, objective audit tests, history
 
