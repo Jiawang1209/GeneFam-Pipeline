@@ -69,7 +69,7 @@ Verification:
 - `rg -n "tree motif gene-structure domain visualization|Nextflow report evidence|tree_features|tree_feature_matrix|motif_summary|gene_structure_summary" results/objective_audit/objective_audit.md results/release_checks/release_checks.tsv results/nextflow_standard_feature_smoke/standard/report/report_index.tsv results/nextflow_standard_feature_smoke/standard/report/final_report.md` confirmed objective-audit, release-check, report-index, and final-report coverage.
 
 Commit:
-- hash: pending
+- hash: d1762c69d22f04465a2fa0a40d997a82b16987c0
 - message: `test: require nextflow evidence for tree feature audit`
 - files: objective audit tree-feature evidence rule, regression tests, refreshed objective audit outputs, and history entry.
 
