@@ -34,6 +34,49 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 04:52 - Require figure-specific readings for all standard plots
+
+Context:
+- The active `/goal` requires the final report to include close reading for every figure.
+- After splitting WGD and family-information figure readings, several standard report figures still carried `template-guided close reading` status.
+- The standard report should make every registered plot read as a figure-specific result interpretation.
+
+Decisions:
+- Keep generic fallback templates available for unspecified plot types.
+- Require all standard registered plots in the standard feature smoke report to use `figure-specific close reading`.
+- Update reading status text for pangenome, tree, feature summary, MCScanX/circlize, promoter cis-element, PPI ggNetView, and expression heatmap plots.
+- Document that the standard plot manifest should have no `template-guided close reading` status remaining.
+
+Added:
+- Test requiring every standard registered plot to start its `result_reading_status` with `figure-specific close reading`.
+
+Modified:
+- `bin/genefam/build_figure_interpretations.py`
+- `tests/test_build_figure_interpretations.py`
+- `tests/test_release_audit_docs.py`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_figure_interpretations.py::test_standard_registered_plots_use_figure_specific_close_reading_status -q` first failed because `gene_family_pangenome_summary` and other standard plots still used `template-guided close reading`; it passed after tightening the remaining standard plot reading statuses.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --run-feature-summary --run-mcscanx-circlize --syntenic-pairs tests/fixtures/mcscanx/syntenic_pairs.tsv --run-promoter-cis --promoter-cis-elements tests/fixtures/promoter_cis/plantcare.tsv --run-ppi --ppi-edges tests/fixtures/ppi/ppi_edges.tsv --ppi-nodes tests/fixtures/ppi/ppi_nodes.tsv --expression-matrix tests/fixtures/expression/family_expression.tsv --expression-metadata tests/fixtures/expression/sample_metadata.tsv --outdir results/nextflow_standard_feature_smoke` refreshed the standard report outputs.
+- `python - <<'PY' ...` over `results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv` showed `rows 9` and `non_specific []`.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` exited 0 and reported `Passed: 5`, `Failed: 0`, `Complete: true`.
+- `python -m pytest tests/test_build_figure_interpretations.py tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_run_nextflow_standard_smoke.py -q` passed with 22 tests.
+- `python -m pytest tests -q` passed with 370 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the remaining optional failures are Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+
+Commit:
+- hash: pending
+- message: feat: require standard figure-specific readings
+- files: figure interpretation builder, standard report/documentation tests, release audit, history
+
+Next:
+- Continue checking final report semantics and delivery surfaces against the full objective; Docker/Apptainer profile verification remains the final external runtime step.
+
 ## 2026-06-27 04:45 - Split standard family-information figure readings
 
 Context:

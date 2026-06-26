@@ -41,7 +41,8 @@ def test_build_figure_interpretations_creates_reading_notes_for_each_plot():
     assert "hub" in by_key["ppi_ggnetview"]["key_observations"]
     assert "tables/ppi_network_qc.tsv" in by_key["ppi_ggnetview"]["qc_tables"]
     assert "ggNetView" in by_key["ppi_ggnetview"]["method_and_software"]
-    assert "template-guided close reading" in by_key["ppi_ggnetview"]["result_reading_status"]
+    assert "figure-specific close reading" in by_key["ppi_ggnetview"]["result_reading_status"]
+    assert "ggNetView status" in by_key["ppi_ggnetview"]["result_reading_status"]
 
 
 def test_figure_interpretation_reproducibility_scripts_exist():
@@ -111,3 +112,22 @@ def test_standard_family_count_and_gene_family_info_have_distinct_close_readings
     assert "plot_gene_family_info.R" in by_key["gene_family_info_summary"]["method_and_software"]
 
     assert by_key["family_counts"]["title"] != by_key["gene_family_info_summary"]["title"]
+
+
+def test_standard_registered_plots_use_figure_specific_close_reading_status():
+    plots = [
+        {"plot_key": "family_counts", "path": "plots/family_counts.pdf"},
+        {"plot_key": "gene_family_info_summary", "path": "plots/gene_family_info_summary.pdf"},
+        {"plot_key": "gene_family_pangenome_summary", "path": "plots/gene_family_info_summary.pdf"},
+        {"plot_key": "tree_features", "path": "plots/tree_features.pdf"},
+        {"plot_key": "feature_summary", "path": "plots/feature_summary.pdf"},
+        {"plot_key": "mcscanx_circlize", "path": "plots/mcscanx_circlize.pdf"},
+        {"plot_key": "promoter_cis_elements", "path": "plots/promoter_cis_elements.pdf"},
+        {"plot_key": "ppi_ggnetview", "path": "plots/ppi_ggnetview.pdf"},
+        {"plot_key": "expression_heatmap", "path": "plots/expression_heatmap.pdf"},
+    ]
+
+    rows = build_figure_interpretations(plots)
+
+    for row in rows:
+        assert row["result_reading_status"].startswith("figure-specific close reading"), row

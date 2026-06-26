@@ -87,6 +87,8 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "member totals" in text
     assert "copy-number balance" in text
     assert "protein-property summaries" in text
+    assert "all standard registered figures" in text
+    assert "no `template-guided close reading` status remains" in text
     assert "results/publication_report_audit/publication_report_audit.tsv" in text
     assert "results/publication_report_audit/publication_report_audit.md" in text
     assert "WGD publication report audit" in text

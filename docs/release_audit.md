@@ -223,6 +223,8 @@ The WGD publication report audit now expects figure-specific close reading for t
 
 The standard publication report audit also expects figure-specific close reading for the family information plot family. The `family_counts` interpretation must focus on selected species and member totals before expansion/contraction interpretation. The `gene_family_info_summary` interpretation must focus on copy-number balance, species order, pangenome calls, and protein-property summaries so it is not collapsed into the simpler count overview.
 
+For the standard report, all standard registered figures must now carry `figure-specific close reading` in `results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv`; no `template-guided close reading` status remains for the standard plot manifest.
+
 The Markdown summary reports `Required failed` and `Optional failed` separately. Container profile smoke checks are optional evidence; the required readiness audit remains the release-blocking signal while Docker/Apptainer are unavailable.
 
 ## Requirement Audit
