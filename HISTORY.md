@@ -72,7 +72,7 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the remaining optional failures are Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
 
 Commit:
-- hash: pending
+- hash: dcd4a3d24f10931f3ea823b1399991fdd1b3a509
 - message: feat: split standard family figure readings
 - files: figure interpretation builder, standard report/documentation tests, release audit, history
 
