@@ -7719,7 +7719,7 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`: pangenome-class Ka/Ks visualization smoke and Nextflow WGD smoke passed; `readiness audit` and Docker/Apptainer profile smokes remained the known final-stage runtime/container blockers.
 
 Commit:
-- hash: pending
+- hash: 76fab4f5133bf158ce0dea9cd31060c08d20cf0e
 - message: feat: add pangenome class kaks plots
 - files: pangenome Ka/Ks builder, smoke runner, R plotting script, Nextflow WGD wiring, WGD report index, release checks, Reference/release docs, tests, history
 
