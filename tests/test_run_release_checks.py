@@ -368,8 +368,22 @@ def test_default_checks_include_standard_branch_expression_smoke_before_readines
     command = " ".join(smoke.command)
     assert "bin/genefam/run_standard_smoke.py" in command
     assert "--expression-matrix tests/fixtures/expression/family_expression.tsv" in command
+    assert "--expression-metadata tests/fixtures/expression/sample_metadata.tsv" in command
     assert "--r-bin /usr/local/bin/R" in command
     assert "--outdir results/standard_expression_smoke" in command
+
+
+def test_default_checks_include_expression_heatmap_visualization_smoke():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("expression heatmap visualization smoke") > names.index("standard branch expression smoke")
+    smoke = next(check for check in default_checks() if check.name == "expression heatmap visualization smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_expression_heatmap_smoke.py" in command
+    assert "--expression tests/fixtures/expression/family_expression.tsv" in command
+    assert "--metadata tests/fixtures/expression/sample_metadata.tsv" in command
+    assert "--r-bin /usr/local/bin/R" in command
+    assert "--outdir results/expression_heatmap_smoke" in command
 
 
 def test_default_checks_include_chromosome_smoke_before_expression_smoke():

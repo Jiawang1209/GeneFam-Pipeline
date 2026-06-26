@@ -1,0 +1,4 @@
+sample_id	condition	timepoint	replicate	group
+cold_0h	control	0h	1	control_0h
+cold_6h	cold	6h	1	cold_6h
+cold_24h	cold	24h	1	cold_24h

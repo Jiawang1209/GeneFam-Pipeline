@@ -15,6 +15,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from bin.genefam.assemble_report import assemble_report, write_report
 from bin.genefam.build_plot_manifest import build_plot_manifest, write_tsv as write_plot_manifest_tsv
+from bin.genefam.build_expression_summary import build_expression_summary
 from bin.genefam.build_run_config_snapshot import build_snapshot, write_tsv as write_snapshot_tsv
 from bin.genefam.build_standard_report_index import DESCRIPTIONS, build_report_index, write_tsv as write_report_index_tsv
 from bin.genefam.build_wgd_handoff_manifest import build_handoff_manifest, write_tsv as write_handoff_tsv
@@ -43,7 +44,7 @@ def _print_outputs(outputs: dict[str, Path]) -> None:
         writer.writerow([key, outputs[key]])
 
 
-def _run_expression_heatmap(expression_path: Path, outdir: Path, r_bin: Path) -> None:
+def _run_expression_heatmap(expression_path: Path, metadata_path: Path, gene_summary_path: Path, outdir: Path, r_bin: Path) -> None:
     command = [
         str(r_bin),
         "--vanilla",
@@ -52,6 +53,8 @@ def _run_expression_heatmap(expression_path: Path, outdir: Path, r_bin: Path) ->
         str(REPO_ROOT / "scripts/plot_expression_heatmap.R"),
         "--args",
         str(expression_path),
+        str(metadata_path),
+        str(gene_summary_path),
         str(outdir),
     ]
     completed = subprocess.run(command, check=False, capture_output=True, text=True)
@@ -66,6 +69,7 @@ def run_standard_smoke(
     mock_evidence_dir: Path,
     outdir: Path,
     expression_matrix: Path | None = None,
+    expression_metadata: Path | None = None,
     r_bin: Path = Path("/usr/local/bin/R"),
 ) -> dict[str, Path]:
     config = _load_yaml(config_path)
@@ -96,7 +100,11 @@ def run_standard_smoke(
     }
     if expression_matrix is not None:
         outputs["family_expression"] = tables_dir / "family_expression.tsv"
-        outputs["expression_heatmap"] = outdir / "plots/expression_heatmap.pdf"
+        outputs["expression_sample_metadata"] = tables_dir / "expression_sample_metadata.tsv"
+        outputs["expression_group_matrix"] = tables_dir / "expression_group_matrix.tsv"
+        outputs["expression_gene_summary"] = tables_dir / "expression_gene_summary.tsv"
+        outputs["expression_heatmap_pdf"] = outdir / "plots/expression_heatmap.pdf"
+        outputs["expression_heatmap_png"] = outdir / "plots/expression_heatmap.png"
 
     write_manifest(manifest_rows, outputs["species_manifest"])
     write_snapshot_tsv(
@@ -155,7 +163,18 @@ def run_standard_smoke(
             subset_expression(read_expression_tsv(expression_matrix), gene_ids_from_family_candidates(candidates)),
             outputs["family_expression"],
         )
-        _run_expression_heatmap(outputs["family_expression"], outdir / "plots", r_bin)
+        expression_outputs = build_expression_summary(
+            expression=outputs["family_expression"],
+            metadata=expression_metadata,
+            outdir=tables_dir,
+        )
+        _run_expression_heatmap(
+            expression_outputs["group_matrix"],
+            expression_outputs["sample_metadata"],
+            expression_outputs["gene_summary"],
+            outdir / "plots",
+            r_bin,
+        )
     plots = [("family_counts", "plots/family_counts.pdf", "Family member counts by species")]
     if expression_matrix is not None:
         plots.append(("expression_heatmap", "plots/expression_heatmap.pdf", "Family member expression heatmap"))
@@ -186,11 +205,20 @@ def main() -> None:
     parser.add_argument("--groups", required=True, type=Path)
     parser.add_argument("--mock-evidence-dir", required=True, type=Path)
     parser.add_argument("--expression-matrix", type=Path)
+    parser.add_argument("--expression-metadata", type=Path)
     parser.add_argument("--r-bin", default=Path("/usr/local/bin/R"), type=Path)
     parser.add_argument("--outdir", required=True, type=Path)
     args = parser.parse_args()
     _print_outputs(
-        run_standard_smoke(args.config, args.groups, args.mock_evidence_dir, args.outdir, args.expression_matrix, args.r_bin)
+        run_standard_smoke(
+            args.config,
+            args.groups,
+            args.mock_evidence_dir,
+            args.outdir,
+            args.expression_matrix,
+            args.expression_metadata,
+            args.r_bin,
+        )
     )
 
 

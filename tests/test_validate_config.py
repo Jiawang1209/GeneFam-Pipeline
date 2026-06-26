@@ -348,6 +348,16 @@ def test_validate_config_reports_expression_requires_matrix_path():
     assert "modules.expression requires expression.matrix" in errors
 
 
+def test_validate_config_checks_expression_metadata_path_when_provided():
+    config = _valid_base_config()
+    config["modules"]["expression"] = True
+    config["expression"] = {"matrix": "tests/fixtures/expression/family_expression.tsv", "metadata": "missing.tsv"}
+
+    errors = validate_config(config, check_paths=True)
+
+    assert "expression.metadata path does not exist: missing.tsv" in errors
+
+
 def test_validate_config_reports_ppi_requires_edge_table_and_missing_paths():
     config = _valid_base_config()
     config["modules"]["ppi"] = True

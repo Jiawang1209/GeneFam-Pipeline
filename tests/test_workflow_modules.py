@@ -357,9 +357,15 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert 'path "plots/ks_distribution.png"' in module
 
     assert "process PLOT_EXPRESSION_HEATMAP" in module
+    assert "build_expression_summary.py" in module
     assert "${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_expression_heatmap.R" in module
-    assert "--args ${expression_matrix} plots" in module
+    assert "--expression ${expression_matrix}" in module
+    assert "--metadata ${sample_metadata}" in module
     assert 'path "plots/expression_heatmap.pdf"' in module
+    assert 'path "plots/expression_heatmap.png"' in module
+    assert 'path "tables/expression_sample_metadata.tsv"' in module
+    assert 'path "tables/expression_group_matrix.tsv"' in module
+    assert 'path "tables/expression_gene_summary.tsv"' in module
 
     assert "process PLOT_FEATURE_SUMMARY" in module
     assert "summarize_feature_tables.py" in module
@@ -469,6 +475,7 @@ def test_main_workflow_includes_plot_processes():
     assert "PLOT_FAMILY_COUNTS" in workflow
     assert "PLOT_KAKS" in workflow
     assert "PLOT_EXPRESSION_HEATMAP" in workflow
+    assert "PLOT_EXPRESSION_HEATMAP(SUBSET_EXPRESSION_MATRIX.out, expression_metadata_ch)" in workflow
     assert "PLOT_GENE_FAMILY_INFO" in workflow
     assert "PLOT_TREE_FEATURES" in workflow
     assert "PLOT_PROMOTER_CIS_ELEMENTS" in workflow

@@ -167,11 +167,12 @@ def build_objective_audit(
                     "MCScanX circlize visualization smoke",
                     "PPI ggNetView plot smoke",
                     "standard branch expression smoke",
+                    "expression heatmap visualization smoke",
                 ],
             ),
             "paper-level visualization modules",
-            "gene family information visualization smoke, feature summary visualization smoke, promoter cis-element visualization smoke, tree feature visualization smoke, MCScanX circlize visualization smoke, PPI ggNetView plot smoke, and standard branch expression smoke",
-            "Report-ready gene-family information, feature summary, promoter cis-element, tree/motif/gene-structure/domain, synteny/circlize, PPI, and expression figures are exercised by smoke checks.",
+            "gene family information visualization smoke, feature summary visualization smoke, promoter cis-element visualization smoke, tree feature visualization smoke, MCScanX circlize visualization smoke, PPI ggNetView plot smoke, standard branch expression smoke, and expression heatmap visualization smoke",
+            "Report-ready gene-family information, feature summary, promoter cis-element, tree/motif/gene-structure/domain, synteny/circlize, PPI, and annotated expression heatmap figures are exercised by smoke checks.",
         ),
         _achieved_if(
             _all_passed(

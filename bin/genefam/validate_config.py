@@ -146,6 +146,8 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
         errors.append("modules.expression requires expression.matrix")
     if check_paths and expression.get("matrix") and not _path_exists(str(expression["matrix"]), base_dir):
         errors.append(f"expression.matrix path does not exist: {expression['matrix']}")
+    if check_paths and expression.get("metadata") and not _path_exists(str(expression["metadata"]), base_dir):
+        errors.append(f"expression.metadata path does not exist: {expression['metadata']}")
     if modules.get("promoter_cis") is True and not promoter.get("cis_elements"):
         errors.append("modules.promoter_cis requires promoter.cis_elements")
     if check_paths and promoter.get("cis_elements") and not _path_exists(str(promoter["cis_elements"]), base_dir):

@@ -50,7 +50,7 @@ Later modules add more requirements:
 - `modules.motif: true` requires `modules.family_summary: true`.
 - `modules.duplication_retention: true` requires both `modules.synteny: true` and `modules.kaks: true`.
 
-Use `python bin/genefam/validate_config.py <config.yaml> --check-paths` before a real run to require configured runtime inputs to exist. This strict mode checks `input.root` or `input.manifest`, enabled HMMER profiles, DIAMOND reference peptides, `expression.matrix`, `promoter.cis_elements`, `ppi.edges`, and optional `ppi.nodes` when present. The Nextflow entrypoint runs the same strict preflight through `workflows/modules/config_validation.nf` before species discovery or identification starts.
+Use `python bin/genefam/validate_config.py <config.yaml> --check-paths` before a real run to require configured runtime inputs to exist. This strict mode checks `input.root` or `input.manifest`, enabled HMMER profiles, DIAMOND reference peptides, `expression.matrix`, optional `expression.metadata`, `promoter.cis_elements`, `ppi.edges`, and optional `ppi.nodes` when present. The Nextflow entrypoint runs the same strict preflight through `workflows/modules/config_validation.nf` before species discovery or identification starts.
 
 wgd_events.named_event_annotation requires modules.duplication_retention: true. When `wgd_events.named_event_annotation: true`, `wgd_events.event_map` is required. In strict `--check-paths` mode the event-map path must exist and duplicate WGD event names are rejected before the WGD branch interprets gamma, beta, alpha, theta, or custom labels.
 
@@ -145,6 +145,17 @@ AT1G01010 1.0 3.0 2.5
 ```
 
 It subsets the matrix to family member IDs before heatmap plotting.
+
+`bin/genefam/build_expression_summary.py` can also use an optional sample metadata table:
+
+```text
+sample_id condition timepoint replicate group
+cold_0h_rep1 control 0h 1 control_0h
+cold_6h_rep1 cold 6h 1 cold_6h
+cold_24h_rep1 cold 24h 1 cold_24h
+```
+
+The `sample_id` values must match expression matrix columns. `group` is used for replicate averaging and treatment/timepoint ordering in `expression_group_matrix.tsv`; `condition`, `timepoint`, and `replicate` are used for plot labels. Set `expression.metadata: <path>` in YAML or pass `--expression_metadata <path>` to Nextflow. The expression plot module writes `expression_sample_metadata.tsv`, `expression_group_matrix.tsv`, `expression_gene_summary.tsv`, and `expression_heatmap.pdf/png`.
 
 ## Promoter Cis-Elements
 

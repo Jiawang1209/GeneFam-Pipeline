@@ -103,6 +103,11 @@ process BUILD_STANDARD_REPORT_INDEX {
     val ppi_ggnetview_pdf
     val ppi_ggnetview_png
     val family_expression
+    val expression_sample_metadata
+    val expression_group_matrix
+    val expression_gene_summary
+    val expression_heatmap_pdf
+    val expression_heatmap_png
     path wgd_handoff_manifest
     path plot_manifest
     path software_versions
@@ -153,6 +158,11 @@ process BUILD_STANDARD_REPORT_INDEX {
       --ppi-ggnetview-pdf "${ppi_ggnetview_pdf}" \\
       --ppi-ggnetview-png "${ppi_ggnetview_png}" \\
       --family-expression "${family_expression}" \\
+      --expression-sample-metadata "${expression_sample_metadata}" \\
+      --expression-group-matrix "${expression_group_matrix}" \\
+      --expression-gene-summary "${expression_gene_summary}" \\
+      --expression-heatmap-pdf "${expression_heatmap_pdf}" \\
+      --expression-heatmap-png "${expression_heatmap_png}" \\
       --wgd-handoff-manifest ${wgd_handoff_manifest} \\
       --plot-manifest ${plot_manifest} \\
       --software-versions ${software_versions} \\

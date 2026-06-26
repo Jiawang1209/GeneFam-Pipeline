@@ -34,6 +34,70 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 00:24 - Add annotated expression heatmap workflow
+
+Context:
+- The active `/goal` requires RNA-seq expression heatmaps aligned with `Reference/Long_Weixiong_20240323_1_GDSL/R/12.rnaseq.R`.
+- The pipeline previously subset expression matrices and had a basic base-R heatmap, but lacked sample metadata, replicate grouping, expression summary/QC tables, PNG output, and formal Nextflow/report/release wiring.
+
+Decisions:
+- Add a reusable expression summary builder that keeps the original family expression table while producing report-ready annotation and summary tables.
+- Treat sample metadata as optional: when provided, `sample_id` must match expression columns and `group` controls replicate averaging; when absent, metadata is generated from expression columns.
+- Keep the R plotting implementation dependency-light and compatible with `/usr/local/bin/R`, while adding PDF/PNG output and a top-responsive-gene summary panel.
+- Wire `PLOT_EXPRESSION_HEATMAP` into the standard Nextflow branch whenever `params.expression_matrix` is provided, with optional `params.expression_metadata`.
+
+Added:
+- `bin/genefam/build_expression_summary.py`
+- `bin/genefam/run_expression_heatmap_smoke.py`
+- `tests/fixtures/expression/sample_metadata.tsv`
+- `tests/test_build_expression_summary.py`
+- `tests/test_run_expression_heatmap_smoke.py`
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_release_checks.py`
+- `bin/genefam/run_standard_smoke.py`
+- `bin/genefam/validate_config.py`
+- `configs/advanced_modules.example.yaml`
+- `docs/input_contract.md`
+- `docs/reference_plotting_reuse.md`
+- `docs/release_audit.md`
+- `scripts/plot_expression_heatmap.R`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_reference_plotting_reuse.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_run_standard_smoke.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_validate_config.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/plots.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/nextflow.config`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_expression_summary.py tests/test_run_expression_heatmap_smoke.py -q` first failed because `bin.genefam.build_expression_summary` did not exist, then passed with 3 tests after adding the builder, smoke runner, and R plot.
+- `python -m pytest tests/test_run_standard_smoke.py tests/test_workflow_modules.py tests/test_standard_branch_report_index.py tests/test_run_release_checks.py tests/test_validate_config.py tests/test_reference_plotting_reuse.py tests/test_release_audit_docs.py tests/test_build_expression_summary.py tests/test_run_expression_heatmap_smoke.py -q` passed with 105 tests after standard-branch/report/release/docs wiring.
+- `python bin/genefam/run_expression_heatmap_smoke.py --expression tests/fixtures/expression/family_expression.tsv --metadata tests/fixtures/expression/sample_metadata.tsv --r-bin /usr/local/bin/R --outdir results/expression_heatmap_smoke` generated expression annotation tables and `expression_heatmap.pdf/png`.
+- `python bin/genefam/run_standard_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --expression-matrix tests/fixtures/expression/family_expression.tsv --expression-metadata tests/fixtures/expression/sample_metadata.tsv --r-bin /usr/local/bin/R --outdir results/standard_expression_smoke` generated `family_expression.tsv`, expression annotation/summary tables, `expression_heatmap.pdf/png`, and report-index entries.
+- `/Users/liuyue/miniforge3/bin/conda run -n GeneFamilyFlow nextflow run workflows/main.nf -c workflows/nextflow.config -profile activated --config configs/example.config.yaml --groups configs/species_groups.yaml --run_identification true --use_hmmer true --use_diamond true --final_rule intersection --mock_external_tools true --standard_stop_after_family_candidates false --mock_evidence_dir tests/fixtures/mock_evidence --expression_matrix tests/fixtures/expression/family_expression.tsv --expression_metadata tests/fixtures/expression/sample_metadata.tsv --outdir results/nextflow_standard_expression_smoke` passed and executed `PLOT_EXPRESSION_HEATMAP`.
+- `python -m pytest tests -q` passed with 338 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because readiness/Docker/Apptainer remain unavailable, but improved the release matrix to `passed=40 failed=3`; `standard branch expression smoke` and `expression heatmap visualization smoke` passed.
+
+Commit:
+- hash: pending
+- message: feat: add annotated expression heatmap workflow
+- files: expression summary builder, R plot enhancement, smoke runner, standard Nextflow/report/release/docs/tests/history
+
+Next:
+- Continue paper-level refinement for tree/motif/gene-structure/domain tracks, MCScanX/circlize duplicate tracks, WGD peak annotations, and final container/runtime unblocking.
+
 ## 2026-06-27 00:12 - Add duplicate-type Ka/Ks visualization for WGD branch
 
 Context:

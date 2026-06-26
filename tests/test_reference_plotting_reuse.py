@@ -25,3 +25,4 @@ def test_reference_plotting_reuse_tracks_paper_figure_alignment_status():
     assert "| Tree + motif + gene structure + domain |" in text
     assert "| promoter cis-element |" in text
     assert "| MCScanX duplicate type + Ka/Ks | `Reference/Long_Weixiong_20240323_1_GDSL/R/9.mcscanx_KaKs.R` | `bin/genefam/build_duplicate_type_kaks.py`; `scripts/plot_duplicate_type_kaks.R`; WGD branch `plots/duplicate_type_kaks.pdf/png` | done |" in text
+    assert "| RNA-seq expression heatmap | `Reference/Long_Weixiong_20240323_1_GDSL/R/12.rnaseq.R` | `build_expression_summary.py`; `scripts/plot_expression_heatmap.R`; `PLOT_EXPRESSION_HEATMAP`; `tables/expression_sample_metadata.tsv`; `tables/expression_group_matrix.tsv`; `tables/expression_gene_summary.tsv`; `plots/expression_heatmap.pdf/png` | done |" in text

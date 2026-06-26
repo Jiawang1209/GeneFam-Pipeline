@@ -63,6 +63,7 @@ domain_filtering:
 
 expression:
   matrix: data/expression/family_expression.tsv
+  metadata: data/expression/sample_metadata.tsv
 
 wgd_events:
   named_event_annotation: true

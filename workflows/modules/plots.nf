@@ -38,13 +38,24 @@ process PLOT_EXPRESSION_HEATMAP {
 
     input:
     path expression_matrix
+    val sample_metadata
 
     output:
+    path "tables/expression_sample_metadata.tsv"
+    path "tables/expression_group_matrix.tsv"
+    path "tables/expression_gene_summary.tsv"
     path "plots/expression_heatmap.pdf"
+    path "plots/expression_heatmap.png"
 
     script:
+    def metadataArg = sample_metadata ? "--metadata ${sample_metadata}" : ""
     """
-    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_expression_heatmap.R --args ${expression_matrix} plots
+    mkdir -p tables plots
+    python ${projectDir}/../bin/genefam/build_expression_summary.py \\
+      --expression ${expression_matrix} \\
+      ${metadataArg} \\
+      --outdir tables
+    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_expression_heatmap.R --args tables/expression_group_matrix.tsv tables/expression_sample_metadata.tsv tables/expression_gene_summary.tsv plots
     """
 }
 

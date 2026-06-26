@@ -129,6 +129,12 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "alignment_file" in text
     assert "phylogeny_tree" in text
     assert "subset_expression_matrix.py" in text
+    assert "build_expression_summary.py" in text
+    assert "run_expression_heatmap_smoke.py" in text
+    assert "expression_sample_metadata.tsv" in text
+    assert "expression_group_matrix.tsv" in text
+    assert "expression_gene_summary.tsv" in text
+    assert "expression_heatmap.png" in text
     assert "build_standard_report_index.py" in text
     assert "assemble_report.py" in text
     assert "run_standard_smoke.py" in text

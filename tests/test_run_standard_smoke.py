@@ -163,3 +163,54 @@ def test_run_standard_smoke_writes_family_expression_when_matrix_is_provided(tmp
     assert "expression_heatmap\tplots/expression_heatmap.pdf\tFamily member expression heatmap" in plot_manifest
     final_report = (outdir / "report/final_report.md").read_text(encoding="utf-8")
     assert "| expression_heatmap | plots/expression_heatmap.pdf | Family member expression heatmap |" in final_report
+
+
+def test_run_standard_smoke_writes_expression_metadata_summary_and_png(tmp_path):
+    outdir = tmp_path / "standard_smoke"
+    expression_matrix = tmp_path / "expression.tsv"
+    expression_metadata = tmp_path / "expression_metadata.tsv"
+    expression_matrix.write_text(
+        "gene_id\tcold_0h_rep1\tcold_0h_rep2\tcold_6h_rep1\n"
+        "AT1G01010\t1.0\t3.0\t7.0\n"
+        "BraA010001\t2.0\t4.0\t8.0\n",
+        encoding="utf-8",
+    )
+    expression_metadata.write_text(
+        "sample_id\tcondition\ttimepoint\treplicate\tgroup\n"
+        "cold_0h_rep1\tcold\t0h\t1\tcold_0h\n"
+        "cold_0h_rep2\tcold\t0h\t2\tcold_0h\n"
+        "cold_6h_rep1\tcold\t6h\t1\tcold_6h\n",
+        encoding="utf-8",
+    )
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "bin/genefam/run_standard_smoke.py",
+            "--config",
+            "configs/example.config.yaml",
+            "--groups",
+            "configs/species_groups.yaml",
+            "--mock-evidence-dir",
+            "tests/fixtures/mock_evidence",
+            "--expression-matrix",
+            str(expression_matrix),
+            "--expression-metadata",
+            str(expression_metadata),
+            "--outdir",
+            str(outdir),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert (outdir / "tables/expression_sample_metadata.tsv").exists()
+    assert (outdir / "tables/expression_group_matrix.tsv").exists()
+    assert (outdir / "tables/expression_gene_summary.tsv").exists()
+    assert (outdir / "plots/expression_heatmap.png").exists()
+    report_index = (outdir / "report/report_index.tsv").read_text(encoding="utf-8")
+    assert "expression_sample_metadata\t" in report_index
+    assert "expression_group_matrix\t" in report_index
+    assert "expression_gene_summary\t" in report_index

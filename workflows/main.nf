@@ -287,10 +287,22 @@ workflow {
                 ppi_ggnetview_png_ch = PLOT_PPI_GGNETVIEW.out[5]
             }
             family_expression_report_ch = Channel.value("")
+            expression_sample_metadata_ch = Channel.value("")
+            expression_group_matrix_ch = Channel.value("")
+            expression_gene_summary_ch = Channel.value("")
+            expression_heatmap_pdf_ch = Channel.value("")
+            expression_heatmap_png_ch = Channel.value("")
             if (params.expression_matrix) {
                 expression_matrix_ch = Channel.value(file(params.expression_matrix))
+                expression_metadata_ch = Channel.value(params.expression_metadata ? file(params.expression_metadata) : "")
                 SUBSET_EXPRESSION_MATRIX(CONCAT_FAMILY_CANDIDATES.out, expression_matrix_ch)
                 family_expression_report_ch = SUBSET_EXPRESSION_MATRIX.out
+                PLOT_EXPRESSION_HEATMAP(SUBSET_EXPRESSION_MATRIX.out, expression_metadata_ch)
+                expression_sample_metadata_ch = PLOT_EXPRESSION_HEATMAP.out[0]
+                expression_group_matrix_ch = PLOT_EXPRESSION_HEATMAP.out[1]
+                expression_gene_summary_ch = PLOT_EXPRESSION_HEATMAP.out[2]
+                expression_heatmap_pdf_ch = PLOT_EXPRESSION_HEATMAP.out[3]
+                expression_heatmap_png_ch = PLOT_EXPRESSION_HEATMAP.out[4]
             }
             PLOT_FAMILY_COUNTS(FAMILY_SUMMARY.out)
             PLOT_GENE_FAMILY_INFO(FAMILY_SUMMARY.out, EXTRACT_FAMILY_SEQUENCES.out)
@@ -337,6 +349,11 @@ workflow {
                 ppi_ggnetview_pdf_ch,
                 ppi_ggnetview_png_ch,
                 family_expression_report_ch,
+                expression_sample_metadata_ch,
+                expression_group_matrix_ch,
+                expression_gene_summary_ch,
+                expression_heatmap_pdf_ch,
+                expression_heatmap_png_ch,
                 BUILD_WGD_HANDOFF_MANIFEST.out,
                 BUILD_PLOT_MANIFEST.out,
                 COLLECT_SOFTWARE_VERSIONS.out,
