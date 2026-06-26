@@ -6938,7 +6938,9 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `0`; release checks reported `Passed: 43`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
 
 Commit:
-- pending
+- hash: 05baf8cb4b8af42b26c7c0b904ed56cde0544a21
+- message: fix: add iqtree bootstrap fallback
+- files: runtime bootstrap planner, bootstrap tests, history
 
 Next:
 - Continue final-stage container hardening while preserving the current analysis-flow release readiness.
