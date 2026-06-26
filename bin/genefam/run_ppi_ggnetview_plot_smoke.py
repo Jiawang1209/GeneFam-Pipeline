@@ -12,7 +12,14 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from bin.genefam.build_ppi_tables import EDGE_FIELDS, HUB_FIELDS, NODE_FIELDS, build_ppi_tables, write_tsv
+from bin.genefam.build_ppi_tables import (
+    EDGE_FIELDS,
+    HUB_FIELDS,
+    METRIC_FIELDS,
+    NODE_FIELDS,
+    build_ppi_tables,
+    write_tsv,
+)
 
 
 def _demo_edges() -> list[dict[str, str]]:
@@ -42,9 +49,13 @@ def run_ppi_ggnetview_plot_smoke(r_bin: str, outdir: Path) -> dict[str, Path]:
     edge_path = table_dir / "ppi_edges.tsv"
     node_path = table_dir / "ppi_nodes.tsv"
     hub_path = table_dir / "ppi_hubs.tsv"
+    evidence_path = table_dir / "ppi_input_evidence.tsv"
+    qc_path = table_dir / "ppi_network_qc.tsv"
     write_tsv(outputs["edges"], edge_path, EDGE_FIELDS)
     write_tsv(outputs["nodes"], node_path, NODE_FIELDS)
     write_tsv(outputs["hubs"], hub_path, HUB_FIELDS)
+    write_tsv(outputs["input_evidence"], evidence_path, METRIC_FIELDS)
+    write_tsv(outputs["network_qc"], qc_path, METRIC_FIELDS)
     completed = subprocess.run(
         [
             r_bin,
@@ -73,6 +84,8 @@ def run_ppi_ggnetview_plot_smoke(r_bin: str, outdir: Path) -> dict[str, Path]:
                 f"Edges: `{edge_path}`",
                 f"Nodes: `{node_path}`",
                 f"Hubs: `{hub_path}`",
+                f"Input evidence: `{evidence_path}`",
+                f"Network QC: `{qc_path}`",
                 f"Status: `{status}`",
                 f"PDF plot: `{plot_dir / 'ppi_ggnetview.pdf'}`",
                 f"PNG plot: `{plot_dir / 'ppi_ggnetview.png'}`",
@@ -85,6 +98,8 @@ def run_ppi_ggnetview_plot_smoke(r_bin: str, outdir: Path) -> dict[str, Path]:
         "ppi_edges": edge_path,
         "ppi_nodes": node_path,
         "ppi_hubs": hub_path,
+        "ppi_input_evidence": evidence_path,
+        "ppi_network_qc": qc_path,
         "ppi_status": status,
         "ppi_pdf": plot_dir / "ppi_ggnetview.pdf",
         "ppi_png": plot_dir / "ppi_ggnetview.png",

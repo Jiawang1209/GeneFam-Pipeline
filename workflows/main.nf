@@ -279,6 +279,8 @@ workflow {
             ppi_edges_ch = Channel.value("")
             ppi_nodes_ch = Channel.value("")
             ppi_hubs_ch = Channel.value("")
+            ppi_input_evidence_ch = Channel.value("")
+            ppi_network_qc_ch = Channel.value("")
             ppi_ggnetview_status_ch = Channel.value("")
             ppi_ggnetview_pdf_ch = Channel.value("")
             ppi_ggnetview_png_ch = Channel.value("")
@@ -292,9 +294,11 @@ workflow {
                 ppi_edges_ch = PLOT_PPI_GGNETVIEW.out[0]
                 ppi_nodes_ch = PLOT_PPI_GGNETVIEW.out[1]
                 ppi_hubs_ch = PLOT_PPI_GGNETVIEW.out[2]
-                ppi_ggnetview_status_ch = PLOT_PPI_GGNETVIEW.out[3]
-                ppi_ggnetview_pdf_ch = PLOT_PPI_GGNETVIEW.out[4]
-                ppi_ggnetview_png_ch = PLOT_PPI_GGNETVIEW.out[5]
+                ppi_input_evidence_ch = PLOT_PPI_GGNETVIEW.out[3]
+                ppi_network_qc_ch = PLOT_PPI_GGNETVIEW.out[4]
+                ppi_ggnetview_status_ch = PLOT_PPI_GGNETVIEW.out[5]
+                ppi_ggnetview_pdf_ch = PLOT_PPI_GGNETVIEW.out[6]
+                ppi_ggnetview_png_ch = PLOT_PPI_GGNETVIEW.out[7]
             }
             family_expression_report_ch = Channel.value("")
             expression_sample_metadata_ch = Channel.value("")
@@ -361,6 +365,8 @@ workflow {
                 ppi_edges_ch,
                 ppi_nodes_ch,
                 ppi_hubs_ch,
+                ppi_input_evidence_ch,
+                ppi_network_qc_ch,
                 ppi_ggnetview_status_ch,
                 ppi_ggnetview_pdf_ch,
                 ppi_ggnetview_png_ch,

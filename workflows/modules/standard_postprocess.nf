@@ -105,6 +105,8 @@ process BUILD_STANDARD_REPORT_INDEX {
     val ppi_edges
     val ppi_nodes
     val ppi_hubs
+    val ppi_input_evidence
+    val ppi_network_qc
     val ppi_ggnetview_status
     val ppi_ggnetview_pdf
     val ppi_ggnetview_png
@@ -166,6 +168,8 @@ process BUILD_STANDARD_REPORT_INDEX {
       --ppi-edges "${ppi_edges}" \\
       --ppi-nodes "${ppi_nodes}" \\
       --ppi-hubs "${ppi_hubs}" \\
+      --ppi-input-evidence "${ppi_input_evidence}" \\
+      --ppi-network-qc "${ppi_network_qc}" \\
       --ppi-ggnetview-status "${ppi_ggnetview_status}" \\
       --ppi-ggnetview-pdf "${ppi_ggnetview_pdf}" \\
       --ppi-ggnetview-png "${ppi_ggnetview_png}" \\

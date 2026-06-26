@@ -23,6 +23,8 @@ def test_run_ppi_ggnetview_plot_smoke_writes_tables_status_and_plots(tmp_path):
     assert (outdir / "tables/ppi_edges.tsv").exists()
     assert (outdir / "tables/ppi_nodes.tsv").exists()
     assert (outdir / "tables/ppi_hubs.tsv").exists()
+    assert (outdir / "tables/ppi_input_evidence.tsv").exists()
+    assert (outdir / "tables/ppi_network_qc.tsv").exists()
     assert (outdir / "tables/ppi_ggnetview_status.tsv").exists()
     assert (outdir / "plots/ppi_ggnetview.pdf").exists()
     assert (outdir / "plots/ppi_ggnetview.png").exists()
@@ -31,3 +33,5 @@ def test_run_ppi_ggnetview_plot_smoke_writes_tables_status_and_plots(tmp_path):
     summary = (outdir / "ppi_ggnetview_plot_smoke.md").read_text(encoding="utf-8")
     assert "ggNetView PPI Plot Smoke" in summary
     assert "ppi_hubs.tsv" in summary
+    assert "ppi_input_evidence.tsv" in summary
+    assert "ppi_network_qc.tsv" in summary

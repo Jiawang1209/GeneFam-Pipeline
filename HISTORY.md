@@ -7662,6 +7662,58 @@ Commit:
 Next:
 - Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
 
+## 2026-06-27 - Add PPI input evidence and network QC outputs
+
+Timestamp:
+- 2026-06-27 01:23:06 CST
+
+Context:
+- The PPI branch already used ggNetView for network visualization, but the final report package still lacked explicit evidence for how user-provided PPI edge tables were cleaned.
+- For paper-level review, PPI results need both a visual network and auditable statistics about edge normalization, skipped rows, annotation coverage, and network size.
+
+Decisions:
+- Keep the upstream PPI source as a user-provided edge table while making the boundary explicit and auditable.
+- Add two formal PPI result tables: `ppi_input_evidence.tsv` for edge-cleaning provenance and `ppi_network_qc.tsv` for network-level QC metrics.
+- Wire both tables through the formal Nextflow PPI process and standard report index.
+
+Added:
+- `tables/ppi_input_evidence.tsv` output from the PPI table builder, ggNetView smoke, and `PLOT_PPI_GGNETVIEW`.
+- `tables/ppi_network_qc.tsv` output from the PPI table builder, ggNetView smoke, and `PLOT_PPI_GGNETVIEW`.
+- Tests asserting PPI input evidence, network QC metrics, Nextflow output ordering, report-index keys, and Reference plotting reuse status.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_ppi_tables.py`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_ppi_ggnetview_plot_smoke.py`
+- `docs/reference_plotting_reuse.md`
+- `tests/test_build_ppi_tables.py`
+- `tests/test_reference_plotting_reuse.py`
+- `tests/test_run_ppi_ggnetview_plot_smoke.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/plots.nf`
+- `workflows/modules/standard_postprocess.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_ppi_tables.py tests/test_run_ppi_ggnetview_plot_smoke.py tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_workflow_modules.py::test_main_workflow_includes_plot_processes tests/test_standard_branch_report_index.py tests/test_reference_plotting_reuse.py -q` first failed with 7 failures because the new PPI evidence/QC outputs did not exist yet.
+- The same focused pytest command passed with 12 tests after implementation.
+- `python bin/genefam/run_ppi_ggnetview_plot_smoke.py --r-bin /usr/local/bin/R --outdir results/ppi_ggnetview_plot_smoke` passed and produced PPI edges, nodes, hubs, input evidence, network QC, status, PDF, PNG, and summary outputs.
+- `python -m pytest tests -q` passed with 343 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`: required workflow and visualization checks passed through PPI and Nextflow standard branches, while `readiness audit` remained failed and Docker/Apptainer profile smokes remained failed as the known final-stage container/runtime blocker.
+
+Commit:
+- hash: pending
+- message: feat: add ppi evidence and qc outputs
+- files: PPI table builder, PPI ggNetView smoke, Nextflow PPI wiring, standard report index, Reference plotting reuse matrix, tests, history
+
+Next:
+- Continue the paper-level MVP polish with the remaining large-scale copy-number/pangenome/Ks visualization and final report interpretation depth.
+
 ## 2026-06-25 - Require complete WGD event metadata fields
 
 Timestamp:

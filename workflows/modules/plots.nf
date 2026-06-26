@@ -222,6 +222,8 @@ process PLOT_PPI_GGNETVIEW {
     path "tables/ppi_edges.tsv"
     path "tables/ppi_nodes.tsv"
     path "tables/ppi_hubs.tsv"
+    path "tables/ppi_input_evidence.tsv"
+    path "tables/ppi_network_qc.tsv"
     path "tables/ppi_ggnetview_status.tsv"
     path "plots/ppi_ggnetview.pdf"
     path "plots/ppi_ggnetview.png"

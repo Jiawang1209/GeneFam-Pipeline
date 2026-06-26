@@ -12,6 +12,7 @@ from pathlib import Path
 EDGE_FIELDS = ["source", "target", "weight", "species"]
 NODE_FIELDS = ["node", "species", "type", "domain", "degree", "weighted_degree"]
 HUB_FIELDS = ["rank", "node", "species", "type", "domain", "degree", "weighted_degree"]
+METRIC_FIELDS = ["metric", "value", "description"]
 
 
 def read_tsv(path: Path | None) -> list[dict[str, str]]:
@@ -43,17 +44,29 @@ def _clean_node(value: str) -> str:
     return value
 
 
-def normalize_edges(edges: list[dict[str, str]]) -> list[dict[str, str]]:
+def normalize_edges(edges: list[dict[str, str]]) -> tuple[list[dict[str, str]], dict[str, int]]:
     normalized: list[dict[str, str]] = []
     seen: set[tuple[str, str, str]] = set()
+    evidence = {
+        "raw_edge_rows": len(edges),
+        "normalized_edge_rows": 0,
+        "skipped_missing_endpoint": 0,
+        "skipped_self_loops": 0,
+        "duplicate_edge_rows": 0,
+    }
     for row in edges:
         source = _clean_node(_first(row, "source", "from", "Source"))
         target = _clean_node(_first(row, "target", "to", "Target"))
-        if not source or not target or source == target:
+        if not source or not target:
+            evidence["skipped_missing_endpoint"] += 1
+            continue
+        if source == target:
+            evidence["skipped_self_loops"] += 1
             continue
         species = _first(row, "species", "Species") or "unknown"
         key = tuple(sorted([source, target]) + [species])
         if key in seen:
+            evidence["duplicate_edge_rows"] += 1
             continue
         seen.add(key)
         normalized.append(
@@ -64,7 +77,15 @@ def normalize_edges(edges: list[dict[str, str]]) -> list[dict[str, str]]:
                 "species": species,
             }
         )
-    return normalized
+    evidence["normalized_edge_rows"] = len(normalized)
+    return normalized, evidence
+
+
+def _metric_rows(metrics: dict[str, int], descriptions: dict[str, str]) -> list[dict[str, str]]:
+    return [
+        {"metric": metric, "value": str(value), "description": descriptions.get(metric, "")}
+        for metric, value in metrics.items()
+    ]
 
 
 def _node_annotation_map(node_annotations: list[dict[str, str]]) -> dict[str, dict[str, str]]:
@@ -87,7 +108,7 @@ def build_ppi_tables(
     node_annotations: list[dict[str, str]] | None = None,
     top_n: int = 20,
 ) -> dict[str, list[dict[str, str]]]:
-    normalized_edges = normalize_edges(edges)
+    normalized_edges, evidence = normalize_edges(edges)
     annotations = _node_annotation_map(node_annotations or [])
     degree: defaultdict[str, int] = defaultdict(int)
     weighted_degree: defaultdict[str, float] = defaultdict(float)
@@ -116,7 +137,41 @@ def build_ppi_tables(
 
     hubs = sorted(nodes, key=lambda row: (-float(row["weighted_degree"]), row["node"]))[:top_n]
     hub_rows = [{"rank": str(index), **row} for index, row in enumerate(hubs, start=1)]
-    return {"edges": normalized_edges, "nodes": nodes, "hubs": hub_rows}
+    annotated_nodes = sum(1 for node in degree if node in annotations)
+    network_qc = {
+        "node_count": len(nodes),
+        "edge_count": len(normalized_edges),
+        "hub_count": len(hub_rows),
+        "species_count": len({edge["species"] for edge in normalized_edges}),
+        "annotated_nodes": annotated_nodes,
+        "missing_annotation_nodes": len(nodes) - annotated_nodes,
+    }
+    return {
+        "edges": normalized_edges,
+        "nodes": nodes,
+        "hubs": hub_rows,
+        "input_evidence": _metric_rows(
+            evidence,
+            {
+                "raw_edge_rows": "Raw PPI edge rows read from the user-provided edge table",
+                "normalized_edge_rows": "Edges retained after endpoint cleanup, self-loop removal, and duplicate removal",
+                "skipped_missing_endpoint": "Rows skipped because source or target was missing",
+                "skipped_self_loops": "Rows skipped because source and target were the same gene",
+                "duplicate_edge_rows": "Repeated undirected source-target-species rows removed before plotting",
+            },
+        ),
+        "network_qc": _metric_rows(
+            network_qc,
+            {
+                "node_count": "Unique genes present in the normalized PPI network",
+                "edge_count": "Normalized PPI edges used for ggNetView plotting",
+                "hub_count": "Hub genes reported in the ranked hub table",
+                "species_count": "Species represented by normalized PPI edges",
+                "annotated_nodes": "Network nodes matched to the optional node annotation table",
+                "missing_annotation_nodes": "Network nodes without optional node annotation records",
+            },
+        ),
+    }
 
 
 def write_tsv(rows: list[dict[str, str]], out_path: Path, fieldnames: list[str]) -> None:
@@ -138,6 +193,8 @@ def main() -> None:
     write_tsv(outputs["edges"], args.outdir / "ppi_edges.tsv", EDGE_FIELDS)
     write_tsv(outputs["nodes"], args.outdir / "ppi_nodes.tsv", NODE_FIELDS)
     write_tsv(outputs["hubs"], args.outdir / "ppi_hubs.tsv", HUB_FIELDS)
+    write_tsv(outputs["input_evidence"], args.outdir / "ppi_input_evidence.tsv", METRIC_FIELDS)
+    write_tsv(outputs["network_qc"], args.outdir / "ppi_network_qc.tsv", METRIC_FIELDS)
 
 
 if __name__ == "__main__":

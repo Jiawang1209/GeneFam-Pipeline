@@ -28,6 +28,15 @@ def test_build_ppi_tables_normalizes_edges_nodes_and_hubs():
     assert by_node["geneC"]["type"] == "Others"
     assert outputs["hubs"][0]["node"] == "geneA"
     assert outputs["hubs"][0]["rank"] == "1"
+    evidence = {row["metric"]: row["value"] for row in outputs["input_evidence"]}
+    assert evidence["raw_edge_rows"] == "3"
+    assert evidence["normalized_edge_rows"] == "2"
+    assert evidence["skipped_self_loops"] == "1"
+    assert evidence["duplicate_edge_rows"] == "0"
+    qc = {row["metric"]: row["value"] for row in outputs["network_qc"]}
+    assert qc["node_count"] == "3"
+    assert qc["edge_count"] == "2"
+    assert qc["missing_annotation_nodes"] == "1"
 
 
 def test_build_ppi_tables_cli_writes_outputs(tmp_path):
@@ -57,3 +66,5 @@ def test_build_ppi_tables_cli_writes_outputs(tmp_path):
     assert (outdir / "ppi_edges.tsv").read_text(encoding="utf-8").startswith("source\ttarget\tweight\tspecies")
     assert (outdir / "ppi_nodes.tsv").read_text(encoding="utf-8").startswith("node\tspecies\ttype\tdomain")
     assert (outdir / "ppi_hubs.tsv").read_text(encoding="utf-8").startswith("rank\tnode\tspecies")
+    assert (outdir / "ppi_input_evidence.tsv").read_text(encoding="utf-8").startswith("metric\tvalue\tdescription")
+    assert (outdir / "ppi_network_qc.tsv").read_text(encoding="utf-8").startswith("metric\tvalue\tdescription")

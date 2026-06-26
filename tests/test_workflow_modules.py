@@ -108,6 +108,8 @@ def test_standard_postprocess_module_extracts_family_sequences_and_report_index(
     assert '--ppi-edges "${ppi_edges}"' in module
     assert '--ppi-nodes "${ppi_nodes}"' in module
     assert '--ppi-hubs "${ppi_hubs}"' in module
+    assert '--ppi-input-evidence "${ppi_input_evidence}"' in module
+    assert '--ppi-network-qc "${ppi_network_qc}"' in module
     assert '--ppi-ggnetview-status "${ppi_ggnetview_status}"' in module
     assert '--ppi-ggnetview-pdf "${ppi_ggnetview_pdf}"' in module
     assert '--ppi-ggnetview-png "${ppi_ggnetview_png}"' in module
@@ -206,6 +208,11 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "if (asBooleanParam(params.run_ppi))" in workflow
     assert 'error "Missing required parameter for --run_ppi true: --ppi_edges"' in workflow
     assert "PLOT_PPI_GGNETVIEW(ppi_edges_input_ch, ppi_nodes_input_ch)" in workflow
+    assert "ppi_input_evidence_ch = PLOT_PPI_GGNETVIEW.out[3]" in workflow
+    assert "ppi_network_qc_ch = PLOT_PPI_GGNETVIEW.out[4]" in workflow
+    assert "ppi_ggnetview_status_ch = PLOT_PPI_GGNETVIEW.out[5]" in workflow
+    assert "ppi_ggnetview_pdf_ch = PLOT_PPI_GGNETVIEW.out[6]" in workflow
+    assert "ppi_ggnetview_png_ch = PLOT_PPI_GGNETVIEW.out[7]" in workflow
     assert "PREPARE_ALIGNMENT_INPUTS(family_name_ch, EXTRACT_FAMILY_SEQUENCES.out, aligner_ch, alignment_outdir_ch)" in workflow
     assert "PREPARE_PHYLOGENY_INPUTS(PREPARE_ALIGNMENT_INPUTS.out, tree_builder_ch, phylogeny_outdir_ch)" in workflow
     assert "PLOT_FAMILY_COUNTS(FAMILY_SUMMARY.out)" in workflow
@@ -448,6 +455,8 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert 'path "tables/ppi_edges.tsv"' in module
     assert 'path "tables/ppi_nodes.tsv"' in module
     assert 'path "tables/ppi_hubs.tsv"' in module
+    assert 'path "tables/ppi_input_evidence.tsv"' in module
+    assert 'path "tables/ppi_network_qc.tsv"' in module
     assert 'path "tables/ppi_ggnetview_status.tsv"' in module
     assert 'path "plots/ppi_ggnetview.pdf"' in module
     assert 'path "plots/ppi_ggnetview.png"' in module
