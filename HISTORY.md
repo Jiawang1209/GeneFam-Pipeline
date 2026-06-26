@@ -6857,8 +6857,8 @@ Verification:
 - `rg -n "publication_report_audit|paper-style report closure|figure interpretations|software versions|reproducibility" docs/readiness_checklist.md` confirmed the documented readiness entrypoints.
 
 Commit:
-- hash: pending
-- message: pending
+- hash: 8d5eb80d7af55a5bbdee4c2dcb1e6a2a870281c9
+- message: docs: add publication audit readiness checklist
 - files: readiness checklist docs, runtime environment docs test, history
 
 Next:
