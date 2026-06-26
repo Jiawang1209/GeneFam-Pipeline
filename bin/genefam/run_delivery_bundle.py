@@ -67,6 +67,10 @@ def _objective_blockers(rows: list[dict[str, str]]) -> str:
     return ", ".join(blockers) if blockers else "none"
 
 
+def _optional_failed(rows: list[dict[str, str]]) -> int:
+    return sum(1 for row in rows if row.get("required") == "false" and row.get("status") == "failed")
+
+
 def build_delivery_manifest(
     release_rows: list[dict[str, str]],
     objective_rows: list[dict[str, str]],
@@ -78,6 +82,8 @@ def build_delivery_manifest(
     release_required_failed = sum(
         1 for row in release_rows if row.get("required") == "true" and row.get("status") == "failed"
     )
+    release_ready = release_required_failed == 0
+    optional_failed = _optional_failed(release_rows)
     blockers = _objective_blockers(objective_rows)
 
     rows = [
@@ -87,6 +93,13 @@ def build_delivery_manifest(
             "status": "available",
             "path": "results/release_checks/release_checks.md",
             "note": f"failed={release_failed}; required_failed={release_required_failed}",
+        },
+        {
+            "section": "status",
+            "item": "release_ready",
+            "status": "available" if release_ready else "missing",
+            "path": "results/release_checks/release_checks.md",
+            "note": f"release_ready={str(release_ready).lower()}; optional_failed={optional_failed}",
         },
         {
             "section": "status",
@@ -277,6 +290,20 @@ def build_delivery_manifest(
                 "status": "available",
                 "path": "Dockerfile",
                 "note": "docker run default command writes results/container_default_smoke",
+            },
+            {
+                "section": "runtime_recovery",
+                "item": "docker_profile_smoke",
+                "status": _status_from_check(release_rows, "Docker profile smoke"),
+                "path": "results/container_profile_smoke/docker/container_profile_smoke.md",
+                "note": "optional container profile diagnostic",
+            },
+            {
+                "section": "runtime_recovery",
+                "item": "apptainer_profile_smoke",
+                "status": _status_from_check(release_rows, "Apptainer profile smoke"),
+                "path": "results/container_profile_smoke/apptainer/container_profile_smoke.md",
+                "note": "optional container profile diagnostic",
             },
         ]
     )

@@ -7025,6 +7025,46 @@ Commit:
 Next:
 - Continue final-stage container hardening; true Docker/Apptainer profile success still depends on installing or exposing those runtimes.
 
+## 2026-06-27 - Add release-ready and container profile diagnostics to delivery bundle
+
+Timestamp:
+- 2026-06-27 02:39:09 CST
+
+Context:
+- The delivery bundle listed release checks, objective blockers, runtime commands, and runtime recovery artifacts.
+- It did not show a direct `release_ready=true` handoff row or direct links to the Docker/Apptainer profile smoke diagnostic Markdown files.
+
+Decisions:
+- Add a `status/release_ready` row derived from required and optional release-check failures.
+- Add `runtime_recovery/docker_profile_smoke` and `runtime_recovery/apptainer_profile_smoke` rows pointing to the optional container diagnostic Markdown files.
+- Keep Docker/Apptainer profile rows marked `missing` when their optional smoke checks fail.
+
+Added:
+- Delivery bundle tests requiring release-ready status and container profile diagnostic links in both TSV and Markdown outputs.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_run_delivery_bundle.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py -q` first failed because the delivery manifest did not include the new `release_ready` row or container profile diagnostic entries.
+- `python -m pytest tests/test_run_delivery_bundle.py -q` passed with 1 test after implementation.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` refreshed the delivery bundle.
+- `rg -n "release_ready|docker_profile_smoke|apptainer_profile_smoke|container_profile_smoke" results/delivery_bundle/delivery_manifest.tsv results/delivery_bundle/delivery_bundle.md` confirmed the new status and diagnostic rows were present.
+- `python -m pytest tests -q` passed with 351 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `0`; release checks reported `Passed: 43`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- The same `rg` check confirmed release checks regenerated the enhanced delivery bundle with the new rows.
+
+Commit:
+- pending
+
+Next:
+- Continue final-stage container hardening; true Docker/Apptainer profile success still depends on installing or exposing those runtimes.
+
 ## 2026-06-27 - Add density and duplicate-type tracks to MCScanX circlize plots
 
 Timestamp:

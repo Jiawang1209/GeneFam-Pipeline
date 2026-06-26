@@ -22,7 +22,9 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
             "standard branch smoke\ttrue\tpassed\t0\tstandard\tfinal report",
             "Nextflow standard manifest smoke\ttrue\tpassed\t0\tnextflow manifest\tmanifest config",
             "WGD event smoke\ttrue\tpassed\t0\twgd\talpha beta gamma theta",
-            "readiness audit\ttrue\tfailed\t1\treadiness\tdocker missing",
+            "readiness audit\ttrue\tpassed\t0\treadiness\tcore tools available",
+            "Docker profile smoke\tfalse\tfailed\t1\tdocker profile\tmissing runtime",
+            "Apptainer profile smoke\tfalse\tfailed\t1\tapptainer profile\tmissing runtime",
         ],
     )
     _write_tsv(
@@ -152,6 +154,18 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         "status\tlocal_acceptance_summary\tavailable\tresults/local_acceptance/local_acceptance_summary.md\tcompact local acceptance pass/fail index"
         in manifest_text
     )
+    assert (
+        "status\trelease_ready\tavailable\tresults/release_checks/release_checks.md\trelease_ready=true; optional_failed=2"
+        in manifest_text
+    )
+    assert (
+        "runtime_recovery\tdocker_profile_smoke\tmissing\tresults/container_profile_smoke/docker/container_profile_smoke.md\toptional container profile diagnostic"
+        in manifest_text
+    )
+    assert (
+        "runtime_recovery\tapptainer_profile_smoke\tmissing\tresults/container_profile_smoke/apptainer/container_profile_smoke.md\toptional container profile diagnostic"
+        in manifest_text
+    )
 
     summary_text = summary.read_text(encoding="utf-8")
     assert "# GeneFam-Pipeline Delivery Bundle" in summary_text
@@ -167,3 +181,6 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "results/container_default_smoke" in summary_text
     assert "compact local acceptance pass/fail index" in summary_text
     assert "Docker/Apptainer reproducibility" in summary_text
+    assert "release_ready=true" in summary_text
+    assert "results/container_profile_smoke/docker/container_profile_smoke.md" in summary_text
+    assert "results/container_profile_smoke/apptainer/container_profile_smoke.md" in summary_text
