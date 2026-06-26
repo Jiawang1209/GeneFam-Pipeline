@@ -9785,7 +9785,7 @@ Verification:
 - `rg -n "Ka/Ks WGD visualization|Nextflow WGD event smoke|WGD publication report audit|Nextflow report evidence" results/objective_audit/objective_audit.md results/release_checks/release_checks.tsv` confirmed the Ka/Ks WGD audit row now requires the formal WGD Nextflow smoke and WGD publication report audit.
 
 Commit:
-- hash: pending
+- hash: 2e852301e3aee824c5d163ad2cc53f93b228a58a
 - message: test: require nextflow evidence for wgd audit
 - files: objective audit rule, objective audit tests, history
 
