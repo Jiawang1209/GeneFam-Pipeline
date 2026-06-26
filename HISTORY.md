@@ -9784,7 +9784,7 @@ Verification:
 - `rg -n "paper-level visualization modules|Ka/Ks WGD annotation plot smoke|WGD publication report audit|Ks distribution" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed the aggregate paper-level visualization row now names the WGD figure and report evidence.
 
 Commit:
-- hash: pending
+- hash: 35dbe6234ed96dad95bf414581c9cf2f55ef1686
 - message: test: require wgd figures in paper visualization audit
 - files: objective audit rule, objective audit tests, history
 
