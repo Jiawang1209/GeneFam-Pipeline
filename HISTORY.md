@@ -90,7 +90,7 @@ Verification:
 - `results/publication_report_audit/publication_report_audit.md` reports `Passed: 4`, `Failed: 0`, and `Complete: true`.
 
 Commit:
-- hash: pending
+- hash: aed616ba98df1a950477a5d7c2fab68a07fc72e5
 - message: feat: add species-tree order for copy-number plots
 - files: gene-family info builder/smoke, Nextflow plot module/config, report index, validation, docs, tests, history
 
