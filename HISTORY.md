@@ -8824,7 +8824,7 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 45`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
 
 Commit:
-- hash: pending
+- hash: b1221cfc3ea59d62c61a58acb39dde9cd3b9980b
 - message: feat: surface wgd publication audit in delivery
 - files: delivery bundle, local acceptance, README/quickstart/release audit docs, tests, history
 
