@@ -92,6 +92,17 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "run_gene_structure_smoke.py" in text
     assert "run_promoter_smoke.py" in text
     assert "run_feature_summary_smoke.py" in text
+    assert "run_tree_feature_smoke.py" in text
+    assert "build_tree_feature_matrix.py" in text
+    assert "plot_tree_features.R" in text
+    assert "PLOT_TREE_FEATURES" in text
+    assert "tree motif gene-structure domain composite visualization" in text
+    assert "results/tree_feature_smoke/tables/tree_feature_matrix.tsv" in text
+    assert "results/tree_feature_smoke/plots/tree_features.pdf" in text
+    assert "results/tree_feature_smoke/plots/tree_features.png" in text
+    assert "results/nextflow_standard_smoke/standard/tables/tree_feature_matrix.tsv" in text
+    assert "results/nextflow_standard_smoke/standard/plots/tree_features.pdf" in text
+    assert "results/nextflow_standard_smoke/standard/plots/tree_features.png" in text
     assert "extract_promoters.py" in text
     assert "summarize_feature_tables.py" in text
     assert "plot_feature_summary.R" in text

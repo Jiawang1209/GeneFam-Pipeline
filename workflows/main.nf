@@ -24,7 +24,7 @@ include {
 } from './modules/standard_postprocess.nf'
 include { MOCK_MVP } from './modules/mock_mvp.nf'
 include { ASSEMBLE_REPORT } from './modules/report.nf'
-include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; PLOT_FEATURE_SUMMARY; PLOT_MCSCANX_CIRCLIZE; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
+include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; PLOT_FEATURE_SUMMARY; PLOT_TREE_FEATURES; PLOT_MCSCANX_CIRCLIZE; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
 include {
     PREPARE_ALIGNMENT_INPUTS;
     RUN_ALIGNMENT;
@@ -199,6 +199,14 @@ workflow {
             PARSE_MEME_MOTIFS(meme_txt_ch, family_name_ch)
             EXTRACT_GENE_STRUCTURE(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
             EXTRACT_CHROMOSOME_LOCATIONS(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
+            tree_domains_ch = Channel.value(params.filtered_domains ? file(params.filtered_domains) : "")
+            PLOT_TREE_FEATURES(
+                RUN_PHYLOGENY.out,
+                CONCAT_FAMILY_CANDIDATES.out,
+                PARSE_MEME_MOTIFS.out,
+                EXTRACT_GENE_STRUCTURE.out,
+                tree_domains_ch
+            )
             promoters_bed_ch = Channel.value("")
             promoters_fasta_ch = Channel.value("")
             if (asBooleanParam(params.run_promoter)) {
@@ -261,6 +269,9 @@ workflow {
                 RUN_PHYLOGENY.out,
                 PARSE_MEME_MOTIFS.out,
                 EXTRACT_GENE_STRUCTURE.out,
+                PLOT_TREE_FEATURES.out[0],
+                PLOT_TREE_FEATURES.out[1],
+                PLOT_TREE_FEATURES.out[2],
                 EXTRACT_CHROMOSOME_LOCATIONS.out,
                 promoters_bed_ch,
                 promoters_fasta_ch,

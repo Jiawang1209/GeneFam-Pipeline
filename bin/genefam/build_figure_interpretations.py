@@ -70,12 +70,19 @@ TEMPLATES = {
         "Inspect outlier genes, dominant feature categories, and modules with missing evidence.",
         "Feature summaries help prioritize interpretable subsets when full per-gene figures are too dense.",
     ),
+    "tree": (
+        "Tree, motif, gene-structure, and domain composite",
+        "Phylogenetic tree, motif summary, gene-structure table, and domain hit table",
+        "Tree-ordered family members with aligned feature tracks for gene structure, domain evidence, and motif catalog statistics.",
+        "Inspect whether clades share exon/CDS patterns, domain coverage, and motif catalog support.",
+        "Conserved feature tracks within clades support structural conservation; divergent tracks can indicate subfunctionalization candidates.",
+    ),
 }
 
 
 def _template_key(plot_key: str, path: str) -> str:
     value = f"{plot_key} {path}".lower()
-    for key in ["mcscanx", "kaks", "expression", "promoter", "ppi", "feature", "family"]:
+    for key in ["mcscanx", "kaks", "expression", "promoter", "ppi", "tree", "feature", "family"]:
         if key in value or (key == "kaks" and "ks_" in value):
             return key
     return "feature"

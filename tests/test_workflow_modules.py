@@ -91,6 +91,9 @@ def test_standard_postprocess_module_extracts_family_sequences_and_report_index(
     assert "--phylogeny-manifest ${phylogeny_manifest}" in module
     assert "--alignment-file ${alignment_file}" in module
     assert "--phylogeny-tree ${phylogeny_tree}" in module
+    assert "--tree-feature-matrix ${tree_feature_matrix}" in module
+    assert "--tree-features-pdf ${tree_features_pdf}" in module
+    assert "--tree-features-png ${tree_features_png}" in module
     assert '--promoters-bed "${promoters_bed}"' in module
     assert '--promoters-fasta "${promoters_fasta}"' in module
     assert '--feature-summary "${feature_summary}"' in module
@@ -142,6 +145,7 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "ASSEMBLE_STANDARD_REPORT" in workflow
     assert "EXTRACT_PROMOTERS;" in workflow
     assert "PLOT_FEATURE_SUMMARY;" in workflow
+    assert "PLOT_TREE_FEATURES;" in workflow
     assert "PLOT_MCSCANX_CIRCLIZE;" in workflow
     assert "COLLECT_SOFTWARE_VERSIONS" in workflow
     assert "BUILD_FIGURE_INTERPRETATIONS" in workflow
@@ -180,6 +184,7 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "CONCAT_FAMILY_CANDIDATES.out," in workflow
     assert "PREPARE_SPECIES.out," in workflow
     assert "if (asBooleanParam(params.run_feature_summary))" in workflow
+    assert "PLOT_TREE_FEATURES(" in workflow
     assert "PLOT_FEATURE_SUMMARY(" in workflow
     assert "if (asBooleanParam(params.run_mcscanx_circlize))" in workflow
     assert "PLOT_MCSCANX_CIRCLIZE(" in workflow
@@ -191,6 +196,9 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "BUILD_FIGURE_INTERPRETATIONS(BUILD_PLOT_MANIFEST.out)" in workflow
     assert "BUILD_STANDARD_REPORT_INDEX(" in workflow
     assert "BUILD_RUN_CONFIG_SNAPSHOT.out" in workflow
+    assert "PLOT_TREE_FEATURES.out[0]" in workflow
+    assert "PLOT_TREE_FEATURES.out[1]" in workflow
+    assert "PLOT_TREE_FEATURES.out[2]" in workflow
     assert "BUILD_WGD_HANDOFF_MANIFEST.out" in workflow
     assert "ASSEMBLE_STANDARD_REPORT(project_name_ch, family_name_ch, BUILD_STANDARD_REPORT_INDEX.out, BUILD_RUN_CONFIG_SNAPSHOT.out, BUILD_PLOT_MANIFEST.out, COLLECT_SOFTWARE_VERSIONS.out, BUILD_FIGURE_INTERPRETATIONS.out[0])" in workflow
 
@@ -338,6 +346,16 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert 'path "plots/feature_summary.pdf"' in module
     assert 'path "plots/feature_summary.png"' in module
 
+    assert "process PLOT_TREE_FEATURES" in module
+    assert "build_tree_feature_matrix.py" in module
+    assert "plot_tree_features.R" in module
+    assert "--tree ${phylogeny_tree}" in module
+    assert "--family-candidates ${family_candidates}" in module
+    assert "--gene-structures ${gene_structures}" in module
+    assert 'path "tables/tree_feature_matrix.tsv"' in module
+    assert 'path "plots/tree_features.pdf"' in module
+    assert 'path "plots/tree_features.png"' in module
+
     assert "process PLOT_MCSCANX_CIRCLIZE" in module
     assert "build_circlize_inputs.py" in module
     assert "plot_mcscanx_circlize.R" in module
@@ -350,6 +368,7 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert 'publishDir "${params.outdir}/report", mode: "copy", overwrite: true' in module
     assert "build_plot_manifest.py" in module
     assert '--plot "family_counts=plots/family_counts.pdf=Family member counts by species"' in module
+    assert '--plot "tree_features=plots/tree_features.pdf=Tree, motif, gene-structure, and domain composite plot"' in module
     assert '--plot "ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs"' in module
     assert '--plot "expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap"' in module
     assert "--out plot_manifest.tsv" in module
@@ -392,6 +411,7 @@ def test_main_workflow_includes_plot_processes():
     assert "PLOT_FAMILY_COUNTS" in workflow
     assert "PLOT_KAKS" in workflow
     assert "PLOT_EXPRESSION_HEATMAP" in workflow
+    assert "PLOT_TREE_FEATURES" in workflow
     assert "BUILD_PLOT_MANIFEST" in workflow
 
 

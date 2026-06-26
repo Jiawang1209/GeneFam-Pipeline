@@ -272,6 +272,17 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "tree feature visualization smoke",
+            [
+                python,
+                "bin/genefam/run_tree_feature_smoke.py",
+                "--r-bin",
+                "/usr/local/bin/R",
+                "--outdir",
+                "results/tree_feature_smoke",
+            ],
+        ),
+        CheckSpec(
             "PPI ggNetView smoke",
             [
                 python,

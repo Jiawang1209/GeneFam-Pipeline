@@ -75,6 +75,9 @@ process BUILD_STANDARD_REPORT_INDEX {
     path phylogeny_tree
     path motif_summary
     path gene_structure_summary
+    path tree_feature_matrix
+    path tree_features_pdf
+    path tree_features_png
     path chromosome_locations
     val promoters_bed
     val promoters_fasta
@@ -106,6 +109,9 @@ process BUILD_STANDARD_REPORT_INDEX {
       --phylogeny-tree ${phylogeny_tree} \\
       --motif-summary ${motif_summary} \\
       --gene-structure-summary ${gene_structure_summary} \\
+      --tree-feature-matrix ${tree_feature_matrix} \\
+      --tree-features-pdf ${tree_features_pdf} \\
+      --tree-features-png ${tree_features_png} \\
       --chromosome-locations ${chromosome_locations} \\
       --promoters-bed "${promoters_bed}" \\
       --promoters-fasta "${promoters_fasta}" \\

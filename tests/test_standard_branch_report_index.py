@@ -18,6 +18,9 @@ def test_build_standard_report_index_marks_core_outputs_available():
             "phylogeny_tree": "phylogeny/GDSL.fasttree.treefile",
             "motif_summary": "tables/motif_summary.tsv",
             "gene_structure_summary": "tables/gene_structure_summary.tsv",
+            "tree_feature_matrix": "tables/tree_feature_matrix.tsv",
+            "tree_features_pdf": "plots/tree_features.pdf",
+            "tree_features_png": "plots/tree_features.png",
             "chromosome_locations": "tables/chromosome_locations.tsv",
             "promoters_bed": "",
             "promoters_fasta": "",
@@ -49,6 +52,9 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "phylogeny_tree",
         "motif_summary",
         "gene_structure_summary",
+        "tree_feature_matrix",
+        "tree_features_pdf",
+        "tree_features_png",
         "chromosome_locations",
         "promoters_bed",
         "promoters_fasta",
@@ -83,6 +89,9 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
         "phylogeny_tree": "results/nextflow_standard_smoke/standard/phylogeny/GDSL.fasttree.treefile",
         "motif_summary": "results/nextflow_standard_smoke/standard/tables/motif_summary.tsv",
         "gene_structure_summary": "results/nextflow_standard_smoke/standard/tables/gene_structure_summary.tsv",
+        "tree_feature_matrix": "results/nextflow_standard_smoke/standard/tables/tree_feature_matrix.tsv",
+        "tree_features_pdf": "results/nextflow_standard_smoke/standard/plots/tree_features.pdf",
+        "tree_features_png": "results/nextflow_standard_smoke/standard/plots/tree_features.png",
         "chromosome_locations": "results/nextflow_standard_smoke/standard/tables/chromosome_locations.tsv",
         "promoters_bed": "",
         "promoters_fasta": "",
@@ -128,6 +137,12 @@ def test_build_standard_report_index_cli_writes_tsv(tmp_path):
             "motif_summary.tsv",
             "--gene-structure-summary",
             "gene_structure_summary.tsv",
+            "--tree-feature-matrix",
+            "tree_feature_matrix.tsv",
+            "--tree-features-pdf",
+            "tree_features.pdf",
+            "--tree-features-png",
+            "tree_features.png",
             "--chromosome-locations",
             "chromosome_locations.tsv",
             "--family-expression",
@@ -186,6 +201,12 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
             "motif_summary.tsv",
             "--gene-structure-summary",
             "gene_structure_summary.tsv",
+            "--tree-feature-matrix",
+            "tree_feature_matrix.tsv",
+            "--tree-features-pdf",
+            "tree_features.pdf",
+            "--tree-features-png",
+            "tree_features.png",
             "--chromosome-locations",
             "chromosome_locations.tsv",
             "--family-expression",
@@ -217,6 +238,9 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
     assert rows["phylogeny_tree"]["path"] == "results/demo/phylogeny/GDSL.fasttree.treefile"
     assert rows["motif_summary"]["path"] == "results/demo/tables/motif_summary.tsv"
     assert rows["gene_structure_summary"]["path"] == "results/demo/tables/gene_structure_summary.tsv"
+    assert rows["tree_feature_matrix"]["path"] == "results/demo/tables/tree_feature_matrix.tsv"
+    assert rows["tree_features_pdf"]["path"] == "results/demo/plots/tree_features.pdf"
+    assert rows["tree_features_png"]["path"] == "results/demo/plots/tree_features.png"
     assert rows["wgd_handoff_manifest"]["path"] == "results/demo/tables/wgd_handoff_manifest.tsv"
     assert rows["plot_manifest"]["path"] == "results/demo/report/plot_manifest.tsv"
     assert rows["software_versions"]["path"] == "results/demo/report/software_versions.tsv"

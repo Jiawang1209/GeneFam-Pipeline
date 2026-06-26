@@ -34,6 +34,62 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-26 23:06 - Add tree motif gene-structure domain composite plot
+
+Context:
+- The active `/goal` requires paper-level visualization aligned with the two `Reference/` papers.
+- The previous alignment matrix still marked the tree + motif + gene structure + domain figure as missing, even though the standard branch already produced phylogeny, motif summary, gene-structure, and optional domain evidence.
+
+Decisions:
+- Add a formal `tree_features` figure as the first workflow-native version of the Reference-style tree/motif/gene-structure/domain composite.
+- Keep the first implementation deterministic and large-family friendly: tree-ordered rows plus aligned feature tracks for gene length, exon/CDS counts, domain count, best domain coverage, and motif catalog summary.
+- Treat per-gene MEME motif occurrence tracks and richer domain architecture glyphs as the next refinement, because the current MEME parser records motif catalog metadata rather than per-gene motif placements.
+- Make the tree feature smoke independent and deterministic for release checks, while using Nextflow standard smoke to prove formal workflow integration.
+
+Added:
+- `bin/genefam/build_tree_feature_matrix.py`
+- `bin/genefam/run_tree_feature_smoke.py`
+- `scripts/plot_tree_features.R`
+- `tests/test_build_tree_feature_matrix.py`
+- `tests/test_run_tree_feature_smoke.py`
+
+Modified:
+- `bin/genefam/build_figure_interpretations.py`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/reference_plotting_reuse.md`
+- `docs/release_audit.md`
+- `tests/test_build_figure_interpretations.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/plots.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_tree_feature_matrix.py tests/test_run_tree_feature_smoke.py -q` first failed because the new module did not exist, then failed once more because Newick leaf parsing captured branch lengths with gene IDs, then passed with 3 tests after implementation.
+- `python -m pytest tests/test_build_tree_feature_matrix.py tests/test_run_tree_feature_smoke.py tests/test_release_audit_docs.py tests/test_reference_plotting_reuse.py tests/test_build_figure_interpretations.py tests/test_standard_branch_report_index.py tests/test_workflow_modules.py tests/test_run_release_checks.py -q` passed with 70 tests.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_standard_smoke` passed and produced `results/nextflow_standard_smoke/standard/tables/tree_feature_matrix.tsv`, `results/nextflow_standard_smoke/standard/plots/tree_features.pdf`, and `results/nextflow_standard_smoke/standard/plots/tree_features.png`.
+- `grep -n "tree_feature\|tree_features\|Tree, motif" results/nextflow_standard_smoke/standard/report/report_index.tsv results/nextflow_standard_smoke/standard/report/plot_manifest.tsv results/nextflow_standard_smoke/standard/report/final_report.md results/nextflow_standard_smoke/standard/report/figure_interpretations.tsv` confirmed report index, plot manifest, final report, and figure interpretations include the new figure.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --run-feature-summary --run-mcscanx-circlize --syntenic-pairs tests/fixtures/mcscanx/syntenic_pairs.tsv --outdir results/nextflow_standard_feature_smoke` passed.
+- `python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke` passed and wrote `tree_feature_matrix.tsv`, `tree_features.pdf`, and `tree_features.png`.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker/Apptainer remain unavailable, but improved the release matrix to `Passed: 35`, `Required failed: 1`, `Optional failed: 2`; `tree feature visualization smoke` and `PPI ggNetView smoke` passed.
+
+Commit:
+- hash: not created yet
+- message: feat: add tree feature composite visualization
+- files: tree feature matrix builder, R plot script, smoke runner, Nextflow standard wiring, report index/interpretation updates, release docs/tests, history
+
+Next:
+- Backfill this commit hash after committing.
+- Continue paper-level visualization refinement by adding true per-gene motif occurrence tracks, richer domain architecture glyphs, and the full ggNetView PPI plotting module.
+
 ## 2026-06-26 22:48 - Add paper-level report interpretation and ggNetView readiness
 
 Context:

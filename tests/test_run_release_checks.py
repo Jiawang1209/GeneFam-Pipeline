@@ -462,13 +462,25 @@ def test_default_checks_include_feature_summary_after_synteny_smoke():
 def test_default_checks_include_ppi_ggnetview_smoke_after_feature_summary():
     names = [check.name for check in default_checks()]
 
-    assert names.index("PPI ggNetView smoke") > names.index("feature summary visualization smoke")
+    assert names.index("PPI ggNetView smoke") > names.index("tree feature visualization smoke")
     assert names.index("PPI ggNetView smoke") < names.index("Ka/Ks parser smoke")
     smoke = next(check for check in default_checks() if check.name == "PPI ggNetView smoke")
     command = " ".join(smoke.command)
     assert "bin/genefam/run_ppi_ggnetview_smoke.py" in command
     assert "--r-bin /usr/local/bin/R" in command
     assert "--outdir results/ppi_ggnetview_smoke" in command
+
+
+def test_default_checks_include_tree_feature_smoke_after_feature_summary():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("tree feature visualization smoke") > names.index("feature summary visualization smoke")
+    assert names.index("tree feature visualization smoke") < names.index("PPI ggNetView smoke")
+    smoke = next(check for check in default_checks() if check.name == "tree feature visualization smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_tree_feature_smoke.py" in command
+    assert "--r-bin /usr/local/bin/R" in command
+    assert "--outdir results/tree_feature_smoke" in command
 
 
 def test_default_checks_include_retention_enrichment_smoke_before_wgd_smoke():

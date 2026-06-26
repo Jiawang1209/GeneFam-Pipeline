@@ -81,6 +81,37 @@ process PLOT_FEATURE_SUMMARY {
     """
 }
 
+process PLOT_TREE_FEATURES {
+    tag "plot tree features"
+    publishDir "${params.outdir}", mode: "copy", overwrite: true
+
+    input:
+    path phylogeny_tree
+    path family_candidates
+    path motifs
+    path gene_structures
+    val domains
+
+    output:
+    path "tables/tree_feature_matrix.tsv"
+    path "plots/tree_features.pdf"
+    path "plots/tree_features.png"
+
+    script:
+    def domainArg = domains ? "--domains ${domains}" : ""
+    """
+    mkdir -p tables plots
+    python ${projectDir}/../bin/genefam/build_tree_feature_matrix.py \\
+      --tree ${phylogeny_tree} \\
+      --family-candidates ${family_candidates} \\
+      --motifs ${motifs} \\
+      --gene-structures ${gene_structures} \\
+      ${domainArg} \\
+      --out tables/tree_feature_matrix.tsv
+    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_tree_features.R --args tables/tree_feature_matrix.tsv plots
+    """
+}
+
 process PLOT_MCSCANX_CIRCLIZE {
     tag "plot MCScanX circlize"
     publishDir "${params.outdir}", mode: "copy", overwrite: true
@@ -120,6 +151,7 @@ process BUILD_PLOT_MANIFEST {
     """
     python ${projectDir}/../bin/genefam/build_plot_manifest.py \\
       --plot "family_counts=plots/family_counts.pdf=Family member counts by species" \\
+      --plot "tree_features=plots/tree_features.pdf=Tree, motif, gene-structure, and domain composite plot" \\
       --plot "ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs" \\
       --plot "expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap" \\
       --out plot_manifest.tsv
