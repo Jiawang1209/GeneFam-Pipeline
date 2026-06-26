@@ -86,6 +86,12 @@ process BUILD_STANDARD_REPORT_INDEX {
     val feature_summary_png
     val mcscanx_circlize_pdf
     val mcscanx_circlize_png
+    val ppi_edges
+    val ppi_nodes
+    val ppi_hubs
+    val ppi_ggnetview_status
+    val ppi_ggnetview_pdf
+    val ppi_ggnetview_png
     val family_expression
     path wgd_handoff_manifest
     path plot_manifest
@@ -120,6 +126,12 @@ process BUILD_STANDARD_REPORT_INDEX {
       --feature-summary-png "${feature_summary_png}" \\
       --mcscanx-circlize-pdf "${mcscanx_circlize_pdf}" \\
       --mcscanx-circlize-png "${mcscanx_circlize_png}" \\
+      --ppi-edges "${ppi_edges}" \\
+      --ppi-nodes "${ppi_nodes}" \\
+      --ppi-hubs "${ppi_hubs}" \\
+      --ppi-ggnetview-status "${ppi_ggnetview_status}" \\
+      --ppi-ggnetview-pdf "${ppi_ggnetview_pdf}" \\
+      --ppi-ggnetview-png "${ppi_ggnetview_png}" \\
       --family-expression "${family_expression}" \\
       --wgd-handoff-manifest ${wgd_handoff_manifest} \\
       --plot-manifest ${plot_manifest} \\

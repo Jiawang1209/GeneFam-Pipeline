@@ -1,0 +1,6 @@
+source	target	weight	species
+AT1G01010	AT1G01020	5	Arabidopsis_thaliana
+AT1G01010	AT1G01030	3	Arabidopsis_thaliana
+AT1G01020	AT1G01030	2	Arabidopsis_thaliana
+BraA010001	BraA010002	4	Brassica_rapa
+BraA010001	BraA010003	2	Brassica_rapa

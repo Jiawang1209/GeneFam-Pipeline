@@ -101,6 +101,12 @@ def test_standard_postprocess_module_extracts_family_sequences_and_report_index(
     assert '--feature-summary-png "${feature_summary_png}"' in module
     assert '--mcscanx-circlize-pdf "${mcscanx_circlize_pdf}"' in module
     assert '--mcscanx-circlize-png "${mcscanx_circlize_png}"' in module
+    assert '--ppi-edges "${ppi_edges}"' in module
+    assert '--ppi-nodes "${ppi_nodes}"' in module
+    assert '--ppi-hubs "${ppi_hubs}"' in module
+    assert '--ppi-ggnetview-status "${ppi_ggnetview_status}"' in module
+    assert '--ppi-ggnetview-pdf "${ppi_ggnetview_pdf}"' in module
+    assert '--ppi-ggnetview-png "${ppi_ggnetview_png}"' in module
     assert "--wgd-handoff-manifest ${wgd_handoff_manifest}" in module
     assert "--software-versions ${software_versions}" in module
     assert "--figure-interpretations ${figure_interpretations}" in module
@@ -147,6 +153,7 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "PLOT_FEATURE_SUMMARY;" in workflow
     assert "PLOT_TREE_FEATURES;" in workflow
     assert "PLOT_MCSCANX_CIRCLIZE;" in workflow
+    assert "PLOT_PPI_GGNETVIEW;" in workflow
     assert "COLLECT_SOFTWARE_VERSIONS" in workflow
     assert "BUILD_FIGURE_INTERPRETATIONS" in workflow
     assert "include { HMMER_SEARCH } from './modules/hmmer_search.nf'" in workflow
@@ -188,6 +195,9 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "PLOT_FEATURE_SUMMARY(" in workflow
     assert "if (asBooleanParam(params.run_mcscanx_circlize))" in workflow
     assert "PLOT_MCSCANX_CIRCLIZE(" in workflow
+    assert "if (asBooleanParam(params.run_ppi))" in workflow
+    assert 'error "Missing required parameter for --run_ppi true: --ppi_edges"' in workflow
+    assert "PLOT_PPI_GGNETVIEW(ppi_edges_input_ch, ppi_nodes_input_ch)" in workflow
     assert "PREPARE_ALIGNMENT_INPUTS(family_name_ch, EXTRACT_FAMILY_SEQUENCES.out, aligner_ch, alignment_outdir_ch)" in workflow
     assert "PREPARE_PHYLOGENY_INPUTS(PREPARE_ALIGNMENT_INPUTS.out, tree_builder_ch, phylogeny_outdir_ch)" in workflow
     assert "PLOT_FAMILY_COUNTS(FAMILY_SUMMARY.out)" in workflow
@@ -199,6 +209,7 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "PLOT_TREE_FEATURES.out[0]" in workflow
     assert "PLOT_TREE_FEATURES.out[1]" in workflow
     assert "PLOT_TREE_FEATURES.out[2]" in workflow
+    assert "ppi_ggnetview_pdf_ch" in workflow
     assert "BUILD_WGD_HANDOFF_MANIFEST.out" in workflow
     assert "ASSEMBLE_STANDARD_REPORT(project_name_ch, family_name_ch, BUILD_STANDARD_REPORT_INDEX.out, BUILD_RUN_CONFIG_SNAPSHOT.out, BUILD_PLOT_MANIFEST.out, COLLECT_SOFTWARE_VERSIONS.out, BUILD_FIGURE_INTERPRETATIONS.out[0])" in workflow
 
@@ -364,11 +375,23 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert 'path "tables/circlize_chromosomes.tsv"' in module
     assert 'path "plots/mcscanx_circlize.pdf"' in module
 
+    assert "process PLOT_PPI_GGNETVIEW" in module
+    assert "build_ppi_tables.py" in module
+    assert "plot_ppi_ggnetview.R" in module
+    assert "--edges ${ppi_edges}" in module
+    assert 'path "tables/ppi_edges.tsv"' in module
+    assert 'path "tables/ppi_nodes.tsv"' in module
+    assert 'path "tables/ppi_hubs.tsv"' in module
+    assert 'path "tables/ppi_ggnetview_status.tsv"' in module
+    assert 'path "plots/ppi_ggnetview.pdf"' in module
+    assert 'path "plots/ppi_ggnetview.png"' in module
+
     assert "process BUILD_PLOT_MANIFEST" in module
     assert 'publishDir "${params.outdir}/report", mode: "copy", overwrite: true' in module
     assert "build_plot_manifest.py" in module
     assert '--plot "family_counts=plots/family_counts.pdf=Family member counts by species"' in module
     assert '--plot "tree_features=plots/tree_features.pdf=Tree, motif, gene-structure, and domain composite plot"' in module
+    assert '--plot "ppi_ggnetview=plots/ppi_ggnetview.pdf=PPI network generated with ggNetView"' in module
     assert '--plot "ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs"' in module
     assert '--plot "expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap"' in module
     assert "--out plot_manifest.tsv" in module

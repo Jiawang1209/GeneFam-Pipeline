@@ -34,6 +34,67 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-26 23:28 - Add ggNetView PPI plotting module
+
+Context:
+- The active `/goal` requires `ggNetView` PPI visualization, not only dependency readiness.
+- The Reference PPI script builds edge/node annotations, derives hubs/modules, and renders `ppi_ggnetview.pdf`; GeneFam-Pipeline previously only checked whether `ggNetView` was installed.
+
+Decisions:
+- Add a reusable PPI table builder that normalizes edge tables, constructs node annotations, and ranks hub genes by weighted degree.
+- Keep PPI plotting explicitly based on `ggNetView`; if the package is missing, write `missing_dependency` status and explicit placeholder plots instead of silently using another network library.
+- Expose PPI as an optional standard-branch Nextflow module controlled by `--run_ppi true --ppi_edges <tsv> [--ppi_nodes <tsv>]`.
+- Add YAML/input-contract validation for `modules.ppi` with `ppi.edges` and optional `ppi.nodes`.
+
+Added:
+- `bin/genefam/build_ppi_tables.py`
+- `bin/genefam/run_ppi_ggnetview_plot_smoke.py`
+- `scripts/plot_ppi_ggnetview.R`
+- `tests/fixtures/ppi/ppi_edges.tsv`
+- `tests/fixtures/ppi/ppi_nodes.tsv`
+- `tests/test_build_ppi_tables.py`
+- `tests/test_run_ppi_ggnetview_plot_smoke.py`
+
+Modified:
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_release_checks.py`
+- `bin/genefam/validate_config.py`
+- `docs/input_contract.md`
+- `docs/reference_plotting_reuse.md`
+- `docs/release_audit.md`
+- `schemas/config.schema.yaml`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_validate_config.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/plots.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/nextflow.config`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_ppi_tables.py tests/test_run_ppi_ggnetview_plot_smoke.py -q` first failed because the PPI table builder did not exist, then passed after adding the builder, ggNetView plot script, and smoke runner.
+- `python -m pytest tests/test_validate_config.py tests/test_runtime_environment_files.py tests/test_build_ppi_tables.py tests/test_run_ppi_ggnetview_smoke.py tests/test_run_ppi_ggnetview_plot_smoke.py tests/test_standard_branch_report_index.py tests/test_workflow_modules.py tests/test_run_release_checks.py tests/test_release_audit_docs.py tests/test_reference_plotting_reuse.py -q` passed with 109 tests after adding YAML/input-contract validation and report wiring.
+- `/Users/liuyue/miniforge3/bin/conda run -n GeneFamilyFlow nextflow run workflows/main.nf -c workflows/nextflow.config -profile activated --config configs/example.config.yaml --groups configs/species_groups.yaml --run_identification true --use_hmmer true --use_diamond true --final_rule intersection --mock_external_tools true --standard_stop_after_family_candidates false --mock_evidence_dir tests/fixtures/mock_evidence --run_ppi true --ppi_edges tests/fixtures/ppi/ppi_edges.tsv --ppi_nodes tests/fixtures/ppi/ppi_nodes.tsv --outdir results/nextflow_standard_ppi_smoke` passed after rerunning through the full `GeneFamilyFlow` environment.
+- `grep -n "ppi_\|PPI\|ggNetView" results/nextflow_standard_ppi_smoke/report/report_index.tsv results/nextflow_standard_ppi_smoke/report/plot_manifest.tsv results/nextflow_standard_ppi_smoke/report/final_report.md results/nextflow_standard_ppi_smoke/report/figure_interpretations.tsv` confirmed PPI edge/node/hub/status tables, PDF/PNG plots, plot manifest, final report, software version table, and figure interpretation all include the PPI module.
+- `cat results/nextflow_standard_ppi_smoke/tables/ppi_ggnetview_status.tsv` reported `ppi_ggnetview_plot ready ggNetView 0.2.0`.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker/Apptainer remain unavailable, but improved the release matrix to `Passed: 36`, `Required failed: 1`, `Optional failed: 2`; both `PPI ggNetView smoke` and `PPI ggNetView plot smoke` passed.
+
+Commit:
+- hash: not created yet
+- message: feat: add ggnetview ppi plotting module
+- files: PPI table builder, ggNetView plot script, PPI smoke runner, fixtures, Nextflow standard PPI wiring, report index/docs/tests/history
+
+Next:
+- Backfill this commit hash after committing.
+- Continue paper-level visualization refinement with promoter cis-element category plots, copy-number/gene-family information summaries, and richer MCScanX/KaKs panels.
+
 ## 2026-06-26 23:06 - Add tree motif gene-structure domain composite plot
 
 Context:

@@ -64,6 +64,9 @@ def test_nextflow_config_has_container_profiles():
     assert "params.run_feature_summary = false" in config
     assert "params.run_mcscanx_circlize = false" in config
     assert "params.syntenic_pairs = null" in config
+    assert "params.run_ppi = false" in config
+    assert "params.ppi_edges = null" in config
+    assert "params.ppi_nodes = null" in config
     assert "params.mcscanx_collinearity = null" in config
     assert "params.kaks_results = null" in config
     assert "params.mcscanx_cds_a = null" in config
@@ -108,6 +111,8 @@ def test_input_contract_and_schema_document_identification_tool_flags():
         assert "identification.use_diamond" in text
         assert "at least one" in text
         assert "wgd_events.event_map" in text
+        assert "modules.ppi" in text
+        assert "ppi.edges" in text
         assert "duplicate WGD event names" in text
         assert "wgd_events.named_event_annotation requires modules.duplication_retention" in text
 

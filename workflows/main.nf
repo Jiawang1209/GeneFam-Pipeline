@@ -24,7 +24,7 @@ include {
 } from './modules/standard_postprocess.nf'
 include { MOCK_MVP } from './modules/mock_mvp.nf'
 include { ASSEMBLE_REPORT } from './modules/report.nf'
-include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; PLOT_FEATURE_SUMMARY; PLOT_TREE_FEATURES; PLOT_MCSCANX_CIRCLIZE; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
+include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; PLOT_FEATURE_SUMMARY; PLOT_TREE_FEATURES; PLOT_MCSCANX_CIRCLIZE; PLOT_PPI_GGNETVIEW; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
 include {
     PREPARE_ALIGNMENT_INPUTS;
     RUN_ALIGNMENT;
@@ -247,6 +247,26 @@ workflow {
                 mcscanx_circlize_pdf_ch = PLOT_MCSCANX_CIRCLIZE.out[3]
                 mcscanx_circlize_png_ch = PLOT_MCSCANX_CIRCLIZE.out[4]
             }
+            ppi_edges_ch = Channel.value("")
+            ppi_nodes_ch = Channel.value("")
+            ppi_hubs_ch = Channel.value("")
+            ppi_ggnetview_status_ch = Channel.value("")
+            ppi_ggnetview_pdf_ch = Channel.value("")
+            ppi_ggnetview_png_ch = Channel.value("")
+            if (asBooleanParam(params.run_ppi)) {
+                if (!params.ppi_edges) {
+                    error "Missing required parameter for --run_ppi true: --ppi_edges"
+                }
+                ppi_edges_input_ch = Channel.value(file(params.ppi_edges))
+                ppi_nodes_input_ch = Channel.value(params.ppi_nodes ? file(params.ppi_nodes) : "")
+                PLOT_PPI_GGNETVIEW(ppi_edges_input_ch, ppi_nodes_input_ch)
+                ppi_edges_ch = PLOT_PPI_GGNETVIEW.out[0]
+                ppi_nodes_ch = PLOT_PPI_GGNETVIEW.out[1]
+                ppi_hubs_ch = PLOT_PPI_GGNETVIEW.out[2]
+                ppi_ggnetview_status_ch = PLOT_PPI_GGNETVIEW.out[3]
+                ppi_ggnetview_pdf_ch = PLOT_PPI_GGNETVIEW.out[4]
+                ppi_ggnetview_png_ch = PLOT_PPI_GGNETVIEW.out[5]
+            }
             family_expression_report_ch = Channel.value("")
             if (params.expression_matrix) {
                 expression_matrix_ch = Channel.value(file(params.expression_matrix))
@@ -280,6 +300,12 @@ workflow {
                 feature_summary_png_ch,
                 mcscanx_circlize_pdf_ch,
                 mcscanx_circlize_png_ch,
+                ppi_edges_ch,
+                ppi_nodes_ch,
+                ppi_hubs_ch,
+                ppi_ggnetview_status_ch,
+                ppi_ggnetview_pdf_ch,
+                ppi_ggnetview_png_ch,
                 family_expression_report_ch,
                 BUILD_WGD_HANDOFF_MANIFEST.out,
                 BUILD_PLOT_MANIFEST.out,

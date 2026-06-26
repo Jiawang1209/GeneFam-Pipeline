@@ -29,6 +29,12 @@ def test_build_standard_report_index_marks_core_outputs_available():
             "feature_summary_png": "",
             "mcscanx_circlize_pdf": "",
             "mcscanx_circlize_png": "",
+            "ppi_edges": "",
+            "ppi_nodes": "",
+            "ppi_hubs": "",
+            "ppi_ggnetview_status": "",
+            "ppi_ggnetview_pdf": "",
+            "ppi_ggnetview_png": "",
             "family_expression": "",
             "wgd_handoff_manifest": "tables/wgd_handoff_manifest.tsv",
             "plot_manifest": "tables/plot_manifest.tsv",
@@ -63,6 +69,12 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "feature_summary_png",
         "mcscanx_circlize_pdf",
         "mcscanx_circlize_png",
+        "ppi_edges",
+        "ppi_nodes",
+        "ppi_hubs",
+        "ppi_ggnetview_status",
+        "ppi_ggnetview_pdf",
+        "ppi_ggnetview_png",
         "family_expression",
         "wgd_handoff_manifest",
         "software_versions",
@@ -72,6 +84,7 @@ def test_build_standard_report_index_marks_core_outputs_available():
     assert next(row for row in rows if row["key"] == "promoters_bed")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "feature_summary_pdf")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "mcscanx_circlize_pdf")["status"] == "missing"
+    assert next(row for row in rows if row["key"] == "ppi_ggnetview_pdf")["status"] == "missing"
 
 
 def test_published_paths_map_standard_outputs_to_user_results_tree():
@@ -100,6 +113,12 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
         "feature_summary_png": "",
         "mcscanx_circlize_pdf": "",
         "mcscanx_circlize_png": "",
+        "ppi_edges": "",
+        "ppi_nodes": "",
+        "ppi_hubs": "",
+        "ppi_ggnetview_status": "",
+        "ppi_ggnetview_pdf": "",
+        "ppi_ggnetview_png": "",
         "family_expression": "",
         "wgd_handoff_manifest": "results/nextflow_standard_smoke/standard/tables/wgd_handoff_manifest.tsv",
         "plot_manifest": "results/nextflow_standard_smoke/standard/report/plot_manifest.tsv",

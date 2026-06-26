@@ -32,6 +32,12 @@ DESCRIPTIONS = {
     "feature_summary_png": "Feature summary PNG plot",
     "mcscanx_circlize_pdf": "MCScanX syntenic-link circlize PDF plot",
     "mcscanx_circlize_png": "MCScanX syntenic-link circlize PNG plot",
+    "ppi_edges": "Normalized PPI edge table for ggNetView",
+    "ppi_nodes": "PPI node annotation and degree table",
+    "ppi_hubs": "Top PPI hub table ranked by weighted degree",
+    "ppi_ggnetview_status": "ggNetView PPI plotting status table",
+    "ppi_ggnetview_pdf": "PPI network PDF plot generated with ggNetView",
+    "ppi_ggnetview_png": "PPI network PNG plot generated with ggNetView",
     "family_expression": "Family member RNA-seq expression matrix",
     "wgd_handoff_manifest": "Standard-to-WGD handoff manifest for duplication and WGD event analysis",
     "plot_manifest": "Generated plot inventory",
@@ -46,6 +52,12 @@ OPTIONAL_KEYS = {
     "feature_summary_png",
     "mcscanx_circlize_pdf",
     "mcscanx_circlize_png",
+    "ppi_edges",
+    "ppi_nodes",
+    "ppi_hubs",
+    "ppi_ggnetview_status",
+    "ppi_ggnetview_pdf",
+    "ppi_ggnetview_png",
     "family_expression",
 }
 
@@ -68,6 +80,7 @@ def published_paths(
     promoter_available: bool = False,
     feature_summary_available: bool = False,
     mcscanx_circlize_available: bool = False,
+    ppi_available: bool = False,
 ) -> dict[str, str]:
     outdir = Path(published_outdir)
     return {
@@ -93,6 +106,12 @@ def published_paths(
         "feature_summary_png": str(outdir / "plots/feature_summary.png") if feature_summary_available else "",
         "mcscanx_circlize_pdf": str(outdir / "plots/mcscanx_circlize.pdf") if mcscanx_circlize_available else "",
         "mcscanx_circlize_png": str(outdir / "plots/mcscanx_circlize.png") if mcscanx_circlize_available else "",
+        "ppi_edges": str(outdir / "tables/ppi_edges.tsv") if ppi_available else "",
+        "ppi_nodes": str(outdir / "tables/ppi_nodes.tsv") if ppi_available else "",
+        "ppi_hubs": str(outdir / "tables/ppi_hubs.tsv") if ppi_available else "",
+        "ppi_ggnetview_status": str(outdir / "tables/ppi_ggnetview_status.tsv") if ppi_available else "",
+        "ppi_ggnetview_pdf": str(outdir / "plots/ppi_ggnetview.pdf") if ppi_available else "",
+        "ppi_ggnetview_png": str(outdir / "plots/ppi_ggnetview.png") if ppi_available else "",
         "family_expression": str(outdir / "tables/family_expression.tsv") if family_expression_available else "",
         "wgd_handoff_manifest": str(outdir / "tables/wgd_handoff_manifest.tsv"),
         "plot_manifest": str(outdir / "report/plot_manifest.tsv"),
@@ -129,6 +148,7 @@ def main() -> None:
             promoter_available=bool(paths["promoters_bed"] or paths["promoters_fasta"]),
             feature_summary_available=bool(paths["feature_summary"] or paths["feature_summary_pdf"] or paths["feature_summary_png"]),
             mcscanx_circlize_available=bool(paths["mcscanx_circlize_pdf"] or paths["mcscanx_circlize_png"]),
+            ppi_available=bool(paths["ppi_edges"] or paths["ppi_ggnetview_status"] or paths["ppi_ggnetview_pdf"]),
         )
     write_tsv(build_report_index(paths), args.out)
 

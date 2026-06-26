@@ -333,6 +333,20 @@ def test_validate_config_reports_expression_requires_matrix_path():
     assert "modules.expression requires expression.matrix" in errors
 
 
+def test_validate_config_reports_ppi_requires_edge_table_and_missing_paths():
+    config = _valid_base_config()
+    config["modules"]["ppi"] = True
+    errors = validate_config(config)
+
+    assert "modules.ppi requires ppi.edges" in errors
+
+    config["ppi"] = {"edges": "data/ppi/edges.tsv", "nodes": "data/ppi/nodes.tsv"}
+    errors = validate_config(config, check_paths=True)
+
+    assert "ppi.edges path does not exist: data/ppi/edges.tsv" in errors
+    assert "ppi.nodes path does not exist: data/ppi/nodes.tsv" in errors
+
+
 def test_validate_config_reports_phylogeny_and_motif_require_family_summary():
     config = _valid_base_config()
     config["modules"]["family_summary"] = False

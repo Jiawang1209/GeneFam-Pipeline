@@ -44,11 +44,12 @@ Later modules add more requirements:
 - `modules.kaks: true` requires `input.required.cds: true`.
 - `modules.chromosome_location: true` requires `input.required.gff3: true`.
 - `modules.expression: true` requires `expression.matrix`.
+- `modules.ppi: true` requires `ppi.edges`.
 - `modules.phylogeny: true` requires `modules.family_summary: true`.
 - `modules.motif: true` requires `modules.family_summary: true`.
 - `modules.duplication_retention: true` requires both `modules.synteny: true` and `modules.kaks: true`.
 
-Use `python bin/genefam/validate_config.py <config.yaml> --check-paths` before a real run to require configured runtime inputs to exist. This strict mode checks `input.root` or `input.manifest`, enabled HMMER profiles, DIAMOND reference peptides, and `expression.matrix` when present. The Nextflow entrypoint runs the same strict preflight through `workflows/modules/config_validation.nf` before species discovery or identification starts.
+Use `python bin/genefam/validate_config.py <config.yaml> --check-paths` before a real run to require configured runtime inputs to exist. This strict mode checks `input.root` or `input.manifest`, enabled HMMER profiles, DIAMOND reference peptides, `expression.matrix`, `ppi.edges`, and optional `ppi.nodes` when present. The Nextflow entrypoint runs the same strict preflight through `workflows/modules/config_validation.nf` before species discovery or identification starts.
 
 wgd_events.named_event_annotation requires modules.duplication_retention: true. When `wgd_events.named_event_annotation: true`, `wgd_events.event_map` is required. In strict `--check-paths` mode the event-map path must exist and duplicate WGD event names are rejected before the WGD branch interprets gamma, beta, alpha, theta, or custom labels.
 
@@ -143,6 +144,24 @@ AT1G01010 1.0 3.0 2.5
 ```
 
 It subsets the matrix to family member IDs before heatmap plotting.
+
+## PPI Network
+
+`bin/genefam/build_ppi_tables.py` expects a tab-separated PPI edge table:
+
+```text
+source target weight species
+AT1G01010 AT1G01020 5 Arabidopsis_thaliana
+```
+
+The optional node annotation table can add node type, species, and domain labels:
+
+```text
+node type species domain
+AT1G01010 GDSL Arabidopsis_thaliana PF00657
+```
+
+The PPI module writes normalized edge, node, and hub tables before `scripts/plot_ppi_ggnetview.R` renders `ppi_ggnetview.pdf/png` with `ggNetView`. If `ggNetView` is missing, the status table reports `missing_dependency` and the plot files are explicit placeholders rather than silent fallback plots.
 
 ## Motif Summary
 

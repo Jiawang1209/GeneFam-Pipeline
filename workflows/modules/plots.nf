@@ -140,6 +140,34 @@ process PLOT_MCSCANX_CIRCLIZE {
     """
 }
 
+process PLOT_PPI_GGNETVIEW {
+    tag "plot PPI ggNetView"
+    publishDir "${params.outdir}", mode: "copy", overwrite: true
+
+    input:
+    path ppi_edges
+    val ppi_nodes
+
+    output:
+    path "tables/ppi_edges.tsv"
+    path "tables/ppi_nodes.tsv"
+    path "tables/ppi_hubs.tsv"
+    path "tables/ppi_ggnetview_status.tsv"
+    path "plots/ppi_ggnetview.pdf"
+    path "plots/ppi_ggnetview.png"
+
+    script:
+    def nodesArg = ppi_nodes ? "--nodes ${ppi_nodes}" : ""
+    """
+    mkdir -p tables plots
+    python ${projectDir}/../bin/genefam/build_ppi_tables.py \\
+      --edges ${ppi_edges} \\
+      ${nodesArg} \\
+      --outdir tables
+    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_ppi_ggnetview.R --args tables/ppi_edges.tsv tables/ppi_nodes.tsv plots tables/ppi_ggnetview_status.tsv
+    """
+}
+
 process BUILD_PLOT_MANIFEST {
     tag "plot manifest"
     publishDir "${params.outdir}/report", mode: "copy", overwrite: true
@@ -152,6 +180,7 @@ process BUILD_PLOT_MANIFEST {
     python ${projectDir}/../bin/genefam/build_plot_manifest.py \\
       --plot "family_counts=plots/family_counts.pdf=Family member counts by species" \\
       --plot "tree_features=plots/tree_features.pdf=Tree, motif, gene-structure, and domain composite plot" \\
+      --plot "ppi_ggnetview=plots/ppi_ggnetview.pdf=PPI network generated with ggNetView" \\
       --plot "ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs" \\
       --plot "expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap" \\
       --out plot_manifest.tsv

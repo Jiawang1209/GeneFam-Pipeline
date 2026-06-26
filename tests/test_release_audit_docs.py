@@ -127,8 +127,18 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "run_synteny_smoke.py" in text
     assert "run_mcscanx_circlize_smoke.py" in text
     assert "run_ppi_ggnetview_smoke.py" in text
+    assert "run_ppi_ggnetview_plot_smoke.py" in text
+    assert "build_ppi_tables.py" in text
+    assert "plot_ppi_ggnetview.R" in text
+    assert "PLOT_PPI_GGNETVIEW" in text
     assert "results/ppi_ggnetview_smoke/ppi_ggnetview_smoke.tsv" in text
     assert "results/ppi_ggnetview_smoke/ppi_ggnetview_smoke.md" in text
+    assert "results/ppi_ggnetview_plot_smoke/tables/ppi_edges.tsv" in text
+    assert "results/ppi_ggnetview_plot_smoke/tables/ppi_nodes.tsv" in text
+    assert "results/ppi_ggnetview_plot_smoke/tables/ppi_hubs.tsv" in text
+    assert "results/ppi_ggnetview_plot_smoke/tables/ppi_ggnetview_status.tsv" in text
+    assert "results/ppi_ggnetview_plot_smoke/plots/ppi_ggnetview.pdf" in text
+    assert "results/ppi_ggnetview_plot_smoke/plots/ppi_ggnetview.png" in text
     assert "ggNetView" in text
     assert "missing_dependency" in text
     assert "build_circlize_inputs.py" in text
