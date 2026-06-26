@@ -182,10 +182,17 @@ def build_objective_audit(
             "Gene-family information, copy-number balance, pangenome class, expansion/contraction, protein-property summary plots, and Nextflow report evidence are exercised.",
         ),
         _achieved_if(
-            _all_passed(release, ["tree feature visualization smoke", "feature summary visualization smoke"]),
+            _all_passed(
+                release,
+                [
+                    "tree feature visualization smoke",
+                    "feature summary visualization smoke",
+                    "Nextflow standard visualization smoke",
+                ],
+            ),
             "tree motif gene-structure domain visualization",
-            "tree feature visualization smoke and feature summary visualization smoke",
-            "tree/motif/gene-structure/domain composite figures and large-family feature summary plots are exercised.",
+            "tree feature visualization smoke, feature summary visualization smoke, and Nextflow standard visualization smoke",
+            "tree/motif/gene-structure/domain composite figures, large-family feature summary plots, and Nextflow report evidence are exercised.",
         ),
         _achieved_if(
             _all_passed(

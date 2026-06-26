@@ -34,6 +34,48 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 07:14 - Require Nextflow report evidence for tree-feature audit
+
+Context:
+- The active `/goal` requires tree, motif, gene-structure, and domain composite figures to be connected to the formal Nextflow/YAML/report-index/final-report/release-check workflow.
+- The standard feature report already registered motif summary, gene-structure summary, tree-feature matrix, tree-feature PDF/PNG plots, and per-figure close reading.
+- The objective audit tree-feature row still treated standalone `tree feature visualization smoke` and `feature summary visualization smoke` as sufficient evidence.
+
+Decisions:
+- Keep `tree feature visualization smoke` and `feature summary visualization smoke` as module-level proof.
+- Require `Nextflow standard visualization smoke` as the formal report-integration proof for the `tree motif gene-structure domain visualization` objective row.
+- Make the objective audit note explicitly mention Nextflow report evidence for tree/motif/gene-structure/domain figures.
+
+Added:
+- Regression test that the tree/motif/gene-structure/domain objective row is missing when only the standalone tree-feature and feature-summary smokes are present.
+- Regression expectations that the achieved tree-feature objective row names `Nextflow standard visualization smoke` and `Nextflow report evidence`.
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+- `results/objective_audit/objective_audit.md`
+- `results/objective_audit/objective_audit.tsv`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_objective_audit_lists_named_paper_level_visualization_requirements tests/test_audit_objective_completion.py::test_tree_motif_gene_structure_domain_requires_nextflow_standard_visualization_smoke -q` first failed because the tree-feature row evidence only contained standalone tree/feature smokes and still marked standalone evidence as achieved.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 28 tests.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and the tree-feature row now lists `tree feature visualization smoke, feature summary visualization smoke, and Nextflow standard visualization smoke`.
+- `python -m pytest tests -q` passed with 388 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `rg -n "tree motif gene-structure domain visualization|Nextflow report evidence|tree_features|tree_feature_matrix|motif_summary|gene_structure_summary" results/objective_audit/objective_audit.md results/release_checks/release_checks.tsv results/nextflow_standard_feature_smoke/standard/report/report_index.tsv results/nextflow_standard_feature_smoke/standard/report/final_report.md` confirmed objective-audit, release-check, report-index, and final-report coverage.
+
+Commit:
+- hash: pending
+- message: `test: require nextflow evidence for tree feature audit`
+- files: objective audit tree-feature evidence rule, regression tests, refreshed objective audit outputs, and history entry.
+
+Next:
+- Continue tightening any remaining visualization or WGD rows whose standalone smoke evidence is stronger than the formal Nextflow report proof.
+
 ## 2026-06-27 07:08 - Require Nextflow report evidence for copy-number audit
 
 Context:
