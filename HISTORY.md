@@ -9784,7 +9784,7 @@ Verification:
 - `rg -n "chromosome and expression integration|Nextflow standard branch smoke|expression heatmap visualization smoke|formal Nextflow standard branch" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed the chromosome/expression integration row now names the formal Nextflow and heatmap evidence.
 
 Commit:
-- hash: pending
+- hash: 0d5c622425e9a61feeb3240f19f37eb60fa1bc4d
 - message: test: require nextflow heatmap evidence for chromosome expression audit
 - files: objective audit rule, objective audit tests, history
 
