@@ -80,7 +80,7 @@ Verification:
 - `rg -n -e "--run-promoter|promoters_bed|promoters_fasta|promoter extraction|promoters\\.bed|promoters\\.fa" results/release_checks/release_checks.tsv results/objective_audit/objective_audit.md results/nextflow_standard_feature_smoke/standard/report/report_index.tsv results/nextflow_standard_feature_smoke/standard/report/final_report.md` confirmed release-check, objective-audit, report-index, and final-report coverage.
 
 Commit:
-- hash: pending
+- hash: bed8f73ba0115140e8476d30a8ae55c68d666dc0
 - message: `test: wire promoter extraction into nextflow smoke`
 - files: standard Nextflow smoke runner, release checks, objective audit, species-bank genome fixtures, regression tests, and history entry.
 
