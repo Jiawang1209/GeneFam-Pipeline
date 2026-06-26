@@ -10,12 +10,18 @@ from pathlib import Path
 
 FIELDNAMES = ["check", "status", "evidence", "note"]
 REQUIRED_INTERPRETATION_FIELDS = [
+    "input_data",
+    "what_figure_shows",
+    "key_observations",
+    "biological_interpretation",
+    "qc_warnings",
     "qc_tables",
     "method_and_software",
     "reproducibility",
     "result_reading_status",
     "output_path",
 ]
+REPORT_EMBEDDED_INTERPRETATION_FIELDS = REQUIRED_INTERPRETATION_FIELDS
 
 
 def read_tsv(path: Path) -> list[dict[str, str]]:
@@ -140,7 +146,7 @@ def audit_publication_report(
         if not _report_contains(report_text, f"### {key}:"):
             missing_report_sections.append(f"figure:{key}")
     for row in detail_rows:
-        for field in ["qc_tables", "method_and_software", "reproducibility", "result_reading_status"]:
+        for field in REPORT_EMBEDDED_INTERPRETATION_FIELDS:
             value = row.get(field, "").strip()
             if value and not _report_contains(report_text, value):
                 missing_report_sections.append(f"{row.get('figure_key', 'unknown')}:{field}")
@@ -166,7 +172,7 @@ def audit_publication_report(
             "figure_interpretation_detail",
             not missing_details and bool(detail_rows),
             str(figure_interpretations),
-            "all figure interpretation rows include QC tables, method/software, reproducibility, status, and output path"
+            "all figure interpretation rows include close-reading text, QC tables, method/software, reproducibility, status, and output path"
             if not missing_details and detail_rows
             else "missing required interpretation details: " + ", ".join(missing_details or ["no interpretation rows"]),
         ),
@@ -180,7 +186,7 @@ def audit_publication_report(
             "final_report_embeds_publication_sections",
             not missing_report_sections,
             str(final_report),
-            "final report includes software versions and per-figure interpretation sections"
+            "final report includes software versions and complete per-figure interpretation sections"
             if not missing_report_sections
             else "missing report sections/details: " + ", ".join(missing_report_sections),
         ),

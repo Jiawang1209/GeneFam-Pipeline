@@ -34,6 +34,46 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 05:19 - Require complete figure close readings in final reports
+
+Context:
+- The active `/goal` requires the conclusion/final report to include close reading for every figure, not just a reference to a TSV.
+- The standard and WGD final reports already embedded `What the figure shows`, `Key observations`, `Biological interpretation`, and `QC warnings / limitations`, but publication audit only enforced QC tables, method/software, reproducibility, reading status, output path, and software versions.
+- A future regression could therefore keep a valid `figure_interpretations.tsv` while dropping the main figure-reading text from `final_report.md`.
+
+Decisions:
+- Treat the full per-figure close-reading schema as required publication evidence: input data, what the figure shows, key observations, biological interpretation, QC warnings, QC tables, method/software, reproducibility, reading status, and output path.
+- Reuse the existing `figure_interpretation_detail` and `final_report_embeds_publication_sections` audit rows so release checks keep the same compact shape.
+- Keep the real report assembly unchanged because the current standard and WGD reports already embed the complete close-reading text.
+
+Added:
+- Regression test proving publication audit fails when final report omits the core close-reading text even if `figure_interpretations.tsv` is complete.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `tests/test_audit_publication_report.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_requires_close_reading_text_embedded_in_final_report -q` first failed because final-report embedding did not check close-reading text; it passed after expanding the audit fields.
+- `python -m pytest tests/test_audit_publication_report.py -q` passed with 8 tests.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` exited 0 and reported `Passed: 5`, `Failed: 0`, `Complete: true`.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv --software-versions results/nextflow_wgd_smoke/wgd/report/software_versions.tsv --final-report results/nextflow_wgd_smoke/wgd/report/final_report.md --out-tsv results/publication_report_audit/wgd_publication_report_audit.tsv --out-md results/publication_report_audit/wgd_publication_report_audit.md` exited 0 and reported `Passed: 5`, `Failed: 0`, `Complete: true`.
+- `python -m pytest tests/test_audit_publication_report.py tests/test_run_release_checks.py::test_default_checks_include_publication_report_audit_after_visualization_report tests/test_run_release_checks.py::test_default_checks_include_wgd_publication_report_audit_after_wgd_smoke -q` passed with 10 tests.
+- `python -m pytest tests -q` passed with 374 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+
+Commit:
+- hash: pending
+- message: test: require complete figure readings in reports
+- files: publication report audit, audit tests, history
+
+Next:
+- Continue final MVP audit work across report polish and acceptance surfaces; Docker/Apptainer profile verification remains the final external runtime step.
+
 ## 2026-06-27 05:13 - Require software versions in final reports
 
 Context:

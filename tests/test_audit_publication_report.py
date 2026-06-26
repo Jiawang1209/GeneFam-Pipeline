@@ -100,15 +100,27 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
                 "| R | runtime | 4.4.0 | detected | /usr/local/bin/R --version |",
                 "## Figure Result Interpretations",
                 "### tree_features: Tree, motif, gene-structure, and domain composite",
+                "- Input data: tree and feature tables",
+                "- What the figure shows: tree-ordered feature tracks",
+                "- Key observations: clades share motif/domain architecture",
+                "- Biological interpretation: conserved clade features support structural conservation",
+                "- QC warnings / limitations: review missing feature rows",
                 "- QC tables: tables/tree_feature_matrix.tsv",
                 "- Method/software: FastTree; MAFFT; plot_tree_features.R; /usr/local/bin/R",
                 "- Reproducibility: python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
                 "- Result reading status: figure-specific close reading",
+                "- Output path: `plots/tree_features.pdf`",
                 "### ppi_ggnetview: PPI network generated with ggNetView",
+                "- Input data: PPI edges and nodes",
+                "- What the figure shows: network hubs and modules",
+                "- Key observations: hub genes are visible",
+                "- Biological interpretation: hub genes may identify interaction centers",
+                "- QC warnings / limitations: review interaction evidence",
                 "- QC tables: tables/ppi_network_qc.tsv",
                 "- Method/software: ggNetView; plot_ppi_ggnetview.R; /usr/local/bin/R",
                 "- Reproducibility: python bin/genefam/run_ppi_ggnetview_plot_smoke.py --r-bin /usr/local/bin/R --outdir results/ppi_ggnetview_plot_smoke",
                 "- Result reading status: figure-specific close reading",
+                "- Output path: `plots/ppi_ggnetview.pdf`",
             ]
         ),
         encoding="utf-8",
@@ -235,9 +247,26 @@ def test_publication_report_audit_cli_writes_markdown_and_tsv(tmp_path):
     _write_tsv(plot_manifest, ["plot_key", "path", "description"], [["family_counts", "plots/family_counts.pdf", "Counts"]])
     _write_tsv(
         figure_interpretations,
-        ["figure_key", "qc_tables", "method_and_software", "reproducibility", "result_reading_status", "output_path"],
+        [
+            "figure_key",
+            "input_data",
+            "what_figure_shows",
+            "key_observations",
+            "biological_interpretation",
+            "qc_warnings",
+            "qc_tables",
+            "method_and_software",
+            "reproducibility",
+            "result_reading_status",
+            "output_path",
+        ],
         [[
             "family_counts",
+            "Family member count table",
+            "Per-species member totals",
+            "Inspect expansion or contraction",
+            "High-copy species may indicate expansion",
+            "Smoke/demo data caveat",
             "tables/family_counts.tsv",
             "plot_family_counts.R; /usr/local/bin/R",
             "python bin/genefam/run_standard_smoke.py --outdir results/standard_smoke",
@@ -255,10 +284,16 @@ def test_publication_report_audit_cli_writes_markdown_and_tsv(tmp_path):
                 "| R | runtime | 4.4.0 | detected | /usr/local/bin/R --version |",
                 "## Figure Result Interpretations",
                 "### family_counts: Family copy number",
+                "- Input data: Family member count table",
+                "- What the figure shows: Per-species member totals",
+                "- Key observations: Inspect expansion or contraction",
+                "- Biological interpretation: High-copy species may indicate expansion",
+                "- QC warnings / limitations: Smoke/demo data caveat",
                 "- QC tables: tables/family_counts.tsv",
                 "- Method/software: plot_family_counts.R; /usr/local/bin/R",
                 "- Reproducibility: python bin/genefam/run_standard_smoke.py --outdir results/standard_smoke",
                 "- Result reading status: figure-specific close reading",
+                "- Output path: `plots/family_counts.pdf`",
             ]
         ),
         encoding="utf-8",
@@ -303,9 +338,26 @@ def test_publication_report_audit_requires_software_versions_embedded_in_final_r
     _write_tsv(plot_manifest, ["plot_key", "path", "description"], [["tree_features", "plots/tree_features.pdf", "Tree features"]])
     _write_tsv(
         figure_interpretations,
-        ["figure_key", "qc_tables", "method_and_software", "reproducibility", "result_reading_status", "output_path"],
+        [
+            "figure_key",
+            "input_data",
+            "what_figure_shows",
+            "key_observations",
+            "biological_interpretation",
+            "qc_warnings",
+            "qc_tables",
+            "method_and_software",
+            "reproducibility",
+            "result_reading_status",
+            "output_path",
+        ],
         [[
             "tree_features",
+            "tree and feature tables",
+            "tree-ordered feature tracks",
+            "clades share feature architecture",
+            "conserved clade features support structural conservation",
+            "review missing feature rows",
             "tables/tree_feature_matrix.tsv",
             "plot_tree_features.R; /usr/local/bin/R",
             "python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
@@ -350,6 +402,82 @@ def test_publication_report_audit_requires_software_versions_embedded_in_final_r
     assert "software_version:R:4.4.0" in by_check["final_report_embeds_publication_sections"]["note"]
 
 
+def test_publication_report_audit_requires_close_reading_text_embedded_in_final_report(tmp_path):
+    plot_manifest = tmp_path / "plot_manifest.tsv"
+    figure_interpretations = tmp_path / "figure_interpretations.tsv"
+    software_versions = tmp_path / "software_versions.tsv"
+    final_report = tmp_path / "final_report.md"
+    (tmp_path / "plots").mkdir()
+    (tmp_path / "plots/expression_heatmap.pdf").write_bytes(b"%PDF expression")
+
+    _write_tsv(plot_manifest, ["plot_key", "path", "description"], [["expression_heatmap", "plots/expression_heatmap.pdf", "Expression heatmap"]])
+    _write_tsv(
+        figure_interpretations,
+        [
+            "figure_key",
+            "title",
+            "input_data",
+            "what_figure_shows",
+            "key_observations",
+            "biological_interpretation",
+            "qc_warnings",
+            "qc_tables",
+            "method_and_software",
+            "reproducibility",
+            "result_reading_status",
+            "output_path",
+        ],
+        [[
+            "expression_heatmap",
+            "Expression heatmap",
+            "Family expression matrix and sample metadata",
+            "Expression variation among family members across samples",
+            "Co-expression clusters separate cold-response samples",
+            "Clustered expression supports candidate regulatory divergence",
+            "Review sample metadata and normalization before interpretation",
+            "tables/expression_gene_summary.tsv",
+            "plot_expression_heatmap.R; /usr/local/bin/R",
+            "python bin/genefam/run_expression_heatmap_smoke.py --r-bin /usr/local/bin/R --outdir results/expression_heatmap_smoke",
+            "figure-specific close reading",
+            "plots/expression_heatmap.pdf",
+        ]],
+    )
+    _write_tsv(software_versions, ["component", "kind", "version", "status", "source"], [["R", "runtime", "4.4.0", "detected", "/usr/local/bin/R --version"]])
+    final_report.write_text(
+        "\n".join(
+            [
+                "### Software Versions",
+                "| component | kind | version | status | source |",
+                "| --- | --- | --- | --- | --- |",
+                "| R | runtime | 4.4.0 | detected | /usr/local/bin/R --version |",
+                "## Figure Result Interpretations",
+                "### expression_heatmap: Expression heatmap",
+                "- QC tables: tables/expression_gene_summary.tsv",
+                "- Method/software: plot_expression_heatmap.R; /usr/local/bin/R",
+                "- Reproducibility: python bin/genefam/run_expression_heatmap_smoke.py --r-bin /usr/local/bin/R --outdir results/expression_heatmap_smoke",
+                "- Result reading status: figure-specific close reading",
+                "- Output path: `plots/expression_heatmap.pdf`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    rows = audit_publication_report(
+        plot_manifest=plot_manifest,
+        figure_interpretations=figure_interpretations,
+        software_versions=software_versions,
+        final_report=final_report,
+    )
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["figure_interpretation_detail"]["status"] == "passed"
+    assert by_check["final_report_embeds_publication_sections"]["status"] == "failed"
+    assert "expression_heatmap:what_figure_shows" in by_check["final_report_embeds_publication_sections"]["note"]
+    assert "expression_heatmap:key_observations" in by_check["final_report_embeds_publication_sections"]["note"]
+    assert "expression_heatmap:biological_interpretation" in by_check["final_report_embeds_publication_sections"]["note"]
+    assert "expression_heatmap:qc_warnings" in by_check["final_report_embeds_publication_sections"]["note"]
+
+
 def test_publication_report_audit_flags_template_guided_reading_status(tmp_path):
     plot_manifest = tmp_path / "plot_manifest.tsv"
     figure_interpretations = tmp_path / "figure_interpretations.tsv"
@@ -361,9 +489,26 @@ def test_publication_report_audit_flags_template_guided_reading_status(tmp_path)
     _write_tsv(plot_manifest, ["plot_key", "path", "description"], [["tree_features", "plots/tree_features.pdf", "Tree features"]])
     _write_tsv(
         figure_interpretations,
-        ["figure_key", "qc_tables", "method_and_software", "reproducibility", "result_reading_status", "output_path"],
+        [
+            "figure_key",
+            "input_data",
+            "what_figure_shows",
+            "key_observations",
+            "biological_interpretation",
+            "qc_warnings",
+            "qc_tables",
+            "method_and_software",
+            "reproducibility",
+            "result_reading_status",
+            "output_path",
+        ],
         [[
             "tree_features",
+            "tree and feature tables",
+            "tree-ordered feature tracks",
+            "clades share feature architecture",
+            "conserved clade features support structural conservation",
+            "review missing feature rows",
             "tables/tree_feature_matrix.tsv",
             "plot_tree_features.R; /usr/local/bin/R",
             "python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
@@ -376,11 +521,20 @@ def test_publication_report_audit_flags_template_guided_reading_status(tmp_path)
         "\n".join(
             [
                 "### Software Versions",
+                "| component | kind | version | status | source |",
+                "| --- | --- | --- | --- | --- |",
+                "| R | runtime | 4.4.0 | detected | /usr/local/bin/R --version |",
                 "## Figure Result Interpretations",
                 "### tree_features: Tree features",
+                "- Input data: tree and feature tables",
+                "- What the figure shows: tree-ordered feature tracks",
+                "- Key observations: clades share feature architecture",
+                "- Biological interpretation: conserved clade features support structural conservation",
+                "- QC warnings / limitations: review missing feature rows",
                 "- QC tables: tables/tree_feature_matrix.tsv",
                 "- Method/software: plot_tree_features.R; /usr/local/bin/R",
                 "- Reproducibility: python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
+                "- Output path: `plots/tree_features.pdf`",
             ]
         ),
         encoding="utf-8",
@@ -410,9 +564,26 @@ def test_publication_report_audit_requires_reading_status_embedded_in_final_repo
     _write_tsv(plot_manifest, ["plot_key", "path", "description"], [["tree_features", "plots/tree_features.pdf", "Tree features"]])
     _write_tsv(
         figure_interpretations,
-        ["figure_key", "qc_tables", "method_and_software", "reproducibility", "result_reading_status", "output_path"],
+        [
+            "figure_key",
+            "input_data",
+            "what_figure_shows",
+            "key_observations",
+            "biological_interpretation",
+            "qc_warnings",
+            "qc_tables",
+            "method_and_software",
+            "reproducibility",
+            "result_reading_status",
+            "output_path",
+        ],
         [[
             "tree_features",
+            "tree and feature tables",
+            "tree-ordered feature tracks",
+            "clades share feature architecture",
+            "conserved clade features support structural conservation",
+            "review missing feature rows",
             "tables/tree_feature_matrix.tsv",
             "plot_tree_features.R; /usr/local/bin/R",
             "python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
@@ -425,11 +596,20 @@ def test_publication_report_audit_requires_reading_status_embedded_in_final_repo
         "\n".join(
             [
                 "### Software Versions",
+                "| component | kind | version | status | source |",
+                "| --- | --- | --- | --- | --- |",
+                "| R | runtime | 4.4.0 | detected | /usr/local/bin/R --version |",
                 "## Figure Result Interpretations",
                 "### tree_features: Tree features",
+                "- Input data: tree and feature tables",
+                "- What the figure shows: tree-ordered feature tracks",
+                "- Key observations: clades share feature architecture",
+                "- Biological interpretation: conserved clade features support structural conservation",
+                "- QC warnings / limitations: review missing feature rows",
                 "- QC tables: tables/tree_feature_matrix.tsv",
                 "- Method/software: plot_tree_features.R; /usr/local/bin/R",
                 "- Reproducibility: python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
+                "- Output path: `plots/tree_features.pdf`",
             ]
         ),
         encoding="utf-8",
