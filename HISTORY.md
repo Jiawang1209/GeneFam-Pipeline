@@ -6824,6 +6824,51 @@ Commit:
 Next:
 - Continue toward the final container/Apptainer reproducibility stage once local runtimes are available.
 
+## 2026-06-27 - Add publication report audit to local acceptance summary
+
+Timestamp:
+- 2026-06-27 03:06:22 CST
+
+Context:
+- `publication_report_audit` was visible in release checks and the delivery bundle, but the compact local acceptance summary still only showed release, quickstart, and delivery bundle steps.
+- The active `/goal` requires a perfect MVP handoff, so the local one-command acceptance surface should show the paper-style report closure evidence directly.
+
+Decisions:
+- Add a `publication_report_audit` row to local acceptance summaries.
+- Keep release gate as the source of truth, and have `scripts/run_local_acceptance.sh` read the `publication report audit` exit code from `release_checks.tsv`.
+- Expose `PUBLICATION_OUTDIR`, defaulting to `results/publication_report_audit`, for local acceptance wrapper customization.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/write_local_acceptance_summary.py`
+- `scripts/run_local_acceptance.sh`
+- `tests/test_local_acceptance_script.py`
+- `tests/test_write_local_acceptance_summary.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_write_local_acceptance_summary.py -q` first failed because `write_acceptance_summary()` and `build_acceptance_rows()` did not accept publication audit arguments.
+- `python -m pytest tests/test_local_acceptance_script.py -q` first failed because `scripts/run_local_acceptance.sh` did not expose `PUBLICATION_OUTDIR`, pass publication audit status, or print the publication audit artifact.
+- `python -m pytest tests/test_write_local_acceptance_summary.py tests/test_local_acceptance_script.py -q` passed after adding the local acceptance row and shell wiring.
+- `python bin/genefam/write_local_acceptance_summary.py --release-status 0 --publication-status 0 --quickstart-status 0 --delivery-status 0 --release-outdir results/release_checks --publication-outdir results/publication_report_audit --quickstart-outdir results/quickstart --delivery-outdir results/delivery_bundle --outdir results/local_acceptance` regenerated local acceptance outputs with `publication_report_audit`.
+- `python -m pytest tests -q` passed with 356 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `0`; `results/release_checks/release_checks.md` reports `Passed: 44`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `results/local_acceptance/local_acceptance_summary.tsv` now includes `publication_report_audit	passed	0	results/publication_report_audit/publication_report_audit.md	paper-style report closure evidence`.
+- `results/handoff/handoff_summary.tsv` still reports `analysis_release_ready=true; final_stage_blockers=Docker/Apptainer reproducibility`.
+
+Commit:
+- hash: pending
+- message: pending
+- files: local acceptance summary writer, local acceptance wrapper script, tests, history
+
+Next:
+- Continue toward the final container/Apptainer reproducibility stage once local runtimes are available.
+
 ## 2026-06-27 - Surface publication report audit in delivery bundle
 
 Timestamp:

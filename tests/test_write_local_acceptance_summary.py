@@ -12,9 +12,11 @@ def test_write_local_acceptance_summary_records_step_statuses(tmp_path):
 
     write_acceptance_summary(
         release_status=1,
+        publication_status=0,
         quickstart_status=0,
         delivery_status=0,
         release_outdir=Path("results/release_checks"),
+        publication_outdir=Path("results/publication_report_audit"),
         quickstart_outdir=Path("results/quickstart"),
         delivery_outdir=Path("results/delivery_bundle"),
         outdir=outdir,
@@ -30,6 +32,13 @@ def test_write_local_acceptance_summary_records_step_statuses(tmp_path):
             "exit_code": "1",
             "path": "results/release_checks/release_checks.md",
             "note": "required release gate and objective evidence",
+        },
+        {
+            "step": "publication_report_audit",
+            "status": "passed",
+            "exit_code": "0",
+            "path": "results/publication_report_audit/publication_report_audit.md",
+            "note": "paper-style report closure evidence",
         },
         {
             "step": "quickstart_handoff",
@@ -50,15 +59,18 @@ def test_write_local_acceptance_summary_records_step_statuses(tmp_path):
     markdown = (outdir / "local_acceptance_summary.md").read_text(encoding="utf-8")
     assert "Overall status: failed" in markdown
     assert "results/release_checks/release_checks.md" in markdown
+    assert "results/publication_report_audit/publication_report_audit.md" in markdown
     assert "results/delivery_bundle/delivery_bundle.md" in markdown
 
 
 def test_build_acceptance_rows_reports_all_passed_status():
     rows = build_acceptance_rows(
         release_status=0,
+        publication_status=0,
         quickstart_status=0,
         delivery_status=0,
         release_outdir=Path("release"),
+        publication_outdir=Path("publication"),
         quickstart_outdir=Path("quickstart"),
         delivery_outdir=Path("delivery"),
     )
@@ -66,6 +78,7 @@ def test_build_acceptance_rows_reports_all_passed_status():
     assert {row.status for row in rows} == {"passed"}
     assert [row.path for row in rows] == [
         Path("release/release_checks.md"),
+        Path("publication/publication_report_audit.md"),
         Path("quickstart/quickstart_summary.md"),
         Path("delivery/delivery_bundle.md"),
     ]

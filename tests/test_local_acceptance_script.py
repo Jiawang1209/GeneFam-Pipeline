@@ -10,6 +10,7 @@ def test_local_acceptance_script_runs_release_gate_and_quickstart():
     assert "PYTHON_BIN=${PYTHON_BIN:-python}" in text
     assert "CONDA_ENV=${CONDA_ENV:-GeneFamilyFlow}" in text
     assert "RELEASE_OUTDIR=${RELEASE_OUTDIR:-results/release_checks}" in text
+    assert "PUBLICATION_OUTDIR=${PUBLICATION_OUTDIR:-results/publication_report_audit}" in text
     assert "QUICKSTART_OUTDIR=${QUICKSTART_OUTDIR:-results/quickstart}" in text
     assert "DELIVERY_OUTDIR=${DELIVERY_OUTDIR:-results/delivery_bundle}" in text
     assert "ACCEPTANCE_OUTDIR=${ACCEPTANCE_OUTDIR:-results/local_acceptance}" in text
@@ -17,6 +18,11 @@ def test_local_acceptance_script_runs_release_gate_and_quickstart():
     assert "bin/genefam/run_quickstart.py" in text
     assert "bin/genefam/run_delivery_bundle.py" in text
     assert "bin/genefam/write_local_acceptance_summary.py" in text
+    assert "publication_status=" in text
+    assert "publication report audit" in text
+    assert "--publication-status \"$publication_status\"" in text
+    assert "--publication-outdir \"$PUBLICATION_OUTDIR\"" in text
+    assert "Publication report audit exited with status ${publication_status}." in text
     assert "--conda-env \"$CONDA_ENV\"" in text
     assert "--quickstart \"$QUICKSTART_OUTDIR/quickstart_summary.tsv\"" in text
     assert "--outdir \"$DELIVERY_OUTDIR\"" in text
@@ -30,8 +36,10 @@ def test_local_acceptance_script_runs_release_gate_and_quickstart():
     assert "results/handoff/handoff_report.md" in text
     assert "${DELIVERY_OUTDIR}/delivery_manifest.tsv" in text
     assert "${DELIVERY_OUTDIR}/delivery_bundle.md" in text
+    assert "${PUBLICATION_OUTDIR}/publication_report_audit.md" in text
     assert "${ACCEPTANCE_OUTDIR}/local_acceptance_summary.tsv" in text
     assert "${ACCEPTANCE_OUTDIR}/local_acceptance_summary.md" in text
+    assert 'if [ "$publication_status" -ne 0 ]; then' in text
 
 
 def test_quickstart_mentions_local_acceptance_script():

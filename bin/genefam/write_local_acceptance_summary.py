@@ -25,9 +25,11 @@ def _status_label(exit_code: int) -> str:
 def build_acceptance_rows(
     *,
     release_status: int,
+    publication_status: int,
     quickstart_status: int,
     delivery_status: int,
     release_outdir: Path,
+    publication_outdir: Path,
     quickstart_outdir: Path,
     delivery_outdir: Path,
 ) -> list[AcceptanceRow]:
@@ -38,6 +40,13 @@ def build_acceptance_rows(
             exit_code=release_status,
             path=release_outdir / "release_checks.md",
             note="required release gate and objective evidence",
+        ),
+        AcceptanceRow(
+            step="publication_report_audit",
+            status=_status_label(publication_status),
+            exit_code=publication_status,
+            path=publication_outdir / "publication_report_audit.md",
+            note="paper-style report closure evidence",
         ),
         AcceptanceRow(
             step="quickstart_handoff",
@@ -59,9 +68,11 @@ def build_acceptance_rows(
 def write_acceptance_summary(
     *,
     release_status: int,
+    publication_status: int,
     quickstart_status: int,
     delivery_status: int,
     release_outdir: Path,
+    publication_outdir: Path,
     quickstart_outdir: Path,
     delivery_outdir: Path,
     outdir: Path,
@@ -69,9 +80,11 @@ def write_acceptance_summary(
     outdir.mkdir(parents=True, exist_ok=True)
     rows = build_acceptance_rows(
         release_status=release_status,
+        publication_status=publication_status,
         quickstart_status=quickstart_status,
         delivery_status=delivery_status,
         release_outdir=release_outdir,
+        publication_outdir=publication_outdir,
         quickstart_outdir=quickstart_outdir,
         delivery_outdir=delivery_outdir,
     )
@@ -118,9 +131,11 @@ def write_acceptance_summary(
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--release-status", type=int, required=True)
+    parser.add_argument("--publication-status", type=int, required=True)
     parser.add_argument("--quickstart-status", type=int, required=True)
     parser.add_argument("--delivery-status", type=int, required=True)
     parser.add_argument("--release-outdir", type=Path, required=True)
+    parser.add_argument("--publication-outdir", type=Path, required=True)
     parser.add_argument("--quickstart-outdir", type=Path, required=True)
     parser.add_argument("--delivery-outdir", type=Path, required=True)
     parser.add_argument("--outdir", type=Path, required=True)
@@ -131,9 +146,11 @@ def main() -> int:
     args = parse_args()
     write_acceptance_summary(
         release_status=args.release_status,
+        publication_status=args.publication_status,
         quickstart_status=args.quickstart_status,
         delivery_status=args.delivery_status,
         release_outdir=args.release_outdir,
+        publication_outdir=args.publication_outdir,
         quickstart_outdir=args.quickstart_outdir,
         delivery_outdir=args.delivery_outdir,
         outdir=args.outdir,

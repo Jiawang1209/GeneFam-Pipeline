@@ -5,6 +5,7 @@ set -u
 PYTHON_BIN=${PYTHON_BIN:-python}
 CONDA_ENV=${CONDA_ENV:-GeneFamilyFlow}
 RELEASE_OUTDIR=${RELEASE_OUTDIR:-results/release_checks}
+PUBLICATION_OUTDIR=${PUBLICATION_OUTDIR:-results/publication_report_audit}
 QUICKSTART_OUTDIR=${QUICKSTART_OUTDIR:-results/quickstart}
 DELIVERY_OUTDIR=${DELIVERY_OUTDIR:-results/delivery_bundle}
 ACCEPTANCE_OUTDIR=${ACCEPTANCE_OUTDIR:-results/local_acceptance}
@@ -12,6 +13,22 @@ ACCEPTANCE_OUTDIR=${ACCEPTANCE_OUTDIR:-results/local_acceptance}
 echo "[GeneFam] Running release gate into ${RELEASE_OUTDIR}"
 "$PYTHON_BIN" bin/genefam/run_release_checks.py --outdir "$RELEASE_OUTDIR"
 release_status=$?
+publication_status=$("$PYTHON_BIN" - "$RELEASE_OUTDIR/release_checks.tsv" <<'PY'
+import csv
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+if not path.exists():
+    raise SystemExit(1)
+with path.open("r", encoding="utf-8", newline="") as handle:
+    for row in csv.DictReader(handle, delimiter="\t"):
+        if row.get("check") == "publication report audit":
+            raise SystemExit(int(row.get("exit_code") or 1))
+raise SystemExit(1)
+PY
+)
+publication_status=$?
 
 echo "[GeneFam] Running quickstart handoff into ${QUICKSTART_OUTDIR}"
 "$PYTHON_BIN" bin/genefam/run_quickstart.py \
@@ -31,9 +48,11 @@ delivery_status=$?
 echo "[GeneFam] Writing local acceptance summary into ${ACCEPTANCE_OUTDIR}"
 "$PYTHON_BIN" bin/genefam/write_local_acceptance_summary.py \
   --release-status "$release_status" \
+  --publication-status "$publication_status" \
   --quickstart-status "$quickstart_status" \
   --delivery-status "$delivery_status" \
   --release-outdir "$RELEASE_OUTDIR" \
+  --publication-outdir "$PUBLICATION_OUTDIR" \
   --quickstart-outdir "$QUICKSTART_OUTDIR" \
   --delivery-outdir "$DELIVERY_OUTDIR" \
   --outdir "$ACCEPTANCE_OUTDIR"
@@ -54,6 +73,7 @@ echo "- results/handoff/handoff_summary.tsv"
 echo "- ${DELIVERY_OUTDIR}/delivery_manifest.tsv"
 echo "- ${DELIVERY_OUTDIR}/delivery_bundle.md"
 echo "- ${RELEASE_OUTDIR}/release_checks.md"
+echo "- ${PUBLICATION_OUTDIR}/publication_report_audit.md"
 echo "- ${QUICKSTART_OUTDIR}/quickstart_summary.md"
 echo "- ${ACCEPTANCE_OUTDIR}/local_acceptance_summary.tsv"
 echo "- ${ACCEPTANCE_OUTDIR}/local_acceptance_summary.md"
@@ -61,6 +81,10 @@ echo "- ${ACCEPTANCE_OUTDIR}/local_acceptance_summary.md"
 if [ "$release_status" -ne 0 ]; then
   echo "[GeneFam] Release gate exited with status ${release_status}."
   echo "[GeneFam] Inspect results/handoff/handoff_report.md for blockers."
+fi
+
+if [ "$publication_status" -ne 0 ]; then
+  echo "[GeneFam] Publication report audit exited with status ${publication_status}."
 fi
 
 if [ "$quickstart_status" -ne 0 ]; then
@@ -81,6 +105,10 @@ fi
 
 if [ "$release_status" -ne 0 ]; then
   exit "$release_status"
+fi
+
+if [ "$publication_status" -ne 0 ]; then
+  exit "$publication_status"
 fi
 
 if [ "$quickstart_status" -ne 0 ]; then
