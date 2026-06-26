@@ -440,6 +440,33 @@ def test_yaml_driven_species_selection_requires_species_selection_smokes():
     assert "species manifest selection smoke" in by_requirement["YAML-driven species selection"]["evidence"]
 
 
+def test_yaml_driven_species_selection_requires_nextflow_manifest_standard_smoke():
+    release_rows = [
+        _release_row("validate example config"),
+        _release_row("validate advanced config"),
+        _release_row("validate manifest config"),
+        _release_row("species selection smoke"),
+        _release_row("species manifest selection smoke"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["YAML-driven species selection"]["status"] == "missing"
+    assert "Nextflow standard manifest smoke" in by_requirement["YAML-driven species selection"]["evidence"]
+
+
 def test_history_and_reference_governance_requires_reference_audit():
     release_rows = [
         _release_row("pytest"),

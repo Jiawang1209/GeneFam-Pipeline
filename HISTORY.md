@@ -9750,6 +9750,46 @@ Commit:
 Next:
 - Keep Docker/Apptainer runtime verification as the remaining final-stage external blocker; continue polishing Reference-level figure fidelity where useful.
 
+## 2026-06-27 - Require manifest Nextflow evidence for YAML species selection audit
+
+Timestamp:
+- 2026-06-27 07:56 CST
+
+Context:
+- The active MVP goal requires YAML-driven species selection from large species directories and manifest-style inputs.
+- `Nextflow DSL2 workflow` already required `Nextflow standard manifest smoke`, but `YAML-driven species selection` could still be achieved with only config validation and Python species-selection smokes.
+
+Decisions:
+- Require `Nextflow standard manifest smoke` for the `YAML-driven species selection` objective row.
+- Update the YAML species-selection evidence and note so manifest-mode Nextflow standard runs are explicitly part of the YAML-driven input contract.
+
+Added:
+- Regression test proving `YAML-driven species selection` remains `missing` when manifest-mode Nextflow standard evidence is absent.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_yaml_driven_species_selection_requires_nextflow_manifest_standard_smoke -q` first failed with the old rule because YAML-driven species selection was `achieved` without `Nextflow standard manifest smoke`.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 35 tests after implementation.
+- `python -m pytest tests -q` passed with 395 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 45`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` passed and reported `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+- `rg -n "YAML-driven species selection|Nextflow standard manifest smoke|manifest-mode Nextflow" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed the YAML species-selection row now names manifest-mode Nextflow standard evidence.
+
+Commit:
+- hash: pending
+- message: test: require manifest nextflow evidence for yaml audit
+- files: objective audit rule, objective audit tests, history
+
+Next:
+- Continue final MVP hardening with Docker/Apptainer packaging still intentionally deferred to the final runtime stage.
+
 ## 2026-06-27 - Require alignment phylogeny evidence for standard branch audit
 
 Timestamp:
