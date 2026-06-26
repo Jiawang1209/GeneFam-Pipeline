@@ -56,6 +56,7 @@ def expected_published_outputs(
     standard_outdir: Path,
     feature_summary: bool = False,
     mcscanx_circlize: bool = False,
+    promoter: bool = False,
     promoter_cis: bool = False,
     ppi: bool = False,
     expression: bool = False,
@@ -104,6 +105,13 @@ def expected_published_outputs(
                 standard_outdir / "tables/circlize_skipped_links.tsv",
                 standard_outdir / "plots/mcscanx_circlize.pdf",
                 standard_outdir / "plots/mcscanx_circlize.png",
+            ]
+        )
+    if promoter:
+        outputs.extend(
+            [
+                standard_outdir / "tables/promoters.bed",
+                standard_outdir / "sequences/promoters.fa",
             ]
         )
     if promoter_cis:
@@ -167,6 +175,7 @@ def build_nextflow_command(
     run_feature_summary: bool | str = False,
     run_mcscanx_circlize: bool | str = False,
     syntenic_pairs: str | None = None,
+    run_promoter: bool | str = False,
     run_promoter_cis: bool | str = False,
     promoter_cis_elements: str | None = None,
     run_ppi: bool | str = False,
@@ -207,6 +216,8 @@ def build_nextflow_command(
             _bool_param(run_feature_summary),
             "--run_mcscanx_circlize",
             _bool_param(run_mcscanx_circlize),
+            "--run_promoter",
+            _bool_param(run_promoter),
             "--run_promoter_cis",
             _bool_param(run_promoter_cis),
             "--run_ppi",
@@ -271,6 +282,7 @@ def run_nextflow_standard_smoke(
     run_feature_summary: bool | str = False,
     run_mcscanx_circlize: bool | str = False,
     syntenic_pairs: str | None = None,
+    run_promoter: bool | str = False,
     run_promoter_cis: bool | str = False,
     promoter_cis_elements: str | None = None,
     run_ppi: bool | str = False,
@@ -294,6 +306,7 @@ def run_nextflow_standard_smoke(
         run_feature_summary=run_feature_summary,
         run_mcscanx_circlize=run_mcscanx_circlize,
         syntenic_pairs=syntenic_pairs,
+        run_promoter=run_promoter,
         run_promoter_cis=run_promoter_cis,
         promoter_cis_elements=promoter_cis_elements,
         run_ppi=run_ppi,
@@ -325,6 +338,7 @@ def run_nextflow_standard_smoke(
             standard_outdir,
             feature_summary=_bool_param(run_feature_summary) == "true",
             mcscanx_circlize=_bool_param(run_mcscanx_circlize) == "true",
+            promoter=_bool_param(run_promoter) == "true",
             promoter_cis=_bool_param(run_promoter_cis) == "true",
             ppi=_bool_param(run_ppi) == "true",
             expression=bool(expression_matrix),
@@ -360,6 +374,7 @@ def main() -> None:
     parser.add_argument("--run-feature-summary", action="store_true")
     parser.add_argument("--run-mcscanx-circlize", action="store_true")
     parser.add_argument("--syntenic-pairs", default=None)
+    parser.add_argument("--run-promoter", action="store_true")
     parser.add_argument("--run-promoter-cis", action="store_true")
     parser.add_argument("--promoter-cis-elements", default=None)
     parser.add_argument("--run-ppi", action="store_true")
@@ -378,6 +393,7 @@ def main() -> None:
         run_feature_summary=args.run_feature_summary,
         run_mcscanx_circlize=args.run_mcscanx_circlize,
         syntenic_pairs=args.syntenic_pairs,
+        run_promoter=args.run_promoter,
         run_promoter_cis=args.run_promoter_cis,
         promoter_cis_elements=args.promoter_cis_elements,
         run_ppi=args.run_ppi,

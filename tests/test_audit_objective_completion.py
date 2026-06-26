@@ -47,6 +47,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
         _release_row("promoter cis-element visualization smoke"),
         _release_row("tree feature visualization smoke"),
         _release_row("MCScanX circlize visualization smoke"),
+        _release_row("Nextflow standard visualization smoke"),
         _release_row("PPI ggNetView plot smoke"),
         _release_row("standard branch expression smoke"),
         _release_row("expression heatmap visualization smoke"),
@@ -202,6 +203,8 @@ def test_objective_audit_lists_named_paper_level_visualization_requirements():
     assert "copy-number" in by_requirement["gene family information and copy-number visualization"]["note"]
     assert "tree/motif/gene-structure/domain" in by_requirement["tree motif gene-structure domain visualization"]["note"]
     assert "MCScanX" in by_requirement["MCScanX synteny circlize visualization"]["note"]
+    assert "Nextflow standard visualization smoke" in by_requirement["promoter cis-element visualization"]["evidence"]
+    assert "promoter extraction" in by_requirement["promoter cis-element visualization"]["note"]
     assert "promoter cis-element" in by_requirement["promoter cis-element visualization"]["note"]
     assert "RNA-seq" in by_requirement["expression heatmap visualization"]["note"]
     assert "ggNetView" in by_requirement["PPI ggNetView visualization"]["note"]

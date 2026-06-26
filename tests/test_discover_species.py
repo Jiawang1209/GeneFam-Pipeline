@@ -30,7 +30,22 @@ def test_discover_species_filters_include_list():
     assert rows[0]["pep"].endswith("Arabidopsis_thaliana.pep.fa")
     assert rows[0]["gff3"].endswith("Arabidopsis_thaliana.gff3")
     assert rows[0]["cds"] == ""
-    assert rows[0]["genome"] == ""
+    assert rows[0]["genome"].endswith("Arabidopsis_thaliana.genome.fa")
+
+
+def test_example_species_bank_exposes_genome_paths_for_promoter_extraction():
+    rows = discover_species(
+        root=Path("tests/fixtures/species_bank"),
+        include=["Arabidopsis_thaliana", "Brassica_rapa"],
+        exclude=[],
+        patterns=PATTERNS,
+        required={**REQUIRED, "genome": True},
+    )
+
+    genomes = {row["species_id"]: row["genome"] for row in rows}
+
+    assert genomes["Arabidopsis_thaliana"].endswith("Arabidopsis_thaliana.genome.fa")
+    assert genomes["Brassica_rapa"].endswith("Brassica_rapa.genome.fa")
 
 
 def test_discover_species_supports_all_with_exclude():

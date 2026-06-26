@@ -34,6 +34,59 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 06:48 - Wire promoter extraction into standard Nextflow visualization smoke
+
+Context:
+- The active `/goal` requires promoter analysis and visualization to be part of the formal Nextflow/YAML/report/release-check workflow, not only standalone script smokes.
+- The standard Nextflow feature smoke already generated promoter cis-element figures, but the final report still listed `promoters_bed` and `promoters_fasta` as missing.
+
+Decisions:
+- Add a first-class `--run-promoter` option to the standard Nextflow smoke runner.
+- Make the formal `Nextflow standard visualization smoke` release check enable promoter extraction and require published promoter BED/FASTA outputs.
+- Upgrade the example species-bank fixtures with minimal genome FASTA files so the promoter extraction path exercises real genome and GFF3 inputs.
+- Make the objective audit distinguish promoter extraction plus promoter cis-element visualization as formal Nextflow report evidence.
+
+Added:
+- `tests/fixtures/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.genome.fa`
+- `tests/fixtures/species_bank/Brassica_rapa/Brassica_rapa.genome.fa`
+- Regression tests for `--run-promoter`, promoter published outputs, fixture genome discovery, release-check command coverage, and objective audit promoter-extraction wording.
+
+Modified:
+- `bin/genefam/run_nextflow_standard_smoke.py`
+- `bin/genefam/run_release_checks.py`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_run_nextflow_standard_smoke.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_discover_species.py`
+- `tests/test_audit_objective_completion.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py::test_build_nextflow_command_can_enable_promoter_extraction_for_standard_reports tests/test_run_nextflow_standard_smoke.py::test_expected_published_outputs_can_include_promoter_extraction_outputs -q` first failed with unexpected `run_promoter` / `promoter` keyword arguments.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_nextflow_standard_visualization_smoke_before_wgd -q` first failed after tightening the assertion to require an independent `--run-promoter` token.
+- `python -m pytest tests/test_discover_species.py::test_example_species_bank_exposes_genome_paths_for_promoter_extraction -q` first failed with `Missing required genome file for species Arabidopsis_thaliana`.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --run-feature-summary --run-mcscanx-circlize --syntenic-pairs tests/fixtures/mcscanx/syntenic_pairs.tsv --run-promoter --run-promoter-cis --promoter-cis-elements tests/fixtures/promoter_cis/plantcare.tsv --run-ppi --ppi-edges tests/fixtures/ppi/ppi_edges.tsv --ppi-nodes tests/fixtures/ppi/ppi_nodes.tsv --expression-matrix tests/fixtures/expression/family_expression.tsv --expression-metadata tests/fixtures/expression/sample_metadata.tsv --outdir results/nextflow_standard_feature_smoke` first failed because `EXTRACT_PROMOTERS` reported `Missing genome path for Arabidopsis_thaliana`; it passed after adding genome fixtures.
+- `python -m pytest tests/test_discover_species.py -q` passed with 10 tests.
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py -q` passed with 18 tests.
+- `python -m pytest tests/test_run_release_checks.py tests/test_run_nextflow_standard_smoke.py tests/test_discover_species.py -q` passed with 79 tests.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 24 tests.
+- `python -m pytest tests -q` passed with 384 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` exited 0 and reported `Passed: 9`, `Failed: 0`, `Complete: true`.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and reported `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+- `rg -n -e "--run-promoter|promoters_bed|promoters_fasta|promoter extraction|promoters\\.bed|promoters\\.fa" results/release_checks/release_checks.tsv results/objective_audit/objective_audit.md results/nextflow_standard_feature_smoke/standard/report/report_index.tsv results/nextflow_standard_feature_smoke/standard/report/final_report.md` confirmed release-check, objective-audit, report-index, and final-report coverage.
+
+Commit:
+- hash: pending
+- message: `test: wire promoter extraction into nextflow smoke`
+- files: standard Nextflow smoke runner, release checks, objective audit, species-bank genome fixtures, regression tests, and history entry.
+
+Next:
+- Continue auditing formal Nextflow report evidence for any remaining modules whose standalone smoke is stronger than their integrated report proof.
+
 ## 2026-06-27 06:36 - Expose publication report closure gates in objective audit
 
 Context:

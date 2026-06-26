@@ -448,6 +448,7 @@ def default_checks() -> list[CheckSpec]:
                 "--run-mcscanx-circlize",
                 "--syntenic-pairs",
                 "tests/fixtures/mcscanx/syntenic_pairs.tsv",
+                "--run-promoter",
                 "--run-promoter-cis",
                 "--promoter-cis-elements",
                 "tests/fixtures/promoter_cis/plantcare.tsv",

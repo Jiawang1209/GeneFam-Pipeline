@@ -667,6 +667,7 @@ def test_default_checks_include_nextflow_standard_visualization_smoke_before_wgd
     assert "--run-feature-summary" in command
     assert "--run-mcscanx-circlize" in command
     assert "--syntenic-pairs tests/fixtures/mcscanx/syntenic_pairs.tsv" in command
+    assert "--run-promoter" in smoke.command
     assert "--run-promoter-cis" in command
     assert "--promoter-cis-elements tests/fixtures/promoter_cis/plantcare.tsv" in command
     assert "--run-ppi" in command

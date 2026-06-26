@@ -45,6 +45,8 @@ def test_build_nextflow_command_targets_standard_identification_branch():
         "false",
         "--run_mcscanx_circlize",
         "false",
+        "--run_promoter",
+        "false",
         "--run_promoter_cis",
         "false",
         "--run_ppi",
@@ -121,6 +123,20 @@ def test_build_nextflow_command_can_enable_standard_visualization_modules():
     assert command[command.index("--run_mcscanx_circlize") + 1] == "true"
     assert "--syntenic_pairs" in command
     assert command[command.index("--syntenic_pairs") + 1] == "tests/fixtures/mcscanx/syntenic_pairs.tsv"
+
+
+def test_build_nextflow_command_can_enable_promoter_extraction_for_standard_reports():
+    command = build_nextflow_command(
+        nextflow_bin="nextflow",
+        config="configs/example.config.yaml",
+        groups="configs/species_groups.yaml",
+        mock_evidence_dir="tests/fixtures/mock_evidence",
+        outdir="results/nextflow_standard_feature_smoke/standard",
+        run_promoter=True,
+    )
+
+    assert "--run_promoter" in command
+    assert command[command.index("--run_promoter") + 1] == "true"
 
 
 def test_build_nextflow_command_can_enable_full_publication_visualization_modules():
@@ -301,6 +317,18 @@ def test_expected_published_outputs_can_include_standard_visualization_modules(t
     assert standard_outdir / "tables/circlize_skipped_links.tsv" in outputs
     assert standard_outdir / "plots/mcscanx_circlize.pdf" in outputs
     assert standard_outdir / "plots/mcscanx_circlize.png" in outputs
+
+
+def test_expected_published_outputs_can_include_promoter_extraction_outputs(tmp_path):
+    standard_outdir = tmp_path / "standard"
+
+    outputs = expected_published_outputs(
+        standard_outdir,
+        promoter=True,
+    )
+
+    assert standard_outdir / "tables/promoters.bed" in outputs
+    assert standard_outdir / "sequences/promoters.fa" in outputs
 
 
 def test_expected_published_outputs_can_include_full_publication_visualization_modules(tmp_path):
