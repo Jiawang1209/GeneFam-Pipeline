@@ -82,7 +82,7 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because runtime readiness and Docker/Apptainer smokes remain blocked, but the release matrix improved to `passed=39 failed=3`; the new `duplicate-type Ka/Ks visualization smoke` passed.
 
 Commit:
-- hash: pending
+- hash: dae8ba7
 - message: feat: add duplicate type kaks visualization
 - files: duplicate-type Ka/Ks builder, R plot, smoke runner, WGD Nextflow/report/release/docs/tests/history
 
