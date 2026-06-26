@@ -26,6 +26,7 @@ def build_acceptance_rows(
     *,
     release_status: int,
     publication_status: int,
+    wgd_publication_status: int,
     quickstart_status: int,
     delivery_status: int,
     release_outdir: Path,
@@ -49,6 +50,13 @@ def build_acceptance_rows(
             note="paper-style report closure evidence",
         ),
         AcceptanceRow(
+            step="wgd_publication_report_audit",
+            status=_status_label(wgd_publication_status),
+            exit_code=wgd_publication_status,
+            path=publication_outdir / "wgd_publication_report_audit.md",
+            note="WGD report closure evidence",
+        ),
+        AcceptanceRow(
             step="quickstart_handoff",
             status=_status_label(quickstart_status),
             exit_code=quickstart_status,
@@ -69,6 +77,7 @@ def write_acceptance_summary(
     *,
     release_status: int,
     publication_status: int,
+    wgd_publication_status: int,
     quickstart_status: int,
     delivery_status: int,
     release_outdir: Path,
@@ -81,6 +90,7 @@ def write_acceptance_summary(
     rows = build_acceptance_rows(
         release_status=release_status,
         publication_status=publication_status,
+        wgd_publication_status=wgd_publication_status,
         quickstart_status=quickstart_status,
         delivery_status=delivery_status,
         release_outdir=release_outdir,
@@ -132,6 +142,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--release-status", type=int, required=True)
     parser.add_argument("--publication-status", type=int, required=True)
+    parser.add_argument("--wgd-publication-status", type=int, required=True)
     parser.add_argument("--quickstart-status", type=int, required=True)
     parser.add_argument("--delivery-status", type=int, required=True)
     parser.add_argument("--release-outdir", type=Path, required=True)
@@ -147,6 +158,7 @@ def main() -> int:
     write_acceptance_summary(
         release_status=args.release_status,
         publication_status=args.publication_status,
+        wgd_publication_status=args.wgd_publication_status,
         quickstart_status=args.quickstart_status,
         delivery_status=args.delivery_status,
         release_outdir=args.release_outdir,

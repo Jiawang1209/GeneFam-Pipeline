@@ -23,6 +23,7 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
             "Nextflow standard manifest smoke\ttrue\tpassed\t0\tnextflow manifest\tmanifest config",
             "WGD event smoke\ttrue\tpassed\t0\twgd\talpha beta gamma theta",
             "publication report audit\ttrue\tpassed\t0\tpublication report\tfigures interpreted",
+            "WGD publication report audit\ttrue\tpassed\t0\twgd publication report\twgd figures interpreted",
             "readiness audit\ttrue\tpassed\t0\treadiness\tcore tools available",
             "Docker profile smoke\tfalse\tfailed\t1\tdocker profile\tmissing runtime",
             "Apptainer profile smoke\tfalse\tfailed\t1\tapptainer profile\tmissing runtime",
@@ -160,6 +161,10 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         in manifest_text
     )
     assert (
+        "status\twgd_publication_report_audit\tavailable\tresults/publication_report_audit/wgd_publication_report_audit.md\tWGD report closure: Ka/Ks/WGD figures, gamma beta alpha theta interpretation, QC, software versions, and reproducibility"
+        in manifest_text
+    )
+    assert (
         "status\trelease_ready\tavailable\tresults/release_checks/release_checks.md\trelease_ready=true; optional_failed=2"
         in manifest_text
     )
@@ -187,6 +192,8 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "compact local acceptance pass/fail index" in summary_text
     assert "paper-style report closure" in summary_text
     assert "results/publication_report_audit/publication_report_audit.md" in summary_text
+    assert "WGD report closure" in summary_text
+    assert "results/publication_report_audit/wgd_publication_report_audit.md" in summary_text
     assert "Docker/Apptainer reproducibility" in summary_text
     assert "release_ready=true" in summary_text
     assert "results/container_profile_smoke/docker/container_profile_smoke.md" in summary_text

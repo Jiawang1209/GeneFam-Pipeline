@@ -19,10 +19,14 @@ def test_local_acceptance_script_runs_release_gate_and_quickstart():
     assert "bin/genefam/run_delivery_bundle.py" in text
     assert "bin/genefam/write_local_acceptance_summary.py" in text
     assert "publication_status=" in text
+    assert "wgd_publication_status=" in text
     assert "publication report audit" in text
+    assert "WGD publication report audit" in text
     assert "--publication-status \"$publication_status\"" in text
+    assert "--wgd-publication-status \"$wgd_publication_status\"" in text
     assert "--publication-outdir \"$PUBLICATION_OUTDIR\"" in text
     assert "Publication report audit exited with status ${publication_status}." in text
+    assert "WGD publication report audit exited with status ${wgd_publication_status}." in text
     assert "--conda-env \"$CONDA_ENV\"" in text
     assert "--quickstart \"$QUICKSTART_OUTDIR/quickstart_summary.tsv\"" in text
     assert "--outdir \"$DELIVERY_OUTDIR\"" in text
@@ -37,9 +41,11 @@ def test_local_acceptance_script_runs_release_gate_and_quickstart():
     assert "${DELIVERY_OUTDIR}/delivery_manifest.tsv" in text
     assert "${DELIVERY_OUTDIR}/delivery_bundle.md" in text
     assert "${PUBLICATION_OUTDIR}/publication_report_audit.md" in text
+    assert "${PUBLICATION_OUTDIR}/wgd_publication_report_audit.md" in text
     assert "${ACCEPTANCE_OUTDIR}/local_acceptance_summary.tsv" in text
     assert "${ACCEPTANCE_OUTDIR}/local_acceptance_summary.md" in text
     assert 'if [ "$publication_status" -ne 0 ]; then' in text
+    assert 'if [ "$wgd_publication_status" -ne 0 ]; then' in text
 
 
 def test_quickstart_mentions_local_acceptance_script():

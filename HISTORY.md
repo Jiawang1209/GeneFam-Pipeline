@@ -8776,3 +8776,57 @@ Commit:
 
 Next:
 - Keep Docker/Apptainer runtime verification as the remaining final-stage external blocker; continue polishing Reference-level figure fidelity where useful.
+
+## 2026-06-27 - Surface WGD publication audit in delivery outputs
+
+Timestamp:
+- 2026-06-27 04:23 CST
+
+Context:
+- The release gate already produced both the standard `publication report audit` and the `WGD publication report audit`.
+- The final delivery bundle, README, quickstart, release audit, and local acceptance summary still emphasized only the standard publication audit, so a user inspecting delivery outputs could miss the WGD/evolution report closure.
+
+Decisions:
+- Add `wgd_publication_report_audit` to the delivery manifest and Markdown bundle as a first-class status item.
+- Update local acceptance so it extracts and records both standard and WGD publication audit statuses.
+- Update user-facing docs to point at both audit reports and to describe WGD report closure as Ka/Ks/WGD figure interpretation plus gamma beta alpha theta evidence.
+
+Added:
+- Delivery bundle status row for `results/publication_report_audit/wgd_publication_report_audit.md`.
+- Local acceptance row for `wgd_publication_report_audit`.
+- Quickstart and release-audit documentation for WGD publication report audit paths.
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/run_delivery_bundle.py`
+- `bin/genefam/write_local_acceptance_summary.py`
+- `docs/quickstart.md`
+- `docs/release_audit.md`
+- `scripts/run_local_acceptance.sh`
+- `tests/test_local_acceptance_script.py`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_write_local_acceptance_summary.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index -q` first failed because the delivery bundle did not include `wgd_publication_report_audit`.
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because `docs/release_audit.md` did not document the WGD publication report audit paths.
+- `python -m pytest tests/test_quickstart_docs.py::test_quickstart_documents_minimum_verified_run_path -q` first failed because `docs/quickstart.md` did not mention the WGD publication report audit.
+- `python -m pytest tests/test_write_local_acceptance_summary.py tests/test_local_acceptance_script.py::test_local_acceptance_script_runs_release_gate_and_quickstart -q` first failed because local acceptance did not accept or extract `wgd_publication_status`.
+- `python -m pytest tests/test_release_audit_docs.py tests/test_quickstart_docs.py tests/test_run_delivery_bundle.py tests/test_write_local_acceptance_summary.py tests/test_local_acceptance_script.py -q` passed with 8 tests after implementation.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` passed and wrote a delivery manifest row for `wgd_publication_report_audit`.
+- `python -m pytest tests -q` passed with 367 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 45`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+
+Commit:
+- hash: pending
+- message: feat: surface wgd publication audit in delivery
+- files: delivery bundle, local acceptance, README/quickstart/release audit docs, tests, history
+
+Next:
+- Keep Docker/Apptainer runtime verification as the remaining final-stage external blocker; continue polishing Reference-level figure fidelity where useful.

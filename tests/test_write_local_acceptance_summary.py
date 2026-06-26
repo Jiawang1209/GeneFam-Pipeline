@@ -13,6 +13,7 @@ def test_write_local_acceptance_summary_records_step_statuses(tmp_path):
     write_acceptance_summary(
         release_status=1,
         publication_status=0,
+        wgd_publication_status=0,
         quickstart_status=0,
         delivery_status=0,
         release_outdir=Path("results/release_checks"),
@@ -41,6 +42,13 @@ def test_write_local_acceptance_summary_records_step_statuses(tmp_path):
             "note": "paper-style report closure evidence",
         },
         {
+            "step": "wgd_publication_report_audit",
+            "status": "passed",
+            "exit_code": "0",
+            "path": "results/publication_report_audit/wgd_publication_report_audit.md",
+            "note": "WGD report closure evidence",
+        },
+        {
             "step": "quickstart_handoff",
             "status": "passed",
             "exit_code": "0",
@@ -60,6 +68,7 @@ def test_write_local_acceptance_summary_records_step_statuses(tmp_path):
     assert "Overall status: failed" in markdown
     assert "results/release_checks/release_checks.md" in markdown
     assert "results/publication_report_audit/publication_report_audit.md" in markdown
+    assert "results/publication_report_audit/wgd_publication_report_audit.md" in markdown
     assert "results/delivery_bundle/delivery_bundle.md" in markdown
 
 
@@ -67,6 +76,7 @@ def test_build_acceptance_rows_reports_all_passed_status():
     rows = build_acceptance_rows(
         release_status=0,
         publication_status=0,
+        wgd_publication_status=0,
         quickstart_status=0,
         delivery_status=0,
         release_outdir=Path("release"),
@@ -79,6 +89,7 @@ def test_build_acceptance_rows_reports_all_passed_status():
     assert [row.path for row in rows] == [
         Path("release/release_checks.md"),
         Path("publication/publication_report_audit.md"),
+        Path("publication/wgd_publication_report_audit.md"),
         Path("quickstart/quickstart_summary.md"),
         Path("delivery/delivery_bundle.md"),
     ]

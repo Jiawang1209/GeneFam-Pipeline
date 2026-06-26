@@ -123,6 +123,13 @@ def build_delivery_manifest(
             "note": "paper-style report closure: figure interpretations, QC, software versions, and reproducibility",
         },
         {
+            "section": "status",
+            "item": "wgd_publication_report_audit",
+            "status": _status_from_check(release_rows, "WGD publication report audit"),
+            "path": "results/publication_report_audit/wgd_publication_report_audit.md",
+            "note": "WGD report closure: Ka/Ks/WGD figures, gamma beta alpha theta interpretation, QC, software versions, and reproducibility",
+        },
+        {
             "section": "input",
             "item": "manifest_config",
             "status": "available",

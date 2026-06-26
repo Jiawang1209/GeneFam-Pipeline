@@ -115,6 +115,11 @@ On the current development machine, Docker/Apptainer reproducibility is expected
 
 The release gate writes the final delivery index after the objective audit. It collects species-bank and manifest-mode input entrypoints, the manifest-mode standard DSL2 smoke evidence, the standard final report, prepared WGD report, publication report audit, alpha/beta/gamma/theta event evidence, runtime status, and documentation entrypoints.
 
+The delivery bundle now records both report-closure audits:
+
+- `publication_report_audit`: standard report paper-style report closure at `results/publication_report_audit/publication_report_audit.md`
+- `wgd_publication_report_audit`: WGD report closure at `results/publication_report_audit/wgd_publication_report_audit.md`, covering Ka/Ks/WGD figures, gamma beta alpha theta interpretation, QC, software versions, and reproducibility
+
 ```bash
 python bin/genefam/run_delivery_bundle.py \
   --release-checks results/release_checks/release_checks.tsv \
