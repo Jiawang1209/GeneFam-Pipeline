@@ -58,7 +58,7 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
                 "tables/tree_feature_matrix.tsv",
                 "FastTree; MAFFT; plot_tree_features.R; /usr/local/bin/R",
                 "python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
-                "template-guided close reading",
+                "figure-specific close reading",
                 "plots/tree_features.pdf",
             ],
             [
@@ -72,7 +72,7 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
                 "tables/ppi_network_qc.tsv",
                 "ggNetView; plot_ppi_ggnetview.R; /usr/local/bin/R",
                 "python bin/genefam/run_ppi_ggnetview_plot_smoke.py --r-bin /usr/local/bin/R --outdir results/ppi_ggnetview_plot_smoke",
-                "template-guided close reading",
+                "figure-specific close reading",
                 "plots/ppi_ggnetview.pdf",
             ],
         ],
@@ -233,7 +233,7 @@ def test_publication_report_audit_cli_writes_markdown_and_tsv(tmp_path):
             "tables/family_counts.tsv",
             "plot_family_counts.R; /usr/local/bin/R",
             "python bin/genefam/run_standard_smoke.py --outdir results/standard_smoke",
-            "template-guided close reading",
+            "figure-specific close reading",
             "plots/family_counts.pdf",
         ]],
     )
@@ -278,3 +278,51 @@ def test_publication_report_audit_cli_writes_markdown_and_tsv(tmp_path):
     assert "plot_files_exist\tpassed" in out_tsv.read_text(encoding="utf-8")
     assert "figure_interpretation_coverage\tpassed" in out_tsv.read_text(encoding="utf-8")
     assert "Complete: true" in out_md.read_text(encoding="utf-8")
+
+
+def test_publication_report_audit_flags_template_guided_reading_status(tmp_path):
+    plot_manifest = tmp_path / "plot_manifest.tsv"
+    figure_interpretations = tmp_path / "figure_interpretations.tsv"
+    software_versions = tmp_path / "software_versions.tsv"
+    final_report = tmp_path / "final_report.md"
+    (tmp_path / "plots").mkdir()
+    (tmp_path / "plots/tree_features.pdf").write_bytes(b"%PDF tree")
+
+    _write_tsv(plot_manifest, ["plot_key", "path", "description"], [["tree_features", "plots/tree_features.pdf", "Tree features"]])
+    _write_tsv(
+        figure_interpretations,
+        ["figure_key", "qc_tables", "method_and_software", "reproducibility", "result_reading_status", "output_path"],
+        [[
+            "tree_features",
+            "tables/tree_feature_matrix.tsv",
+            "plot_tree_features.R; /usr/local/bin/R",
+            "python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
+            "template-guided close reading",
+            "plots/tree_features.pdf",
+        ]],
+    )
+    _write_tsv(software_versions, ["component", "kind", "version", "status", "source"], [["R", "runtime", "4.4.0", "detected", "/usr/local/bin/R --version"]])
+    final_report.write_text(
+        "\n".join(
+            [
+                "### Software Versions",
+                "## Figure Result Interpretations",
+                "### tree_features: Tree features",
+                "- QC tables: tables/tree_feature_matrix.tsv",
+                "- Method/software: plot_tree_features.R; /usr/local/bin/R",
+                "- Reproducibility: python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    rows = audit_publication_report(
+        plot_manifest=plot_manifest,
+        figure_interpretations=figure_interpretations,
+        software_versions=software_versions,
+        final_report=final_report,
+    )
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["figure_interpretation_detail"]["status"] == "failed"
+    assert "tree_features:result_reading_status:not_figure_specific" in by_check["figure_interpretation_detail"]["note"]

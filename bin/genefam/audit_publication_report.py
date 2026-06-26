@@ -76,8 +76,11 @@ def _missing_detail_fields(rows: list[dict[str, str]]) -> list[str]:
     for row in rows:
         figure_key = row.get("figure_key", "").strip() or "unknown"
         for field in REQUIRED_INTERPRETATION_FIELDS:
-            if not row.get(field, "").strip():
+            value = row.get(field, "").strip()
+            if not value:
                 missing.append(f"{figure_key}:{field}")
+            elif field == "result_reading_status" and not value.startswith("figure-specific close reading"):
+                missing.append(f"{figure_key}:{field}:not_figure_specific")
     return missing
 
 

@@ -34,6 +34,45 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 04:59 - Enforce figure-specific readings in publication audit
+
+Context:
+- The active `/goal` requires the final report to include close reading for every figure.
+- Standard and WGD report outputs now use `figure-specific close reading`, but the publication audit only checked that `result_reading_status` existed.
+- A report could still pass audit after regressing to `template-guided close reading`.
+
+Decisions:
+- Treat `result_reading_status` as semantically required, not just non-empty.
+- Fail `figure_interpretation_detail` when any registered figure has a status that does not start with `figure-specific close reading`.
+- Keep the existing audit row and note format so release checks do not need a new check name.
+
+Added:
+- Regression test proving `template-guided close reading` fails publication audit.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `tests/test_audit_publication_report.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py -q` first failed because `template-guided close reading` still passed; it passed after adding the `not_figure_specific` detail failure.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` exited 0 and reported `Passed: 5`, `Failed: 0`, `Complete: true`.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv --software-versions results/nextflow_wgd_smoke/wgd/report/software_versions.tsv --final-report results/nextflow_wgd_smoke/wgd/report/final_report.md --out-tsv results/publication_report_audit/wgd_publication_report_audit.tsv --out-md results/publication_report_audit/wgd_publication_report_audit.md` exited 0 and reported `Passed: 5`, `Failed: 0`, `Complete: true`.
+- `python -m pytest tests/test_audit_publication_report.py tests/test_run_release_checks.py::test_default_checks_include_publication_report_audit_after_visualization_report tests/test_run_release_checks.py::test_default_checks_include_wgd_publication_report_audit_after_wgd_smoke -q` passed with 7 tests.
+- `python -m pytest tests -q` passed with 371 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the remaining optional failures are Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+
+Commit:
+- hash: pending
+- message: test: enforce figure-specific publication readings
+- files: publication report audit, audit tests, history
+
+Next:
+- Continue checking final report semantics and delivery surfaces against the full objective; Docker/Apptainer profile verification remains the final external runtime step.
+
 ## 2026-06-27 04:52 - Require figure-specific readings for all standard plots
 
 Context:
