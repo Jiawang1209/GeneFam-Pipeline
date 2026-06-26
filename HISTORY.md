@@ -34,6 +34,48 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 07:02 - Require Nextflow report evidence for expression heatmap audit
+
+Context:
+- The active `/goal` requires RNA-seq expression heatmap outputs to be connected to the formal Nextflow/YAML/report-index/final-report/release-check workflow.
+- The release checks already ran `--expression-matrix` and `--expression-metadata` inside `Nextflow standard visualization smoke`, and the standard feature report already registered expression tables, QC, and PDF/PNG heatmap plots.
+- The objective audit expression row still treated the Python standard expression smoke plus standalone expression heatmap smoke as sufficient evidence.
+
+Decisions:
+- Keep `standard branch expression smoke` and `expression heatmap visualization smoke` as module-level proof.
+- Require `Nextflow standard visualization smoke` as the formal report-integration proof for the `expression heatmap visualization` objective row.
+- Make the objective audit note explicitly mention Nextflow report evidence for expression heatmaps.
+
+Added:
+- Regression test that the expression heatmap objective row is missing when only the Python standard-expression and standalone expression-heatmap smokes are present.
+- Regression expectations that the achieved expression objective row names `Nextflow standard visualization smoke` and `Nextflow report evidence`.
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+- `results/objective_audit/objective_audit.md`
+- `results/objective_audit/objective_audit.tsv`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_objective_audit_lists_named_paper_level_visualization_requirements tests/test_audit_objective_completion.py::test_expression_heatmap_visualization_requires_nextflow_standard_visualization_smoke -q` first failed because the expression row evidence did not include `Nextflow standard visualization smoke` and still marked standalone/Python expression evidence as achieved.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 26 tests.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and the expression row now lists `standard branch expression smoke, expression heatmap visualization smoke, and Nextflow standard visualization smoke`.
+- `python -m pytest tests -q` passed with 386 tests; pytest emitted a temporary-directory cleanup warning after success, but no tests failed.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `rg -n "expression heatmap visualization|Nextflow report evidence|--expression-matrix|expression_heatmap" results/objective_audit/objective_audit.md results/release_checks/release_checks.tsv results/nextflow_standard_feature_smoke/standard/report/report_index.tsv results/nextflow_standard_feature_smoke/standard/report/final_report.md` confirmed objective-audit, release-check, report-index, and final-report coverage.
+
+Commit:
+- hash: pending
+- message: `test: require nextflow evidence for expression audit`
+- files: objective audit expression evidence rule, regression tests, refreshed objective audit outputs, and history entry.
+
+Next:
+- Continue tightening any remaining visualization rows whose standalone smoke evidence is stronger than the formal Nextflow report proof.
+
 ## 2026-06-27 06:55 - Require Nextflow report evidence for PPI ggNetView audit
 
 Context:

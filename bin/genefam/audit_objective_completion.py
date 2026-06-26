@@ -207,10 +207,17 @@ def build_objective_audit(
             "The promoter extraction step, promoter FASTA/BED outputs, promoter cis-element category matrices, per-element summaries, and report-ready promoter regulatory plots are exercised through script and Nextflow report evidence.",
         ),
         _achieved_if(
-            _all_passed(release, ["standard branch expression smoke", "expression heatmap visualization smoke"]),
+            _all_passed(
+                release,
+                [
+                    "standard branch expression smoke",
+                    "expression heatmap visualization smoke",
+                    "Nextflow standard visualization smoke",
+                ],
+            ),
             "expression heatmap visualization",
-            "standard branch expression smoke and expression heatmap visualization smoke",
-            "RNA-seq expression subsetting, sample metadata integration, group summaries, gene-level QC, and expression heatmap plotting are exercised.",
+            "standard branch expression smoke, expression heatmap visualization smoke, and Nextflow standard visualization smoke",
+            "RNA-seq expression subsetting, sample metadata integration, group summaries, gene-level QC, expression heatmap plotting, and Nextflow report evidence are exercised.",
         ),
         _achieved_if(
             _all_passed(release, ["PPI ggNetView plot smoke", "Nextflow standard visualization smoke"]),

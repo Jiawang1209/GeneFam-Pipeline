@@ -206,7 +206,9 @@ def test_objective_audit_lists_named_paper_level_visualization_requirements():
     assert "Nextflow standard visualization smoke" in by_requirement["promoter cis-element visualization"]["evidence"]
     assert "promoter extraction" in by_requirement["promoter cis-element visualization"]["note"]
     assert "promoter cis-element" in by_requirement["promoter cis-element visualization"]["note"]
+    assert "Nextflow standard visualization smoke" in by_requirement["expression heatmap visualization"]["evidence"]
     assert "RNA-seq" in by_requirement["expression heatmap visualization"]["note"]
+    assert "Nextflow report evidence" in by_requirement["expression heatmap visualization"]["note"]
     assert "Nextflow standard visualization smoke" in by_requirement["PPI ggNetView visualization"]["evidence"]
     assert "ggNetView" in by_requirement["PPI ggNetView visualization"]["note"]
     assert "Nextflow report evidence" in by_requirement["PPI ggNetView visualization"]["note"]
@@ -258,6 +260,30 @@ def test_ppi_ggnetview_visualization_requires_nextflow_standard_visualization_sm
 
     assert by_requirement["PPI ggNetView visualization"]["status"] == "missing"
     assert "Nextflow standard visualization smoke" in by_requirement["PPI ggNetView visualization"]["evidence"]
+
+
+def test_expression_heatmap_visualization_requires_nextflow_standard_visualization_smoke():
+    release_rows = [
+        _release_row("standard branch expression smoke"),
+        _release_row("expression heatmap visualization smoke"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["expression heatmap visualization"]["status"] == "missing"
+    assert "Nextflow standard visualization smoke" in by_requirement["expression heatmap visualization"]["evidence"]
 
 
 def test_yaml_driven_species_selection_requires_species_selection_smokes():
