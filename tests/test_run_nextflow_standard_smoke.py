@@ -45,6 +45,10 @@ def test_build_nextflow_command_targets_standard_identification_branch():
         "false",
         "--run_mcscanx_circlize",
         "false",
+        "--run_promoter_cis",
+        "false",
+        "--run_ppi",
+        "false",
         "--mock_evidence_dir",
         "tests/fixtures/mock_evidence",
         "--outdir",
@@ -117,6 +121,36 @@ def test_build_nextflow_command_can_enable_standard_visualization_modules():
     assert command[command.index("--run_mcscanx_circlize") + 1] == "true"
     assert "--syntenic_pairs" in command
     assert command[command.index("--syntenic_pairs") + 1] == "tests/fixtures/mcscanx/syntenic_pairs.tsv"
+
+
+def test_build_nextflow_command_can_enable_full_publication_visualization_modules():
+    command = build_nextflow_command(
+        nextflow_bin="nextflow",
+        config="configs/example.config.yaml",
+        groups="configs/species_groups.yaml",
+        mock_evidence_dir="tests/fixtures/mock_evidence",
+        outdir="results/nextflow_standard_publication_smoke/standard",
+        run_feature_summary=True,
+        run_mcscanx_circlize=True,
+        syntenic_pairs="tests/fixtures/mcscanx/syntenic_pairs.tsv",
+        run_promoter_cis=True,
+        promoter_cis_elements="tests/fixtures/promoter_cis/plantcare.tsv",
+        run_ppi=True,
+        ppi_edges="tests/fixtures/ppi/ppi_edges.tsv",
+        ppi_nodes="tests/fixtures/ppi/ppi_nodes.tsv",
+        expression_matrix="tests/fixtures/expression/family_expression.tsv",
+        expression_metadata="tests/fixtures/expression/sample_metadata.tsv",
+    )
+
+    assert command[command.index("--run_feature_summary") + 1] == "true"
+    assert command[command.index("--run_mcscanx_circlize") + 1] == "true"
+    assert command[command.index("--run_promoter_cis") + 1] == "true"
+    assert command[command.index("--promoter_cis_elements") + 1] == "tests/fixtures/promoter_cis/plantcare.tsv"
+    assert command[command.index("--run_ppi") + 1] == "true"
+    assert command[command.index("--ppi_edges") + 1] == "tests/fixtures/ppi/ppi_edges.tsv"
+    assert command[command.index("--ppi_nodes") + 1] == "tests/fixtures/ppi/ppi_nodes.tsv"
+    assert command[command.index("--expression_matrix") + 1] == "tests/fixtures/expression/family_expression.tsv"
+    assert command[command.index("--expression_metadata") + 1] == "tests/fixtures/expression/sample_metadata.tsv"
 
 
 def test_build_nextflow_command_can_pass_yaml_species_order_for_copy_number_plots():
@@ -267,6 +301,41 @@ def test_expected_published_outputs_can_include_standard_visualization_modules(t
     assert standard_outdir / "tables/circlize_skipped_links.tsv" in outputs
     assert standard_outdir / "plots/mcscanx_circlize.pdf" in outputs
     assert standard_outdir / "plots/mcscanx_circlize.png" in outputs
+
+
+def test_expected_published_outputs_can_include_full_publication_visualization_modules(tmp_path):
+    standard_outdir = tmp_path / "standard"
+
+    outputs = expected_published_outputs(
+        standard_outdir,
+        feature_summary=True,
+        mcscanx_circlize=True,
+        promoter_cis=True,
+        ppi=True,
+        expression=True,
+    )
+
+    assert standard_outdir / "tables/promoter_cis_elements.tsv" in outputs
+    assert standard_outdir / "tables/promoter_cis_gene_matrix.tsv" in outputs
+    assert standard_outdir / "tables/promoter_cis_gene_element_matrix.tsv" in outputs
+    assert standard_outdir / "tables/promoter_cis_category_summary.tsv" in outputs
+    assert standard_outdir / "tables/promoter_cis_element_annotations.tsv" in outputs
+    assert standard_outdir / "plots/promoter_cis_elements.pdf" in outputs
+    assert standard_outdir / "plots/promoter_cis_elements.png" in outputs
+    assert standard_outdir / "tables/ppi_edges.tsv" in outputs
+    assert standard_outdir / "tables/ppi_nodes.tsv" in outputs
+    assert standard_outdir / "tables/ppi_hubs.tsv" in outputs
+    assert standard_outdir / "tables/ppi_input_evidence.tsv" in outputs
+    assert standard_outdir / "tables/ppi_network_qc.tsv" in outputs
+    assert standard_outdir / "tables/ppi_ggnetview_status.tsv" in outputs
+    assert standard_outdir / "plots/ppi_ggnetview.pdf" in outputs
+    assert standard_outdir / "plots/ppi_ggnetview.png" in outputs
+    assert standard_outdir / "tables/family_expression.tsv" in outputs
+    assert standard_outdir / "tables/expression_sample_metadata.tsv" in outputs
+    assert standard_outdir / "tables/expression_group_matrix.tsv" in outputs
+    assert standard_outdir / "tables/expression_gene_summary.tsv" in outputs
+    assert standard_outdir / "plots/expression_heatmap.pdf" in outputs
+    assert standard_outdir / "plots/expression_heatmap.png" in outputs
 
 
 def test_expected_single_tool_outputs_stop_after_family_candidates(tmp_path):

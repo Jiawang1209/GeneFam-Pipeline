@@ -44,7 +44,7 @@ process SUBSET_EXPRESSION_MATRIX {
 
     input:
     path family_candidates
-    path expression_matrix
+    path expression_matrix, stageAs: "input_expression_matrix.tsv"
 
     output:
     path "family_expression.tsv"

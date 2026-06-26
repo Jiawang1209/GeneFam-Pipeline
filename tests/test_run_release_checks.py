@@ -667,6 +667,13 @@ def test_default_checks_include_nextflow_standard_visualization_smoke_before_wgd
     assert "--run-feature-summary" in command
     assert "--run-mcscanx-circlize" in command
     assert "--syntenic-pairs tests/fixtures/mcscanx/syntenic_pairs.tsv" in command
+    assert "--run-promoter-cis" in command
+    assert "--promoter-cis-elements tests/fixtures/promoter_cis/plantcare.tsv" in command
+    assert "--run-ppi" in command
+    assert "--ppi-edges tests/fixtures/ppi/ppi_edges.tsv" in command
+    assert "--ppi-nodes tests/fixtures/ppi/ppi_nodes.tsv" in command
+    assert "--expression-matrix tests/fixtures/expression/family_expression.tsv" in command
+    assert "--expression-metadata tests/fixtures/expression/sample_metadata.tsv" in command
     assert "--outdir results/nextflow_standard_feature_smoke" in command
 
 

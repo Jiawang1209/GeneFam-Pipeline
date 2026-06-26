@@ -8671,3 +8671,54 @@ Commit:
 
 Next:
 - Continue final container/runtime verification when Docker or Apptainer is available; the non-container MVP checks are release-ready.
+
+## 2026-06-27 - Run full publication visualization smoke through release gate
+
+Timestamp:
+- 2026-06-27 04:05 CST
+
+Context:
+- The publication report audit checked the standard visualization report, but the release-gated Nextflow smoke only enabled feature summary and MCScanX/circlize.
+- Promoter cis-element, PPI ggNetView, and expression heatmap were tested by separate smokes but were not proven to enter the same standard final report and per-figure interpretation package.
+- Re-running the complete publication smoke exposed an input-safety issue: an expression input named `family_expression.tsv` could be overwritten by a Nextflow process output of the same name.
+
+Decisions:
+- Upgrade `run_nextflow_standard_smoke.py` so it can enable promoter cis-element, PPI ggNetView, and expression heatmap modules in addition to feature summary and MCScanX/circlize.
+- Upgrade the required release check named `Nextflow standard visualization smoke` to run the full publication visualization set before `publication report audit`.
+- Stage the expression matrix input as `input_expression_matrix.tsv` inside the Nextflow work directory so the output `family_expression.tsv` cannot overwrite a source input or fixture.
+
+Added:
+- CLI flags in `bin/genefam/run_nextflow_standard_smoke.py` for `--run-promoter-cis`, `--promoter-cis-elements`, `--run-ppi`, `--ppi-edges`, `--ppi-nodes`, `--expression-matrix`, and `--expression-metadata`.
+- Expected-output checks for promoter cis-element tables/plots, PPI evidence/QC/ggNetView plots, and expression summary/heatmap outputs.
+- Regression test requiring safe staged naming for the expression matrix input in `SUBSET_EXPRESSION_MATRIX`.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_nextflow_standard_smoke.py`
+- `bin/genefam/run_release_checks.py`
+- `tests/test_run_nextflow_standard_smoke.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_workflow_modules.py`
+- `workflows/modules/annotation_integration.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py::test_build_nextflow_command_can_enable_full_publication_visualization_modules tests/test_run_nextflow_standard_smoke.py::test_expected_published_outputs_can_include_full_publication_visualization_modules -q` first failed because the standard smoke wrapper did not accept promoter/PPI/expression publication-module arguments.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_nextflow_standard_visualization_smoke_before_wgd -q` first failed because the release check did not pass promoter/PPI/expression arguments to the standard visualization smoke.
+- `python -m pytest tests/test_workflow_modules.py::test_annotation_integration_module_covers_chromosome_and_expression_steps -q` first failed because the expression matrix input was not staged under a safe non-output name.
+- `python -m pytest tests/test_workflow_modules.py::test_annotation_integration_module_covers_chromosome_and_expression_steps tests/test_run_nextflow_standard_smoke.py tests/test_run_release_checks.py::test_default_checks_include_nextflow_standard_visualization_smoke_before_wgd -q` passed with 18 tests after implementation.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --run-feature-summary --run-mcscanx-circlize --syntenic-pairs tests/fixtures/mcscanx/syntenic_pairs.tsv --run-promoter-cis --promoter-cis-elements tests/fixtures/promoter_cis/plantcare.tsv --run-ppi --ppi-edges tests/fixtures/ppi/ppi_edges.tsv --ppi-nodes tests/fixtures/ppi/ppi_nodes.tsv --expression-matrix tests/fixtures/expression/family_expression.tsv --expression-metadata tests/fixtures/expression/sample_metadata.tsv --outdir results/nextflow_standard_feature_smoke` passed and left `tests/fixtures/expression/family_expression.tsv` unchanged.
+- The refreshed `plot_manifest.tsv` registered 9 final-report figures: family counts, gene-family information, pangenome summary, tree features, feature summary, MCScanX/circlize, promoter cis-elements, PPI ggNetView, and expression heatmap.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` passed with `Passed: 5`, `Failed: 0`, `Complete: true`.
+- `python -m pytest tests -q` passed with 365 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 44`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+
+Commit:
+- hash: pending
+- message: feat: gate full publication visualization smoke
+- files: standard smoke wrapper, release checks, annotation integration module, tests, history
+
+Next:
+- Keep the goal active for final Docker/Apptainer runtime verification and any additional Reference-level visual polish.

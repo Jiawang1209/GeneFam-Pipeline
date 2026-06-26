@@ -56,6 +56,9 @@ def expected_published_outputs(
     standard_outdir: Path,
     feature_summary: bool = False,
     mcscanx_circlize: bool = False,
+    promoter_cis: bool = False,
+    ppi: bool = False,
+    expression: bool = False,
 ) -> list[Path]:
     outputs = [
         standard_outdir / "tables/species_manifest.tsv",
@@ -103,6 +106,42 @@ def expected_published_outputs(
                 standard_outdir / "plots/mcscanx_circlize.png",
             ]
         )
+    if promoter_cis:
+        outputs.extend(
+            [
+                standard_outdir / "tables/promoter_cis_elements.tsv",
+                standard_outdir / "tables/promoter_cis_gene_matrix.tsv",
+                standard_outdir / "tables/promoter_cis_gene_element_matrix.tsv",
+                standard_outdir / "tables/promoter_cis_category_summary.tsv",
+                standard_outdir / "tables/promoter_cis_element_annotations.tsv",
+                standard_outdir / "plots/promoter_cis_elements.pdf",
+                standard_outdir / "plots/promoter_cis_elements.png",
+            ]
+        )
+    if ppi:
+        outputs.extend(
+            [
+                standard_outdir / "tables/ppi_edges.tsv",
+                standard_outdir / "tables/ppi_nodes.tsv",
+                standard_outdir / "tables/ppi_hubs.tsv",
+                standard_outdir / "tables/ppi_input_evidence.tsv",
+                standard_outdir / "tables/ppi_network_qc.tsv",
+                standard_outdir / "tables/ppi_ggnetview_status.tsv",
+                standard_outdir / "plots/ppi_ggnetview.pdf",
+                standard_outdir / "plots/ppi_ggnetview.png",
+            ]
+        )
+    if expression:
+        outputs.extend(
+            [
+                standard_outdir / "tables/family_expression.tsv",
+                standard_outdir / "tables/expression_sample_metadata.tsv",
+                standard_outdir / "tables/expression_group_matrix.tsv",
+                standard_outdir / "tables/expression_gene_summary.tsv",
+                standard_outdir / "plots/expression_heatmap.pdf",
+                standard_outdir / "plots/expression_heatmap.png",
+            ]
+        )
     return outputs
 
 
@@ -128,6 +167,13 @@ def build_nextflow_command(
     run_feature_summary: bool | str = False,
     run_mcscanx_circlize: bool | str = False,
     syntenic_pairs: str | None = None,
+    run_promoter_cis: bool | str = False,
+    promoter_cis_elements: str | None = None,
+    run_ppi: bool | str = False,
+    ppi_edges: str | None = None,
+    ppi_nodes: str | None = None,
+    expression_matrix: str | None = None,
+    expression_metadata: str | None = None,
     gene_family_species_order: str | None = None,
 ) -> list[str]:
     command = [
@@ -161,6 +207,10 @@ def build_nextflow_command(
             _bool_param(run_feature_summary),
             "--run_mcscanx_circlize",
             _bool_param(run_mcscanx_circlize),
+            "--run_promoter_cis",
+            _bool_param(run_promoter_cis),
+            "--run_ppi",
+            _bool_param(run_ppi),
             "--mock_evidence_dir",
             mock_evidence_dir,
             "--outdir",
@@ -169,6 +219,16 @@ def build_nextflow_command(
     )
     if syntenic_pairs:
         command.extend(["--syntenic_pairs", syntenic_pairs])
+    if promoter_cis_elements:
+        command.extend(["--promoter_cis_elements", promoter_cis_elements])
+    if ppi_edges:
+        command.extend(["--ppi_edges", ppi_edges])
+    if ppi_nodes:
+        command.extend(["--ppi_nodes", ppi_nodes])
+    if expression_matrix:
+        command.extend(["--expression_matrix", expression_matrix])
+    if expression_metadata:
+        command.extend(["--expression_metadata", expression_metadata])
     if gene_family_species_order:
         command.extend(["--gene_family_species_order", gene_family_species_order])
     return command
@@ -211,6 +271,13 @@ def run_nextflow_standard_smoke(
     run_feature_summary: bool | str = False,
     run_mcscanx_circlize: bool | str = False,
     syntenic_pairs: str | None = None,
+    run_promoter_cis: bool | str = False,
+    promoter_cis_elements: str | None = None,
+    run_ppi: bool | str = False,
+    ppi_edges: str | None = None,
+    ppi_nodes: str | None = None,
+    expression_matrix: str | None = None,
+    expression_metadata: str | None = None,
 ) -> dict[str, str]:
     resolved_nextflow = resolve_nextflow_binary(nextflow_bin, conda_env=conda_env)
     standard_params = load_standard_params(Path(config))
@@ -227,6 +294,13 @@ def run_nextflow_standard_smoke(
         run_feature_summary=run_feature_summary,
         run_mcscanx_circlize=run_mcscanx_circlize,
         syntenic_pairs=syntenic_pairs,
+        run_promoter_cis=run_promoter_cis,
+        promoter_cis_elements=promoter_cis_elements,
+        run_ppi=run_ppi,
+        ppi_edges=ppi_edges,
+        ppi_nodes=ppi_nodes,
+        expression_matrix=expression_matrix,
+        expression_metadata=expression_metadata,
         **standard_params,
     )
     if not resolved_nextflow:
@@ -251,6 +325,9 @@ def run_nextflow_standard_smoke(
             standard_outdir,
             feature_summary=_bool_param(run_feature_summary) == "true",
             mcscanx_circlize=_bool_param(run_mcscanx_circlize) == "true",
+            promoter_cis=_bool_param(run_promoter_cis) == "true",
+            ppi=_bool_param(run_ppi) == "true",
+            expression=bool(expression_matrix),
         )
     )
     missing_outputs = [path for path in expected_outputs if not path.exists()]
@@ -283,6 +360,13 @@ def main() -> None:
     parser.add_argument("--run-feature-summary", action="store_true")
     parser.add_argument("--run-mcscanx-circlize", action="store_true")
     parser.add_argument("--syntenic-pairs", default=None)
+    parser.add_argument("--run-promoter-cis", action="store_true")
+    parser.add_argument("--promoter-cis-elements", default=None)
+    parser.add_argument("--run-ppi", action="store_true")
+    parser.add_argument("--ppi-edges", default=None)
+    parser.add_argument("--ppi-nodes", default=None)
+    parser.add_argument("--expression-matrix", default=None)
+    parser.add_argument("--expression-metadata", default=None)
     args = parser.parse_args()
     row = run_nextflow_standard_smoke(
         args.nextflow_bin,
@@ -294,6 +378,13 @@ def main() -> None:
         run_feature_summary=args.run_feature_summary,
         run_mcscanx_circlize=args.run_mcscanx_circlize,
         syntenic_pairs=args.syntenic_pairs,
+        run_promoter_cis=args.run_promoter_cis,
+        promoter_cis_elements=args.promoter_cis_elements,
+        run_ppi=args.run_ppi,
+        ppi_edges=args.ppi_edges,
+        ppi_nodes=args.ppi_nodes,
+        expression_matrix=args.expression_matrix,
+        expression_metadata=args.expression_metadata,
     )
     _write_tsv(row, args.outdir / "nextflow_standard_smoke.tsv")
     _write_markdown(row, args.outdir / "nextflow_standard_smoke.md")

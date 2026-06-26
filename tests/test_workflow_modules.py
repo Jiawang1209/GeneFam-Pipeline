@@ -613,6 +613,7 @@ def test_annotation_integration_module_covers_chromosome_and_expression_steps():
 
     assert "process SUBSET_EXPRESSION_MATRIX" in module
     assert "subset_expression_matrix.py" in module
+    assert 'path expression_matrix, stageAs: "input_expression_matrix.tsv"' in module
     assert "--family-candidates ${family_candidates}" in module
     assert "--expression ${expression_matrix}" in module
     assert "--out family_expression.tsv" in module
