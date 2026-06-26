@@ -6817,8 +6817,8 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 12`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the remaining blocker is Docker/Apptainer reproducibility.
 
 Commit:
-- hash: pending
-- message: pending
+- hash: c7e5b29c68cd3dc589aa46ae5340b10c868efe84
+- message: feat: audit publication report closure
 - files: publication report audit, release/objective audit wiring, README docs, tests, history
 
 Next:
