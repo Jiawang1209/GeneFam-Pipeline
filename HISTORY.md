@@ -67,7 +67,7 @@ Verification:
 - `rg -n "valid plot file signatures|registered-only figure interpretation scope|plot manifest and interpretation output path consistency" results/objective_audit/objective_audit.md` confirmed the `final reports` row names all three gates.
 
 Commit:
-- hash: pending
+- hash: 9b0557ca26f343126766bb8e4915da3a095ef75b
 - message: `test: expose report closure gates in objective audit`
 - files: objective audit wording, objective audit regression test, regenerated objective audit outputs, and history entry.
 
