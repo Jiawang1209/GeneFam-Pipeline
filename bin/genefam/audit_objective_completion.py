@@ -192,11 +192,16 @@ def build_objective_audit(
         _achieved_if(
             _all_passed(
                 release,
-                ["standard branch smoke", "prepared WGD handoff example", "quickstart handoff"],
+                [
+                    "standard branch smoke",
+                    "prepared WGD handoff example",
+                    "quickstart handoff",
+                    "publication report audit",
+                ],
             ),
             "final reports",
-            "standard, prepared WGD, and quickstart report outputs",
-            "Final Markdown reports are produced for both standard and WGD handoff paths.",
+            "standard, prepared WGD, quickstart report outputs, and publication report audit",
+            "Final Markdown reports are produced for standard and WGD handoff paths, and the publication report audit verifies per-figure interpretation, software versions, QC, and reproducibility sections.",
         ),
         _achieved_if(
             _all_passed(release, ["pytest", "Reference governance audit"]),

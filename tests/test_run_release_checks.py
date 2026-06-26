@@ -266,6 +266,23 @@ def test_default_checks_include_kaks_wgd_annotation_plot_smoke():
     assert "--outdir results/kaks_wgd_plot_smoke" in command
 
 
+def test_default_checks_include_publication_report_audit_after_visualization_report():
+    checks = default_checks()
+    names = [check.name for check in checks]
+
+    assert names.index("publication report audit") > names.index("Nextflow standard visualization smoke")
+    assert names.index("publication report audit") < names.index("Nextflow standard manifest smoke")
+    audit = next(check for check in checks if check.name == "publication report audit")
+    command = " ".join(audit.command)
+    assert "bin/genefam/audit_publication_report.py" in command
+    assert "--plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv" in command
+    assert "--figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv" in command
+    assert "--software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv" in command
+    assert "--final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md" in command
+    assert "--out-tsv results/publication_report_audit/publication_report_audit.tsv" in command
+    assert "--out-md results/publication_report_audit/publication_report_audit.md" in command
+
+
 def test_default_checks_do_not_include_handoff_report_as_a_stale_input_check():
     checks = default_checks()
     names = [check.name for check in checks]

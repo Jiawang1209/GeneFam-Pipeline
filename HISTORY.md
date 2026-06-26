@@ -6773,6 +6773,57 @@ Commit:
 Next:
 - Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
 
+## 2026-06-27 - Add publication report audit release gate
+
+Timestamp:
+- 2026-06-27 02:54:03 CST
+
+Context:
+- The active `/goal` requires a paper-level final report with close reading for every figure, software and R package versions in methods, QC notes, and reproducibility information.
+- Existing figure smokes and reports produced the needed artifacts, but release checks did not have a dedicated gate proving that plot manifests, figure interpretations, software versions, and final reports were closed together.
+
+Decisions:
+- Add a standalone publication report audit that checks the `Nextflow standard visualization smoke` report package rather than relying only on dispersed plot-specific smokes.
+- Require every registered plot to have a structured figure interpretation row with QC tables, method/software, reproducibility, result-reading status, and output path.
+- Require the final report to embed the software-version section and every registered figure's interpretation details.
+- Make the objective audit's `final reports` item depend on the new publication report audit.
+
+Added:
+- `bin/genefam/audit_publication_report.py`
+- `tests/test_audit_publication_report.py`
+- `results/publication_report_audit/publication_report_audit.tsv`
+- `results/publication_report_audit/publication_report_audit.md`
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `README.zh-CN.md`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_release_checks.py`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py -q` first failed because `bin.genefam.audit_publication_report` did not exist, then passed with 3 tests after implementation.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_publication_report_audit_after_visualization_report -q` first failed because `publication report audit` was not present in `default_checks()`, then passed after wiring it after `Nextflow standard visualization smoke`.
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_require_publication_report_audit -q` first failed because `final reports` was considered achieved without the publication audit, then passed after tightening the objective audit.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` exited `0`.
+- `python -m pytest tests -q` passed with 356 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `0`; `results/release_checks/release_checks.md` reports `Passed: 44`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `results/publication_report_audit/publication_report_audit.md` reports `Passed: 4`, `Failed: 0`, and `Complete: true`.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 12`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the remaining blocker is Docker/Apptainer reproducibility.
+
+Commit:
+- hash: pending
+- message: pending
+- files: publication report audit, release/objective audit wiring, README docs, tests, history
+
+Next:
+- Continue toward the final container/Apptainer reproducibility stage once local runtimes are available.
+
 ## 2026-06-27 - Add per-figure QC and reproducibility notes to final reports
 
 Timestamp:
