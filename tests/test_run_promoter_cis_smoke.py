@@ -23,9 +23,13 @@ def test_run_promoter_cis_smoke_writes_tables_and_plots(tmp_path):
     assert "promoter_cis_elements" in result.stdout
     assert (outdir / "tables/promoter_cis_elements.tsv").exists()
     assert (outdir / "tables/promoter_cis_gene_matrix.tsv").exists()
+    assert (outdir / "tables/promoter_cis_gene_element_matrix.tsv").exists()
     assert (outdir / "tables/promoter_cis_category_summary.tsv").exists()
+    assert (outdir / "tables/promoter_cis_element_annotations.tsv").exists()
     assert (outdir / "plots/promoter_cis_elements.pdf").exists()
     assert (outdir / "plots/promoter_cis_elements.png").exists()
     summary = (outdir / "promoter_cis_smoke.md").read_text(encoding="utf-8")
     assert "promoter_cis_category_summary.tsv" in summary
+    assert "promoter_cis_gene_element_matrix.tsv" in summary
+    assert "promoter_cis_element_annotations.tsv" in summary
     assert "promoter_cis_elements.pdf" in summary

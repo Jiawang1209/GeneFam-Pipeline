@@ -160,7 +160,9 @@ process PLOT_PROMOTER_CIS_ELEMENTS {
     output:
     path "tables/promoter_cis_elements.tsv"
     path "tables/promoter_cis_gene_matrix.tsv"
+    path "tables/promoter_cis_gene_element_matrix.tsv"
     path "tables/promoter_cis_category_summary.tsv"
+    path "tables/promoter_cis_element_annotations.tsv"
     path "plots/promoter_cis_elements.pdf"
     path "plots/promoter_cis_elements.png"
 
@@ -170,7 +172,7 @@ process PLOT_PROMOTER_CIS_ELEMENTS {
     python ${projectDir}/../bin/genefam/build_promoter_cis_elements.py \\
       --cis-elements ${cis_elements} \\
       --outdir tables
-    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_promoter_cis_elements.R --args tables/promoter_cis_gene_matrix.tsv tables/promoter_cis_category_summary.tsv plots
+    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_promoter_cis_elements.R --args tables/promoter_cis_gene_matrix.tsv tables/promoter_cis_category_summary.tsv tables/promoter_cis_gene_element_matrix.tsv tables/promoter_cis_element_annotations.tsv plots
     """
 }
 

@@ -31,7 +31,9 @@ def test_build_standard_report_index_marks_core_outputs_available():
             "promoters_fasta": "",
             "promoter_cis_elements": "",
             "promoter_cis_gene_matrix": "",
+            "promoter_cis_gene_element_matrix": "",
             "promoter_cis_category_summary": "",
+            "promoter_cis_element_annotations": "",
             "promoter_cis_pdf": "",
             "promoter_cis_png": "",
             "feature_summary": "",
@@ -88,7 +90,9 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "promoters_fasta",
         "promoter_cis_elements",
         "promoter_cis_gene_matrix",
+        "promoter_cis_gene_element_matrix",
         "promoter_cis_category_summary",
+        "promoter_cis_element_annotations",
         "promoter_cis_pdf",
         "promoter_cis_png",
         "feature_summary",
@@ -118,6 +122,7 @@ def test_build_standard_report_index_marks_core_outputs_available():
     assert next(row for row in rows if row["key"] == "expression_heatmap_pdf")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "promoters_bed")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "promoter_cis_pdf")["status"] == "missing"
+    assert next(row for row in rows if row["key"] == "promoter_cis_element_annotations")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "feature_summary_pdf")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "mcscanx_circlize_pdf")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "circlize_link_density")["status"] == "missing"
@@ -152,7 +157,9 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
         "promoters_fasta": "",
         "promoter_cis_elements": "",
         "promoter_cis_gene_matrix": "",
+        "promoter_cis_gene_element_matrix": "",
         "promoter_cis_category_summary": "",
+        "promoter_cis_element_annotations": "",
         "promoter_cis_pdf": "",
         "promoter_cis_png": "",
         "feature_summary": "",

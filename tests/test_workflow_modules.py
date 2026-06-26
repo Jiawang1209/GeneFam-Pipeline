@@ -406,7 +406,10 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert "--cis-elements ${cis_elements}" in module
     assert 'path "tables/promoter_cis_elements.tsv"' in module
     assert 'path "tables/promoter_cis_gene_matrix.tsv"' in module
+    assert 'path "tables/promoter_cis_gene_element_matrix.tsv"' in module
     assert 'path "tables/promoter_cis_category_summary.tsv"' in module
+    assert 'path "tables/promoter_cis_element_annotations.tsv"' in module
+    assert "--args tables/promoter_cis_gene_matrix.tsv tables/promoter_cis_category_summary.tsv tables/promoter_cis_gene_element_matrix.tsv tables/promoter_cis_element_annotations.tsv plots" in module
     assert 'path "plots/promoter_cis_elements.pdf"' in module
     assert 'path "plots/promoter_cis_elements.png"' in module
 
@@ -498,6 +501,11 @@ def test_main_workflow_includes_plot_processes():
     assert "PLOT_GENE_FAMILY_INFO" in workflow
     assert "PLOT_TREE_FEATURES" in workflow
     assert "PLOT_PROMOTER_CIS_ELEMENTS" in workflow
+    assert "promoter_cis_gene_element_matrix_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[2]" in workflow
+    assert "promoter_cis_category_summary_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[3]" in workflow
+    assert "promoter_cis_element_annotations_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[4]" in workflow
+    assert "promoter_cis_pdf_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[5]" in workflow
+    assert "promoter_cis_png_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[6]" in workflow
     assert "BUILD_PLOT_MANIFEST" in workflow
 
 

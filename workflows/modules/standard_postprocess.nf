@@ -88,7 +88,9 @@ process BUILD_STANDARD_REPORT_INDEX {
     val promoters_fasta
     val promoter_cis_elements
     val promoter_cis_gene_matrix
+    val promoter_cis_gene_element_matrix
     val promoter_cis_category_summary
+    val promoter_cis_element_annotations
     val promoter_cis_pdf
     val promoter_cis_png
     val feature_summary
@@ -145,7 +147,9 @@ process BUILD_STANDARD_REPORT_INDEX {
       --promoters-fasta "${promoters_fasta}" \\
       --promoter-cis-elements "${promoter_cis_elements}" \\
       --promoter-cis-gene-matrix "${promoter_cis_gene_matrix}" \\
+      --promoter-cis-gene-element-matrix "${promoter_cis_gene_element_matrix}" \\
       --promoter-cis-category-summary "${promoter_cis_category_summary}" \\
+      --promoter-cis-element-annotations "${promoter_cis_element_annotations}" \\
       --promoter-cis-pdf "${promoter_cis_pdf}" \\
       --promoter-cis-png "${promoter_cis_png}" \\
       --feature-summary "${feature_summary}" \\

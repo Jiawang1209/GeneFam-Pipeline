@@ -6828,6 +6828,60 @@ Commit:
 Next:
 - Continue remaining paper-level visualization polish, especially promoter/copy-number/pangenome interpretation gaps, while container packaging remains final-stage work.
 
+## 2026-06-27 - Add per-element promoter cis-element annotations and dot heatmap
+
+Timestamp:
+- 2026-06-27 01:04:00 CST
+
+Context:
+- The promoter cis-element path already normalized PlantCARE-style input and produced a category matrix plus top-element summary.
+- The reference plotting matrix still marked promoter cis-element visualization as partial because per-element biological annotations and dot-heatmap style tracks were missing.
+
+Decisions:
+- Add `promoter_cis_gene_element_matrix.tsv` to retain gene-by-element counts and promoter positions.
+- Add `promoter_cis_element_annotations.tsv` to summarize each cis-element category, gene/species support, total count, position range, median position, and descriptions.
+- Extend `plot_promoter_cis_elements.R` with an enhanced five-argument mode that draws a gene-by-element dot heatmap while preserving the old three-argument interface.
+- Wire the new tables through `PLOT_PROMOTER_CIS_ELEMENTS`, the standard report index, and the main workflow output positions.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_promoter_cis_elements.py`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_promoter_cis_smoke.py`
+- `docs/reference_plotting_reuse.md`
+- `scripts/plot_promoter_cis_elements.R`
+- `tests/test_build_promoter_cis_elements.py`
+- `tests/test_reference_plotting_reuse.py`
+- `tests/test_run_promoter_cis_smoke.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/plots.nf`
+- `workflows/modules/standard_postprocess.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_promoter_cis_elements.py tests/test_run_promoter_cis_smoke.py tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_standard_branch_report_index.py tests/test_reference_plotting_reuse.py -q` first failed because gene-element matrix, element annotations, R enhanced inputs, report index keys, and reference-matrix status were not implemented.
+- `python -m pytest tests/test_build_promoter_cis_elements.py tests/test_run_promoter_cis_smoke.py tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_standard_branch_report_index.py tests/test_reference_plotting_reuse.py -q` passed with 9 tests after implementation.
+- `python -m pytest tests/test_workflow_modules.py::test_main_workflow_includes_plot_processes tests/test_build_promoter_cis_elements.py tests/test_run_promoter_cis_smoke.py -q` passed with 4 tests after locking the `PLOT_PROMOTER_CIS_ELEMENTS.out[]` indices.
+- `python bin/genefam/run_promoter_cis_smoke.py --r-bin /usr/local/bin/R --outdir results/promoter_cis_smoke` passed and wrote `tables/promoter_cis_gene_element_matrix.tsv`, `tables/promoter_cis_element_annotations.tsv`, and `plots/promoter_cis_elements.pdf/png`.
+- `python -m pytest tests/test_standard_branch_report_index.py tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_reference_plotting_reuse.py -q` passed with 8 tests.
+- `python -m pytest tests -q` passed with 343 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` with `41 passed / 3 failed`; `promoter cis-element visualization smoke` passed and included the new gene-element matrix and element-annotation table, while `readiness audit` failed and Docker/Apptainer profile smokes remained optional failures.
+
+Commit:
+- hash: pending
+- message: feat: add promoter element annotation tracks
+- files: promoter cis-element table builder, R promoter plot, smoke runner, standard report index, Nextflow wiring, reference plotting docs, tests, history
+
+Next:
+- Continue remaining paper-level visualization polish, especially copy-number/gene-family summary and large-scale pangenome/Ks interpretation gaps.
+
 ## 2026-06-27 - Add WGD event annotations to Ks distribution plots
 
 Timestamp:

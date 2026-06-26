@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import re
+import statistics
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -21,7 +22,19 @@ NORMALIZED_FIELDS = [
     "description",
 ]
 GENE_CATEGORY_FIELDS = ["species_id", "gene_id", "category", "count"]
+GENE_ELEMENT_FIELDS = ["species_id", "gene_id", "element", "category", "count", "positions"]
 CATEGORY_SUMMARY_FIELDS = ["category", "element", "total_count", "gene_count", "species_count", "description"]
+ELEMENT_ANNOTATION_FIELDS = [
+    "element",
+    "category",
+    "gene_count",
+    "species_count",
+    "total_count",
+    "position_min",
+    "position_median",
+    "position_max",
+    "description",
+]
 
 ALIASES = {
     "species_id": ["species_id", "species", "species name", "organism"],
@@ -46,7 +59,9 @@ CATEGORY_RULES = [
 class PromoterCisTables:
     normalized: list[dict[str, str]]
     gene_category_matrix: list[dict[str, str]]
+    gene_element_matrix: list[dict[str, str]]
     category_summary: list[dict[str, str]]
+    element_annotations: list[dict[str, str]]
 
 
 def read_tsv(path: Path) -> list[dict[str, str]]:
@@ -118,6 +133,46 @@ def _gene_category_matrix(rows: list[dict[str, str]]) -> list[dict[str, str]]:
     ]
 
 
+def _gene_element_matrix(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    grouped: dict[tuple[str, str, str, str], list[dict[str, str]]] = defaultdict(list)
+    for row in rows:
+        grouped[(row["species_id"], row["gene_id"], row["element"], row["category"])].append(row)
+    matrix: list[dict[str, str]] = []
+    for (species_id, gene_id, element, category), group_rows in sorted(grouped.items()):
+        positions = sorted({row["position"] for row in group_rows if row.get("position")}, key=lambda value: _position_sort_key(value))
+        matrix.append(
+            {
+                "species_id": species_id,
+                "gene_id": gene_id,
+                "element": element,
+                "category": category,
+                "count": str(len(group_rows)),
+                "positions": ",".join(positions),
+            }
+        )
+    return matrix
+
+
+def _position_sort_key(value: str) -> tuple[int, str]:
+    parsed = _parse_position(value)
+    if parsed is None:
+        return (0, value)
+    return (parsed, value)
+
+
+def _parse_position(value: str) -> int | None:
+    match = re.search(r"-?\d+", value or "")
+    if not match:
+        return None
+    return int(match.group(0))
+
+
+def _format_position(value: float | int) -> str:
+    if float(value).is_integer():
+        return str(int(value))
+    return f"{value:.1f}"
+
+
 def _category_summary(rows: list[dict[str, str]]) -> list[dict[str, str]]:
     grouped: dict[tuple[str, str], list[dict[str, str]]] = defaultdict(list)
     for row in rows:
@@ -138,12 +193,50 @@ def _category_summary(rows: list[dict[str, str]]) -> list[dict[str, str]]:
     return summary
 
 
+def _element_annotations(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    grouped: dict[str, list[dict[str, str]]] = defaultdict(list)
+    for row in rows:
+        grouped[row["element"]].append(row)
+    annotations: list[dict[str, str]] = []
+    for element, group_rows in sorted(grouped.items()):
+        categories = Counter(row["category"] for row in group_rows)
+        category = sorted(categories.items(), key=lambda item: (-item[1], item[0]))[0][0]
+        descriptions = sorted({row["description"] for row in group_rows if row.get("description")})
+        positions = sorted(
+            position
+            for position in (_parse_position(row.get("position", "")) for row in group_rows)
+            if position is not None
+        )
+        if positions:
+            position_min = _format_position(min(positions))
+            position_median = _format_position(statistics.median(positions))
+            position_max = _format_position(max(positions))
+        else:
+            position_min = position_median = position_max = ""
+        annotations.append(
+            {
+                "element": element,
+                "category": category,
+                "gene_count": str(len({row["gene_id"] for row in group_rows})),
+                "species_count": str(len({row["species_id"] for row in group_rows if row.get("species_id")})),
+                "total_count": str(len(group_rows)),
+                "position_min": position_min,
+                "position_median": position_median,
+                "position_max": position_max,
+                "description": "; ".join(descriptions[:3]),
+            }
+        )
+    return annotations
+
+
 def build_promoter_cis_tables(rows: list[dict[str, str]]) -> PromoterCisTables:
     normalized = _normalize_rows(rows)
     return PromoterCisTables(
         normalized=normalized,
         gene_category_matrix=_gene_category_matrix(normalized),
+        gene_element_matrix=_gene_element_matrix(normalized),
         category_summary=_category_summary(normalized),
+        element_annotations=_element_annotations(normalized),
     )
 
 
@@ -160,11 +253,15 @@ def write_tables(tables: PromoterCisTables, outdir: Path) -> dict[str, Path]:
     outputs = {
         "promoter_cis_elements": outdir / "promoter_cis_elements.tsv",
         "promoter_cis_gene_matrix": outdir / "promoter_cis_gene_matrix.tsv",
+        "promoter_cis_gene_element_matrix": outdir / "promoter_cis_gene_element_matrix.tsv",
         "promoter_cis_category_summary": outdir / "promoter_cis_category_summary.tsv",
+        "promoter_cis_element_annotations": outdir / "promoter_cis_element_annotations.tsv",
     }
     _write_tsv(tables.normalized, NORMALIZED_FIELDS, outputs["promoter_cis_elements"])
     _write_tsv(tables.gene_category_matrix, GENE_CATEGORY_FIELDS, outputs["promoter_cis_gene_matrix"])
+    _write_tsv(tables.gene_element_matrix, GENE_ELEMENT_FIELDS, outputs["promoter_cis_gene_element_matrix"])
     _write_tsv(tables.category_summary, CATEGORY_SUMMARY_FIELDS, outputs["promoter_cis_category_summary"])
+    _write_tsv(tables.element_annotations, ELEMENT_ANNOTATION_FIELDS, outputs["promoter_cis_element_annotations"])
     return outputs
 
 

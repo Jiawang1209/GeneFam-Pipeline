@@ -242,7 +242,9 @@ workflow {
             }
             promoter_cis_elements_ch = Channel.value("")
             promoter_cis_gene_matrix_ch = Channel.value("")
+            promoter_cis_gene_element_matrix_ch = Channel.value("")
             promoter_cis_category_summary_ch = Channel.value("")
+            promoter_cis_element_annotations_ch = Channel.value("")
             promoter_cis_pdf_ch = Channel.value("")
             promoter_cis_png_ch = Channel.value("")
             if (asBooleanParam(params.run_promoter_cis)) {
@@ -253,9 +255,11 @@ workflow {
                 PLOT_PROMOTER_CIS_ELEMENTS(promoter_cis_input_ch)
                 promoter_cis_elements_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[0]
                 promoter_cis_gene_matrix_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[1]
-                promoter_cis_category_summary_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[2]
-                promoter_cis_pdf_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[3]
-                promoter_cis_png_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[4]
+                promoter_cis_gene_element_matrix_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[2]
+                promoter_cis_category_summary_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[3]
+                promoter_cis_element_annotations_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[4]
+                promoter_cis_pdf_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[5]
+                promoter_cis_png_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[6]
             }
             circlize_link_density_ch = Channel.value("")
             circlize_duplicate_type_tracks_ch = Channel.value("")
@@ -340,7 +344,9 @@ workflow {
                 promoters_fasta_ch,
                 promoter_cis_elements_ch,
                 promoter_cis_gene_matrix_ch,
+                promoter_cis_gene_element_matrix_ch,
                 promoter_cis_category_summary_ch,
+                promoter_cis_element_annotations_ch,
                 promoter_cis_pdf_ch,
                 promoter_cis_png_ch,
                 feature_summary_ch,
