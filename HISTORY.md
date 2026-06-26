@@ -84,12 +84,11 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker/Apptainer remain unavailable, but improved the release matrix to `Passed: 34`, `Required failed: 1`, `Optional failed: 2`; `PPI ggNetView smoke` passed, while `readiness audit`, `Docker profile smoke`, and `Apptainer profile smoke` are the remaining runtime blockers.
 
 Commit:
-- hash: not created yet
+- hash: cf7771f
 - message: feat: add report interpretation and ggnetview readiness
 - files: report interpretation/version scripts, ggNetView readiness smoke, Nextflow standard report wiring, release audit docs, tests, history
 
 Next:
-- Backfill this commit hash after committing.
 - Continue remaining paper-level visualization work by turning the current alignment matrix `partial` items into real plot modules, especially tree/motif/gene-structure/domain composite views and richer MCScanX/PPI visual outputs.
 
 ## 2026-06-26 20:02 - Add raw MCScanX/KaKs WGD handoff and report package polish
