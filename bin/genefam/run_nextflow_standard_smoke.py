@@ -21,6 +21,13 @@ from bin.genefam.validate_config import load_config
 FIELDNAMES = ["check", "status", "exit_code", "command", "note"]
 
 
+def _resolve_optional_path(value: object) -> str:
+    if value in {None, ""}:
+        return ""
+    path = Path(str(value))
+    return str(path if path.is_absolute() else path.resolve())
+
+
 def _bool_param(value: object) -> str:
     if isinstance(value, str):
         lowered = value.strip().lower()
@@ -35,11 +42,13 @@ def load_standard_params(config_path: Path) -> dict[str, str]:
     config = load_config(config_path)
     identification = config.get("identification", {}) or {}
     dev = config.get("dev", {}) or {}
+    plotting = config.get("plotting", {}) or {}
     return {
         "use_hmmer": _bool_param(identification.get("use_hmmer", True)),
         "use_diamond": _bool_param(identification.get("use_diamond", True)),
         "final_rule": str(identification.get("final_rule", "intersection")),
         "mock_external_tools": _bool_param(dev.get("mock_external_tools", True)),
+        "gene_family_species_order": _resolve_optional_path(plotting.get("gene_family_species_order")),
     }
 
 
@@ -53,6 +62,12 @@ def expected_published_outputs(
         standard_outdir / "tables/run_config_snapshot.tsv",
         standard_outdir / "tables/family_candidates.tsv",
         standard_outdir / "tables/family_counts.tsv",
+        standard_outdir / "tables/gene_family_copy_number.tsv",
+        standard_outdir / "tables/gene_family_copy_number_summary.tsv",
+        standard_outdir / "tables/gene_family_species_order.tsv",
+        standard_outdir / "tables/gene_family_copy_number_expansion.tsv",
+        standard_outdir / "tables/gene_family_pangenome_summary.tsv",
+        standard_outdir / "tables/gene_family_protein_properties.tsv",
         standard_outdir / "tables/alignment_manifest.tsv",
         standard_outdir / "tables/phylogeny_manifest.tsv",
         standard_outdir / "alignment/GDSL.mafft.aln.faa",
@@ -67,6 +82,8 @@ def expected_published_outputs(
         standard_outdir / "report/final_report.md",
         standard_outdir / "plots/family_counts.pdf",
         standard_outdir / "plots/family_counts.png",
+        standard_outdir / "plots/gene_family_info_summary.pdf",
+        standard_outdir / "plots/gene_family_info_summary.png",
     ]
     if feature_summary:
         outputs.extend(
@@ -111,6 +128,7 @@ def build_nextflow_command(
     run_feature_summary: bool | str = False,
     run_mcscanx_circlize: bool | str = False,
     syntenic_pairs: str | None = None,
+    gene_family_species_order: str | None = None,
 ) -> list[str]:
     command = [
         nextflow_bin,
@@ -151,6 +169,8 @@ def build_nextflow_command(
     )
     if syntenic_pairs:
         command.extend(["--syntenic_pairs", syntenic_pairs])
+    if gene_family_species_order:
+        command.extend(["--gene_family_species_order", gene_family_species_order])
     return command
 
 

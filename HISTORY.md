@@ -34,6 +34,50 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 03:45 - Wire YAML species order into Nextflow standard smoke
+
+Context:
+- The active `/goal` requires YAML-driven parameters and all paper-level figure modules to be wired through Nextflow, report indices, final reports, smoke tests, and release checks.
+- The previous change added optional species-tree order support for large-scale copy-number plots, but the standard Nextflow smoke wrapper only read identification/dev flags from YAML.
+- This left the new `plotting.gene_family_species_order` setting under-verified as a YAML-driven workflow parameter.
+
+Decisions:
+- Add a small fixture species-order table and reference it from `configs/example.config.yaml` so the default standard smoke exercises YAML-driven copy-number ordering.
+- Make `run_nextflow_standard_smoke.py` read `plotting.gene_family_species_order` from YAML and pass it as `--gene_family_species_order` to Nextflow.
+- Resolve relative YAML paths to absolute paths before passing them into Nextflow, because processes execute inside `work/` directories where repo-relative paths are otherwise invalid.
+- Treat gene-family information/copy-number tables and plots as required standard Nextflow smoke outputs, not incidental published files.
+
+Added:
+- `tests/fixtures/species_order/species_tree_order.tsv`
+- Tests for YAML-driven species-order parameter extraction, absolute path resolution, command construction, and required gene-family info outputs.
+
+Modified:
+- `bin/genefam/run_nextflow_standard_smoke.py`
+- `configs/example.config.yaml`
+- `tests/test_run_nextflow_standard_smoke.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py::test_build_nextflow_command_can_pass_yaml_species_order_for_copy_number_plots tests/test_run_nextflow_standard_smoke.py::test_load_standard_params_reads_yaml_species_order_for_copy_number_plots tests/test_run_nextflow_standard_smoke.py::test_load_standard_params_reads_yaml_tool_and_mock_flags -q` first failed because the wrapper did not accept or read `gene_family_species_order`; it passed after adding the YAML mapping.
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py::test_expected_published_outputs_cover_standard_user_results -q` first failed because standard smoke did not require gene-family info/copy-number outputs; it passed after adding those outputs to the expected list.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_standard_smoke` first failed because a repo-relative species-order path was evaluated inside a Nextflow `work/` directory; it passed after resolving YAML paths to absolute paths.
+- `cat results/nextflow_standard_smoke/standard/tables/gene_family_species_order.tsv` showed `Brassica_rapa` and `Arabidopsis_thaliana` as `order_source=external`, proving the YAML-driven species-order table reached the standard Nextflow branch.
+- `python bin/genefam/validate_config.py configs/example.config.yaml --check-paths` printed `Configuration OK`.
+- `python -m pytest tests -q` passed with 362 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 44`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the remaining optional failures are Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `results/publication_report_audit/publication_report_audit.md` reports `Passed: 4`, `Failed: 0`, and `Complete: true`.
+
+Commit:
+- hash: pending
+- message: test: require yaml species order in standard smoke
+- files: standard smoke wrapper, example YAML, species-order fixture, standard smoke tests, history
+
+Next:
+- Continue final acceptance hardening and, when Docker/Apptainer are available, run `bash results/readiness/runtime_bootstrap.sh` followed by the container profile smokes and release gate.
+
 ## 2026-06-27 03:36 - Add external species-tree order for large-scale copy-number plots
 
 Context:

@@ -1,5 +1,6 @@
 import subprocess
 import sys
+from pathlib import Path
 
 from bin.genefam.run_nextflow_standard_smoke import (
     build_nextflow_command,
@@ -118,6 +119,22 @@ def test_build_nextflow_command_can_enable_standard_visualization_modules():
     assert command[command.index("--syntenic_pairs") + 1] == "tests/fixtures/mcscanx/syntenic_pairs.tsv"
 
 
+def test_build_nextflow_command_can_pass_yaml_species_order_for_copy_number_plots():
+    command = build_nextflow_command(
+        nextflow_bin="nextflow",
+        config="configs/example.config.yaml",
+        groups="configs/species_groups.yaml",
+        mock_evidence_dir="tests/fixtures/mock_evidence",
+        outdir="results/nextflow_standard_smoke/standard",
+        gene_family_species_order="tests/fixtures/species_order/species_tree_order.tsv",
+    )
+
+    assert "--gene_family_species_order" in command
+    assert command[command.index("--gene_family_species_order") + 1] == (
+        "tests/fixtures/species_order/species_tree_order.tsv"
+    )
+
+
 def test_build_nextflow_command_supports_manifest_config():
     command = build_nextflow_command(
         nextflow_bin="nextflow",
@@ -167,7 +184,37 @@ def test_load_standard_params_reads_yaml_tool_and_mock_flags(tmp_path):
         "use_diamond": "true",
         "final_rule": "union",
         "mock_external_tools": "false",
+        "gene_family_species_order": "",
     }
+
+
+def test_load_standard_params_reads_yaml_species_order_for_copy_number_plots(tmp_path):
+    config = tmp_path / "species_order.yaml"
+    config.write_text(
+        "\n".join(
+            [
+                "identification:",
+                "  final_rule: intersection",
+                "plotting:",
+                "  gene_family_species_order: tests/fixtures/species_order/species_tree_order.tsv",
+                "dev:",
+                "  mock_external_tools: true",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    params = load_standard_params(config)
+
+    assert params["gene_family_species_order"] == str(Path("tests/fixtures/species_order/species_tree_order.tsv").resolve())
+
+
+def test_load_standard_params_resolves_yaml_species_order_relative_to_repo_root():
+    params = load_standard_params(Path("configs/example.config.yaml"))
+
+    assert params["gene_family_species_order"] == str(
+        Path("tests/fixtures/species_order/species_tree_order.tsv").resolve()
+    )
 
 
 def test_expected_published_outputs_cover_standard_user_results(tmp_path):
@@ -178,6 +225,12 @@ def test_expected_published_outputs_cover_standard_user_results(tmp_path):
         standard_outdir / "tables/run_config_snapshot.tsv",
         standard_outdir / "tables/family_candidates.tsv",
         standard_outdir / "tables/family_counts.tsv",
+        standard_outdir / "tables/gene_family_copy_number.tsv",
+        standard_outdir / "tables/gene_family_copy_number_summary.tsv",
+        standard_outdir / "tables/gene_family_species_order.tsv",
+        standard_outdir / "tables/gene_family_copy_number_expansion.tsv",
+        standard_outdir / "tables/gene_family_pangenome_summary.tsv",
+        standard_outdir / "tables/gene_family_protein_properties.tsv",
         standard_outdir / "tables/alignment_manifest.tsv",
         standard_outdir / "tables/phylogeny_manifest.tsv",
         standard_outdir / "alignment/GDSL.mafft.aln.faa",
@@ -192,6 +245,8 @@ def test_expected_published_outputs_cover_standard_user_results(tmp_path):
         standard_outdir / "report/final_report.md",
         standard_outdir / "plots/family_counts.pdf",
         standard_outdir / "plots/family_counts.png",
+        standard_outdir / "plots/gene_family_info_summary.pdf",
+        standard_outdir / "plots/gene_family_info_summary.png",
     ]
 
 
