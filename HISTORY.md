@@ -69,7 +69,7 @@ Verification:
 - `rg -n "PPI ggNetView visualization|Nextflow report evidence|--run-ppi|ppi_ggnetview" results/objective_audit/objective_audit.md results/release_checks/release_checks.tsv results/nextflow_standard_feature_smoke/standard/report/report_index.tsv results/nextflow_standard_feature_smoke/standard/report/final_report.md` confirmed objective-audit, release-check, report-index, and final-report coverage.
 
 Commit:
-- hash: pending
+- hash: 1631729e042c5bd5c633e5e385d649e36f3c5e04
 - message: `test: require nextflow evidence for ppi audit`
 - files: objective audit PPI evidence rule, regression tests, refreshed objective audit outputs, and history entry.
 
