@@ -34,6 +34,64 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 00:01 - Add gene family information and copy-number visualization
+
+Context:
+- The active `/goal` requires Reference-level gene family information and large-scale copy-number visualizations.
+- The pipeline already had a basic `family_counts.pdf`, but `docs/reference_plotting_reuse.md` still marked protein length, molecular weight, pI, hydrophobicity, and large-scale copy-number summaries as missing.
+
+Decisions:
+- Add a report-ready `gene_family_info_summary` figure instead of overloading the original simple `family_counts` barplot.
+- Use existing standard-branch outputs as inputs: `family_counts.tsv` and `family_members.faa`.
+- Compute per-species copy-number classes (`absent`, `single_copy`, `multi_copy`, `high_copy`), copy-number ranks, and percent-of-maximum values.
+- Compute per-gene protein properties without new dependencies: protein length, approximate molecular weight, approximate pI, and GRAVY.
+- Run the new module by default in the standard branch because it depends only on already-generated core outputs.
+
+Added:
+- `bin/genefam/build_gene_family_info.py`
+- `bin/genefam/run_gene_family_info_smoke.py`
+- `scripts/plot_gene_family_info.R`
+- `tests/test_build_gene_family_info.py`
+- `tests/test_run_gene_family_info_smoke.py`
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/reference_plotting_reuse.md`
+- `docs/release_audit.md`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/plots.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_gene_family_info.py tests/test_run_gene_family_info_smoke.py -q` first failed because `build_gene_family_info.py` and `run_gene_family_info_smoke.py` did not exist, then passed after adding the table builder, smoke runner, and R plot.
+- `python -m pytest tests/test_standard_branch_report_index.py tests/test_workflow_modules.py tests/test_run_release_checks.py tests/test_release_audit_docs.py tests/test_audit_objective_completion.py -q` first failed on the new report/workflow/release/audit expectations, then passed with 85 tests after formal wiring.
+- `/Users/liuyue/miniforge3/bin/conda run -n GeneFamilyFlow nextflow run workflows/main.nf -c workflows/nextflow.config -profile activated --config configs/example.config.yaml --groups configs/species_groups.yaml --run_identification true --use_hmmer true --use_diamond true --final_rule intersection --mock_external_tools true --standard_stop_after_family_candidates false --mock_evidence_dir tests/fixtures/mock_evidence --outdir results/nextflow_standard_gene_family_info_smoke` passed and executed `PLOT_GENE_FAMILY_INFO`.
+- `grep -n "gene_family\|Gene family" results/nextflow_standard_gene_family_info_smoke/report/report_index.tsv results/nextflow_standard_gene_family_info_smoke/report/plot_manifest.tsv results/nextflow_standard_gene_family_info_smoke/report/final_report.md results/nextflow_standard_gene_family_info_smoke/report/figure_interpretations.tsv` confirmed report index, plot manifest, final report, and figure interpretations include the new gene-family information tables and plots.
+- `python -m pytest tests/test_build_gene_family_info.py tests/test_run_gene_family_info_smoke.py tests/test_standard_branch_report_index.py tests/test_workflow_modules.py tests/test_run_release_checks.py tests/test_release_audit_docs.py tests/test_audit_objective_completion.py tests/test_reference_plotting_reuse.py -q` passed with 88 tests.
+- `python -m pytest tests -q` passed with 326 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker/Apptainer remain unavailable, but improved the release matrix to `Passed: 38`, `Required failed: 1`, `Optional failed: 2`; `gene family information visualization smoke` passed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` kept `paper-level visualization modules` as `achieved` with gene-family information included, and kept full objective incomplete only because Docker/Apptainer reproducibility is still blocked by missing runtime commands.
+
+Commit:
+- hash: not created yet
+- message: feat: add gene family info visualization
+- files: gene family information table builder, R plotting script, smoke runner, Nextflow/report/release/docs/tests/history
+
+Next:
+- Backfill this commit hash after committing.
+- Continue Reference-level refinement with richer MCScanX/KaKs duplicate-type panels and expression heatmap sample annotations.
+
 ## 2026-06-26 23:47 - Add promoter cis-element visualization module
 
 Context:

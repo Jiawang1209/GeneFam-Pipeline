@@ -112,6 +112,32 @@ process PLOT_TREE_FEATURES {
     """
 }
 
+process PLOT_GENE_FAMILY_INFO {
+    tag "plot gene family information"
+    publishDir "${params.outdir}", mode: "copy", overwrite: true
+
+    input:
+    path family_counts
+    path family_members_faa
+
+    output:
+    path "tables/gene_family_copy_number.tsv"
+    path "tables/gene_family_copy_number_summary.tsv"
+    path "tables/gene_family_protein_properties.tsv"
+    path "plots/gene_family_info_summary.pdf"
+    path "plots/gene_family_info_summary.png"
+
+    script:
+    """
+    mkdir -p tables plots
+    python ${projectDir}/../bin/genefam/build_gene_family_info.py \\
+      --family-counts ${family_counts} \\
+      --family-members-faa ${family_members_faa} \\
+      --outdir tables
+    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_gene_family_info.R --args tables/gene_family_copy_number.tsv tables/gene_family_copy_number_summary.tsv tables/gene_family_protein_properties.tsv plots
+    """
+}
+
 process PLOT_PROMOTER_CIS_ELEMENTS {
     tag "plot promoter cis-elements"
     publishDir "${params.outdir}", mode: "copy", overwrite: true
@@ -203,6 +229,7 @@ process BUILD_PLOT_MANIFEST {
     """
     python ${projectDir}/../bin/genefam/build_plot_manifest.py \\
       --plot "family_counts=plots/family_counts.pdf=Family member counts by species" \\
+      --plot "gene_family_info_summary=plots/gene_family_info_summary.pdf=Gene family copy-number and protein-property summary" \\
       --plot "tree_features=plots/tree_features.pdf=Tree, motif, gene-structure, and domain composite plot" \\
       --plot "promoter_cis_elements=plots/promoter_cis_elements.pdf=Promoter cis-element category matrix and top element summary" \\
       --plot "ppi_ggnetview=plots/ppi_ggnetview.pdf=PPI network generated with ggNetView" \\

@@ -357,6 +357,17 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert 'path "plots/feature_summary.pdf"' in module
     assert 'path "plots/feature_summary.png"' in module
 
+    assert "process PLOT_GENE_FAMILY_INFO" in module
+    assert "build_gene_family_info.py" in module
+    assert "plot_gene_family_info.R" in module
+    assert "--family-counts ${family_counts}" in module
+    assert "--family-members-faa ${family_members_faa}" in module
+    assert 'path "tables/gene_family_copy_number.tsv"' in module
+    assert 'path "tables/gene_family_copy_number_summary.tsv"' in module
+    assert 'path "tables/gene_family_protein_properties.tsv"' in module
+    assert 'path "plots/gene_family_info_summary.pdf"' in module
+    assert 'path "plots/gene_family_info_summary.png"' in module
+
     assert "process PLOT_PROMOTER_CIS_ELEMENTS" in module
     assert "build_promoter_cis_elements.py" in module
     assert "plot_promoter_cis_elements.R" in module
@@ -400,6 +411,7 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert 'publishDir "${params.outdir}/report", mode: "copy", overwrite: true' in module
     assert "build_plot_manifest.py" in module
     assert '--plot "family_counts=plots/family_counts.pdf=Family member counts by species"' in module
+    assert '--plot "gene_family_info_summary=plots/gene_family_info_summary.pdf=Gene family copy-number and protein-property summary"' in module
     assert '--plot "tree_features=plots/tree_features.pdf=Tree, motif, gene-structure, and domain composite plot"' in module
     assert '--plot "promoter_cis_elements=plots/promoter_cis_elements.pdf=Promoter cis-element category matrix and top element summary"' in module
     assert '--plot "ppi_ggnetview=plots/ppi_ggnetview.pdf=PPI network generated with ggNetView"' in module
@@ -445,6 +457,7 @@ def test_main_workflow_includes_plot_processes():
     assert "PLOT_FAMILY_COUNTS" in workflow
     assert "PLOT_KAKS" in workflow
     assert "PLOT_EXPRESSION_HEATMAP" in workflow
+    assert "PLOT_GENE_FAMILY_INFO" in workflow
     assert "PLOT_TREE_FEATURES" in workflow
     assert "PLOT_PROMOTER_CIS_ELEMENTS" in workflow
     assert "BUILD_PLOT_MANIFEST" in workflow

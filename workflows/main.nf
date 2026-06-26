@@ -24,7 +24,7 @@ include {
 } from './modules/standard_postprocess.nf'
 include { MOCK_MVP } from './modules/mock_mvp.nf'
 include { ASSEMBLE_REPORT } from './modules/report.nf'
-include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; PLOT_FEATURE_SUMMARY; PLOT_TREE_FEATURES; PLOT_PROMOTER_CIS_ELEMENTS; PLOT_MCSCANX_CIRCLIZE; PLOT_PPI_GGNETVIEW; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
+include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; PLOT_FEATURE_SUMMARY; PLOT_GENE_FAMILY_INFO; PLOT_TREE_FEATURES; PLOT_PROMOTER_CIS_ELEMENTS; PLOT_MCSCANX_CIRCLIZE; PLOT_PPI_GGNETVIEW; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
 include {
     PREPARE_ALIGNMENT_INPUTS;
     RUN_ALIGNMENT;
@@ -291,6 +291,7 @@ workflow {
                 family_expression_report_ch = SUBSET_EXPRESSION_MATRIX.out
             }
             PLOT_FAMILY_COUNTS(FAMILY_SUMMARY.out)
+            PLOT_GENE_FAMILY_INFO(FAMILY_SUMMARY.out, EXTRACT_FAMILY_SEQUENCES.out)
             BUILD_PLOT_MANIFEST()
             COLLECT_SOFTWARE_VERSIONS()
             BUILD_FIGURE_INTERPRETATIONS(BUILD_PLOT_MANIFEST.out)
@@ -300,6 +301,11 @@ workflow {
                 CONCAT_FAMILY_CANDIDATES.out,
                 FAMILY_SUMMARY.out,
                 EXTRACT_FAMILY_SEQUENCES.out,
+                PLOT_GENE_FAMILY_INFO.out[0],
+                PLOT_GENE_FAMILY_INFO.out[1],
+                PLOT_GENE_FAMILY_INFO.out[2],
+                PLOT_GENE_FAMILY_INFO.out[3],
+                PLOT_GENE_FAMILY_INFO.out[4],
                 PREPARE_ALIGNMENT_INPUTS.out,
                 RUN_ALIGNMENT.out,
                 PREPARE_PHYLOGENY_INPUTS.out,

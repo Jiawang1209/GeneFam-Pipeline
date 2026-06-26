@@ -251,6 +251,17 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "gene family information visualization smoke",
+            [
+                python,
+                "bin/genefam/run_gene_family_info_smoke.py",
+                "--r-bin",
+                "/usr/local/bin/R",
+                "--outdir",
+                "results/gene_family_info_smoke",
+            ],
+        ),
+        CheckSpec(
             "feature summary visualization smoke",
             [
                 python,

@@ -29,6 +29,9 @@ python bin/genefam/run_standard_smoke.py \
 python bin/genefam/run_promoter_smoke.py \
   --r-bin /usr/local/bin/R \
   --outdir results/promoter_smoke
+python bin/genefam/run_gene_family_info_smoke.py \
+  --r-bin /usr/local/bin/R \
+  --outdir results/gene_family_info_smoke
 python bin/genefam/run_promoter_cis_smoke.py \
   --r-bin /usr/local/bin/R \
   --outdir results/promoter_cis_smoke
@@ -130,6 +133,11 @@ The release checks runner writes:
 - `results/promoter_smoke/tables/promoters.bed`
 - `results/promoter_smoke/sequences/promoters.fa`
 - `results/promoter_smoke/plots/feature_summary.pdf`
+- `results/gene_family_info_smoke/tables/gene_family_copy_number.tsv`
+- `results/gene_family_info_smoke/tables/gene_family_copy_number_summary.tsv`
+- `results/gene_family_info_smoke/tables/gene_family_protein_properties.tsv`
+- `results/gene_family_info_smoke/plots/gene_family_info_summary.pdf`
+- `results/gene_family_info_smoke/plots/gene_family_info_summary.png`
 - `results/promoter_cis_smoke/tables/promoter_cis_elements.tsv`
 - `results/promoter_cis_smoke/tables/promoter_cis_gene_matrix.tsv`
 - `results/promoter_cis_smoke/tables/promoter_cis_category_summary.tsv`
@@ -204,6 +212,7 @@ The Markdown summary reports `Required failed` and `Optional failed` separately.
 | DIAMOND confirmation | `workflows/modules/diamond_search.nf`; `bin/genefam/parse_diamond_outfmt6.py` | `python -m pytest tests/test_parse_diamond_outfmt6.py -q` |
 | domain filtering | `bin/genefam/filter_hmmer_domains.py`; `bin/genefam/run_domain_filter_smoke.py`; `workflows/modules/domain_filter.nf`; `tests/fixtures/hmmer_domains/domains.tsv`; `results/domain_filter_smoke/tables/filtered_domains.tsv` | `python bin/genefam/run_domain_filter_smoke.py --input tests/fixtures/hmmer_domains/domains.tsv --max-evalue 1e-10 --min-bitscore 50 --min-domain-coverage 0.5 --outdir results/domain_filter_smoke` and `python -m pytest tests/test_filter_hmmer_domains.py tests/test_merge_identification_evidence.py -q` |
 | family member summary | `bin/genefam/summarize_family.py`; `workflows/modules/family_summary.nf` | `python -m pytest tests/test_summarize_family.py -q` |
+| gene family information and copy-number visualization | `bin/genefam/build_gene_family_info.py`; `bin/genefam/run_gene_family_info_smoke.py`; `scripts/plot_gene_family_info.R`; `workflows/modules/plots.nf` `PLOT_GENE_FAMILY_INFO`; per-species copy-number classes; protein length, molecular weight, pI, and GRAVY summaries; `results/gene_family_info_smoke/tables/gene_family_copy_number.tsv`; `results/gene_family_info_smoke/tables/gene_family_copy_number_summary.tsv`; `results/gene_family_info_smoke/tables/gene_family_protein_properties.tsv`; `results/gene_family_info_smoke/plots/gene_family_info_summary.pdf`; `results/gene_family_info_smoke/plots/gene_family_info_summary.png` | `python bin/genefam/run_gene_family_info_smoke.py --r-bin /usr/local/bin/R --outdir results/gene_family_info_smoke` and `python -m pytest tests/test_build_gene_family_info.py tests/test_run_gene_family_info_smoke.py tests/test_workflow_modules.py -q` |
 | gene structure | `bin/genefam/extract_gene_structure.py`; `bin/genefam/run_gene_structure_smoke.py`; `results/gene_structure_smoke/tables/gene_structure_summary.tsv`; `workflows/modules/annotation_integration.nf` | `python bin/genefam/run_gene_structure_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/gene_structure_smoke` and `python -m pytest tests/test_extract_gene_structure.py tests/test_run_gene_structure_smoke.py tests/test_workflow_modules.py -q` |
 | alignment | `bin/genefam/prepare_alignment_inputs.py`; `bin/genefam/run_alignment_phylogeny_smoke.py`; `tests/fixtures/alignment/family_members.faa`; `results/alignment_phylogeny_smoke/tables/alignment_manifest.tsv`; `workflows/modules/alignment_phylogeny.nf` | `python bin/genefam/run_alignment_phylogeny_smoke.py --family-name GDSL --fasta tests/fixtures/alignment/family_members.faa --aligner mafft --tree-builder fasttree --outdir results/alignment_phylogeny_smoke` and `python -m pytest tests/test_prepare_alignment_inputs.py tests/test_run_alignment_phylogeny_smoke.py tests/test_workflow_modules.py -q` |
 | phylogeny | `bin/genefam/prepare_phylogeny_inputs.py`; `bin/genefam/run_alignment_phylogeny_smoke.py`; `results/alignment_phylogeny_smoke/tables/phylogeny_manifest.tsv`; `workflows/modules/alignment_phylogeny.nf`; FastTree branch for large multi-species family trees; IQ-TREE branch retained for model-selection/bootstrap runs | `python bin/genefam/run_alignment_phylogeny_smoke.py --family-name GDSL --fasta tests/fixtures/alignment/family_members.faa --aligner mafft --tree-builder fasttree --outdir results/alignment_phylogeny_smoke` and `python -m pytest tests/test_prepare_phylogeny_inputs.py tests/test_run_alignment_phylogeny_smoke.py tests/test_workflow_modules.py -q` |

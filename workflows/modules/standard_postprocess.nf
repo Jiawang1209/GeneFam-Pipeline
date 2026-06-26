@@ -69,6 +69,11 @@ process BUILD_STANDARD_REPORT_INDEX {
     path family_candidates
     path family_counts
     path family_members_faa
+    path gene_family_copy_number
+    path gene_family_copy_number_summary
+    path gene_family_protein_properties
+    path gene_family_info_pdf
+    path gene_family_info_png
     path alignment_manifest
     path alignment_file
     path phylogeny_manifest
@@ -114,6 +119,11 @@ process BUILD_STANDARD_REPORT_INDEX {
       --family-candidates ${family_candidates} \\
       --family-counts ${family_counts} \\
       --family-members-faa ${family_members_faa} \\
+      --gene-family-copy-number ${gene_family_copy_number} \\
+      --gene-family-copy-number-summary ${gene_family_copy_number_summary} \\
+      --gene-family-protein-properties ${gene_family_protein_properties} \\
+      --gene-family-info-pdf ${gene_family_info_pdf} \\
+      --gene-family-info-png ${gene_family_info_png} \\
       --alignment-manifest ${alignment_manifest} \\
       --alignment-file ${alignment_file} \\
       --phylogeny-manifest ${phylogeny_manifest} \\

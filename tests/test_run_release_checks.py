@@ -459,6 +459,18 @@ def test_default_checks_include_feature_summary_after_synteny_smoke():
     assert "--outdir results/feature_summary_smoke" in command
 
 
+def test_default_checks_include_gene_family_info_smoke_before_feature_summary():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("gene family information visualization smoke") > names.index("MCScanX circlize visualization smoke")
+    assert names.index("gene family information visualization smoke") < names.index("feature summary visualization smoke")
+    smoke = next(check for check in default_checks() if check.name == "gene family information visualization smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_gene_family_info_smoke.py" in command
+    assert "--r-bin /usr/local/bin/R" in command
+    assert "--outdir results/gene_family_info_smoke" in command
+
+
 def test_default_checks_include_promoter_cis_smoke_after_feature_summary():
     names = [check.name for check in default_checks()]
 

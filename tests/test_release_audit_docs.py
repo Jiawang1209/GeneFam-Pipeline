@@ -91,6 +91,10 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "run_chromosome_smoke.py" in text
     assert "run_gene_structure_smoke.py" in text
     assert "run_promoter_smoke.py" in text
+    assert "run_gene_family_info_smoke.py" in text
+    assert "build_gene_family_info.py" in text
+    assert "plot_gene_family_info.R" in text
+    assert "PLOT_GENE_FAMILY_INFO" in text
     assert "run_promoter_cis_smoke.py" in text
     assert "build_promoter_cis_elements.py" in text
     assert "plot_promoter_cis_elements.R" in text
@@ -108,6 +112,11 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/nextflow_standard_smoke/standard/plots/tree_features.pdf" in text
     assert "results/nextflow_standard_smoke/standard/plots/tree_features.png" in text
     assert "extract_promoters.py" in text
+    assert "results/gene_family_info_smoke/tables/gene_family_copy_number.tsv" in text
+    assert "results/gene_family_info_smoke/tables/gene_family_copy_number_summary.tsv" in text
+    assert "results/gene_family_info_smoke/tables/gene_family_protein_properties.tsv" in text
+    assert "results/gene_family_info_smoke/plots/gene_family_info_summary.pdf" in text
+    assert "results/gene_family_info_smoke/plots/gene_family_info_summary.png" in text
     assert "summarize_feature_tables.py" in text
     assert "plot_feature_summary.R" in text
     assert "run_alignment_phylogeny_smoke.py" in text

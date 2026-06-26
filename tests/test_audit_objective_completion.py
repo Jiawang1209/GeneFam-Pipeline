@@ -42,6 +42,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
         _release_row("standard branch smoke"),
         _release_row("gene structure smoke"),
         _release_row("chromosome location smoke"),
+        _release_row("gene family information visualization smoke"),
         _release_row("feature summary visualization smoke"),
         _release_row("promoter cis-element visualization smoke"),
         _release_row("tree feature visualization smoke"),
@@ -90,12 +91,14 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
     assert "docker, apptainer" in by_requirement["Docker/Apptainer reproducibility"]["note"]
     assert by_requirement["WGD gamma beta alpha theta evidence"]["status"] == "achieved"
     assert by_requirement["paper-level visualization modules"]["status"] == "achieved"
+    assert "gene family information visualization smoke" in by_requirement["paper-level visualization modules"]["evidence"]
     assert "promoter cis-element visualization smoke" in by_requirement["paper-level visualization modules"]["evidence"]
     assert by_requirement["quickstart handoff"]["status"] == "achieved"
 
 
 def test_paper_level_visualization_modules_require_promoter_cis_smoke():
     release_rows = [
+        _release_row("gene family information visualization smoke"),
         _release_row("feature summary visualization smoke"),
         _release_row("tree feature visualization smoke"),
         _release_row("MCScanX circlize visualization smoke"),
