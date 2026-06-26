@@ -7018,7 +7018,9 @@ Verification:
 - `rg -n "Docker profile smoke|Apptainer profile smoke|runtime_bootstrap.sh|Expected diagnostic output" results/release_checks/release_checks.md` confirmed the release summary now includes actionable recovery notes for both optional container profile failures.
 
 Commit:
-- pending
+- hash: d1cf4ef833f5f31f3423855a6c6744e9d03b9921
+- message: fix: surface container recovery in release notes
+- files: container profile smoke CLI output, container profile smoke tests, history
 
 Next:
 - Continue final-stage container hardening; true Docker/Apptainer profile success still depends on installing or exposing those runtimes.
