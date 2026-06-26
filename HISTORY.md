@@ -9783,7 +9783,7 @@ Verification:
 - `rg -n "WGD gamma beta alpha theta evidence|Nextflow WGD event smoke|formal Nextflow WGD branch" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed the WGD event evidence row now names the formal Nextflow WGD branch.
 
 Commit:
-- hash: pending
+- hash: 0839885483ec8c839d0fb93ec064bbd00cb5d7b4
 - message: test: name nextflow wgd evidence in objective audit
 - files: objective audit evidence text, objective audit tests, history
 
