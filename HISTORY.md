@@ -6810,7 +6810,9 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`: 42 checks passed; `readiness audit` remained the only required failure; Docker and Apptainer profile smokes remained optional failures.
 
 Commit:
-- pending
+- hash: e07f52e9b92bc568ab159a7466b94a20d8655a398
+- message: feat: add figure qc reproducibility notes
+- files: figure interpretation builder, final report assembler, figure/report tests, history
 
 Next:
 - Continue final MVP hardening by reducing the readiness audit gap, then return to container/profile packaging after the analysis flow is fully stable.
