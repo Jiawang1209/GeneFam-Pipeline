@@ -13,8 +13,9 @@ def test_build_tree_feature_matrix_orders_genes_by_tree_leaves_and_summarizes_tr
             {"species_id": "Brassica_rapa", "gene_id": "BraA010001"},
         ],
         motifs=[
-            {"motif_id": "1", "width": "11", "sites": "18"},
-            {"motif_id": "2", "width": "7", "sites": "12"},
+            {"gene_id": "AT1G01010", "motif_id": "1", "width": "11", "sites": "18", "start": "10", "end": "20"},
+            {"gene_id": "AT1G01010", "motif_id": "2", "width": "7", "sites": "12", "start": "80", "end": "86"},
+            {"gene_id": "BraA010001", "motif_id": "1", "width": "11", "sites": "18", "start": "15", "end": "25"},
         ],
         gene_structures=[
             {"species_id": "Arabidopsis_thaliana", "gene_id": "AT1G01010", "gene_length": "501", "exon_count": "3", "cds_count": "3"},
@@ -31,11 +32,20 @@ def test_build_tree_feature_matrix_orders_genes_by_tree_leaves_and_summarizes_tr
     assert [row["gene_id"] for row in rows] == ["BraA010001", "AT1G01010", "AT1G01020"]
     assert rows[0]["tree_order"] == "1"
     assert rows[0]["motif_catalog_count"] == "2"
-    assert rows[0]["motif_total_sites"] == "30"
-    assert rows[0]["motif_mean_width"] == "9.0000"
+    assert rows[0]["motif_total_sites"] == "48"
+    assert rows[0]["motif_mean_width"] == "9.6667"
+    assert rows[0]["motif_count"] == "1"
+    assert rows[0]["motif_ids"] == "1"
+    assert rows[0]["motif_architecture"] == "1:15-25"
+    assert rows[0]["domain_architecture"] == "PF00657:NA-NA:0.8800"
     assert rows[1]["domain_count"] == "2"
     assert rows[1]["best_domain_coverage"] == "0.9000"
+    assert rows[1]["motif_count"] == "2"
+    assert rows[1]["motif_ids"] == "1,2"
+    assert rows[1]["motif_architecture"] == "1:10-20;2:80-86"
+    assert rows[1]["domain_architecture"] == "PF00657:NA-NA:0.9000;PF00657:NA-NA:0.7500"
     assert rows[2]["domain_count"] == "0"
+    assert rows[2]["motif_count"] == "0"
 
 
 def test_build_tree_feature_matrix_cli_writes_tsv(tmp_path):
@@ -47,7 +57,7 @@ def test_build_tree_feature_matrix_cli_writes_tsv(tmp_path):
     out = tmp_path / "tree_feature_matrix.tsv"
     tree.write_text("(geneA:0.1,geneB:0.2);", encoding="utf-8")
     candidates.write_text("species_id\tgene_id\nsp1\tgeneA\nsp2\tgeneB\n", encoding="utf-8")
-    motifs.write_text("motif_id\twidth\tsites\n1\t10\t5\n", encoding="utf-8")
+    motifs.write_text("gene_id\tmotif_id\twidth\tsites\tstart\tend\ngeneA\t1\t10\t5\t5\t14\n", encoding="utf-8")
     structures.write_text(
         "species_id\tgene_id\tgene_length\texon_count\tcds_count\nsp1\tgeneA\t100\t2\t2\nsp2\tgeneB\t200\t3\t3\n",
         encoding="utf-8",
@@ -79,4 +89,5 @@ def test_build_tree_feature_matrix_cli_writes_tsv(tmp_path):
     assert completed.returncode == 0, completed.stderr
     text = out.read_text(encoding="utf-8")
     assert text.startswith("tree_order\tspecies_id\tgene_id\t")
-    assert "2\tsp2\tgeneB\t200\t3\t3\t1\t0.5000\t1\t5\t10.0000" in text
+    assert "1\tsp1\tgeneA\t100\t2\t2\t0\t0.0000\t1\t5\t10.0000\t1\t1\t1:5-14\t" in text
+    assert "2\tsp2\tgeneB\t200\t3\t3\t1\t0.5000\t1\t5\t10.0000\t0\t\t\tPF1:NA-NA:0.5000" in text

@@ -22,6 +22,10 @@ FIELDNAMES = [
     "motif_catalog_count",
     "motif_total_sites",
     "motif_mean_width",
+    "motif_count",
+    "motif_ids",
+    "motif_architecture",
+    "domain_architecture",
 ]
 NEWICK_TOKEN_RE = re.compile(r"([A-Za-z0-9_.|+-]+)(?=[:),;])")
 
@@ -66,11 +70,55 @@ def _safe_float(value: str) -> float | None:
 def _motif_summary(motifs: list[dict[str, str]]) -> tuple[str, str, str]:
     widths = [_safe_float(row.get("width", "")) for row in motifs]
     sites = [_safe_int(row.get("sites", "")) for row in motifs]
+    motif_ids = {row.get("motif_id", "") for row in motifs if row.get("motif_id", "")}
     return (
-        str(len(motifs)),
+        str(len(motif_ids) if motif_ids else len(motifs)),
         str(sum(sites)),
         _mean([value for value in widths if value is not None]),
     )
+
+
+def _coord(value: str | None) -> str:
+    if value is None or value == "":
+        return "NA"
+    return str(_safe_int(value))
+
+
+def _motifs_by_gene(motifs: list[dict[str, str]]) -> dict[str, list[dict[str, str]]]:
+    grouped: dict[str, list[dict[str, str]]] = defaultdict(list)
+    for row in motifs:
+        gene_id = row.get("gene_id", "")
+        if gene_id:
+            grouped[gene_id].append(row)
+    return grouped
+
+
+def _motif_architecture(rows: list[dict[str, str]]) -> tuple[str, str, str]:
+    def key(row: dict[str, str]) -> tuple[int, str]:
+        return (_safe_int(row.get("start", row.get("motif_start", ""))), row.get("motif_id", ""))
+
+    ordered = sorted(rows, key=key)
+    motif_ids = [row.get("motif_id", "") for row in ordered if row.get("motif_id")]
+    architecture = [
+        f"{row.get('motif_id', '')}:{_coord(row.get('start', row.get('motif_start')))}-{_coord(row.get('end', row.get('motif_end')))}"
+        for row in ordered
+        if row.get("motif_id")
+    ]
+    return str(len(ordered)), ",".join(motif_ids), ";".join(architecture)
+
+
+def _domain_architecture(rows: list[dict[str, str]]) -> str:
+    def key(row: dict[str, str]) -> tuple[int, str]:
+        return (_safe_int(row.get("ali_from", row.get("domain_start", ""))), row.get("hmm_id", row.get("domain_id", "")))
+
+    architecture: list[str] = []
+    for row in sorted(rows, key=key):
+        domain_id = row.get("hmm_id", row.get("domain_id", "domain")) or "domain"
+        start = _coord(row.get("ali_from", row.get("domain_start")))
+        end = _coord(row.get("ali_to", row.get("domain_end")))
+        coverage = _safe_float(row.get("domain_coverage", ""))
+        architecture.append(f"{domain_id}:{start}-{end}:{coverage:.4f}" if coverage is not None else f"{domain_id}:{start}-{end}:")
+    return ";".join(architecture)
 
 
 def build_tree_feature_matrix(
@@ -88,20 +136,24 @@ def build_tree_feature_matrix(
     structures_by_gene = {row.get("gene_id", ""): row for row in gene_structures or [] if row.get("gene_id")}
     domain_counts: Counter[str] = Counter()
     domain_coverages: dict[str, list[float]] = defaultdict(list)
+    domain_rows_by_gene: dict[str, list[dict[str, str]]] = defaultdict(list)
     for row in domains or []:
         gene_id = row.get("gene_id", "")
         if not gene_id:
             continue
         domain_counts[gene_id] += 1
+        domain_rows_by_gene[gene_id].append(row)
         coverage = _safe_float(row.get("domain_coverage", ""))
         if coverage is not None:
             domain_coverages[gene_id].append(coverage)
 
     motif_catalog_count, motif_total_sites, motif_mean_width = _motif_summary(motifs or [])
+    motif_rows_by_gene = _motifs_by_gene(motifs or [])
     rows: list[dict[str, str]] = []
     for index, gene_id in enumerate(tree_order, start=1):
         structure = structures_by_gene.get(gene_id, {})
         best_domain_coverage = max(domain_coverages.get(gene_id, [0.0]))
+        motif_count, motif_ids, motif_architecture = _motif_architecture(motif_rows_by_gene.get(gene_id, []))
         rows.append(
             {
                 "tree_order": str(index),
@@ -115,6 +167,10 @@ def build_tree_feature_matrix(
                 "motif_catalog_count": motif_catalog_count,
                 "motif_total_sites": motif_total_sites,
                 "motif_mean_width": motif_mean_width,
+                "motif_count": motif_count,
+                "motif_ids": motif_ids,
+                "motif_architecture": motif_architecture,
+                "domain_architecture": _domain_architecture(domain_rows_by_gene.get(gene_id, [])),
             }
         )
     return rows

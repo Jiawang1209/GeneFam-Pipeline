@@ -34,6 +34,52 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 00:35 - Add per-gene tree feature architecture tracks
+
+Context:
+- The active `/goal` requires tree + motif + gene structure + domain visualizations aligned with `Reference/Long_Weixiong_20240323_1_GDSL/R/6.tree.R`.
+- The existing tree feature matrix and plot were already tree-ordered, but still relied on global motif summary statistics and did not expose per-gene motif/domain architecture tracks.
+
+Decisions:
+- Keep the existing `tree_feature_matrix.tsv` output and add architecture columns instead of introducing a parallel matrix.
+- Summarize motif catalog size as unique motif IDs while preserving total motif site counts across all motif rows.
+- Support per-gene motif rows when the motif table includes `gene_id`, `motif_id`, and optional `start/end`; keep old motif-summary-only inputs compatible.
+- Support domain architecture labels from HMM/domain rows using `hmm_id`, optional alignment/domain coordinates, and `domain_coverage`.
+- Enhance the R plot with architecture labels while preserving the existing PDF/PNG output names and Nextflow/report wiring.
+
+Added:
+- none
+
+Modified:
+- `bin/genefam/build_tree_feature_matrix.py`
+- `bin/genefam/run_tree_feature_smoke.py`
+- `docs/reference_plotting_reuse.md`
+- `docs/release_audit.md`
+- `scripts/plot_tree_features.R`
+- `tests/test_build_tree_feature_matrix.py`
+- `tests/test_reference_plotting_reuse.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_tree_feature_smoke.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_tree_feature_matrix.py tests/test_run_tree_feature_smoke.py tests/test_reference_plotting_reuse.py -q` first failed because `motif_architecture` and `domain_architecture` were not present, then passed after adding per-gene architecture columns and plot support.
+- `python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke` generated `tree_feature_matrix.tsv`, `tree_features.pdf`, and `tree_features.png`.
+- `python -m pytest tests/test_build_tree_feature_matrix.py tests/test_run_tree_feature_smoke.py tests/test_reference_plotting_reuse.py tests/test_release_audit_docs.py -q` passed with 5 tests after release-audit documentation was updated.
+- `python -m pytest tests -q` passed with 338 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because readiness/Docker/Apptainer remain unavailable, but the release matrix stayed at `passed=40 failed=3`; `tree feature visualization smoke` passed and `results/tree_feature_smoke/tables/tree_feature_matrix.tsv` contains `motif_architecture` and `domain_architecture`.
+
+Commit:
+- hash: pending
+- message: feat: add per-gene tree feature architecture tracks
+- files: tree feature matrix builder, tree feature plot, smoke defaults, release/reference docs, tests, history
+
+Next:
+- Continue paper-level refinement for MCScanX/circlize duplicate tracks, WGD peak/layer annotations, promoter dot-style refinement, copy-number species ordering, and final container/runtime unblocking.
+
 ## 2026-06-27 00:24 - Add annotated expression heatmap workflow
 
 Context:

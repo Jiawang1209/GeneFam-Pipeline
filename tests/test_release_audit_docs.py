@@ -105,6 +105,8 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "plot_tree_features.R" in text
     assert "PLOT_TREE_FEATURES" in text
     assert "tree motif gene-structure domain composite visualization" in text
+    assert "motif_architecture" in text
+    assert "domain_architecture" in text
     assert "results/tree_feature_smoke/tables/tree_feature_matrix.tsv" in text
     assert "results/tree_feature_smoke/plots/tree_features.pdf" in text
     assert "results/tree_feature_smoke/plots/tree_features.png" in text

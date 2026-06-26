@@ -29,8 +29,9 @@ def _default_candidates() -> list[dict[str, str]]:
 
 def _default_motifs() -> list[dict[str, str]]:
     return [
-        {"motif_id": "1", "width": "11", "sites": "18"},
-        {"motif_id": "2", "width": "7", "sites": "12"},
+        {"gene_id": "AT1G01010", "motif_id": "1", "width": "11", "sites": "18", "start": "10", "end": "20"},
+        {"gene_id": "AT1G01010", "motif_id": "2", "width": "7", "sites": "12", "start": "80", "end": "86"},
+        {"gene_id": "BraA010001", "motif_id": "1", "width": "11", "sites": "18", "start": "15", "end": "25"},
     ]
 
 

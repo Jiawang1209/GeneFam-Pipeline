@@ -19,7 +19,11 @@ required <- c(
   "best_domain_coverage",
   "motif_catalog_count",
   "motif_total_sites",
-  "motif_mean_width"
+  "motif_mean_width",
+  "motif_count",
+  "motif_ids",
+  "motif_architecture",
+  "domain_architecture"
 )
 missing <- setdiff(required, names(features))
 if (length(missing) > 0) {
@@ -38,7 +42,8 @@ numeric_cols <- c(
   "best_domain_coverage",
   "motif_catalog_count",
   "motif_total_sites",
-  "motif_mean_width"
+  "motif_mean_width",
+  "motif_count"
 )
 for (column in numeric_cols) {
   features[[column]] <- suppressWarnings(as.numeric(features[[column]]))
@@ -53,7 +58,7 @@ scale01 <- function(values) {
 }
 
 draw_tree_features <- function() {
-  layout(matrix(c(1, 2), nrow = 1), widths = c(2.8, 5.2))
+  layout(matrix(c(1, 2, 3), nrow = 1), widths = c(2.6, 4.6, 3.2))
   old_par <- par(no.readonly = TRUE)
   on.exit(par(old_par), add = TRUE)
 
@@ -114,9 +119,24 @@ draw_tree_features <- function() {
   text(
     x = seq_len(nrow(features)),
     y = 6,
-    labels = paste0("M", features$motif_catalog_count, "/w", sprintf("%.1f", features$motif_mean_width)),
+    labels = paste0("M", features$motif_count, "/", features$motif_catalog_count),
     cex = 0.55
   )
+
+  par(mar = c(4, 1, 3, 1))
+  plot(
+    rep(1, length(y)),
+    y,
+    type = "n",
+    axes = FALSE,
+    xlab = "",
+    ylab = "",
+    xlim = c(0, 1),
+    ylim = c(0.5, length(y) + 0.5),
+    main = "Architecture labels"
+  )
+  text(0, y + 0.12, labels = paste0("Motif: ", features$motif_architecture), adj = 0, cex = 0.48)
+  text(0, y - 0.16, labels = paste0("Domain: ", features$domain_architecture), adj = 0, cex = 0.48, col = "#4C78A8")
 }
 
 pdf(file.path(outdir, "tree_features.pdf"), width = 12, height = max(5, 0.32 * nrow(features) + 3))

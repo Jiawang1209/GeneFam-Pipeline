@@ -20,7 +20,11 @@ def test_run_tree_feature_smoke_writes_matrix_and_plots(tmp_path):
     )
 
     assert completed.returncode == 0, completed.stderr
-    assert (outdir / "tables/tree_feature_matrix.tsv").exists()
+    matrix = (outdir / "tables/tree_feature_matrix.tsv")
+    assert matrix.exists()
+    matrix_text = matrix.read_text(encoding="utf-8")
+    assert "motif_architecture" in matrix_text
+    assert "domain_architecture" in matrix_text
     assert (outdir / "plots/tree_features.pdf").exists()
     assert (outdir / "plots/tree_features.png").exists()
     summary = (outdir / "tree_feature_smoke.md").read_text(encoding="utf-8")
