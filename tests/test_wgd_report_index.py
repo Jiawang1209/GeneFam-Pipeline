@@ -24,6 +24,13 @@ def test_build_wgd_report_index_points_to_published_outputs():
         "tables/family_event_retention_summary.tsv"
     )
     assert by_key["retention_enrichment"]["path"].endswith("tables/retention_enrichment.tsv")
+    assert by_key["ks_distribution_pdf"] == {
+        "key": "ks_distribution_pdf",
+        "path": "results/nextflow_wgd_smoke/wgd/plots/ks_distribution.pdf",
+        "status": "available",
+        "description": "Ks distribution PDF plot for WGD-layer interpretation",
+    }
+    assert by_key["ks_distribution_png"]["path"].endswith("plots/ks_distribution.png")
 
 
 def test_build_wgd_report_index_cli_writes_tsv(tmp_path):
@@ -48,3 +55,4 @@ def test_build_wgd_report_index_cli_writes_tsv(tmp_path):
     assert rows["wgd_run_config_snapshot"]["path"] == "results/demo_wgd/tables/wgd_run_config_snapshot.tsv"
     assert rows["wgd_layers"]["path"] == "results/demo_wgd/tables/wgd_layers.tsv"
     assert rows["wgd_event_evidence"]["status"] == "available"
+    assert rows["ks_distribution_pdf"]["path"] == "results/demo_wgd/plots/ks_distribution.pdf"

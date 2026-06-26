@@ -86,6 +86,22 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
     assert "# GeneFam-Pipeline Final Report" in report
     assert "Project: GeneFam demo" in report
     assert "Gene family: GDSL" in report
+    assert "## Executive Summary" in report
+    assert "- Available outputs: 2" in report
+    assert "- Registered plots: 2" in report
+    assert "- Named WGD events with evidence: 1" in report
+    assert "## Methods Summary" in report
+    assert "HMMER/DIAMOND" in report
+    assert "MCScanX" in report
+    assert "Ka/Ks" in report
+    assert "## Results Package Inventory" in report
+    assert "### Available Tables" in report
+    assert "| family_event_retention_summary | tables/family_event_retention_summary.tsv | Family gene counts by duplicate type and WGD event |" in report
+    assert "### Figures" in report
+    assert "| kaks | plots/ks_distribution.pdf | Ks distribution |" in report
+    assert "## Reproducibility Note" in report
+    assert "GeneFamilyFlow" in report
+    assert "/usr/local/bin/R" in report
     assert "## Run Configuration Snapshot" in report
     assert "| runtime.environment | GeneFamilyFlow |" in report
     assert "| selected_species | Arabidopsis_thaliana,Brassica_rapa |" in report
@@ -157,6 +173,8 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
     assert completed.returncode == 0, completed.stderr
     text = out_path.read_text(encoding="utf-8")
     assert "# GeneFam-Pipeline Final Report" in text
+    assert "## Executive Summary" in text
+    assert "## Results Package Inventory" in text
     assert "| runtime.environment | GeneFamilyFlow |" in text
     assert "| selected_species | Arabidopsis_thaliana,Brassica_rapa |" in text
     assert "| WGD_layer_1 | alpha | 12 | 0.1800 | configured_named_event | literature | Brassicaceae | recent |" in text

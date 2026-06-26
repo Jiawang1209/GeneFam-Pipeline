@@ -177,6 +177,16 @@ def test_main_workflow_wires_standard_identification_branch():
 def test_duplication_retention_module_exposes_wgd_helper_processes():
     module = Path("workflows/modules/duplication_retention.nf").read_text(encoding="utf-8")
 
+    assert "process PREPARE_MCSCANX_KAKS_HANDOFF" in module
+    assert 'publishDir "${params.outdir}/mcscanx_kaks_handoff", mode: "copy", overwrite: true' in module
+    assert "build_mcscanx_kaks_handoff.py" in module
+    assert "--collinearity ${collinearity}" in module
+    assert "--kaks ${kaks}" in module
+    assert "--outdir ." in module
+    assert 'path "tables/syntenic_pairs.tsv"' in module
+    assert 'path "tables/duplicate_types.tsv"' in module
+    assert 'path "tables/kaks_pairs.tsv"' in module
+
     assert "process BUILD_WGD_RUN_CONFIG_SNAPSHOT" in module
     assert "build_wgd_run_config_snapshot.py" in module
     assert "--events-config ${events_config}" in module
@@ -240,11 +250,18 @@ def test_duplication_retention_module_exposes_wgd_helper_processes():
 def test_main_workflow_includes_duplication_retention_processes():
     workflow = Path("workflows/main.nf").read_text(encoding="utf-8")
 
+    assert "PREPARE_MCSCANX_KAKS_HANDOFF;" in workflow
+    assert "if (params.mcscanx_collinearity && params.kaks_results)" in workflow
+    assert "PREPARE_MCSCANX_KAKS_HANDOFF(" in workflow
+    assert "duplicates_ch = PREPARE_MCSCANX_KAKS_HANDOFF.out[1]" in workflow
+    assert "kaks_pairs_ch = PREPARE_MCSCANX_KAKS_HANDOFF.out[3]" in workflow
+    assert "Missing WGD inputs: provide either --duplicates/--kaks_pairs or --mcscanx_collinearity/--kaks_results" in workflow
     assert "BUILD_WGD_RUN_CONFIG_SNAPSHOT" in workflow
     assert "BUILD_WGD_RUN_CONFIG_SNAPSHOT(duplicates_ch, family_members_ch, kaks_pairs_ch, events_config_ch, ks_bins_ch, event_args_ch)" in workflow
     assert "NORMALIZE_DUPLICATE_TYPES" in workflow
     assert "JOIN_FAMILY_DUPLICATES" in workflow
     assert "CLASSIFY_WGD_LAYERS" in workflow
+    assert "PLOT_KAKS(kaks_pairs_ch)" in workflow
     assert "BUILD_WGD_EVENT_EVIDENCE" in workflow
     assert "ANNOTATE_FAMILY_WGD_EVENTS" in workflow
     assert "SUMMARIZE_FAMILY_EVENT_RETENTION" in workflow
@@ -285,6 +302,7 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert "${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_kaks.R" in module
     assert "--args ${kaks_pairs} plots" in module
     assert 'path "plots/ks_distribution.pdf"' in module
+    assert 'path "plots/ks_distribution.png"' in module
 
     assert "process PLOT_EXPRESSION_HEATMAP" in module
     assert "${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_expression_heatmap.R" in module

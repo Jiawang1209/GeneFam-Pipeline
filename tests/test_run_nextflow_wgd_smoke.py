@@ -42,6 +42,25 @@ def test_build_nextflow_wgd_command_targets_duplication_retention_branch(tmp_pat
     ]
 
 
+def test_build_nextflow_wgd_command_can_use_raw_mcscanx_kaks_inputs(tmp_path):
+    inputs_dir = tmp_path / "inputs"
+    command = build_nextflow_command(
+        nextflow_bin="nextflow",
+        family_members=str(inputs_dir / "family_members.tsv"),
+        events_config="configs/wgd_events.brassicaceae.yaml",
+        outdir="results/nextflow_wgd_raw_smoke/wgd",
+        mcscanx_collinearity="tests/fixtures/mcscanx/sample.collinearity",
+        kaks_results="tests/fixtures/kaks/kaks_calculator.tsv",
+    )
+
+    assert "--duplicates" not in command
+    assert "--kaks_pairs" not in command
+    assert "--mcscanx_collinearity" in command
+    assert command[command.index("--mcscanx_collinearity") + 1] == "tests/fixtures/mcscanx/sample.collinearity"
+    assert "--kaks_results" in command
+    assert command[command.index("--kaks_results") + 1] == "tests/fixtures/kaks/kaks_calculator.tsv"
+
+
 def test_expected_published_outputs_cover_wgd_results(tmp_path):
     outdir = tmp_path / "wgd"
 
@@ -54,9 +73,22 @@ def test_expected_published_outputs_cover_wgd_results(tmp_path):
         outdir / "tables/family_wgd_event_membership.tsv",
         outdir / "tables/family_event_retention_summary.tsv",
         outdir / "tables/retention_enrichment.tsv",
+        outdir / "plots/ks_distribution.pdf",
+        outdir / "plots/ks_distribution.png",
         outdir / "report/report_index.tsv",
         outdir / "report/final_report.md",
     ]
+
+
+def test_expected_published_outputs_can_include_raw_handoff_results(tmp_path):
+    outdir = tmp_path / "wgd"
+
+    outputs = expected_published_outputs(outdir, raw_handoff=True)
+
+    assert outdir / "mcscanx_kaks_handoff/tables/syntenic_pairs.tsv" in outputs
+    assert outdir / "mcscanx_kaks_handoff/tables/duplicate_types.tsv" in outputs
+    assert outdir / "mcscanx_kaks_handoff/tables/kaks_pairs.tsv" in outputs
+    assert outdir / "mcscanx_kaks_handoff/mcscanx_kaks_handoff.md" in outputs
 
 
 def test_run_nextflow_wgd_smoke_cli_reports_missing_nextflow(tmp_path):

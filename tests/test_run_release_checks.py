@@ -551,11 +551,24 @@ def test_default_checks_include_nextflow_wgd_smoke_before_readiness():
     assert "--outdir results/nextflow_wgd_smoke" in " ".join(smoke.command)
 
 
+def test_default_checks_include_nextflow_raw_mcscanx_kaks_smoke_after_wgd():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("Nextflow raw MCScanX/KaKs WGD smoke") > names.index("Nextflow WGD event smoke")
+    assert names.index("Nextflow raw MCScanX/KaKs WGD smoke") < names.index("prepared WGD handoff example")
+    smoke = next(check for check in default_checks() if check.name == "Nextflow raw MCScanX/KaKs WGD smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_nextflow_wgd_smoke.py" in command
+    assert "--mode raw-mcscanx-kaks" in command
+    assert "--conda-env GeneFamilyFlow" in command
+    assert "--outdir results/nextflow_wgd_raw_smoke" in command
+
+
 def test_default_checks_include_prepared_wgd_handoff_example_before_readiness():
     names = [check.name for check in default_checks()]
 
     assert names.index("prepared WGD handoff example") < names.index("readiness audit")
-    assert names.index("prepared WGD handoff example") > names.index("Nextflow WGD event smoke")
+    assert names.index("prepared WGD handoff example") > names.index("Nextflow raw MCScanX/KaKs WGD smoke")
     example = next(check for check in default_checks() if check.name == "prepared WGD handoff example")
     command = " ".join(example.command)
     assert "bin/genefam/run_prepared_wgd_handoff_example.py" in command

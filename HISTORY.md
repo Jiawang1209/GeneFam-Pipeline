@@ -34,6 +34,63 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-26 20:02 - Add raw MCScanX/KaKs WGD handoff and report package polish
+
+Context:
+- The user asked to continue the `/goal` work on the next priority block: formal promoter/MCScanX/feature summary wiring, real MCScanX/KaKs end-to-end entry points, report-system upgrades, and visualization enhancements before container packaging.
+- The standard visualization modules were already committed in `eaeee52`; this entry records the follow-up work for real MCScanX/KaKs WGD handoff, final-report structure, and Ka/Ks plot publication.
+
+Decisions:
+- Keep containerization out of scope for this step and continue improving the analysis workflow first.
+- Add a raw MCScanX/KaKs handoff path while preserving the existing prepared-table WGD branch.
+- Treat MCScanX `.collinearity` and KaKs_Calculator output as real upstream tool outputs that can be normalized into workflow-native tables.
+- Upgrade final Markdown reports with executive summary, methods summary, result-package inventory, figure inventory, and reproducibility notes.
+- Publish WGD Ka/Ks distribution plots as both PDF and PNG.
+
+Added:
+- `bin/genefam/build_mcscanx_kaks_handoff.py`
+- `tests/test_build_mcscanx_kaks_handoff.py`
+
+Modified:
+- `workflows/nextflow.config`
+- `workflows/main.nf`
+- `workflows/modules/duplication_retention.nf`
+- `workflows/modules/plots.nf`
+- `bin/genefam/run_nextflow_wgd_smoke.py`
+- `bin/genefam/run_release_checks.py`
+- `bin/genefam/assemble_report.py`
+- `bin/genefam/build_wgd_report_index.py`
+- `scripts/plot_kaks.R`
+- `README.md`
+- `README.zh-CN.md`
+- `docs/release_audit.md`
+- related tests for workflow wiring, WGD smoke, release checks, reports, report index, runtime params, and release audit docs
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_mcscanx_kaks_handoff.py -q` first failed because the handoff builder did not exist, then passed with 2 tests after implementation.
+- `python -m pytest tests/test_runtime_environment_files.py::test_nextflow_config_has_container_profiles tests/test_workflow_modules.py::test_duplication_retention_module_exposes_wgd_helper_processes tests/test_workflow_modules.py::test_main_workflow_includes_duplication_retention_processes -q` first failed because raw MCScanX/KaKs params and Nextflow process wiring were missing, then passed after adding `PREPARE_MCSCANX_KAKS_HANDOFF`.
+- `python bin/genefam/run_nextflow_wgd_smoke.py --conda-env GeneFamilyFlow --mode raw-mcscanx-kaks --outdir results/nextflow_wgd_raw_smoke` initially failed because the new script could not import the local `bin` package from a Nextflow work directory, then passed after adding repo-root path bootstrapping.
+- `python -m pytest tests/test_assemble_report.py -q` first failed because the report lacked executive summary, methods summary, result-package inventory, figure inventory, and reproducibility note; it passed after upgrading `assemble_report.py`.
+- `python -m pytest tests/test_wgd_report_index.py tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_workflow_modules.py::test_main_workflow_includes_duplication_retention_processes tests/test_run_nextflow_wgd_smoke.py -q` first failed because WGD Ka/Ks PNG output and WGD `PLOT_KAKS` wiring were missing, then passed after adding the visualization outputs.
+- `python bin/genefam/run_nextflow_wgd_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_wgd_smoke` passed after the report and plot upgrades.
+- `python bin/genefam/run_nextflow_wgd_smoke.py --conda-env GeneFamilyFlow --mode raw-mcscanx-kaks --outdir results/nextflow_wgd_raw_smoke` passed after the report and plot upgrades.
+- `python -m pytest tests -q` passed with 302 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`, as expected while Docker/Apptainer remain unavailable.
+- `results/release_checks/release_checks.md` reports `Passed: 33`, `Required failed: 1`, `Optional failed: 2`; `Nextflow raw MCScanX/KaKs WGD smoke` passed.
+- `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
+- hash: not created yet
+- message: pending
+- files: raw MCScanX/KaKs handoff builder, Nextflow WGD raw input wiring, WGD Ka/Ks plotting, report package upgrade, docs, tests, history
+
+Next:
+- Continue with any remaining paper-style report exports and broader visualization polish, while leaving Docker/Apptainer packaging for the final phase.
+
 ## 2026-06-23 - Project governance and single-file development diary setup
 
 Context:
@@ -6449,8 +6506,8 @@ Verification:
 - `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
-- hash: not created yet
-- message: pending
+- hash: eaeee52
+- message: feat: wire standard visualization modules into nextflow
 - files: Nextflow standard visualization wiring, report-index optional outputs, smoke runner, release checks, docs, tests, history
 
 Next:

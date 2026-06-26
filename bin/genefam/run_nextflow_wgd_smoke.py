@@ -26,8 +26,8 @@ def format_command(command: list[str]) -> str:
     return shlex.join(command)
 
 
-def expected_published_outputs(wgd_outdir: Path) -> list[Path]:
-    return [
+def expected_published_outputs(wgd_outdir: Path, raw_handoff: bool = False) -> list[Path]:
+    outputs = [
         wgd_outdir / "tables/wgd_run_config_snapshot.tsv",
         wgd_outdir / "tables/normalized_duplicate_types.tsv",
         wgd_outdir / "tables/family_duplicate_classification.tsv",
@@ -36,9 +36,23 @@ def expected_published_outputs(wgd_outdir: Path) -> list[Path]:
         wgd_outdir / "tables/family_wgd_event_membership.tsv",
         wgd_outdir / "tables/family_event_retention_summary.tsv",
         wgd_outdir / "tables/retention_enrichment.tsv",
+        wgd_outdir / "plots/ks_distribution.pdf",
+        wgd_outdir / "plots/ks_distribution.png",
         wgd_outdir / "report/report_index.tsv",
         wgd_outdir / "report/final_report.md",
     ]
+    if raw_handoff:
+        outputs.extend(
+            [
+                wgd_outdir / "mcscanx_kaks_handoff/tables/syntenic_pairs.tsv",
+                wgd_outdir / "mcscanx_kaks_handoff/tables/duplicate_types.tsv",
+                wgd_outdir / "mcscanx_kaks_handoff/tables/normalized_kaks.tsv",
+                wgd_outdir / "mcscanx_kaks_handoff/tables/kaks_pairs.tsv",
+                wgd_outdir / "mcscanx_kaks_handoff/tables/kaks_pair_manifest.tsv",
+                wgd_outdir / "mcscanx_kaks_handoff/mcscanx_kaks_handoff.md",
+            ]
+        )
+    return outputs
 
 
 def write_tsv(rows: list[dict[str, str]], fieldnames: list[str], out_path: Path) -> None:
@@ -86,13 +100,29 @@ def write_smoke_inputs(inputs_dir: Path) -> dict[str, Path]:
     return paths
 
 
+def write_raw_handoff_smoke_inputs(inputs_dir: Path) -> dict[str, Path]:
+    family_members = [
+        {"species_id": "Arabidopsis_thaliana", "gene_id": "AT1G01010"},
+        {"species_id": "Arabidopsis_thaliana", "gene_id": "AT1G01020"},
+        {"species_id": "Brassica_rapa", "gene_id": "BraA010001"},
+        {"species_id": "Brassica_rapa", "gene_id": "BraA010002"},
+    ]
+    paths = {"family_members": inputs_dir / "family_members.tsv"}
+    write_tsv(family_members, ["species_id", "gene_id"], paths["family_members"])
+    return paths
+
+
 def build_nextflow_command(
     nextflow_bin: str,
-    duplicates: str,
     family_members: str,
-    kaks_pairs: str,
     events_config: str,
     outdir: str,
+    duplicates: str | None = None,
+    kaks_pairs: str | None = None,
+    mcscanx_collinearity: str | None = None,
+    kaks_results: str | None = None,
+    mcscanx_cds_a: str | None = None,
+    mcscanx_cds_b: str | None = None,
     profile: str | None = None,
 ) -> list[str]:
     command = [
@@ -110,12 +140,36 @@ def build_nextflow_command(
             "configs/example.config.yaml",
             "--run_duplication_retention",
             "true",
-            "--duplicates",
-            duplicates,
-            "--family_members",
-            family_members,
-            "--kaks_pairs",
-            kaks_pairs,
+        ]
+    )
+    if mcscanx_collinearity and kaks_results:
+        command.extend(
+            [
+                "--family_members",
+                family_members,
+                "--mcscanx_collinearity",
+                mcscanx_collinearity,
+                "--kaks_results",
+                kaks_results,
+            ]
+        )
+        if mcscanx_cds_a and mcscanx_cds_b:
+            command.extend(["--mcscanx_cds_a", mcscanx_cds_a, "--mcscanx_cds_b", mcscanx_cds_b])
+    elif duplicates and kaks_pairs:
+        command.extend(
+            [
+                "--duplicates",
+                duplicates,
+                "--family_members",
+                family_members,
+                "--kaks_pairs",
+                kaks_pairs,
+            ]
+        )
+    else:
+        raise ValueError("Provide either duplicates/kaks_pairs or mcscanx_collinearity/kaks_results")
+    command.extend(
+        [
             "--events_config",
             events_config,
             "--ks_bins",
@@ -160,20 +214,35 @@ def run_nextflow_wgd_smoke(
     events_config: str,
     outdir: Path,
     conda_env: str | None = None,
+    mode: str = "prepared",
 ) -> dict[str, str]:
-    inputs = write_smoke_inputs(outdir / "inputs")
+    if mode == "raw-mcscanx-kaks":
+        inputs = write_raw_handoff_smoke_inputs(outdir / "inputs")
+    else:
+        inputs = write_smoke_inputs(outdir / "inputs")
     resolved_nextflow = resolve_nextflow_binary(nextflow_bin, conda_env=conda_env)
     command_nextflow = resolved_nextflow or nextflow_bin
     profile = "activated" if conda_env and resolved_nextflow else None
-    command = build_nextflow_command(
-        nextflow_bin=command_nextflow,
-        duplicates=str(inputs["duplicates"]),
-        family_members=str(inputs["family_members"]),
-        kaks_pairs=str(inputs["kaks_pairs"]),
-        events_config=events_config,
-        outdir=str(outdir / "wgd"),
-        profile=profile,
-    )
+    if mode == "raw-mcscanx-kaks":
+        command = build_nextflow_command(
+            nextflow_bin=command_nextflow,
+            family_members=str(inputs["family_members"]),
+            mcscanx_collinearity="tests/fixtures/mcscanx/sample.collinearity",
+            kaks_results="tests/fixtures/kaks/kaks_calculator.tsv",
+            events_config=events_config,
+            outdir=str(outdir / "wgd"),
+            profile=profile,
+        )
+    else:
+        command = build_nextflow_command(
+            nextflow_bin=command_nextflow,
+            duplicates=str(inputs["duplicates"]),
+            family_members=str(inputs["family_members"]),
+            kaks_pairs=str(inputs["kaks_pairs"]),
+            events_config=events_config,
+            outdir=str(outdir / "wgd"),
+            profile=profile,
+        )
     if not resolved_nextflow:
         return {
             "check": "nextflow_wgd_events",
@@ -188,7 +257,9 @@ def run_nextflow_wgd_smoke(
         env["CONDA_DEFAULT_ENV"] = conda_env
     completed = subprocess.run(command, check=False, capture_output=True, text=True, env=env)
     output = "\n".join(part for part in [completed.stdout.strip(), completed.stderr.strip()] if part)
-    missing_outputs = [path for path in expected_published_outputs(outdir / "wgd") if not path.exists()]
+    missing_outputs = [
+        path for path in expected_published_outputs(outdir / "wgd", raw_handoff=mode == "raw-mcscanx-kaks") if not path.exists()
+    ]
     passed = completed.returncode == 0 and not missing_outputs
     if completed.returncode == 0 and missing_outputs:
         output = "\n".join(["Missing published outputs:", *[str(path) for path in missing_outputs], output])
@@ -207,12 +278,14 @@ def main() -> None:
     parser.add_argument("--conda-env", default=None)
     parser.add_argument("--events-config", default="configs/wgd_events.brassicaceae.yaml")
     parser.add_argument("--outdir", default=Path("results/nextflow_wgd_smoke"), type=Path)
+    parser.add_argument("--mode", choices=["prepared", "raw-mcscanx-kaks"], default="prepared")
     args = parser.parse_args()
     row = run_nextflow_wgd_smoke(
         args.nextflow_bin,
         args.events_config,
         args.outdir,
         conda_env=args.conda_env,
+        mode=args.mode,
     )
     _write_tsv(row, args.outdir / "nextflow_wgd_smoke.tsv")
     _write_markdown(row, args.outdir / "nextflow_wgd_smoke.md")

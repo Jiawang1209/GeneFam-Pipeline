@@ -379,6 +379,19 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "Nextflow raw MCScanX/KaKs WGD smoke",
+            [
+                python,
+                "bin/genefam/run_nextflow_wgd_smoke.py",
+                "--conda-env",
+                "GeneFamilyFlow",
+                "--mode",
+                "raw-mcscanx-kaks",
+                "--outdir",
+                "results/nextflow_wgd_raw_smoke",
+            ],
+        ),
+        CheckSpec(
             "prepared WGD handoff example",
             [
                 python,

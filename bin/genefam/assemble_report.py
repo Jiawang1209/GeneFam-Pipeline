@@ -24,6 +24,31 @@ def _section_or_empty(title: str, headers: list[str], rows: list[list[str]], emp
     return lines
 
 
+def _available_rows(report_index_rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    return [row for row in report_index_rows if row.get("status") == "available"]
+
+
+def _named_wgd_events(wgd_event_evidence: list[dict[str, str]]) -> list[str]:
+    names = {
+        row.get("event_name", "")
+        for row in wgd_event_evidence
+        if row.get("event_name") and row.get("event_name") != "unannotated"
+    }
+    return sorted(names)
+
+
+def _report_figure_rows(
+    report_index_rows: list[dict[str, str]], plot_manifest: list[dict[str, str]]
+) -> list[list[str]]:
+    rows = [[row["plot_key"], row.get("path", ""), row.get("description", "")] for row in plot_manifest]
+    existing_paths = {row[1] for row in rows}
+    for row in report_index_rows:
+        path = row.get("path", "")
+        if row.get("status") == "available" and path.lower().endswith((".pdf", ".png", ".svg")) and path not in existing_paths:
+            rows.append([row["key"], path, row.get("description", "")])
+    return rows
+
+
 def assemble_report(
     project_name: str,
     gene_family: str,
@@ -34,13 +59,46 @@ def assemble_report(
     retention_enrichment: list[dict[str, str]] | None = None,
     plot_manifest: list[dict[str, str]] | None = None,
 ) -> str:
+    available_outputs = _available_rows(report_index_rows)
+    named_events = _named_wgd_events(wgd_event_evidence or [])
+    figure_rows = _report_figure_rows(report_index_rows, plot_manifest or [])
     lines = [
         "# GeneFam-Pipeline Final Report",
         "",
         f"Project: {project_name}",
         f"Gene family: {gene_family}",
         "",
+        "## Executive Summary",
+        "",
+        f"- Available outputs: {len(available_outputs)}",
+        f"- Registered plots: {len(figure_rows)}",
+        f"- Named WGD events with evidence: {len(named_events)}",
+        f"- Named event labels: {', '.join(named_events) if named_events else 'none'}",
+        "",
+        "## Methods Summary",
+        "",
+        "Family members are identified from genome-scale protein evidence, with HMMER/DIAMOND-style search outputs filtered into family candidate tables. Alignment, phylogeny, motif, chromosome, promoter, expression, MCScanX synteny, and Ka/Ks evidence can then be integrated into the same report package. WGD labels such as gamma, beta, alpha, and theta are assigned from configured Ks-supported layers rather than treated as raw tool output.",
+        "",
+        "## Results Package Inventory",
+        "",
+        "### Available Tables",
+        "",
     ]
+    table_rows = [
+        [row["key"], row.get("path", ""), row.get("description", "")]
+        for row in available_outputs
+        if not row.get("path", "").lower().endswith((".pdf", ".png", ".svg"))
+    ]
+    if table_rows:
+        lines.extend(_markdown_table(["key", "path", "description"], table_rows))
+    else:
+        lines.append("No available table outputs were registered.")
+    lines.extend(["", "### Figures", ""])
+    if figure_rows:
+        lines.extend(_markdown_table(["plot_key", "path", "description"], figure_rows))
+    else:
+        lines.append("No figure outputs were registered.")
+    lines.append("")
 
     lines.extend(
         _section_or_empty(
@@ -138,6 +196,10 @@ def assemble_report(
     )
     lines.extend(
         [
+            "## Reproducibility Note",
+            "",
+            "This report is designed to be regenerated from the GeneFamilyFlow runtime. R visualizations use `/usr/local/bin/R` in the local development environment, and containerized execution can be layered on after the analysis workflow is stable.",
+            "",
             "## Interpretation Note",
             "",
             "WGD event names such as gamma, beta, alpha, and theta are configured interpretations of synteny and Ks layers. Treat anonymous WGD layers as observations and named events as metadata-backed biological labels.",

@@ -286,6 +286,33 @@ anonymous WGD layers + event YAML/literature metadata -> gamma/beta/alpha/theta
 
 这样做的好处是流程不会把事件名当成原始事实，而是明确区分“观测证据”和“文献解释”。
 
+## 真实 MCScanX / KaKs 到 WGD 分支
+
+如果你已经有真实的 MCScanX `.collinearity` 文件和 KaKs_Calculator 结果表，可以直接让 Nextflow 生成 WGD 分支需要的中间表：
+
+```bash
+nextflow run workflows/main.nf \
+  -c workflows/nextflow.config \
+  --config configs/example.config.yaml \
+  --run_duplication_retention true \
+  --family_members path/to/family_candidates.tsv \
+  --mcscanx_collinearity path/to/sample.collinearity \
+  --kaks_results path/to/kaks_calculator.tsv \
+  --events_config configs/wgd_events.brassicaceae.yaml \
+  --ks_bins 0.3,0.8,1.5 \
+  --wgd_event_args "--event WGD_layer_1=alpha --event WGD_layer_2=beta --event WGD_layer_3=gamma --event WGD_layer_4=theta"
+```
+
+它会先写出：
+
+- `mcscanx_kaks_handoff/tables/syntenic_pairs.tsv`
+- `mcscanx_kaks_handoff/tables/duplicate_types.tsv`
+- `mcscanx_kaks_handoff/tables/normalized_kaks.tsv`
+- `mcscanx_kaks_handoff/tables/kaks_pairs.tsv`
+- `mcscanx_kaks_handoff/mcscanx_kaks_handoff.md`
+
+然后再进入 WGD layer、gamma/beta/alpha/theta 事件解释、家族保留统计和报告生成。
+
 ## MCScanX + circlize 可视化
 
 目前已经有一个专门的 smoke：

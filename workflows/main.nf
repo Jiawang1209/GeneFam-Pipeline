@@ -31,6 +31,7 @@ include {
     SUBSET_EXPRESSION_MATRIX
 } from './modules/annotation_integration.nf'
 include {
+    PREPARE_MCSCANX_KAKS_HANDOFF;
     BUILD_WGD_RUN_CONFIG_SNAPSHOT;
     NORMALIZE_DUPLICATE_TYPES;
     JOIN_FAMILY_DUPLICATES;
@@ -67,9 +68,7 @@ workflow {
 
         MOCK_MVP.out.view { outputs -> "Mock MVP output index: ${outputs}" }
     } else if (params.run_duplication_retention) {
-        duplicates_ch = Channel.value(file(params.duplicates))
         family_members_ch = Channel.value(file(params.family_members))
-        kaks_pairs_ch = Channel.value(file(params.kaks_pairs))
         events_config_ch = Channel.value(file(params.events_config))
         ks_bins_ch = Channel.value(params.ks_bins)
         event_args_ch = Channel.value(params.wgd_event_args ?: "")
@@ -77,10 +76,31 @@ workflow {
         project_name_ch = Channel.value(params.project_name)
         family_name_ch = Channel.value(params.gene_family)
 
+        if (params.mcscanx_collinearity && params.kaks_results) {
+            collinearity_ch = Channel.value(file(params.mcscanx_collinearity))
+            kaks_results_ch = Channel.value(file(params.kaks_results))
+            cds_a_ch = Channel.value(params.mcscanx_cds_a ?: "")
+            cds_b_ch = Channel.value(params.mcscanx_cds_b ?: "")
+            PREPARE_MCSCANX_KAKS_HANDOFF(
+                collinearity_ch,
+                kaks_results_ch,
+                cds_a_ch,
+                cds_b_ch
+            )
+            duplicates_ch = PREPARE_MCSCANX_KAKS_HANDOFF.out[1]
+            kaks_pairs_ch = PREPARE_MCSCANX_KAKS_HANDOFF.out[3]
+        } else if (params.duplicates && params.kaks_pairs) {
+            duplicates_ch = Channel.value(file(params.duplicates))
+            kaks_pairs_ch = Channel.value(file(params.kaks_pairs))
+        } else {
+            error "Missing WGD inputs: provide either --duplicates/--kaks_pairs or --mcscanx_collinearity/--kaks_results"
+        }
+
         BUILD_WGD_RUN_CONFIG_SNAPSHOT(duplicates_ch, family_members_ch, kaks_pairs_ch, events_config_ch, ks_bins_ch, event_args_ch)
         NORMALIZE_DUPLICATE_TYPES(duplicates_ch)
         JOIN_FAMILY_DUPLICATES(family_members_ch, NORMALIZE_DUPLICATE_TYPES.out)
         CLASSIFY_WGD_LAYERS(kaks_pairs_ch, ks_bins_ch, event_args_ch)
+        PLOT_KAKS(kaks_pairs_ch)
         BUILD_WGD_EVENT_EVIDENCE(CLASSIFY_WGD_LAYERS.out, events_config_ch)
         ANNOTATE_FAMILY_WGD_EVENTS(JOIN_FAMILY_DUPLICATES.out, CLASSIFY_WGD_LAYERS.out)
         SUMMARIZE_FAMILY_EVENT_RETENTION(ANNOTATE_FAMILY_WGD_EVENTS.out)

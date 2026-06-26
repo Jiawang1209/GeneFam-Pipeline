@@ -64,6 +64,10 @@ def test_nextflow_config_has_container_profiles():
     assert "params.run_feature_summary = false" in config
     assert "params.run_mcscanx_circlize = false" in config
     assert "params.syntenic_pairs = null" in config
+    assert "params.mcscanx_collinearity = null" in config
+    assert "params.kaks_results = null" in config
+    assert "params.mcscanx_cds_a = null" in config
+    assert "params.mcscanx_cds_b = null" in config
 
 
 def test_readiness_checklist_documents_command_audit():

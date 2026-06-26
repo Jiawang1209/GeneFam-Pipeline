@@ -24,6 +24,7 @@ process PLOT_KAKS {
 
     output:
     path "plots/ks_distribution.pdf"
+    path "plots/ks_distribution.png"
 
     script:
     """

@@ -1,3 +1,36 @@
+process PREPARE_MCSCANX_KAKS_HANDOFF {
+    tag "prepare MCScanX/KaKs WGD handoff"
+    publishDir "${params.outdir}/mcscanx_kaks_handoff", mode: "copy", overwrite: true
+
+    input:
+    path collinearity
+    path kaks
+    val cds_a
+    val cds_b
+
+    output:
+    path "tables/syntenic_pairs.tsv"
+    path "tables/duplicate_types.tsv"
+    path "tables/normalized_kaks.tsv"
+    path "tables/kaks_pairs.tsv"
+    path "tables/kaks_pair_manifest.tsv"
+    path "mcscanx_kaks_handoff.md"
+
+    script:
+    """
+    CDS_ARGS=""
+    if [ -n "${cds_a}" ] && [ -n "${cds_b}" ]; then
+      CDS_ARGS="--cds-a ${cds_a} --cds-b ${cds_b}"
+    fi
+
+    python ${projectDir}/../bin/genefam/build_mcscanx_kaks_handoff.py \\
+      --collinearity ${collinearity} \\
+      --kaks ${kaks} \\
+      \$CDS_ARGS \\
+      --outdir .
+    """
+}
+
 process BUILD_WGD_RUN_CONFIG_SNAPSHOT {
     tag "WGD run config snapshot"
     publishDir "${params.outdir}/tables", mode: "copy", overwrite: true

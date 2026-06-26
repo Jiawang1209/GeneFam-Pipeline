@@ -18,6 +18,8 @@ DESCRIPTIONS = {
     "family_wgd_event_membership": "Family member membership in named WGD events",
     "family_event_retention_summary": "Family retention summary by WGD event and duplicate type",
     "retention_enrichment": "Duplicate-type retention enrichment for family members",
+    "ks_distribution_pdf": "Ks distribution PDF plot for WGD-layer interpretation",
+    "ks_distribution_png": "Ks distribution PNG plot for WGD-layer interpretation",
 }
 
 
@@ -32,6 +34,8 @@ def build_report_index(published_outdir: str) -> list[dict[str, str]]:
         "family_wgd_event_membership": outdir / "tables/family_wgd_event_membership.tsv",
         "family_event_retention_summary": outdir / "tables/family_event_retention_summary.tsv",
         "retention_enrichment": outdir / "tables/retention_enrichment.tsv",
+        "ks_distribution_pdf": outdir / "plots/ks_distribution.pdf",
+        "ks_distribution_png": outdir / "plots/ks_distribution.png",
     }
     return [
         {

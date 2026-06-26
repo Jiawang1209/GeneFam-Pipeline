@@ -126,6 +126,8 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/nextflow_standard_feature_smoke" in text
     assert "run_container_profile_smoke.py" in text
     assert "run_nextflow_wgd_smoke.py" in text
+    assert "--mode raw-mcscanx-kaks" in text
+    assert "build_mcscanx_kaks_handoff.py" in text
     assert "run_prepared_wgd_handoff_example.py" in text
     assert "run_quickstart.py" in text
     assert "examples/prepared_wgd_handoff" in text
@@ -159,6 +161,15 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/domain_filter_smoke/tables/filtered_domains.tsv" in text
     assert "tests/fixtures/kaks/kaks_calculator.tsv" in text
     assert "results/kaks_smoke/tables/normalized_kaks.tsv" in text
+    assert "results/nextflow_wgd_raw_smoke/wgd/mcscanx_kaks_handoff/tables/syntenic_pairs.tsv" in text
+    assert "results/nextflow_wgd_raw_smoke/wgd/mcscanx_kaks_handoff/tables/duplicate_types.tsv" in text
+    assert "results/nextflow_wgd_raw_smoke/wgd/mcscanx_kaks_handoff/tables/normalized_kaks.tsv" in text
+    assert "results/nextflow_wgd_raw_smoke/wgd/mcscanx_kaks_handoff/tables/kaks_pairs.tsv" in text
+    assert "results/nextflow_wgd_raw_smoke/wgd/mcscanx_kaks_handoff/mcscanx_kaks_handoff.md" in text
+    assert "results/nextflow_wgd_smoke/wgd/plots/ks_distribution.pdf" in text
+    assert "results/nextflow_wgd_smoke/wgd/plots/ks_distribution.png" in text
+    assert "results/nextflow_wgd_raw_smoke/wgd/plots/ks_distribution.pdf" in text
+    assert "results/nextflow_wgd_raw_smoke/wgd/plots/ks_distribution.png" in text
     assert "results/retention_enrichment_smoke/tables/retention_enrichment.tsv" in text
     assert "results/standard_expression_smoke/tables/family_expression.tsv" in text
     assert "results/standard_expression_smoke/plots/expression_heatmap.pdf" in text

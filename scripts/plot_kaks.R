@@ -12,3 +12,7 @@ kaks <- read.delim(input, check.names = FALSE)
 pdf(file.path(outdir, "ks_distribution.pdf"), width = 7, height = 4)
 hist(as.numeric(kaks$ks), breaks = 40, col = "#72B7B2", xlab = "Ks", main = "Ks distribution")
 dev.off()
+
+png(file.path(outdir, "ks_distribution.png"), width = 1400, height = 800, res = 200)
+hist(as.numeric(kaks$ks), breaks = 40, col = "#72B7B2", xlab = "Ks", main = "Ks distribution")
+dev.off()
