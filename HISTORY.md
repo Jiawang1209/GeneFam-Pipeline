@@ -8722,3 +8722,57 @@ Commit:
 
 Next:
 - Keep the goal active for final Docker/Apptainer runtime verification and any additional Reference-level visual polish.
+
+## 2026-06-27 - Add WGD publication report closure
+
+Timestamp:
+- 2026-06-27 04:14 CST
+
+Context:
+- The standard branch had a publication report closure with `plot_manifest.tsv`, software/R package versions, figure interpretations, and a release-gated publication audit.
+- The WGD/evolution branch generated Ka/Ks, duplicate-type Ka/Ks, pangenome-class Ka/Ks, WGD event evidence, and a final report, but it did not yet have the same plot-manifest and per-figure interpretation closure.
+
+Decisions:
+- Give the WGD branch its own report closure: WGD plot manifest, WGD software version table, WGD figure interpretations, and final report embedding.
+- Register `ks_distribution`, `duplicate_type_kaks`, and `pangenome_kaks` as WGD report figures because these are the key Ka/Ks/WGD visual outputs tied to gamma, beta, alpha, theta interpretation.
+- Add a required `WGD publication report audit` release check so WGD/evolution report quality is verified independently from the standard branch report.
+
+Added:
+- `BUILD_WGD_PLOT_MANIFEST`, `COLLECT_WGD_SOFTWARE_VERSIONS`, and `BUILD_WGD_FIGURE_INTERPRETATIONS` processes in `workflows/modules/duplication_retention.nf`.
+- WGD plot manifest, software version, and figure interpretation outputs to `run_nextflow_wgd_smoke.py` expected outputs.
+- Required `WGD publication report audit` release check.
+- Objective audit requirement that final reports need both standard and WGD publication report audits.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_nextflow_wgd_smoke.py`
+- `bin/genefam/run_release_checks.py`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_run_nextflow_wgd_smoke.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/duplication_retention.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_workflow_modules.py::test_duplication_retention_module_exposes_wgd_helper_processes tests/test_workflow_modules.py::test_main_workflow_includes_duplication_retention_processes -q` first failed because the WGD branch did not expose plot-manifest, software-version, or figure-interpretation processes.
+- `python -m pytest tests/test_run_nextflow_wgd_smoke.py::test_expected_published_outputs_cover_wgd_results -q` first failed because the WGD smoke expected outputs did not include the new report closure files.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_wgd_publication_report_audit_after_wgd_smoke -q` first failed because no WGD publication report audit existed in the release gate.
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_require_wgd_publication_report_audit -q` first failed because the objective audit considered final reports complete with only the standard publication audit.
+- `python -m pytest tests/test_workflow_modules.py::test_duplication_retention_module_exposes_wgd_helper_processes tests/test_workflow_modules.py::test_main_workflow_includes_duplication_retention_processes tests/test_run_nextflow_wgd_smoke.py::test_expected_published_outputs_cover_wgd_results -q` passed with 3 tests after implementation.
+- `python bin/genefam/run_nextflow_wgd_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_wgd_smoke` passed and generated WGD report `plot_manifest.tsv`, `software_versions.tsv`, `figure_interpretations.tsv`, `figure_interpretations.md`, and `final_report.md`.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv --software-versions results/nextflow_wgd_smoke/wgd/report/software_versions.tsv --final-report results/nextflow_wgd_smoke/wgd/report/final_report.md --out-tsv results/publication_report_audit/wgd_publication_report_audit.tsv --out-md results/publication_report_audit/wgd_publication_report_audit.md` passed with `Passed: 5`, `Failed: 0`, `Complete: true`.
+- `python -m pytest tests -q` passed with 367 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 45`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+
+Commit:
+- hash: pending
+- message: feat: add wgd publication report closure
+- files: WGD Nextflow report wiring, WGD smoke/release/objective checks, tests, history
+
+Next:
+- Keep Docker/Apptainer runtime verification as the remaining final-stage external blocker; continue polishing Reference-level figure fidelity where useful.

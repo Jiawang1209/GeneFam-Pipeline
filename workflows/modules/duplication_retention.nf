@@ -307,6 +307,58 @@ process BUILD_WGD_REPORT_INDEX {
     """
 }
 
+process BUILD_WGD_PLOT_MANIFEST {
+    tag "WGD plot manifest"
+    publishDir "${params.outdir}/report", mode: "copy", overwrite: true
+
+    output:
+    path "plot_manifest.tsv"
+
+    script:
+    """
+    python ${projectDir}/../bin/genefam/build_plot_manifest.py \\
+      --plot "ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs and WGD layer interpretation" \\
+      --plot "duplicate_type_kaks=plots/duplicate_type_kaks.pdf=Duplicate-type grouped Ks and Ka/Ks selection overview" \\
+      --plot "pangenome_kaks=plots/pangenome_kaks.pdf=Pangenome-class grouped Ks and Ka/Ks selection overview" \\
+      --out plot_manifest.tsv
+    """
+}
+
+process COLLECT_WGD_SOFTWARE_VERSIONS {
+    tag "WGD software version table"
+    publishDir "${params.outdir}/report", mode: "copy", overwrite: true
+
+    output:
+    path "software_versions.tsv"
+
+    script:
+    """
+    python ${projectDir}/../bin/genefam/collect_software_versions.py \\
+      --r-bin ${params.r_bin} \\
+      --out software_versions.tsv
+    """
+}
+
+process BUILD_WGD_FIGURE_INTERPRETATIONS {
+    tag "WGD figure interpretation notes"
+    publishDir "${params.outdir}/report", mode: "copy", overwrite: true
+
+    input:
+    path plot_manifest
+
+    output:
+    path "figure_interpretations.tsv"
+    path "figure_interpretations.md"
+
+    script:
+    """
+    python ${projectDir}/../bin/genefam/build_figure_interpretations.py \\
+      --plot-manifest ${plot_manifest} \\
+      --out-tsv figure_interpretations.tsv \\
+      --out-md figure_interpretations.md
+    """
+}
+
 process ASSEMBLE_WGD_REPORT {
     tag "WGD final report"
     publishDir "${params.outdir}/report", mode: "copy", overwrite: true
@@ -319,6 +371,9 @@ process ASSEMBLE_WGD_REPORT {
     path wgd_event_evidence
     path family_event_retention
     path retention_enrichment
+    path plot_manifest
+    path software_versions
+    path figure_interpretations
 
     output:
     path "final_report.md"
@@ -333,6 +388,9 @@ process ASSEMBLE_WGD_REPORT {
       --wgd-event-evidence ${wgd_event_evidence} \\
       --family-event-retention ${family_event_retention} \\
       --retention-enrichment ${retention_enrichment} \\
+      --plot-manifest ${plot_manifest} \\
+      --software-versions ${software_versions} \\
+      --figure-interpretations ${figure_interpretations} \\
       --out final_report.md
     """
 }

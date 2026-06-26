@@ -316,6 +316,19 @@ def test_duplication_retention_module_exposes_wgd_helper_processes():
     assert 'path "plots/pangenome_kaks.pdf"' in module
     assert 'path "plots/pangenome_kaks.png"' in module
 
+    assert "process BUILD_WGD_PLOT_MANIFEST" in module
+    assert "build_plot_manifest.py" in module
+    assert '--plot "ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs and WGD layer interpretation"' in module
+    assert '--plot "duplicate_type_kaks=plots/duplicate_type_kaks.pdf=Duplicate-type grouped Ks and Ka/Ks selection overview"' in module
+    assert '--plot "pangenome_kaks=plots/pangenome_kaks.pdf=Pangenome-class grouped Ks and Ka/Ks selection overview"' in module
+    assert "--out plot_manifest.tsv" in module
+    assert "process COLLECT_WGD_SOFTWARE_VERSIONS" in module
+    assert "collect_software_versions.py" in module
+    assert "--r-bin ${params.r_bin}" in module
+    assert "process BUILD_WGD_FIGURE_INTERPRETATIONS" in module
+    assert "build_figure_interpretations.py" in module
+    assert "--plot-manifest ${plot_manifest}" in module
+
     assert "process BUILD_WGD_REPORT_INDEX" in module
     assert "build_wgd_report_index.py" in module
     assert "--published-outdir ${published_outdir}" in module
@@ -327,6 +340,9 @@ def test_duplication_retention_module_exposes_wgd_helper_processes():
     assert "--run-config-snapshot ${wgd_run_config_snapshot}" in module
     assert "--family-event-retention ${family_event_retention}" in module
     assert "--retention-enrichment ${retention_enrichment}" in module
+    assert "--plot-manifest ${plot_manifest}" in module
+    assert "--software-versions ${software_versions}" in module
+    assert "--figure-interpretations ${figure_interpretations}" in module
     assert "--out final_report.md" in module
 
 
@@ -356,9 +372,15 @@ def test_main_workflow_includes_duplication_retention_processes():
     assert "pangenome_classes_ch = Channel.value(params.pangenome_classes ? file(params.pangenome_classes) : \"\")" in workflow
     assert "if (params.pangenome_classes)" in workflow
     assert "PLOT_PANGENOME_KAKS(pangenome_classes_ch, kaks_pairs_ch)" in workflow
+    assert "BUILD_WGD_PLOT_MANIFEST()" in workflow
+    assert "COLLECT_WGD_SOFTWARE_VERSIONS()" in workflow
+    assert "BUILD_WGD_FIGURE_INTERPRETATIONS(BUILD_WGD_PLOT_MANIFEST.out)" in workflow
     assert "BUILD_WGD_REPORT_INDEX(outdir_ch)" in workflow
     assert "BUILD_WGD_RUN_CONFIG_SNAPSHOT.out," in workflow
     assert "ASSEMBLE_WGD_REPORT(" in workflow
+    assert "BUILD_WGD_PLOT_MANIFEST.out," in workflow
+    assert "COLLECT_WGD_SOFTWARE_VERSIONS.out," in workflow
+    assert "BUILD_WGD_FIGURE_INTERPRETATIONS.out[0]" in workflow
 
 
 def test_report_module_assembles_final_markdown():

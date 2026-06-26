@@ -44,6 +44,10 @@ def expected_published_outputs(wgd_outdir: Path, raw_handoff: bool = False) -> l
         wgd_outdir / "plots/pangenome_kaks.pdf",
         wgd_outdir / "plots/pangenome_kaks.png",
         wgd_outdir / "report/report_index.tsv",
+        wgd_outdir / "report/plot_manifest.tsv",
+        wgd_outdir / "report/software_versions.tsv",
+        wgd_outdir / "report/figure_interpretations.tsv",
+        wgd_outdir / "report/figure_interpretations.md",
         wgd_outdir / "report/final_report.md",
     ]
     if raw_handoff:

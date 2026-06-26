@@ -229,6 +229,32 @@ def test_final_reports_require_publication_report_audit():
     assert "publication report audit" in by_requirement["final reports"]["evidence"]
 
 
+def test_final_reports_require_wgd_publication_report_audit():
+    release_rows = [
+        _release_row("standard branch smoke"),
+        _release_row("prepared WGD handoff example"),
+        _release_row("quickstart handoff"),
+        _release_row("publication report audit"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["final reports"]["status"] == "missing"
+    assert "WGD publication report audit" in by_requirement["final reports"]["evidence"]
+
+
 def test_standard_identification_branch_requires_domain_filter_smoke():
     release_rows = [
         _release_row("standard branch smoke"),

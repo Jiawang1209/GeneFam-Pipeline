@@ -519,6 +519,25 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "WGD publication report audit",
+            [
+                python,
+                "bin/genefam/audit_publication_report.py",
+                "--plot-manifest",
+                "results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv",
+                "--figure-interpretations",
+                "results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv",
+                "--software-versions",
+                "results/nextflow_wgd_smoke/wgd/report/software_versions.tsv",
+                "--final-report",
+                "results/nextflow_wgd_smoke/wgd/report/final_report.md",
+                "--out-tsv",
+                "results/publication_report_audit/wgd_publication_report_audit.tsv",
+                "--out-md",
+                "results/publication_report_audit/wgd_publication_report_audit.md",
+            ],
+        ),
+        CheckSpec(
             "Nextflow raw MCScanX/KaKs WGD smoke",
             [
                 python,

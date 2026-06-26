@@ -84,6 +84,10 @@ def test_expected_published_outputs_cover_wgd_results(tmp_path):
         outdir / "plots/pangenome_kaks.pdf",
         outdir / "plots/pangenome_kaks.png",
         outdir / "report/report_index.tsv",
+        outdir / "report/plot_manifest.tsv",
+        outdir / "report/software_versions.tsv",
+        outdir / "report/figure_interpretations.tsv",
+        outdir / "report/figure_interpretations.md",
         outdir / "report/final_report.md",
     ]
 

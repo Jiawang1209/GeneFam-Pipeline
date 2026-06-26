@@ -52,6 +52,9 @@ include {
     PLOT_DUPLICATE_TYPE_KAKS;
     PLOT_PANGENOME_KAKS;
     EMPTY_PANGENOME_KAKS;
+    BUILD_WGD_PLOT_MANIFEST;
+    COLLECT_WGD_SOFTWARE_VERSIONS;
+    BUILD_WGD_FIGURE_INTERPRETATIONS;
     BUILD_WGD_REPORT_INDEX;
     ASSEMBLE_WGD_REPORT
 } from './modules/duplication_retention.nf'
@@ -125,6 +128,9 @@ workflow {
         } else {
             EMPTY_PANGENOME_KAKS()
         }
+        BUILD_WGD_PLOT_MANIFEST()
+        COLLECT_WGD_SOFTWARE_VERSIONS()
+        BUILD_WGD_FIGURE_INTERPRETATIONS(BUILD_WGD_PLOT_MANIFEST.out)
         BUILD_WGD_REPORT_INDEX(outdir_ch)
         ASSEMBLE_WGD_REPORT(
             project_name_ch,
@@ -133,7 +139,10 @@ workflow {
             BUILD_WGD_RUN_CONFIG_SNAPSHOT.out,
             BUILD_WGD_EVENT_EVIDENCE.out,
             SUMMARIZE_FAMILY_EVENT_RETENTION.out,
-            RETENTION_ENRICHMENT.out
+            RETENTION_ENRICHMENT.out,
+            BUILD_WGD_PLOT_MANIFEST.out,
+            COLLECT_WGD_SOFTWARE_VERSIONS.out,
+            BUILD_WGD_FIGURE_INTERPRETATIONS.out[0]
         )
 
         BUILD_WGD_EVENT_EVIDENCE.out.view { evidence -> "WGD event evidence: ${evidence}" }

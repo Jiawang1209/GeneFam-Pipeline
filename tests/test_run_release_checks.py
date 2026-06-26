@@ -688,6 +688,23 @@ def test_default_checks_include_nextflow_wgd_smoke_before_readiness():
     assert "--outdir results/nextflow_wgd_smoke" in " ".join(smoke.command)
 
 
+def test_default_checks_include_wgd_publication_report_audit_after_wgd_smoke():
+    checks = default_checks()
+    names = [check.name for check in checks]
+
+    assert names.index("WGD publication report audit") > names.index("Nextflow WGD event smoke")
+    assert names.index("WGD publication report audit") < names.index("Nextflow raw MCScanX/KaKs WGD smoke")
+    audit = next(check for check in checks if check.name == "WGD publication report audit")
+    command = " ".join(audit.command)
+    assert "bin/genefam/audit_publication_report.py" in command
+    assert "--plot-manifest results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv" in command
+    assert "--figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv" in command
+    assert "--software-versions results/nextflow_wgd_smoke/wgd/report/software_versions.tsv" in command
+    assert "--final-report results/nextflow_wgd_smoke/wgd/report/final_report.md" in command
+    assert "--out-tsv results/publication_report_audit/wgd_publication_report_audit.tsv" in command
+    assert "--out-md results/publication_report_audit/wgd_publication_report_audit.md" in command
+
+
 def test_default_checks_include_nextflow_raw_mcscanx_kaks_smoke_after_wgd():
     names = [check.name for check in default_checks()]
 
