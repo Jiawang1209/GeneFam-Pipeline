@@ -156,6 +156,82 @@ def test_paper_level_visualization_modules_require_expression_heatmap_smoke():
     assert "expression heatmap visualization smoke" in by_requirement["paper-level visualization modules"]["evidence"]
 
 
+def test_objective_audit_lists_named_paper_level_visualization_requirements():
+    release_rows = [
+        _release_row("gene family information visualization smoke"),
+        _release_row("feature summary visualization smoke"),
+        _release_row("tree feature visualization smoke"),
+        _release_row("synteny parser smoke"),
+        _release_row("MCScanX circlize visualization smoke"),
+        _release_row("Nextflow standard visualization smoke"),
+        _release_row("promoter cis-element visualization smoke"),
+        _release_row("standard branch expression smoke"),
+        _release_row("expression heatmap visualization smoke"),
+        _release_row("PPI ggNetView plot smoke"),
+        _release_row("Ka/Ks WGD annotation plot smoke"),
+        _release_row("duplicate-type Ka/Ks visualization smoke"),
+        _release_row("pangenome-class Ka/Ks visualization smoke"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    expected_requirements = [
+        "gene family information and copy-number visualization",
+        "tree motif gene-structure domain visualization",
+        "MCScanX synteny circlize visualization",
+        "promoter cis-element visualization",
+        "expression heatmap visualization",
+        "PPI ggNetView visualization",
+        "Ka/Ks WGD visualization",
+    ]
+    for requirement in expected_requirements:
+        assert by_requirement[requirement]["status"] == "achieved"
+
+    assert "copy-number" in by_requirement["gene family information and copy-number visualization"]["note"]
+    assert "tree/motif/gene-structure/domain" in by_requirement["tree motif gene-structure domain visualization"]["note"]
+    assert "MCScanX" in by_requirement["MCScanX synteny circlize visualization"]["note"]
+    assert "promoter cis-element" in by_requirement["promoter cis-element visualization"]["note"]
+    assert "RNA-seq" in by_requirement["expression heatmap visualization"]["note"]
+    assert "ggNetView" in by_requirement["PPI ggNetView visualization"]["note"]
+    assert "gamma beta alpha theta" in by_requirement["Ka/Ks WGD visualization"]["note"]
+
+
+def test_mcscanx_synteny_circlize_visualization_requires_nextflow_standard_visualization_smoke():
+    release_rows = [
+        _release_row("synteny parser smoke"),
+        _release_row("MCScanX circlize visualization smoke"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["MCScanX synteny circlize visualization"]["status"] == "missing"
+    assert "Nextflow standard visualization smoke" in by_requirement["MCScanX synteny circlize visualization"]["evidence"]
+
+
 def test_yaml_driven_species_selection_requires_species_selection_smokes():
     release_rows = [
         _release_row("validate example config"),

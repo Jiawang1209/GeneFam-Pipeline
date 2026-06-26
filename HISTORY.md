@@ -34,6 +34,45 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 05:44 - Add named visualization objective audit rows
+
+Context:
+- The active `/goal` requires GeneFam-Pipeline to align with the two `Reference/` papers at the level of named figure classes, not only as a generic aggregate visualization gate.
+- The objective audit already had a broad paper-level visualization row, but it did not explicitly show whether gene family information, tree/motif/gene-structure/domain, MCScanX/circlize, promoter, expression, PPI, and Ka/Ks/WGD visualizations were each covered.
+
+Decisions:
+- Keep the aggregate `paper-level visualization modules` row as the overall signal.
+- Add explicit objective-audit rows for each major paper-level visualization class so the MVP acceptance report can be read like a figure checklist.
+- Require MCScanX/circlize evidence to include the standard Nextflow visualization smoke, so the row proves workflow integration rather than only standalone script behavior.
+
+Added:
+- Regression tests for named objective-audit rows covering gene family information/copy number, tree/motif/gene-structure/domain, MCScanX synteny/circlize, promoter cis-elements, expression heatmaps, PPI ggNetView, and Ka/Ks WGD figures.
+- Objective-audit requirement rows for the seven named visualization classes.
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Red test first failed with `KeyError: 'gene family information and copy-number visualization'` before the new objective rows were implemented.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 24 tests.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and produced `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+- `python -m pytest tests/test_audit_objective_completion.py tests/test_run_release_checks.py::test_write_objective_audit_uses_release_rows_and_readiness_tsv tests/test_run_release_checks.py::test_write_objective_audit_requires_expression_smoke_for_expression_integration -q` passed with 26 tests.
+- `python -m pytest tests -q` passed with 377 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+
+Commit:
+- hash: pending
+- message: test: add named visualization objective rows
+- files: objective audit logic, objective audit tests, history
+
+Next:
+- Continue toward the active `/goal` by auditing any remaining MVP polish gaps after the named visualization evidence is now explicit.
+
 ## 2026-06-27 05:36 - Align delivery bundle with complete report closure
 
 Context:

@@ -175,6 +175,62 @@ def build_objective_audit(
             "Report-ready gene-family information, feature summary, promoter cis-element, tree/motif/gene-structure/domain, synteny/circlize, PPI, and annotated expression heatmap figures are exercised by smoke checks.",
         ),
         _achieved_if(
+            _all_passed(release, ["gene family information visualization smoke"]),
+            "gene family information and copy-number visualization",
+            "gene family information visualization smoke",
+            "Gene-family information, copy-number balance, pangenome class, expansion/contraction, and protein-property summary plots are exercised.",
+        ),
+        _achieved_if(
+            _all_passed(release, ["tree feature visualization smoke", "feature summary visualization smoke"]),
+            "tree motif gene-structure domain visualization",
+            "tree feature visualization smoke and feature summary visualization smoke",
+            "tree/motif/gene-structure/domain composite figures and large-family feature summary plots are exercised.",
+        ),
+        _achieved_if(
+            _all_passed(
+                release,
+                [
+                    "synteny parser smoke",
+                    "MCScanX circlize visualization smoke",
+                    "Nextflow standard visualization smoke",
+                ],
+            ),
+            "MCScanX synteny circlize visualization",
+            "synteny parser smoke, MCScanX circlize visualization smoke, and Nextflow standard visualization smoke",
+            "MCScanX syntenic-pair parsing and chromosome-scale circlize link visualization are exercised through script and Nextflow report evidence.",
+        ),
+        _achieved_if(
+            _all_passed(release, ["promoter cis-element visualization smoke"]),
+            "promoter cis-element visualization",
+            "promoter cis-element visualization smoke",
+            "promoter cis-element category matrices, per-element summaries, and report-ready promoter regulatory plots are exercised.",
+        ),
+        _achieved_if(
+            _all_passed(release, ["standard branch expression smoke", "expression heatmap visualization smoke"]),
+            "expression heatmap visualization",
+            "standard branch expression smoke and expression heatmap visualization smoke",
+            "RNA-seq expression subsetting, sample metadata integration, group summaries, gene-level QC, and expression heatmap plotting are exercised.",
+        ),
+        _achieved_if(
+            _all_passed(release, ["PPI ggNetView plot smoke"]),
+            "PPI ggNetView visualization",
+            "PPI ggNetView plot smoke",
+            "PPI edge/node normalization, hub summaries, network QC, ggNetView status, and ggNetView-rendered network plots are exercised.",
+        ),
+        _achieved_if(
+            _all_passed(
+                release,
+                [
+                    "Ka/Ks WGD annotation plot smoke",
+                    "duplicate-type Ka/Ks visualization smoke",
+                    "pangenome-class Ka/Ks visualization smoke",
+                ],
+            ),
+            "Ka/Ks WGD visualization",
+            "Ka/Ks WGD annotation plot smoke, duplicate-type Ka/Ks visualization smoke, and pangenome-class Ka/Ks visualization smoke",
+            "Ks distribution, gamma beta alpha theta WGD-layer annotations, duplicate-type Ka/Ks panels, and pangenome-class Ka/Ks panels are exercised.",
+        ),
+        _achieved_if(
             _all_passed(
                 release,
                 ["chromosome location smoke", "standard branch smoke", "standard branch expression smoke", "quickstart handoff"],
