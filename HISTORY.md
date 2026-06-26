@@ -6824,6 +6824,48 @@ Commit:
 Next:
 - Continue toward the final container/Apptainer reproducibility stage once local runtimes are available.
 
+## 2026-06-27 - Surface publication report audit in delivery bundle
+
+Timestamp:
+- 2026-06-27 03:00:01 CST
+
+Context:
+- The publication report audit was already a required release check, but the final delivery bundle did not yet expose it as a first-class artifact for the user to open.
+- The active `/goal` asks for a perfect MVP-level handoff, so the final user-facing bundle should show the evidence that every figure has close reading, QC, software versions, and reproducibility information.
+
+Decisions:
+- Add `publication_report_audit` to the delivery manifest `status` section.
+- Derive its availability from the release check named `publication report audit`.
+- Point the bundle entry to `results/publication_report_audit/publication_report_audit.md`.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_run_delivery_bundle.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index -q` first failed because `status/publication_report_audit` was missing from the delivery manifest.
+- `python -m pytest tests/test_run_delivery_bundle.py -q` passed after adding the delivery manifest entry.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` regenerated `results/delivery_bundle/delivery_bundle.md` and `results/delivery_bundle/delivery_manifest.tsv`.
+- `python -m pytest tests/test_run_delivery_bundle.py tests/test_run_release_checks.py tests/test_audit_publication_report.py -q` passed with 54 tests.
+- `python -m pytest tests -q` passed with 356 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `0`; `results/release_checks/release_checks.md` reports `Passed: 44`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `results/delivery_bundle/delivery_manifest.tsv` now includes `status	publication_report_audit	available	results/publication_report_audit/publication_report_audit.md	paper-style report closure: figure interpretations, QC, software versions, and reproducibility`.
+
+Commit:
+- hash: pending
+- message: pending
+- files: delivery bundle manifest builder, delivery bundle test, history
+
+Next:
+- Continue toward the final container/Apptainer reproducibility stage once local runtimes are available.
+
 ## 2026-06-27 - Add per-figure QC and reproducibility notes to final reports
 
 Timestamp:

@@ -116,6 +116,13 @@ def build_delivery_manifest(
             "note": "compact local acceptance pass/fail index",
         },
         {
+            "section": "status",
+            "item": "publication_report_audit",
+            "status": _status_from_check(release_rows, "publication report audit"),
+            "path": "results/publication_report_audit/publication_report_audit.md",
+            "note": "paper-style report closure: figure interpretations, QC, software versions, and reproducibility",
+        },
+        {
             "section": "input",
             "item": "manifest_config",
             "status": "available",
