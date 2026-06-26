@@ -99,17 +99,30 @@ def test_standard_postprocess_module_extracts_family_sequences_and_report_index(
     assert '--mcscanx-circlize-pdf "${mcscanx_circlize_pdf}"' in module
     assert '--mcscanx-circlize-png "${mcscanx_circlize_png}"' in module
     assert "--wgd-handoff-manifest ${wgd_handoff_manifest}" in module
+    assert "--software-versions ${software_versions}" in module
+    assert "--figure-interpretations ${figure_interpretations}" in module
     assert "--published-outdir ${params.outdir}" in module
     assert "--out report_index.tsv" in module
 
     assert "process ASSEMBLE_STANDARD_REPORT" in module
     assert 'publishDir "${params.outdir}/report", mode: "copy", overwrite: true' in module
     assert "assemble_report.py" in module
+    assert "process COLLECT_SOFTWARE_VERSIONS" in module
+    assert "collect_software_versions.py" in module
+    assert "--r-bin ${params.r_bin}" in module
+    assert "software_versions.tsv" in module
+    assert "process BUILD_FIGURE_INTERPRETATIONS" in module
+    assert "build_figure_interpretations.py" in module
+    assert "--plot-manifest ${plot_manifest}" in module
+    assert "figure_interpretations.tsv" in module
+    assert "figure_interpretations.md" in module
     assert "--project-name ${project_name}" in module
     assert "--gene-family ${gene_family}" in module
     assert "--report-index ${report_index}" in module
     assert "--run-config-snapshot ${run_config_snapshot}" in module
     assert "--plot-manifest ${plot_manifest}" in module
+    assert "--software-versions ${software_versions}" in module
+    assert "--figure-interpretations ${figure_interpretations}" in module
     assert "--out final_report.md" in module
 
 
@@ -122,10 +135,16 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "validated_config_ch = VALIDATE_CONFIG.out" in workflow
     assert "if (asBooleanParam(params.mock_external_tools))" in workflow
     assert "include { BUILD_IDENTIFICATION_INPUTS } from './modules/identification_inputs.nf'" in workflow
-    assert "include { BUILD_RUN_CONFIG_SNAPSHOT; EXTRACT_FAMILY_SEQUENCES; BUILD_WGD_HANDOFF_MANIFEST; BUILD_STANDARD_REPORT_INDEX; ASSEMBLE_STANDARD_REPORT } from './modules/standard_postprocess.nf'" in workflow
+    assert "BUILD_RUN_CONFIG_SNAPSHOT;" in workflow
+    assert "EXTRACT_FAMILY_SEQUENCES;" in workflow
+    assert "BUILD_WGD_HANDOFF_MANIFEST;" in workflow
+    assert "BUILD_STANDARD_REPORT_INDEX;" in workflow
+    assert "ASSEMBLE_STANDARD_REPORT" in workflow
     assert "EXTRACT_PROMOTERS;" in workflow
     assert "PLOT_FEATURE_SUMMARY;" in workflow
     assert "PLOT_MCSCANX_CIRCLIZE;" in workflow
+    assert "COLLECT_SOFTWARE_VERSIONS" in workflow
+    assert "BUILD_FIGURE_INTERPRETATIONS" in workflow
     assert "include { HMMER_SEARCH } from './modules/hmmer_search.nf'" in workflow
     assert "include { DIAMOND_SEARCH } from './modules/diamond_search.nf'" in workflow
     assert "DOMAIN_FILTER;" in workflow
@@ -168,10 +187,12 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "PREPARE_PHYLOGENY_INPUTS(PREPARE_ALIGNMENT_INPUTS.out, tree_builder_ch, phylogeny_outdir_ch)" in workflow
     assert "PLOT_FAMILY_COUNTS(FAMILY_SUMMARY.out)" in workflow
     assert "BUILD_PLOT_MANIFEST()" in workflow
+    assert "COLLECT_SOFTWARE_VERSIONS()" in workflow
+    assert "BUILD_FIGURE_INTERPRETATIONS(BUILD_PLOT_MANIFEST.out)" in workflow
     assert "BUILD_STANDARD_REPORT_INDEX(" in workflow
     assert "BUILD_RUN_CONFIG_SNAPSHOT.out" in workflow
     assert "BUILD_WGD_HANDOFF_MANIFEST.out" in workflow
-    assert "ASSEMBLE_STANDARD_REPORT(project_name_ch, family_name_ch, BUILD_STANDARD_REPORT_INDEX.out, BUILD_RUN_CONFIG_SNAPSHOT.out, BUILD_PLOT_MANIFEST.out)" in workflow
+    assert "ASSEMBLE_STANDARD_REPORT(project_name_ch, family_name_ch, BUILD_STANDARD_REPORT_INDEX.out, BUILD_RUN_CONFIG_SNAPSHOT.out, BUILD_PLOT_MANIFEST.out, COLLECT_SOFTWARE_VERSIONS.out, BUILD_FIGURE_INTERPRETATIONS.out[0])" in workflow
 
 
 def test_duplication_retention_module_exposes_wgd_helper_processes():

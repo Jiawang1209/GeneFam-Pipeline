@@ -58,6 +58,8 @@ def assemble_report(
     family_event_retention: list[dict[str, str]] | None = None,
     retention_enrichment: list[dict[str, str]] | None = None,
     plot_manifest: list[dict[str, str]] | None = None,
+    software_versions: list[dict[str, str]] | None = None,
+    figure_interpretations: list[dict[str, str]] | None = None,
 ) -> str:
     available_outputs = _available_rows(report_index_rows)
     named_events = _named_wgd_events(wgd_event_evidence or [])
@@ -79,11 +81,36 @@ def assemble_report(
         "",
         "Family members are identified from genome-scale protein evidence, with HMMER/DIAMOND-style search outputs filtered into family candidate tables. Alignment, phylogeny, motif, chromosome, promoter, expression, MCScanX synteny, and Ka/Ks evidence can then be integrated into the same report package. WGD labels such as gamma, beta, alpha, and theta are assigned from configured Ks-supported layers rather than treated as raw tool output.",
         "",
+        "### Software Versions",
+        "",
+    ]
+    if software_versions:
+        lines.extend(
+            _markdown_table(
+                ["component", "kind", "version", "status", "source"],
+                [
+                    [
+                        row.get("component", ""),
+                        row.get("kind", ""),
+                        row.get("version", "version_not_detected"),
+                        row.get("status", "version_not_detected"),
+                        row.get("source", ""),
+                    ]
+                    for row in software_versions
+                ],
+            )
+        )
+    else:
+        lines.append("No software version table was provided; method versions should be treated as `version_not_detected`.")
+    lines.extend(
+        [
+            "",
         "## Results Package Inventory",
         "",
         "### Available Tables",
         "",
-    ]
+        ]
+    )
     table_rows = [
         [row["key"], row.get("path", ""), row.get("description", "")]
         for row in available_outputs
@@ -194,6 +221,29 @@ def assemble_report(
             "No plot manifest was available for this run.",
         )
     )
+    lines.extend(["## Figure Result Interpretations", ""])
+    if figure_interpretations:
+        for row in figure_interpretations:
+            lines.extend(
+                [
+                    f"### {row.get('figure_key', '')}: {row.get('title', '')}",
+                    "",
+                    f"- Input data: {row.get('input_data', '')}",
+                    f"- What the figure shows: {row.get('what_figure_shows', '')}",
+                    f"- Key observations: {row.get('key_observations', '')}",
+                    f"- Biological interpretation: {row.get('biological_interpretation', '')}",
+                    f"- QC warnings / limitations: {row.get('qc_warnings', '')}",
+                    f"- Output path: `{row.get('output_path', '')}`",
+                    "",
+                ]
+            )
+    else:
+        lines.extend(
+            [
+                "No structured figure interpretations were provided. Interpret plotted results only after reviewing the input tables and QC warnings.",
+                "",
+            ]
+        )
     lines.extend(
         [
             "## Reproducibility Note",
@@ -231,6 +281,8 @@ def main() -> None:
     parser.add_argument("--family-event-retention", default=None, type=Path)
     parser.add_argument("--retention-enrichment", default=None, type=Path)
     parser.add_argument("--plot-manifest", default=None, type=Path)
+    parser.add_argument("--software-versions", default=None, type=Path)
+    parser.add_argument("--figure-interpretations", default=None, type=Path)
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
     write_report(
@@ -243,6 +295,8 @@ def main() -> None:
             family_event_retention=read_tsv(args.family_event_retention),
             retention_enrichment=read_tsv(args.retention_enrichment),
             plot_manifest=read_tsv(args.plot_manifest),
+            software_versions=read_tsv(args.software_versions),
+            figure_interpretations=read_tsv(args.figure_interpretations),
         ),
         args.out,
     )

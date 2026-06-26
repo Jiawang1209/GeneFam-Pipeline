@@ -28,6 +28,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
         "chromosome location",
         "promoter analysis",
         "expression integration",
+        "PPI ggNetView",
         "feature statistics",
         "final report",
         "HISTORY.md",
@@ -114,6 +115,11 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "run_wgd_smoke.py" in text
     assert "run_synteny_smoke.py" in text
     assert "run_mcscanx_circlize_smoke.py" in text
+    assert "run_ppi_ggnetview_smoke.py" in text
+    assert "results/ppi_ggnetview_smoke/ppi_ggnetview_smoke.tsv" in text
+    assert "results/ppi_ggnetview_smoke/ppi_ggnetview_smoke.md" in text
+    assert "ggNetView" in text
+    assert "missing_dependency" in text
     assert "build_circlize_inputs.py" in text
     assert "plot_mcscanx_circlize.R" in text
     assert "build_wgd_run_config_snapshot.py" in text

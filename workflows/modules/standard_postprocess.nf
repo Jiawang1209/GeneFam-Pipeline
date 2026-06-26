@@ -86,6 +86,8 @@ process BUILD_STANDARD_REPORT_INDEX {
     val family_expression
     path wgd_handoff_manifest
     path plot_manifest
+    path software_versions
+    path figure_interpretations
 
     output:
     path "report_index.tsv"
@@ -115,8 +117,45 @@ process BUILD_STANDARD_REPORT_INDEX {
       --family-expression "${family_expression}" \\
       --wgd-handoff-manifest ${wgd_handoff_manifest} \\
       --plot-manifest ${plot_manifest} \\
+      --software-versions ${software_versions} \\
+      --figure-interpretations ${figure_interpretations} \\
       --published-outdir ${params.outdir} \\
       --out report_index.tsv
+    """
+}
+
+process COLLECT_SOFTWARE_VERSIONS {
+    tag "software version table"
+    publishDir "${params.outdir}/report", mode: "copy", overwrite: true
+
+    output:
+    path "software_versions.tsv"
+
+    script:
+    """
+    python ${projectDir}/../bin/genefam/collect_software_versions.py \\
+      --r-bin ${params.r_bin} \\
+      --out software_versions.tsv
+    """
+}
+
+process BUILD_FIGURE_INTERPRETATIONS {
+    tag "figure interpretation notes"
+    publishDir "${params.outdir}/report", mode: "copy", overwrite: true
+
+    input:
+    path plot_manifest
+
+    output:
+    path "figure_interpretations.tsv"
+    path "figure_interpretations.md"
+
+    script:
+    """
+    python ${projectDir}/../bin/genefam/build_figure_interpretations.py \\
+      --plot-manifest ${plot_manifest} \\
+      --out-tsv figure_interpretations.tsv \\
+      --out-md figure_interpretations.md
     """
 }
 
@@ -130,6 +169,8 @@ process ASSEMBLE_STANDARD_REPORT {
     path report_index
     path run_config_snapshot
     path plot_manifest
+    path software_versions
+    path figure_interpretations
 
     output:
     path "final_report.md"
@@ -142,6 +183,8 @@ process ASSEMBLE_STANDARD_REPORT {
       --report-index ${report_index} \\
       --run-config-snapshot ${run_config_snapshot} \\
       --plot-manifest ${plot_manifest} \\
+      --software-versions ${software_versions} \\
+      --figure-interpretations ${figure_interpretations} \\
       --out final_report.md
     """
 }

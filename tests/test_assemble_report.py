@@ -65,6 +65,22 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
         {"plot_key": "family_counts", "path": "plots/family_counts.pdf", "description": "Family counts"},
         {"plot_key": "kaks", "path": "plots/ks_distribution.pdf", "description": "Ks distribution"},
     ]
+    software_versions = [
+        {"component": "Nextflow", "kind": "command", "version": "26.04.4", "status": "detected", "source": "nextflow -version"},
+        {"component": "ggNetView", "kind": "R_package", "version": "version_not_detected", "status": "version_not_detected", "source": "packageVersion(\"ggNetView\")"},
+    ]
+    figure_interpretations = [
+        {
+            "figure_key": "family_counts",
+            "title": "Family copy number and member count overview",
+            "input_data": "Family member count table",
+            "what_figure_shows": "Per-species member counts.",
+            "key_observations": "Inspect expansion or contraction.",
+            "biological_interpretation": "High-copy species may indicate expansion.",
+            "qc_warnings": "Smoke/demo data caveat.",
+            "output_path": "plots/family_counts.pdf",
+        }
+    ]
     run_config_snapshot = [
         {"key": "project.name", "value": "GeneFam demo"},
         {"key": "runtime.environment", "value": "GeneFamilyFlow"},
@@ -81,6 +97,8 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
         family_event_retention=family_event_retention,
         retention_enrichment=retention_enrichment,
         plot_manifest=plot_manifest,
+        software_versions=software_versions,
+        figure_interpretations=figure_interpretations,
     )
 
     assert "# GeneFam-Pipeline Final Report" in report
@@ -94,6 +112,12 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
     assert "HMMER/DIAMOND" in report
     assert "MCScanX" in report
     assert "Ka/Ks" in report
+    assert "### Software Versions" in report
+    assert "| Nextflow | command | 26.04.4 | detected | nextflow -version |" in report
+    assert "| ggNetView | R_package | version_not_detected | version_not_detected | packageVersion(\"ggNetView\") |" in report
+    assert "## Figure Result Interpretations" in report
+    assert "### family_counts: Family copy number and member count overview" in report
+    assert "- Biological interpretation: High-copy species may indicate expansion." in report
     assert "## Results Package Inventory" in report
     assert "### Available Tables" in report
     assert "| family_event_retention_summary | tables/family_event_retention_summary.tsv | Family gene counts by duplicate type and WGD event |" in report
@@ -126,6 +150,8 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
     run_config = tmp_path / "run_config_snapshot.tsv"
     wgd_events = tmp_path / "wgd_event_evidence.tsv"
     plot_manifest = tmp_path / "plot_manifest.tsv"
+    software_versions = tmp_path / "software_versions.tsv"
+    figure_interpretations = tmp_path / "figure_interpretations.tsv"
     out_path = tmp_path / "final_report.md"
     report_index.write_text(
         "key\tpath\tstatus\tdescription\n"
@@ -145,6 +171,15 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
         "plot_key\tpath\tdescription\nfamily_counts\tplots/family_counts.pdf\tFamily counts\n",
         encoding="utf-8",
     )
+    software_versions.write_text(
+        "component\tkind\tversion\tstatus\tsource\nNextflow\tcommand\t26.04.4\tdetected\tnextflow -version\n",
+        encoding="utf-8",
+    )
+    figure_interpretations.write_text(
+        "figure_key\ttitle\tinput_data\twhat_figure_shows\tkey_observations\tbiological_interpretation\tqc_warnings\toutput_path\n"
+        "family_counts\tFamily copy number and member count overview\tFamily counts\tCounts by species\tInspect counts\tExpansion signal\tSmoke data\tplots/family_counts.pdf\n",
+        encoding="utf-8",
+    )
 
     completed = subprocess.run(
         [
@@ -162,6 +197,10 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
             str(wgd_events),
             "--plot-manifest",
             str(plot_manifest),
+            "--software-versions",
+            str(software_versions),
+            "--figure-interpretations",
+            str(figure_interpretations),
             "--out",
             str(out_path),
         ],
@@ -175,6 +214,8 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
     assert "# GeneFam-Pipeline Final Report" in text
     assert "## Executive Summary" in text
     assert "## Results Package Inventory" in text
+    assert "### Software Versions" in text
+    assert "## Figure Result Interpretations" in text
     assert "| runtime.environment | GeneFamilyFlow |" in text
     assert "| selected_species | Arabidopsis_thaliana,Brassica_rapa |" in text
     assert "| WGD_layer_1 | alpha | 12 | 0.1800 | configured_named_event | literature | Brassicaceae | recent |" in text

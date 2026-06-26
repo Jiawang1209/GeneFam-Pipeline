@@ -34,6 +34,64 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-26 22:48 - Add paper-level report interpretation and ggNetView readiness
+
+Context:
+- The user asked to align GeneFam-Pipeline with the visualization level of the two papers under `Reference/`, keep PPI visualization based on `ggNetView`, and make the final report interpret every figure while listing software and package versions.
+- This step continued the analysis-workflow-first strategy; Docker/Apptainer packaging remains a final external-runtime phase.
+
+Decisions:
+- Treat software-version capture as report evidence: missing tools are recorded as `version_not_detected` instead of aborting the workflow.
+- Add structured per-figure interpretation tables and Markdown so final reports can discuss each plot in a paper-like result-reading format.
+- Keep `ggNetView` as the explicit PPI visualization dependency and add a readiness smoke that reports `ready` or `missing_dependency`.
+- Wire the new report evidence into the formal Nextflow standard branch and `report_index.tsv`, not only into standalone helper scripts.
+
+Added:
+- `bin/genefam/collect_software_versions.py`
+- `bin/genefam/build_figure_interpretations.py`
+- `bin/genefam/run_ppi_ggnetview_smoke.py`
+- `tests/test_collect_software_versions.py`
+- `tests/test_build_figure_interpretations.py`
+- `tests/test_run_ppi_ggnetview_smoke.py`
+- `tests/test_reference_plotting_reuse.py`
+
+Modified:
+- `bin/genefam/assemble_report.py`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/reference_plotting_reuse.md`
+- `docs/release_audit.md`
+- `tests/test_assemble_report.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_collect_software_versions.py -q` first failed because missing executables raised `FileNotFoundError`, then passed after recording them as `version_not_detected`.
+- `python -m pytest tests/test_standard_branch_report_index.py tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q` passed with 6 tests.
+- `python -m pytest tests/test_collect_software_versions.py tests/test_build_figure_interpretations.py tests/test_run_ppi_ggnetview_smoke.py tests/test_assemble_report.py tests/test_reference_plotting_reuse.py tests/test_release_audit_docs.py tests/test_run_release_checks.py::test_default_checks_include_ppi_ggnetview_smoke_after_feature_summary tests/test_standard_branch_report_index.py tests/test_workflow_modules.py -q` passed with 31 tests.
+- `python bin/genefam/run_ppi_ggnetview_smoke.py --r-bin /usr/local/bin/R --outdir results/ppi_ggnetview_smoke` passed and reported `status ready` with `ggNetView` version `0.2.0`.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_standard_smoke` first failed because version collection aborted when `iqtree2` was not found on PATH, then passed after missing tools were recorded without failing the workflow.
+- `grep -n "Software Versions\|Figure Result Interpretations\|software_versions\|figure_interpretations" results/nextflow_standard_smoke/standard/report/final_report.md results/nextflow_standard_smoke/standard/report/report_index.tsv` confirmed the final report and report index include both new evidence tables.
+- `python -m pytest -q` passed with 308 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker/Apptainer remain unavailable, but improved the release matrix to `Passed: 34`, `Required failed: 1`, `Optional failed: 2`; `PPI ggNetView smoke` passed, while `readiness audit`, `Docker profile smoke`, and `Apptainer profile smoke` are the remaining runtime blockers.
+
+Commit:
+- hash: not created yet
+- message: feat: add report interpretation and ggnetview readiness
+- files: report interpretation/version scripts, ggNetView readiness smoke, Nextflow standard report wiring, release audit docs, tests, history
+
+Next:
+- Backfill this commit hash after committing.
+- Continue remaining paper-level visualization work by turning the current alignment matrix `partial` items into real plot modules, especially tree/motif/gene-structure/domain composite views and richer MCScanX/PPI visual outputs.
+
 ## 2026-06-26 20:02 - Add raw MCScanX/KaKs WGD handoff and report package polish
 
 Context:
@@ -84,8 +142,8 @@ Verification:
 - `results/objective_audit/objective_audit.md` reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
 
 Commit:
-- hash: not created yet
-- message: pending
+- hash: 7c95203
+- message: feat: add raw mcscanx kaks wgd handoff
 - files: raw MCScanX/KaKs handoff builder, Nextflow WGD raw input wiring, WGD Ka/Ks plotting, report package upgrade, docs, tests, history
 
 Next:

@@ -32,6 +32,8 @@ DESCRIPTIONS = {
     "family_expression": "Family member RNA-seq expression matrix",
     "wgd_handoff_manifest": "Standard-to-WGD handoff manifest for duplication and WGD event analysis",
     "plot_manifest": "Generated plot inventory",
+    "software_versions": "Software and R package version table for methods reporting",
+    "figure_interpretations": "Structured per-figure result interpretation notes",
 }
 OPTIONAL_KEYS = {
     "promoters_bed",
@@ -88,6 +90,8 @@ def published_paths(
         "family_expression": str(outdir / "tables/family_expression.tsv") if family_expression_available else "",
         "wgd_handoff_manifest": str(outdir / "tables/wgd_handoff_manifest.tsv"),
         "plot_manifest": str(outdir / "report/plot_manifest.tsv"),
+        "software_versions": str(outdir / "report/software_versions.tsv"),
+        "figure_interpretations": str(outdir / "report/figure_interpretations.tsv"),
     }
 
 

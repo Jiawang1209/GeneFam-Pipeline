@@ -29,6 +29,8 @@ def test_build_standard_report_index_marks_core_outputs_available():
             "family_expression": "",
             "wgd_handoff_manifest": "tables/wgd_handoff_manifest.tsv",
             "plot_manifest": "tables/plot_manifest.tsv",
+            "software_versions": "report/software_versions.tsv",
+            "figure_interpretations": "report/figure_interpretations.tsv",
         }
     )
 
@@ -57,6 +59,8 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "mcscanx_circlize_png",
         "family_expression",
         "wgd_handoff_manifest",
+        "software_versions",
+        "figure_interpretations",
     }
     assert next(row for row in rows if row["key"] == "family_expression")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "promoters_bed")["status"] == "missing"
@@ -90,6 +94,8 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
         "family_expression": "",
         "wgd_handoff_manifest": "results/nextflow_standard_smoke/standard/tables/wgd_handoff_manifest.tsv",
         "plot_manifest": "results/nextflow_standard_smoke/standard/report/plot_manifest.tsv",
+        "software_versions": "results/nextflow_standard_smoke/standard/report/software_versions.tsv",
+        "figure_interpretations": "results/nextflow_standard_smoke/standard/report/figure_interpretations.tsv",
     }
 
 
@@ -130,6 +136,10 @@ def test_build_standard_report_index_cli_writes_tsv(tmp_path):
             "wgd_handoff_manifest.tsv",
             "--plot-manifest",
             "plot_manifest.tsv",
+            "--software-versions",
+            "software_versions.tsv",
+            "--figure-interpretations",
+            "figure_interpretations.tsv",
             "--out",
             str(out),
         ],
@@ -140,10 +150,10 @@ def test_build_standard_report_index_cli_writes_tsv(tmp_path):
 
     assert completed.returncode == 0, completed.stderr
     assert read_tsv(out)[-1] == {
-        "key": "plot_manifest",
-        "path": "plot_manifest.tsv",
+        "key": "figure_interpretations",
+        "path": "figure_interpretations.tsv",
         "status": "available",
-        "description": "Generated plot inventory",
+        "description": "Structured per-figure result interpretation notes",
     }
 
 
@@ -184,6 +194,10 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
             "wgd_handoff_manifest.tsv",
             "--plot-manifest",
             "plot_manifest.tsv",
+            "--software-versions",
+            "software_versions.tsv",
+            "--figure-interpretations",
+            "figure_interpretations.tsv",
             "--published-outdir",
             "results/demo",
             "--out",
@@ -205,3 +219,5 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
     assert rows["gene_structure_summary"]["path"] == "results/demo/tables/gene_structure_summary.tsv"
     assert rows["wgd_handoff_manifest"]["path"] == "results/demo/tables/wgd_handoff_manifest.tsv"
     assert rows["plot_manifest"]["path"] == "results/demo/report/plot_manifest.tsv"
+    assert rows["software_versions"]["path"] == "results/demo/report/software_versions.tsv"
+    assert rows["figure_interpretations"]["path"] == "results/demo/report/figure_interpretations.tsv"

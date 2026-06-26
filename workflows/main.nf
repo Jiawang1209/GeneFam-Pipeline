@@ -13,7 +13,15 @@ include {
     EMPTY_DIAMOND_EVIDENCE
 } from './modules/domain_filter.nf'
 include { FAMILY_SUMMARY } from './modules/family_summary.nf'
-include { BUILD_RUN_CONFIG_SNAPSHOT; EXTRACT_FAMILY_SEQUENCES; BUILD_WGD_HANDOFF_MANIFEST; BUILD_STANDARD_REPORT_INDEX; ASSEMBLE_STANDARD_REPORT } from './modules/standard_postprocess.nf'
+include {
+    BUILD_RUN_CONFIG_SNAPSHOT;
+    EXTRACT_FAMILY_SEQUENCES;
+    BUILD_WGD_HANDOFF_MANIFEST;
+    BUILD_STANDARD_REPORT_INDEX;
+    COLLECT_SOFTWARE_VERSIONS;
+    BUILD_FIGURE_INTERPRETATIONS;
+    ASSEMBLE_STANDARD_REPORT
+} from './modules/standard_postprocess.nf'
 include { MOCK_MVP } from './modules/mock_mvp.nf'
 include { ASSEMBLE_REPORT } from './modules/report.nf'
 include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; PLOT_FEATURE_SUMMARY; PLOT_MCSCANX_CIRCLIZE; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
@@ -239,6 +247,8 @@ workflow {
             }
             PLOT_FAMILY_COUNTS(FAMILY_SUMMARY.out)
             BUILD_PLOT_MANIFEST()
+            COLLECT_SOFTWARE_VERSIONS()
+            BUILD_FIGURE_INTERPRETATIONS(BUILD_PLOT_MANIFEST.out)
             BUILD_STANDARD_REPORT_INDEX(
                 PREPARE_SPECIES.out,
                 BUILD_RUN_CONFIG_SNAPSHOT.out,
@@ -261,9 +271,11 @@ workflow {
                 mcscanx_circlize_png_ch,
                 family_expression_report_ch,
                 BUILD_WGD_HANDOFF_MANIFEST.out,
-                BUILD_PLOT_MANIFEST.out
+                BUILD_PLOT_MANIFEST.out,
+                COLLECT_SOFTWARE_VERSIONS.out,
+                BUILD_FIGURE_INTERPRETATIONS.out[0]
             )
-            ASSEMBLE_STANDARD_REPORT(project_name_ch, family_name_ch, BUILD_STANDARD_REPORT_INDEX.out, BUILD_RUN_CONFIG_SNAPSHOT.out, BUILD_PLOT_MANIFEST.out)
+            ASSEMBLE_STANDARD_REPORT(project_name_ch, family_name_ch, BUILD_STANDARD_REPORT_INDEX.out, BUILD_RUN_CONFIG_SNAPSHOT.out, BUILD_PLOT_MANIFEST.out, COLLECT_SOFTWARE_VERSIONS.out, BUILD_FIGURE_INTERPRETATIONS.out[0])
 
             FAMILY_SUMMARY.out.view { counts -> "Family counts: ${counts}" }
             BUILD_STANDARD_REPORT_INDEX.out.view { report_index -> "Report index: ${report_index}" }

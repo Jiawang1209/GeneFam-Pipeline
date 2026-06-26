@@ -272,6 +272,17 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "PPI ggNetView smoke",
+            [
+                python,
+                "bin/genefam/run_ppi_ggnetview_smoke.py",
+                "--r-bin",
+                "/usr/local/bin/R",
+                "--outdir",
+                "results/ppi_ggnetview_smoke",
+            ],
+        ),
+        CheckSpec(
             "Ka/Ks parser smoke",
             [
                 python,
