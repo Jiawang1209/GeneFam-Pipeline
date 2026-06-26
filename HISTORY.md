@@ -6862,8 +6862,8 @@ Verification:
 - `results/handoff/handoff_summary.tsv` still reports `analysis_release_ready=true; final_stage_blockers=Docker/Apptainer reproducibility`.
 
 Commit:
-- hash: pending
-- message: pending
+- hash: babb9ff4e1dc1bf406a1f840fa532ec4d32c474a
+- message: feat: show publication audit in local acceptance
 - files: local acceptance summary writer, local acceptance wrapper script, tests, history
 
 Next:
