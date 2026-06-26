@@ -6821,7 +6821,7 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` with `41 passed / 3 failed`; the new `Ka/Ks WGD annotation plot smoke` passed, while `readiness audit` failed and Docker/Apptainer profile smokes remained optional failures.
 
 Commit:
-- hash: pending
+- hash: 7905bd3
 - message: feat: annotate ks plots with wgd layers
 - files: Ka/Ks WGD annotation builder, smoke runner, R plot script, Nextflow WGD wiring, WGD report index, release checks, plotting reuse docs, tests, history
 
