@@ -256,15 +256,29 @@ process BUILD_PLOT_MANIFEST {
 
     script:
     """
+    plotArgs=(
+      --plot "family_counts=plots/family_counts.pdf=Family member counts by species"
+      --plot "gene_family_info_summary=plots/gene_family_info_summary.pdf=Gene family copy-number and protein-property summary"
+      --plot "gene_family_pangenome_summary=plots/gene_family_info_summary.pdf=Gene family pangenome presence and copy-number balance"
+      --plot "tree_features=plots/tree_features.pdf=Tree, motif, gene-structure, and domain composite plot"
+    )
+    if [ "${params.run_feature_summary}" = "true" ]; then
+      plotArgs+=(--plot "feature_summary=plots/feature_summary.pdf=Integrated domain, motif, gene-structure, synteny, promoter, and expression feature summary")
+    fi
+    if [ "${params.run_mcscanx_circlize}" = "true" ]; then
+      plotArgs+=(--plot "mcscanx_circlize=plots/mcscanx_circlize.pdf=MCScanX synteny and chromosome-scale circlize plot")
+    fi
+    if [ "${params.run_promoter_cis}" = "true" ]; then
+      plotArgs+=(--plot "promoter_cis_elements=plots/promoter_cis_elements.pdf=Promoter cis-element category matrix and top element summary")
+    fi
+    if [ "${params.run_ppi}" = "true" ]; then
+      plotArgs+=(--plot "ppi_ggnetview=plots/ppi_ggnetview.pdf=PPI network generated with ggNetView")
+    fi
+    if [ -n "${params.expression_matrix}" ] && [ "${params.expression_matrix}" != "null" ]; then
+      plotArgs+=(--plot "expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap")
+    fi
     python ${projectDir}/../bin/genefam/build_plot_manifest.py \\
-      --plot "family_counts=plots/family_counts.pdf=Family member counts by species" \\
-      --plot "gene_family_info_summary=plots/gene_family_info_summary.pdf=Gene family copy-number and protein-property summary" \\
-      --plot "gene_family_pangenome_summary=plots/gene_family_info_summary.pdf=Gene family pangenome presence and copy-number balance" \\
-      --plot "tree_features=plots/tree_features.pdf=Tree, motif, gene-structure, and domain composite plot" \\
-      --plot "promoter_cis_elements=plots/promoter_cis_elements.pdf=Promoter cis-element category matrix and top element summary" \\
-      --plot "ppi_ggnetview=plots/ppi_ggnetview.pdf=PPI network generated with ggNetView" \\
-      --plot "ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs" \\
-      --plot "expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap" \\
+      "\${plotArgs[@]}" \\
       --out plot_manifest.tsv
     """
 }

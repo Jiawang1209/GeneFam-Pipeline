@@ -8624,3 +8624,50 @@ Commit:
 
 Next:
 - Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
+
+## 2026-06-27 - Audit publication plot files and dynamic manifest
+
+Timestamp:
+- 2026-06-27 03:54 CST
+
+Context:
+- The publication report audit verified interpretation coverage and software/version sections, but it did not prove that every plot registered in `plot_manifest.tsv` existed on disk.
+- The standard plot manifest listed optional plots such as promoter, PPI, expression, and Ks outputs even when those branches were not enabled or were owned by a different branch.
+
+Decisions:
+- Treat registered plot files as part of the publication-level contract: every manifest path must exist and be non-empty.
+- Generate the standard branch plot manifest from active Nextflow parameters so optional figures are only registered when their branches run.
+- Keep `ks_distribution` out of the standard plot manifest because WGD/Ks reporting owns that output.
+
+Added:
+- `plot_files_exist` check in `bin/genefam/audit_publication_report.py`.
+- Regression coverage for missing, empty, and valid plot files in `tests/test_audit_publication_report.py`.
+- Nextflow module test coverage proving standard plot manifest entries are parameter-aware.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_publication_report.py`
+- `tests/test_audit_publication_report.py`
+- `tests/test_workflow_modules.py`
+- `workflows/modules/plots.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py -q` first failed because the audit only reported four checks and had no plot-file existence check.
+- `python -m pytest tests/test_audit_publication_report.py -q` passed with 4 tests after adding file checks.
+- A manual publication audit against `results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv` first failed because optional static manifest rows pointed to missing promoter, PPI, Ks, and expression plots.
+- `python -m pytest tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_workflow_modules.py::test_main_workflow_includes_plot_processes tests/test_audit_publication_report.py -q` passed with 6 tests after making the manifest dynamic.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --run-feature-summary --run-mcscanx-circlize --syntenic-pairs tests/fixtures/mcscanx/syntenic_pairs.tsv --outdir results/nextflow_standard_feature_smoke` passed.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` passed with `Passed: 5`, `Failed: 0`, `Complete: true`.
+- `python -m pytest tests -q` passed with 363 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` passed required checks and reported `Release ready: true`, with only optional Docker and Apptainer profile smokes failing because those runtimes are not installed.
+
+Commit:
+- hash: pending
+- message: feat: audit publication plot files
+- files: publication report audit, plot manifest module, audit/workflow tests, history
+
+Next:
+- Continue final container/runtime verification when Docker or Apptainer is available; the non-container MVP checks are release-ready.

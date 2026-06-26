@@ -486,14 +486,22 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert "process BUILD_PLOT_MANIFEST" in module
     assert 'publishDir "${params.outdir}/report", mode: "copy", overwrite: true' in module
     assert "build_plot_manifest.py" in module
+    assert "plotArgs=(" in module
     assert '--plot "family_counts=plots/family_counts.pdf=Family member counts by species"' in module
     assert '--plot "gene_family_info_summary=plots/gene_family_info_summary.pdf=Gene family copy-number and protein-property summary"' in module
     assert '--plot "gene_family_pangenome_summary=plots/gene_family_info_summary.pdf=Gene family pangenome presence and copy-number balance"' in module
     assert '--plot "tree_features=plots/tree_features.pdf=Tree, motif, gene-structure, and domain composite plot"' in module
+    assert 'if [ "${params.run_feature_summary}" = "true" ]; then' in module
+    assert '--plot "feature_summary=plots/feature_summary.pdf=Integrated domain, motif, gene-structure, synteny, promoter, and expression feature summary"' in module
+    assert 'if [ "${params.run_mcscanx_circlize}" = "true" ]; then' in module
+    assert '--plot "mcscanx_circlize=plots/mcscanx_circlize.pdf=MCScanX synteny and chromosome-scale circlize plot"' in module
+    assert 'if [ "${params.run_promoter_cis}" = "true" ]; then' in module
     assert '--plot "promoter_cis_elements=plots/promoter_cis_elements.pdf=Promoter cis-element category matrix and top element summary"' in module
+    assert 'if [ "${params.run_ppi}" = "true" ]; then' in module
     assert '--plot "ppi_ggnetview=plots/ppi_ggnetview.pdf=PPI network generated with ggNetView"' in module
-    assert '--plot "ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs"' in module
+    assert 'if [ -n "${params.expression_matrix}" ] && [ "${params.expression_matrix}" != "null" ]; then' in module
     assert '--plot "expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap"' in module
+    assert 'ks_distribution=plots/ks_distribution.pdf' not in module
     assert "--out plot_manifest.tsv" in module
 
 

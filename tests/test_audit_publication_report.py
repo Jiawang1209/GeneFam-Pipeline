@@ -18,6 +18,9 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
     figure_interpretations = tmp_path / "figure_interpretations.tsv"
     software_versions = tmp_path / "software_versions.tsv"
     final_report = tmp_path / "final_report.md"
+    (tmp_path / "plots").mkdir()
+    (tmp_path / "plots/tree_features.pdf").write_bytes(b"%PDF tree")
+    (tmp_path / "plots/ppi_ggnetview.pdf").write_bytes(b"%PDF ppi")
 
     _write_tsv(
         plot_manifest,
@@ -111,8 +114,9 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
     )
     summary = summarize_audit(rows)
 
-    assert summary == {"passed": 4, "failed": 0, "complete": True}
+    assert summary == {"passed": 5, "failed": 0, "complete": True}
     assert {row["check"] for row in rows} == {
+        "plot_files_exist",
         "figure_interpretation_coverage",
         "figure_interpretation_detail",
         "software_versions_present",
@@ -147,6 +151,69 @@ def test_publication_report_audit_flags_missing_figure_interpretation(tmp_path):
     assert "tree_features" in by_check["figure_interpretation_coverage"]["note"]
 
 
+def test_publication_report_audit_flags_missing_or_empty_plot_files(tmp_path):
+    plot_manifest = tmp_path / "report/plot_manifest.tsv"
+    figure_interpretations = tmp_path / "report/figure_interpretations.tsv"
+    software_versions = tmp_path / "report/software_versions.tsv"
+    final_report = tmp_path / "report/final_report.md"
+    (tmp_path / "plots").mkdir()
+    (tmp_path / "plots/family_counts.pdf").write_bytes(b"%PDF counts")
+    (tmp_path / "plots/empty_plot.pdf").write_bytes(b"")
+
+    _write_tsv(
+        plot_manifest,
+        ["plot_key", "path", "description"],
+        [
+            ["family_counts", "plots/family_counts.pdf", "Counts"],
+            ["empty_plot", "plots/empty_plot.pdf", "Empty plot"],
+            ["missing_plot", "plots/missing_plot.pdf", "Missing plot"],
+        ],
+    )
+    _write_tsv(
+        figure_interpretations,
+        ["figure_key", "qc_tables", "method_and_software", "reproducibility", "result_reading_status", "output_path"],
+        [
+            ["family_counts", "tables/family_counts.tsv", "plot_family_counts.R", "run", "read", "plots/family_counts.pdf"],
+            ["empty_plot", "tables/empty.tsv", "plot_empty.R", "run", "read", "plots/empty_plot.pdf"],
+            ["missing_plot", "tables/missing.tsv", "plot_missing.R", "run", "read", "plots/missing_plot.pdf"],
+        ],
+    )
+    _write_tsv(software_versions, ["component", "kind", "version", "status", "source"], [["R", "runtime", "4.4.0", "detected", "/usr/local/bin/R --version"]])
+    final_report.write_text(
+        "\n".join(
+            [
+                "### Software Versions",
+                "## Figure Result Interpretations",
+                "### family_counts: Counts",
+                "- QC tables: tables/family_counts.tsv",
+                "- Method/software: plot_family_counts.R",
+                "- Reproducibility: run",
+                "### empty_plot: Empty plot",
+                "- QC tables: tables/empty.tsv",
+                "- Method/software: plot_empty.R",
+                "- Reproducibility: run",
+                "### missing_plot: Missing plot",
+                "- QC tables: tables/missing.tsv",
+                "- Method/software: plot_missing.R",
+                "- Reproducibility: run",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    rows = audit_publication_report(
+        plot_manifest=plot_manifest,
+        figure_interpretations=figure_interpretations,
+        software_versions=software_versions,
+        final_report=final_report,
+    )
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["plot_files_exist"]["status"] == "failed"
+    assert "empty_plot:empty" in by_check["plot_files_exist"]["note"]
+    assert "missing_plot:missing" in by_check["plot_files_exist"]["note"]
+
+
 def test_publication_report_audit_cli_writes_markdown_and_tsv(tmp_path):
     plot_manifest = tmp_path / "plot_manifest.tsv"
     figure_interpretations = tmp_path / "figure_interpretations.tsv"
@@ -154,6 +221,8 @@ def test_publication_report_audit_cli_writes_markdown_and_tsv(tmp_path):
     final_report = tmp_path / "final_report.md"
     out_tsv = tmp_path / "audit.tsv"
     out_md = tmp_path / "audit.md"
+    (tmp_path / "plots").mkdir()
+    (tmp_path / "plots/family_counts.pdf").write_bytes(b"%PDF counts")
 
     _write_tsv(plot_manifest, ["plot_key", "path", "description"], [["family_counts", "plots/family_counts.pdf", "Counts"]])
     _write_tsv(
@@ -206,5 +275,6 @@ def test_publication_report_audit_cli_writes_markdown_and_tsv(tmp_path):
     )
 
     assert completed.returncode == 0, completed.stderr
+    assert "plot_files_exist\tpassed" in out_tsv.read_text(encoding="utf-8")
     assert "figure_interpretation_coverage\tpassed" in out_tsv.read_text(encoding="utf-8")
     assert "Complete: true" in out_md.read_text(encoding="utf-8")

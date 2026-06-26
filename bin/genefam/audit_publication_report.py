@@ -38,6 +38,35 @@ def _plot_keys(rows: list[dict[str, str]]) -> list[str]:
     return [row.get("plot_key", "").strip() for row in rows if row.get("plot_key", "").strip()]
 
 
+def _plot_base_dir(plot_manifest: Path) -> Path:
+    if plot_manifest.parent.name == "report":
+        return plot_manifest.parent.parent
+    return plot_manifest.parent
+
+
+def _resolve_plot_path(plot_manifest: Path, plot_path: str) -> Path:
+    path = Path(plot_path)
+    if path.is_absolute():
+        return path
+    return _plot_base_dir(plot_manifest) / path
+
+
+def _plot_file_issues(plot_manifest: Path, rows: list[dict[str, str]]) -> list[str]:
+    issues: list[str] = []
+    for row in rows:
+        plot_key = row.get("plot_key", "").strip() or "unknown"
+        plot_path = row.get("path", "").strip()
+        if not plot_path:
+            issues.append(f"{plot_key}:missing_path")
+            continue
+        resolved = _resolve_plot_path(plot_manifest, plot_path)
+        if not resolved.exists():
+            issues.append(f"{plot_key}:missing:{plot_path}")
+        elif resolved.stat().st_size <= 0:
+            issues.append(f"{plot_key}:empty:{plot_path}")
+    return issues
+
+
 def _interpretation_by_key(rows: list[dict[str, str]]) -> dict[str, dict[str, str]]:
     return {row.get("figure_key", "").strip(): row for row in rows if row.get("figure_key", "").strip()}
 
@@ -68,6 +97,7 @@ def audit_publication_report(
     report_text = final_report.read_text(encoding="utf-8") if final_report.exists() else ""
 
     plot_keys = _plot_keys(plots)
+    plot_file_issues = _plot_file_issues(plot_manifest, plots)
     interpretation_rows = _interpretation_by_key(interpretations)
     missing_interpretations = [key for key in plot_keys if key not in interpretation_rows]
 
@@ -96,6 +126,14 @@ def audit_publication_report(
                 missing_report_sections.append(f"{row.get('figure_key', 'unknown')}:{field}")
 
     return [
+        _row(
+            "plot_files_exist",
+            not plot_file_issues and bool(plot_keys),
+            str(plot_manifest),
+            "all plot_manifest paths exist and are non-empty"
+            if not plot_file_issues and plot_keys
+            else "missing or empty plot files: " + ", ".join(plot_file_issues or ["no plots registered"]),
+        ),
         _row(
             "figure_interpretation_coverage",
             not missing_interpretations and bool(plot_keys),
