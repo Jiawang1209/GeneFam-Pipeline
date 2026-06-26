@@ -233,6 +233,10 @@ def assemble_report(
                     f"- Key observations: {row.get('key_observations', '')}",
                     f"- Biological interpretation: {row.get('biological_interpretation', '')}",
                     f"- QC warnings / limitations: {row.get('qc_warnings', '')}",
+                    f"- QC tables: {row.get('qc_tables', 'not provided')}",
+                    f"- Method/software: {row.get('method_and_software', 'not provided')}",
+                    f"- Reproducibility: {row.get('reproducibility', 'not provided')}",
+                    f"- Result reading status: {row.get('result_reading_status', 'not provided')}",
                     f"- Output path: `{row.get('output_path', '')}`",
                     "",
                 ]

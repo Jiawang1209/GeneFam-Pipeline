@@ -6773,6 +6773,48 @@ Commit:
 Next:
 - Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
 
+## 2026-06-27 - Add per-figure QC and reproducibility notes to final reports
+
+Timestamp:
+- 2026-06-27 01:57:42 CST
+
+Context:
+- The final report already rendered figure-level interpretation text, but each figure still needed explicit QC tables, method/software provenance, reproducibility commands, and a close-reading status.
+- The user requires final reports to support per-figure close reading and method sections that identify software and versions.
+
+Decisions:
+- Keep figure interpretation generation template-driven so every registered plot gets the same report contract.
+- Use real repository smoke commands in figure reproducibility notes and test that the referenced scripts exist.
+- Preserve the current workflow stage: flow-first development, with container/profile failures recorded as known final-stage blockers.
+
+Added:
+- QC table, method/software, reproducibility, and close-reading status fields in `figure_interpretations.tsv`.
+- Tests that require the new report fields and verify referenced reproducibility scripts exist.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_figure_interpretations.py`
+- `bin/genefam/assemble_report.py`
+- `tests/test_build_figure_interpretations.py`
+- `tests/test_assemble_report.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_figure_interpretations.py tests/test_assemble_report.py -q` first failed with 3 failures because `qc_tables`, `method_and_software`, `reproducibility`, and `result_reading_status` were not generated or rendered yet.
+- `python -m pytest tests/test_build_figure_interpretations.py tests/test_assemble_report.py -q` passed with 5 tests after implementation.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_standard_smoke` passed and refreshed the standard report package.
+- `rg -n "run_mcscanx_circlize_smoke|run_kaks_wgd_plot_smoke|run_expression_heatmap_smoke|run_promoter_cis_smoke|run_tree_feature_smoke" results/nextflow_standard_smoke/standard/report/final_report.md` confirmed the final report includes real reproducibility smoke commands.
+- `python -m pytest tests -q` passed with 349 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`: 42 checks passed; `readiness audit` remained the only required failure; Docker and Apptainer profile smokes remained optional failures.
+
+Commit:
+- pending
+
+Next:
+- Continue final MVP hardening by reducing the readiness audit gap, then return to container/profile packaging after the analysis flow is fully stable.
+
 ## 2026-06-27 - Add density and duplicate-type tracks to MCScanX circlize plots
 
 Timestamp:

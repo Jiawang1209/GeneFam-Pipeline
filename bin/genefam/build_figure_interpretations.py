@@ -16,6 +16,10 @@ FIELDNAMES = [
     "key_observations",
     "biological_interpretation",
     "qc_warnings",
+    "qc_tables",
+    "method_and_software",
+    "reproducibility",
+    "result_reading_status",
     "output_path",
 ]
 
@@ -87,6 +91,58 @@ TEMPLATES = {
 }
 
 
+QC_TABLES = {
+    "family": "tables/gene_family_copy_number.tsv; tables/gene_family_copy_number_summary.tsv; tables/gene_family_copy_number_expansion.tsv; tables/gene_family_protein_properties.tsv",
+    "mcscanx": "tables/circlize_link_density.tsv; tables/circlize_duplicate_type_tracks.tsv; tables/circlize_skipped_links.tsv; tables/mcscanx_summary.tsv",
+    "kaks": "tables/kaks_wgd_annotations.tsv; WGD Event Evidence table; tables/pangenome_kaks_summary.tsv; tables/duplicate_type_kaks_summary.tsv",
+    "expression": "tables/expression_sample_metadata.tsv; tables/expression_group_matrix.tsv; tables/expression_gene_summary.tsv",
+    "promoter": "tables/promoter_cis_category_summary.tsv; tables/promoter_cis_element_annotations.tsv; tables/promoter_cis_gene_element_matrix.tsv",
+    "ppi": "tables/ppi_input_evidence.tsv; tables/ppi_network_qc.tsv; tables/ppi_hubs.tsv; tables/ppi_ggnetview_status.tsv",
+    "pangenome": "tables/gene_family_copy_number.tsv; tables/gene_family_pangenome_summary.tsv; tables/gene_family_copy_number_expansion.tsv; tables/gene_family_protein_properties.tsv; tables/pangenome_kaks_summary.tsv",
+    "feature": "tables/feature_summary.tsv; tables/domain_summary.tsv; tables/motif_summary.tsv; tables/gene_structure_summary.tsv",
+    "tree": "tables/tree_feature_matrix.tsv; tables/domain_summary.tsv; tables/motif_summary.tsv; tables/gene_structure_summary.tsv",
+}
+
+
+METHOD_AND_SOFTWARE = {
+    "family": "build_gene_family_info.py; plot_gene_family_info.R; /usr/local/bin/R; GeneFamilyFlow",
+    "mcscanx": "MCScanX; build_circlize_inputs.py; plot_mcscanx_circlize.R; circlize; /usr/local/bin/R; GeneFamilyFlow",
+    "kaks": "KaKs_Calculator/PAML-compatible Ka/Ks table; classify_wgd_layers.py; build_kaks_plot_annotations.py; plot_kaks.R; plot_pangenome_kaks.R; /usr/local/bin/R; GeneFamilyFlow",
+    "expression": "build_expression_summary.py; plot_expression_heatmap.R; pheatmap/ComplexHeatmap-compatible R output; /usr/local/bin/R; GeneFamilyFlow",
+    "promoter": "extract_promoters.py; build_promoter_cis_elements.py; plot_promoter_cis_elements.R; /usr/local/bin/R; GeneFamilyFlow",
+    "ppi": "build_ppi_tables.py; plot_ppi_ggnetview.R; ggNetView; /usr/local/bin/R; GeneFamilyFlow",
+    "pangenome": "build_gene_family_info.py; build_pangenome_kaks_summary.py; plot_gene_family_info.R; plot_pangenome_kaks.R; /usr/local/bin/R; GeneFamilyFlow",
+    "feature": "summarize_feature_tables.py; plot_feature_summary.R; /usr/local/bin/R; GeneFamilyFlow",
+    "tree": "FastTree/IQ-TREE-compatible Newick input; build_tree_feature_matrix.py; plot_tree_features.R; /usr/local/bin/R; GeneFamilyFlow",
+}
+
+
+REPRODUCIBILITY = {
+    "family": "python bin/genefam/run_gene_family_info_smoke.py --r-bin /usr/local/bin/R --outdir results/gene_family_info_smoke",
+    "mcscanx": "python bin/genefam/run_mcscanx_circlize_smoke.py --r-bin /usr/local/bin/R --outdir results/mcscanx_circlize_smoke",
+    "kaks": "python bin/genefam/run_kaks_wgd_plot_smoke.py --r-bin /usr/local/bin/R --outdir results/kaks_wgd_plot_smoke",
+    "expression": "python bin/genefam/run_expression_heatmap_smoke.py --expression tests/fixtures/expression/family_expression.tsv --metadata tests/fixtures/expression/sample_metadata.tsv --r-bin /usr/local/bin/R --outdir results/expression_heatmap_smoke",
+    "promoter": "python bin/genefam/run_promoter_cis_smoke.py --r-bin /usr/local/bin/R --outdir results/promoter_cis_smoke",
+    "ppi": "python bin/genefam/run_ppi_ggnetview_plot_smoke.py --r-bin /usr/local/bin/R --outdir results/ppi_ggnetview_plot_smoke",
+    "pangenome": "python bin/genefam/run_gene_family_info_smoke.py --r-bin /usr/local/bin/R --outdir results/gene_family_info_smoke",
+    "feature": "python bin/genefam/run_feature_summary_smoke.py --r-bin /usr/local/bin/R --outdir results/feature_summary_smoke",
+    "tree": "python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
+}
+
+
+READING_STATUS = {
+    "family": "template-guided close reading; validate copy-number calls, selected species, and family-member evidence before manuscript use",
+    "mcscanx": "template-guided close reading; validate skipped links, chromosome coordinates, and MCScanX block evidence before manuscript use",
+    "kaks": "template-guided close reading; validate Ks peak separation, pair counts, and configured WGD event metadata before naming gamma/beta/alpha/theta layers",
+    "expression": "template-guided close reading; validate sample metadata, normalization, and replicate structure before biological conclusions",
+    "promoter": "template-guided close reading; validate promoter extraction window, motif source, and category mapping before regulatory conclusions",
+    "ppi": "template-guided close reading; validate interaction evidence, hub ranking, and ggNetView status before network interpretation",
+    "pangenome": "template-guided close reading; validate core/soft-core/dispensable thresholds, copy-number tables, and pangenome sampling before manuscript use",
+    "feature": "template-guided close reading; validate source feature tables and large-family aggregation before prioritizing candidate genes",
+    "tree": "template-guided close reading; validate tree topology, feature-table completeness, and motif/domain source evidence before clade interpretation",
+}
+
+
 def _template_key(plot_key: str, path: str) -> str:
     value = f"{plot_key} {path}".lower()
     for key in ["mcscanx", "kaks", "expression", "promoter", "ppi", "pangenome", "tree", "feature", "family"]:
@@ -106,7 +162,8 @@ def build_figure_interpretations(plots: list[dict[str, str]]) -> list[dict[str, 
     for plot in plots:
         key = plot.get("plot_key") or plot.get("key") or Path(plot.get("path", "")).stem
         path = plot.get("path", "")
-        template = TEMPLATES[_template_key(key, path)]
+        template_key = _template_key(key, path)
+        template = TEMPLATES[template_key]
         rows.append(
             {
                 "figure_key": key,
@@ -116,6 +173,10 @@ def build_figure_interpretations(plots: list[dict[str, str]]) -> list[dict[str, 
                 "key_observations": template[3],
                 "biological_interpretation": template[4],
                 "qc_warnings": _qc_warning(path),
+                "qc_tables": QC_TABLES[template_key],
+                "method_and_software": METHOD_AND_SOFTWARE[template_key],
+                "reproducibility": REPRODUCIBILITY[template_key],
+                "result_reading_status": READING_STATUS[template_key],
                 "output_path": path,
             }
         )
@@ -147,6 +208,10 @@ def write_markdown(rows: list[dict[str, str]], out_path: Path) -> None:
                 f"- Key observations: {row['key_observations']}",
                 f"- Biological interpretation: {row['biological_interpretation']}",
                 f"- QC warnings / limitations: {row['qc_warnings']}",
+                f"- QC tables: {row['qc_tables']}",
+                f"- Method/software: {row['method_and_software']}",
+                f"- Reproducibility: {row['reproducibility']}",
+                f"- Result reading status: {row['result_reading_status']}",
                 f"- Output path: `{row['output_path']}`",
                 "",
             ]

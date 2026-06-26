@@ -78,6 +78,10 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
             "key_observations": "Inspect expansion or contraction.",
             "biological_interpretation": "High-copy species may indicate expansion.",
             "qc_warnings": "Smoke/demo data caveat.",
+            "qc_tables": "tables/gene_family_copy_number.tsv; tables/gene_family_pangenome_summary.tsv",
+            "method_and_software": "build_gene_family_info.py; plot_gene_family_info.R; /usr/local/bin/R",
+            "reproducibility": "python bin/genefam/run_gene_family_info_smoke.py --r-bin /usr/local/bin/R --outdir results/gene_family_info_smoke",
+            "result_reading_status": "template-guided close reading; validate against QC tables before manuscript use",
             "output_path": "plots/family_counts.pdf",
         }
     ]
@@ -118,6 +122,10 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
     assert "## Figure Result Interpretations" in report
     assert "### family_counts: Family copy number and member count overview" in report
     assert "- Biological interpretation: High-copy species may indicate expansion." in report
+    assert "- QC tables: tables/gene_family_copy_number.tsv; tables/gene_family_pangenome_summary.tsv" in report
+    assert "- Method/software: build_gene_family_info.py; plot_gene_family_info.R; /usr/local/bin/R" in report
+    assert "- Reproducibility: python bin/genefam/run_gene_family_info_smoke.py --r-bin /usr/local/bin/R --outdir results/gene_family_info_smoke" in report
+    assert "- Result reading status: template-guided close reading; validate against QC tables before manuscript use" in report
     assert "## Results Package Inventory" in report
     assert "### Available Tables" in report
     assert "| family_event_retention_summary | tables/family_event_retention_summary.tsv | Family gene counts by duplicate type and WGD event |" in report
@@ -176,8 +184,8 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
         encoding="utf-8",
     )
     figure_interpretations.write_text(
-        "figure_key\ttitle\tinput_data\twhat_figure_shows\tkey_observations\tbiological_interpretation\tqc_warnings\toutput_path\n"
-        "family_counts\tFamily copy number and member count overview\tFamily counts\tCounts by species\tInspect counts\tExpansion signal\tSmoke data\tplots/family_counts.pdf\n",
+        "figure_key\ttitle\tinput_data\twhat_figure_shows\tkey_observations\tbiological_interpretation\tqc_warnings\tqc_tables\tmethod_and_software\treproducibility\tresult_reading_status\toutput_path\n"
+        "family_counts\tFamily copy number and member count overview\tFamily counts\tCounts by species\tInspect counts\tExpansion signal\tSmoke data\ttables/gene_family_copy_number.tsv\tplot_gene_family_info.R; /usr/local/bin/R\tnextflow run main.nf -profile conda --branch standard\ttemplate-guided close reading\tplots/family_counts.pdf\n",
         encoding="utf-8",
     )
 
@@ -216,6 +224,10 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
     assert "## Results Package Inventory" in text
     assert "### Software Versions" in text
     assert "## Figure Result Interpretations" in text
+    assert "- QC tables: tables/gene_family_copy_number.tsv" in text
+    assert "- Method/software: plot_gene_family_info.R; /usr/local/bin/R" in text
+    assert "- Reproducibility: nextflow run main.nf -profile conda --branch standard" in text
+    assert "- Result reading status: template-guided close reading" in text
     assert "| runtime.environment | GeneFamilyFlow |" in text
     assert "| selected_species | Arabidopsis_thaliana,Brassica_rapa |" in text
     assert "| WGD_layer_1 | alpha | 12 | 0.1800 | configured_named_event | literature | Brassicaceae | recent |" in text
