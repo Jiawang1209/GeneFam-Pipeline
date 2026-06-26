@@ -98,6 +98,8 @@ def test_readiness_checklist_documents_command_audit():
     assert "runtime recovery" in text
     assert "results/readiness/runtime_bootstrap_plan.md" in text
     assert "results/readiness/runtime_bootstrap.sh" in text
+    assert "optional container-stage commands" in text
+    assert "required core analysis commands" in text
     assert 'docker run --rm -v "$PWD/results:/opt/GeneFam-Pipeline/results" genefam-pipeline:latest' in text
     assert "results/container_default_smoke" in text
     assert "scripts/run_local_acceptance.sh" in text

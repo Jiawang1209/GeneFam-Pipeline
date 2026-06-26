@@ -50,7 +50,7 @@ python bin/genefam/plan_runtime_bootstrap.py \
   --outdir results/readiness
 ```
 
-The command exits with status `0` only when all checked commands are available. It exits with status `1` when at least one command is missing and still writes the TSV report.
+The command writes a `requirement` column. It exits with status `0` when all required core analysis commands are available, even if optional container-stage commands such as `docker` or `apptainer` are missing. It exits with status `1` when at least one required command is missing and still writes the TSV report. Optional missing container commands stay visible in the TSV so the bootstrap planner and handoff reports can keep the final packaging gap explicit.
 
 The bootstrap planner reads the TSV and writes:
 

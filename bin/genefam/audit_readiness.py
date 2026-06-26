@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Callable
 
 
-FIELDNAMES = ["command", "status", "path"]
+FIELDNAMES = ["command", "status", "path", "requirement"]
 DEFAULT_COMMANDS = [
     "nextflow",
     "conda",
@@ -26,6 +26,7 @@ DEFAULT_COMMANDS = [
     "iqtree2",
     "meme",
 ]
+OPTIONAL_COMMANDS = {"docker", "apptainer"}
 CONDA_SCOPED_COMMANDS = {"nextflow", "hmmsearch", "diamond", "mafft", "FastTree", "fasttree", "iqtree2", "iqtree", "meme"}
 COMMAND_ALIASES = {"iqtree2": ["iqtree"]}
 
@@ -62,6 +63,7 @@ def audit_commands(
     rows: list[dict[str, str]] = []
     conda_lookup = conda_which or globals()["conda_which"]
     for command in required_commands:
+        requirement = "optional" if command in OPTIONAL_COMMANDS else "required"
         candidates = [command, *COMMAND_ALIASES.get(command, [])]
         path = ""
         for candidate in candidates:
@@ -69,7 +71,7 @@ def audit_commands(
             if path:
                 break
         if path:
-            rows.append({"command": command, "status": "available", "path": path})
+            rows.append({"command": command, "status": "available", "path": path, "requirement": requirement})
             continue
         conda_path = ""
         if conda_env:
@@ -78,16 +80,35 @@ def audit_commands(
                 if conda_path:
                     break
         if conda_path:
-            rows.append({"command": command, "status": "available_in_conda", "path": f"{conda_env}:{conda_path}"})
+            rows.append(
+                {
+                    "command": command,
+                    "status": "available_in_conda",
+                    "path": f"{conda_env}:{conda_path}",
+                    "requirement": requirement,
+                }
+            )
             continue
-        rows.append({"command": command, "status": "missing", "path": ""})
+        rows.append({"command": command, "status": "missing", "path": "", "requirement": requirement})
     return rows
 
 
 def summarize_status(rows: list[dict[str, str]]) -> dict[str, int | bool]:
     available = sum(1 for row in rows if row["status"].startswith("available"))
     missing = sum(1 for row in rows if row["status"] == "missing")
-    return {"available": available, "missing": missing, "ready": missing == 0}
+    missing_required = sum(
+        1 for row in rows if row["status"] == "missing" and row.get("requirement", "required") == "required"
+    )
+    missing_optional = sum(
+        1 for row in rows if row["status"] == "missing" and row.get("requirement", "required") == "optional"
+    )
+    return {
+        "available": available,
+        "missing": missing,
+        "missing_required": missing_required,
+        "missing_optional": missing_optional,
+        "ready": missing_required == 0,
+    }
 
 
 def write_tsv(rows: list[dict[str, str]], out_path: Path) -> None:

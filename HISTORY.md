@@ -6817,6 +6817,51 @@ Commit:
 Next:
 - Continue final MVP hardening by reducing the readiness audit gap, then return to container/profile packaging after the analysis flow is fully stable.
 
+## 2026-06-27 - Make container runtime readiness optional for analysis MVP gate
+
+Timestamp:
+- 2026-06-27 02:10:10 CST
+
+Context:
+- `run_release_checks.py` still failed the required readiness gate because `audit_readiness.py` treated missing `docker` and `apptainer` as required command failures.
+- The project direction is flow-first development, with Docker/Apptainer packaging kept as the final stage rather than a blocker for the analysis MVP.
+
+Decisions:
+- Add a `requirement` column to `command_readiness.tsv`.
+- Keep core analysis commands as `required`.
+- Mark `docker` and `apptainer` as `optional` container-stage commands so they remain visible in readiness, bootstrap, handoff, and delivery evidence without blocking release readiness for the analysis flow.
+
+Added:
+- Readiness tests covering optional container commands and the new `requirement` field.
+- Documentation language that distinguishes required core analysis commands from optional container-stage commands.
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/audit_readiness.py`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `tests/test_audit_readiness.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_readiness.py -q` first failed with 8 failures because `requirement` was not generated and optional container commands still blocked readiness.
+- `python -m pytest tests/test_runtime_environment_files.py::test_readiness_checklist_documents_command_audit -q` first failed because the readiness checklist did not document required core analysis commands versus optional container-stage commands.
+- `python -m pytest tests/test_audit_readiness.py -q` passed with 9 tests after implementation.
+- `python bin/genefam/audit_readiness.py --conda-env GeneFamilyFlow --out results/readiness/command_readiness.tsv` exited `0`; `docker` and `apptainer` remained `missing` with `requirement=optional`.
+- `python -m pytest tests/test_runtime_environment_files.py::test_readiness_checklist_documents_command_audit tests/test_release_audit_docs.py tests/test_audit_readiness.py -q` passed with 11 tests after documentation updates.
+- `python -m pytest tests -q` passed with 350 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `0`; release checks reported `Passed: 43`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+
+Commit:
+- pending
+
+Next:
+- Continue final MVP audit against the original objective, with Docker and Apptainer profile smokes preserved as explicit optional final-stage packaging work.
+
 ## 2026-06-27 - Add density and duplicate-type tracks to MCScanX circlize plots
 
 Timestamp:

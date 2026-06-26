@@ -116,7 +116,7 @@ python bin/genefam/audit_reference_governance.py \
   --outdir results/reference_governance
 ```
 
-The readiness audit may exit non-zero when runtime commands are missing; inspect the TSV for exact missing tools and use the bootstrap planner to generate next-step commands.
+The readiness audit writes `requirement=required|optional` for each command. It may exit non-zero when required core analysis commands are missing; optional container-stage commands such as Docker and Apptainer stay visible as missing rows without blocking analysis-flow MVP validation. Inspect the TSV for exact missing tools and use the bootstrap planner to generate next-step commands.
 
 The release checks runner writes:
 
@@ -250,9 +250,9 @@ The repository-level implementation and tests are in place, but this machine doe
 
 Recent readiness audits found:
 
-- available: `conda`, `/usr/local/bin/R`
-- available inside `GeneFamilyFlow`: `nextflow`, `hmmsearch`, `diamond`, `mafft`, `FastTree` via `fasttree`, `iqtree2` via `iqtree`, `meme`
-- missing: `docker`, `apptainer`
+- required available: `conda`, `/usr/local/bin/R`
+- required available inside `GeneFamilyFlow`: `nextflow`, `hmmsearch`, `diamond`, `mafft`, `FastTree`, `iqtree2` via `iqtree`, `meme`
+- optional container-stage missing: `docker`, `apptainer`
 
 This means:
 

@@ -11,9 +11,9 @@ def test_audit_commands_marks_available_and_missing_commands():
     )
 
     assert rows == [
-        {"command": "nextflow", "status": "available", "path": "/mock/bin/nextflow"},
-        {"command": "/usr/local/bin/R", "status": "available", "path": "/mock/bin//usr/local/bin/R"},
-        {"command": "mafft", "status": "missing", "path": ""},
+        {"command": "nextflow", "status": "available", "path": "/mock/bin/nextflow", "requirement": "required"},
+        {"command": "/usr/local/bin/R", "status": "available", "path": "/mock/bin//usr/local/bin/R", "requirement": "required"},
+        {"command": "mafft", "status": "missing", "path": "", "requirement": "required"},
     ]
 
 
@@ -30,8 +30,9 @@ def test_audit_commands_can_mark_commands_available_inside_conda_env():
             "command": "hmmsearch",
             "status": "available_in_conda",
             "path": "GeneFamilyFlow:/envs/GeneFamilyFlow/bin/hmmsearch",
+            "requirement": "required",
         },
-        {"command": "diamond", "status": "missing", "path": ""},
+        {"command": "diamond", "status": "missing", "path": "", "requirement": "required"},
     ]
 
 
@@ -48,6 +49,7 @@ def test_audit_commands_accepts_iqtree_alias_for_iqtree2():
             "command": "iqtree2",
             "status": "available_in_conda",
             "path": "GeneFamilyFlow:/envs/GeneFamilyFlow/bin/iqtree",
+            "requirement": "required",
         }
     ]
 
@@ -69,18 +71,45 @@ def test_audit_commands_finds_fasttree_inside_conda_env():
             "command": "FastTree",
             "status": "available_in_conda",
             "path": "GeneFamilyFlow:/envs/GeneFamilyFlow/bin/FastTree",
+            "requirement": "required",
         }
     ]
 
 
 def test_summarize_status_counts_missing_commands():
     rows = [
-        {"command": "nextflow", "status": "available", "path": "/mock/bin/nextflow"},
-        {"command": "hmmsearch", "status": "available_in_conda", "path": "GeneFamilyFlow:/mock/bin/hmmsearch"},
-        {"command": "docker", "status": "missing", "path": ""},
+        {"command": "nextflow", "status": "available", "path": "/mock/bin/nextflow", "requirement": "required"},
+        {"command": "hmmsearch", "status": "available_in_conda", "path": "GeneFamilyFlow:/mock/bin/hmmsearch", "requirement": "required"},
+        {"command": "docker", "status": "missing", "path": "", "requirement": "required"},
     ]
 
-    assert summarize_status(rows) == {"available": 2, "missing": 1, "ready": False}
+    assert summarize_status(rows) == {
+        "available": 2,
+        "missing": 1,
+        "missing_required": 1,
+        "missing_optional": 0,
+        "ready": False,
+    }
+
+
+def test_default_container_commands_are_optional_and_do_not_block_readiness():
+    rows = audit_commands(
+        required_commands=["nextflow", "docker", "apptainer"],
+        which=lambda command: "/mock/bin/nextflow" if command == "nextflow" else "",
+    )
+
+    assert rows == [
+        {"command": "nextflow", "status": "available", "path": "/mock/bin/nextflow", "requirement": "required"},
+        {"command": "docker", "status": "missing", "path": "", "requirement": "optional"},
+        {"command": "apptainer", "status": "missing", "path": "", "requirement": "optional"},
+    ]
+    assert summarize_status(rows) == {
+        "available": 1,
+        "missing": 2,
+        "missing_required": 0,
+        "missing_optional": 2,
+        "ready": True,
+    }
 
 
 def test_audit_readiness_cli_accepts_conda_env_argument(tmp_path):
@@ -104,8 +133,8 @@ def test_audit_readiness_cli_accepts_conda_env_argument(tmp_path):
 
     assert completed.returncode == 0
     assert out_path.read_text(encoding="utf-8").splitlines() == [
-        "command\tstatus\tpath",
-        f"{sys.executable}\tavailable\t{sys.executable}",
+        "command\tstatus\tpath\trequirement",
+        f"{sys.executable}\tavailable\t{sys.executable}\trequired",
     ]
 
 
@@ -131,7 +160,7 @@ def test_audit_readiness_cli_writes_tsv(tmp_path):
 
     assert completed.returncode == 1
     assert out_path.read_text(encoding="utf-8").splitlines() == [
-        "command\tstatus\tpath",
-        f"{sys.executable}\tavailable\t{sys.executable}",
-        "/definitely/not/a/real/genefam/tool\tmissing\t",
+        "command\tstatus\tpath\trequirement",
+        f"{sys.executable}\tavailable\t{sys.executable}\trequired",
+        "/definitely/not/a/real/genefam/tool\tmissing\t\trequired",
     ]
