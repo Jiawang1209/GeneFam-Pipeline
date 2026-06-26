@@ -69,7 +69,7 @@ Verification:
 - `rg -n "expression heatmap visualization|Nextflow report evidence|--expression-matrix|expression_heatmap" results/objective_audit/objective_audit.md results/release_checks/release_checks.tsv results/nextflow_standard_feature_smoke/standard/report/report_index.tsv results/nextflow_standard_feature_smoke/standard/report/final_report.md` confirmed objective-audit, release-check, report-index, and final-report coverage.
 
 Commit:
-- hash: pending
+- hash: 5b894160ead2bf7342f0da3efb9e6310b43c3b4c
 - message: `test: require nextflow evidence for expression audit`
 - files: objective audit expression evidence rule, regression tests, refreshed objective audit outputs, and history entry.
 
