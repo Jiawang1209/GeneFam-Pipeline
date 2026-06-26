@@ -17,7 +17,7 @@ DEFAULT_TOOL_COMMANDS = {
     "DIAMOND": ["diamond", "--version"],
     "MAFFT": ["mafft", "--version"],
     "FastTree": ["FastTree", "-help"],
-    "IQ-TREE": ["iqtree2", "--version"],
+    "IQ-TREE": [["iqtree2", "--version"], ["iqtree", "--version"]],
     "MEME": ["meme", "-version"],
     "MCScanX": ["MCScanX"],
     "KaKs_Calculator": ["KaKs_Calculator", "-h"],
@@ -48,11 +48,33 @@ def _first_version_line(output: str) -> str:
     return "version_not_detected"
 
 
+def _command_options(command: list[str] | list[list[str]]) -> list[list[str]]:
+    if command and isinstance(command[0], list):
+        return command  # type: ignore[return-value]
+    return [command]  # type: ignore[list-item]
+
+
+def _run_first_available_command(
+    command_options: list[list[str]],
+    command_runner: Callable[[list[str]], tuple[int, str]],
+) -> tuple[list[str], int, str]:
+    last_command = command_options[-1]
+    for command in command_options:
+        try:
+            exit_code, output = command_runner(command)
+        except FileNotFoundError:
+            exit_code, output = 127, ""
+        if exit_code == 0 and output.strip():
+            return command, exit_code, output
+        last_command = command
+    return last_command, exit_code, output
+
+
 def collect_versions(
     *,
     command_runner: Callable[[list[str]], tuple[int, str]] | None = None,
     r_package_runner: Callable[[str], str | None] | None = None,
-    tool_commands: dict[str, list[str]] | None = None,
+    tool_commands: dict[str, list[str] | list[list[str]]] | None = None,
     r_packages: list[str] | None = None,
 ) -> list[dict[str, str]]:
     command_runner = command_runner or _run_command
@@ -61,10 +83,7 @@ def collect_versions(
     rows: list[dict[str, str]] = []
 
     for component, command in tool_commands.items():
-        try:
-            exit_code, output = command_runner(command)
-        except FileNotFoundError:
-            exit_code, output = 127, ""
+        used_command, exit_code, output = _run_first_available_command(_command_options(command), command_runner)
         detected = exit_code == 0 and bool(output.strip())
         rows.append(
             {
@@ -72,7 +91,7 @@ def collect_versions(
                 "kind": "command",
                 "version": _first_version_line(output) if detected else "version_not_detected",
                 "status": "detected" if detected else "version_not_detected",
-                "source": " ".join(command),
+                "source": " ".join(used_command),
             }
         )
 

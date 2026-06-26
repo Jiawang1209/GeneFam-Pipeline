@@ -6864,6 +6864,45 @@ Commit:
 Next:
 - Continue final MVP audit against the original objective, with Docker and Apptainer profile smokes preserved as explicit optional final-stage packaging work.
 
+## 2026-06-27 - Detect IQ-TREE version through iqtree fallback
+
+Timestamp:
+- 2026-06-27 02:16:01 CST
+
+Context:
+- The software version table already recorded R package versions for plotting methods, including `ggplot2`, `pheatmap`, `circlize`, `ggtree`, `treeio`, and `ggNetView`.
+- The standard Nextflow report still showed `IQ-TREE` as `version_not_detected` because the version collector only tried `iqtree2 --version`, while the `GeneFamilyFlow` environment exposes `iqtree`.
+
+Decisions:
+- Allow software version commands to define ordered fallback command options.
+- Use `iqtree2 --version` first and fall back to `iqtree --version`.
+- Preserve the existing single-command API for current tests and callers.
+
+Added:
+- A regression test proving `collect_versions` can use an alternate command when the primary command is missing.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/collect_software_versions.py`
+- `tests/test_collect_software_versions.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_collect_software_versions.py -q` first failed because `collect_versions` could not accept fallback command lists.
+- `python -m pytest tests/test_collect_software_versions.py -q` passed with 3 tests after implementation.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_standard_smoke` passed and refreshed the standard report package.
+- `rg -n "IQ-TREE|ggNetView|circlize|pheatmap|R_package" results/nextflow_standard_smoke/standard/report/software_versions.tsv results/nextflow_standard_smoke/standard/report/final_report.md` confirmed `IQ-TREE` is detected from `iqtree --version` and R plotting package versions remain in the report.
+- `python -m pytest tests -q` passed with 351 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `0`; release checks reported `Passed: 43`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+
+Commit:
+- pending
+
+Next:
+- Continue closing paper-level report polish and keep Docker/Apptainer profile smokes as explicit final-stage packaging work.
+
 ## 2026-06-27 - Add density and duplicate-type tracks to MCScanX circlize plots
 
 Timestamp:

@@ -48,3 +48,29 @@ def test_collect_versions_records_file_not_found_as_missing_tool():
             "source": "iqtree2 --version",
         }
     ]
+
+
+def test_collect_versions_uses_alternate_command_when_primary_is_missing():
+    def fake_command_runner(command):
+        if command == ["iqtree2", "--version"]:
+            raise FileNotFoundError("iqtree2")
+        if command == ["iqtree", "--version"]:
+            return 0, "IQ-TREE multicore version 2.4.0"
+        return 127, ""
+
+    rows = collect_versions(
+        command_runner=fake_command_runner,
+        r_package_runner=lambda package: None,
+        tool_commands={"IQ-TREE": [["iqtree2", "--version"], ["iqtree", "--version"]]},
+        r_packages=[],
+    )
+
+    assert rows == [
+        {
+            "component": "IQ-TREE",
+            "kind": "command",
+            "version": "IQ-TREE multicore version 2.4.0",
+            "status": "detected",
+            "source": "iqtree --version",
+        }
+    ]
