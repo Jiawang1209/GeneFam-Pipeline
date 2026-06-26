@@ -6824,6 +6824,45 @@ Commit:
 Next:
 - Continue toward the final container/Apptainer reproducibility stage once local runtimes are available.
 
+## 2026-06-27 - Document publication audit in quickstart
+
+Timestamp:
+- 2026-06-27 03:09:01 CST
+
+Context:
+- `publication_report_audit` is now present in release checks, local acceptance, and delivery bundle outputs.
+- `docs/quickstart.md` still described local acceptance as release/quickstart/delivery only, so the shortest user-facing guide did not explain the paper-style report closure artifact.
+
+Decisions:
+- Document `publication_report_audit` in the local acceptance wrapper description.
+- Add `results/publication_report_audit/publication_report_audit.md` to the quickstart key output list.
+- State that the publication audit checks figure interpretations, QC tables, software versions, and reproducibility commands.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `docs/quickstart.md`
+- `tests/test_quickstart_docs.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_quickstart_docs.py -q` first failed because `docs/quickstart.md` did not mention `results/publication_report_audit/publication_report_audit.md`.
+- `python -m pytest tests/test_quickstart_docs.py -q` passed after updating the quickstart guide.
+- `python -m pytest tests/test_quickstart_docs.py tests/test_local_acceptance_script.py tests/test_write_local_acceptance_summary.py tests/test_run_delivery_bundle.py tests/test_release_audit_docs.py -q` passed with 8 tests.
+- `rg -n "publication_report_audit|paper-style report closure|figure interpretations|software versions|reproducibility" docs/quickstart.md` confirmed the documented local acceptance and publication audit entrypoints.
+
+Commit:
+- hash: pending
+- message: pending
+- files: quickstart docs, quickstart docs test, history
+
+Next:
+- Continue toward the final container/Apptainer reproducibility stage once local runtimes are available.
+
 ## 2026-06-27 - Add publication report audit to local acceptance summary
 
 Timestamp:

@@ -20,7 +20,7 @@ For a local acceptance pass that runs the release gate and then still writes the
 bash scripts/run_local_acceptance.sh
 ```
 
-The wrapper also writes `results/local_acceptance/local_acceptance_summary.tsv` and `results/local_acceptance/local_acceptance_summary.md`, which record the release, quickstart, and delivery-bundle exit status in one place.
+The wrapper also writes `results/local_acceptance/local_acceptance_summary.tsv` and `results/local_acceptance/local_acceptance_summary.md`, which record the release gate, `publication_report_audit`, quickstart, and delivery-bundle exit status in one place. The publication audit points to `results/publication_report_audit/publication_report_audit.md` and verifies paper-style report closure: figure interpretations, QC tables, software versions, and reproducibility commands.
 
 Optional overrides:
 
@@ -92,6 +92,8 @@ Key outputs:
 - `results/objective_audit/objective_audit.tsv`
 - `results/objective_audit/objective_audit.md`
 - `results/handoff/handoff_report.md`
+- `results/local_acceptance/local_acceptance_summary.md`
+- `results/publication_report_audit/publication_report_audit.md`
 - `results/delivery_bundle/delivery_manifest.tsv`
 - `results/delivery_bundle/delivery_bundle.md`
 - `configs/manifest.example.yaml`
@@ -111,7 +113,7 @@ On the current development machine, Docker/Apptainer reproducibility is expected
 
 ## 5. Inspect The Delivery Bundle
 
-The release gate writes the final delivery index after the objective audit. It collects species-bank and manifest-mode input entrypoints, the manifest-mode standard DSL2 smoke evidence, the standard final report, prepared WGD report, alpha/beta/gamma/theta event evidence, runtime status, and documentation entrypoints.
+The release gate writes the final delivery index after the objective audit. It collects species-bank and manifest-mode input entrypoints, the manifest-mode standard DSL2 smoke evidence, the standard final report, prepared WGD report, publication report audit, alpha/beta/gamma/theta event evidence, runtime status, and documentation entrypoints.
 
 ```bash
 python bin/genefam/run_delivery_bundle.py \
