@@ -193,6 +193,7 @@ def test_readme_points_to_final_handoff_report():
     assert "figure interpretation" in readme
     assert "software/R package versions" in readme
     assert "reproducibility commands" in readme
+    assert "final_stage_blocker" in readme
     assert "container_default_smoke" in readme
     assert "Dockerfile -> results/container_default_smoke" in readme
     assert "first file to inspect" in readme

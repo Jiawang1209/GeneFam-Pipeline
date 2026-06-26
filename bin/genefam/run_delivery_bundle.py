@@ -67,6 +67,15 @@ def _objective_blockers(rows: list[dict[str, str]]) -> str:
     return ", ".join(blockers) if blockers else "none"
 
 
+def _objective_blocker_status(rows: list[dict[str, str]]) -> str:
+    statuses = {row.get("status") for row in rows if row.get("status") in {"blocked", "missing"}}
+    if "blocked" in statuses:
+        return "blocked"
+    if "missing" in statuses:
+        return "missing"
+    return "available"
+
+
 def _optional_failed(rows: list[dict[str, str]]) -> int:
     return sum(1 for row in rows if row.get("required") == "false" and row.get("status") == "failed")
 
@@ -107,6 +116,13 @@ def build_delivery_manifest(
             "status": "available",
             "path": "results/objective_audit/objective_audit.md",
             "note": f"blocked_or_missing={blockers}",
+        },
+        {
+            "section": "status",
+            "item": "final_stage_blocker",
+            "status": _objective_blocker_status(objective_rows),
+            "path": "results/objective_audit/objective_audit.md",
+            "note": blockers,
         },
         {
             "section": "status",

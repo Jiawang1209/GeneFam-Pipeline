@@ -217,6 +217,8 @@ The release checks runner writes:
 - `results/delivery_bundle/delivery_manifest.tsv`
 - `results/delivery_bundle/delivery_bundle.md`
 
+The delivery manifest includes a `final_stage_blocker` row. For the current analysis-flow MVP, that row is `blocked` only when objective-audit evidence shows a remaining external packaging/runtime blocker such as missing Docker/Apptainer commands; it is the first machine-readable place to check after the release gate reports zero required failures.
+
 The Markdown summary reports `Required failed` and `Optional failed` separately. Container profile smoke checks are optional evidence; the required readiness audit remains the release-blocking signal while Docker/Apptainer are unavailable.
 
 ## Requirement Audit

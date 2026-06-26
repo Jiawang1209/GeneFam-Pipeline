@@ -165,6 +165,10 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         in manifest_text
     )
     assert (
+        "status\tfinal_stage_blocker\tblocked\tresults/objective_audit/objective_audit.md\tDocker/Apptainer reproducibility"
+        in manifest_text
+    )
+    assert (
         "status\trelease_ready\tavailable\tresults/release_checks/release_checks.md\trelease_ready=true; optional_failed=2"
         in manifest_text
     )
@@ -195,6 +199,7 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "WGD report closure" in summary_text
     assert "results/publication_report_audit/wgd_publication_report_audit.md" in summary_text
     assert "Docker/Apptainer reproducibility" in summary_text
+    assert "final_stage_blocker" in summary_text
     assert "release_ready=true" in summary_text
     assert "results/container_profile_smoke/docker/container_profile_smoke.md" in summary_text
     assert "results/container_profile_smoke/apptainer/container_profile_smoke.md" in summary_text

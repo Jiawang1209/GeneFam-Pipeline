@@ -34,6 +34,51 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 04:31 - Surface final packaging blocker in delivery bundle
+
+Context:
+- The active `/goal` asks for a paper-level visualization package and a perfect MVP acceptance surface while keeping Docker/Apptainer packaging as the final stage.
+- The release/objective evidence already showed the analysis-flow MVP was release-ready with zero required failures, but the remaining Docker/Apptainer blocker was only embedded inside the objective-audit note.
+- A user-facing delivery bundle should expose that final blocker as a stable machine-readable row.
+
+Decisions:
+- Keep Docker/Apptainer profile smoke checks optional until local container runtimes are installed or exposed.
+- Add a dedicated `status/final_stage_blocker` row to the delivery manifest, derived from objective-audit rows with `blocked` or `missing` status.
+- Preserve `objective_audit` as the full evidence pointer and use `final_stage_blocker` as the concise handoff signal.
+- Document the new row in README and release audit so humans and scripts both know where to inspect the final-stage packaging state.
+
+Added:
+- Delivery manifest status row: `final_stage_blocker`.
+- Tests requiring `final_stage_blocker` in the generated delivery TSV/Markdown, README, and release audit.
+
+Modified:
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `README.md`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index -q` first failed because the delivery manifest did not include `status/final_stage_blocker`; it passed after adding the manifest row.
+- `python -m pytest tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report -q` first failed because README and release audit did not document `final_stage_blocker`; it passed after updating the docs.
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report -q` passed with 3 tests.
+- `python bin/genefam/run_delivery_bundle.py --outdir results/delivery_bundle` refreshed the delivery bundle, and `rg -n "final_stage_blocker|Docker/Apptainer reproducibility|release_ready" results/delivery_bundle/delivery_manifest.tsv results/delivery_bundle/delivery_bundle.md` showed `status	final_stage_blocker	blocked	results/objective_audit/objective_audit.md	Docker/Apptainer reproducibility`.
+- `python -m pytest tests -q` passed with 367 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the remaining optional failures are Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+
+Commit:
+- hash: pending
+- message: feat: surface final packaging blocker
+- files: delivery bundle builder, delivery/docs tests, README, release audit, history
+
+Next:
+- When Docker/Apptainer are available, run `bash results/readiness/runtime_bootstrap.sh`, rerun the container profile smokes, and refresh the release gate so `final_stage_blocker` can move away from `blocked`.
+
 ## 2026-06-27 03:45 - Wire YAML species order into Nextflow standard smoke
 
 Context:
