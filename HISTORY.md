@@ -69,7 +69,7 @@ Verification:
 - `rg -n "gene family information and copy-number visualization|Nextflow report evidence|gene_family_info|gene_family_copy_number" results/objective_audit/objective_audit.md results/release_checks/release_checks.tsv results/nextflow_standard_feature_smoke/standard/report/report_index.tsv results/nextflow_standard_feature_smoke/standard/report/final_report.md` confirmed objective-audit, release-check, report-index, and final-report coverage.
 
 Commit:
-- hash: pending
+- hash: b76630465b5c50da6c00e690c1d26b771f6db8e1
 - message: `test: require nextflow evidence for copy number audit`
 - files: objective audit copy-number evidence rule, regression tests, refreshed objective audit outputs, and history entry.
 
