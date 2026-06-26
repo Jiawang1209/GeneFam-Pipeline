@@ -63,6 +63,13 @@ TEMPLATES = {
         "Inspect hub genes, dense modules, isolated nodes, and whether hubs overlap key family members.",
         "Hub genes may represent candidate regulatory or functional interaction centers.",
     ),
+    "pangenome": (
+        "Gene family pangenome and copy-number balance",
+        "Gene family copy-number, expansion, and pangenome presence summary tables",
+        "Presence/absence breadth, copy-number dosage, expansion status, and protein-property distributions for the selected family.",
+        "Inspect whether the family is core, soft-core, dispensable, or absent across selected species and whether high-copy species dominate dosage variation.",
+        "Core families suggest broad conservation, while dispensable or lineage-expanded patterns can indicate ecological specialization, dosage tuning, or lineage-specific retention.",
+    ),
     "feature": (
         "Feature summary overview",
         "Domain, motif, gene-structure, synteny, and promoter summary tables",
@@ -82,7 +89,7 @@ TEMPLATES = {
 
 def _template_key(plot_key: str, path: str) -> str:
     value = f"{plot_key} {path}".lower()
-    for key in ["mcscanx", "kaks", "expression", "promoter", "ppi", "tree", "feature", "family"]:
+    for key in ["mcscanx", "kaks", "expression", "promoter", "ppi", "pangenome", "tree", "feature", "family"]:
         if key in value or (key == "kaks" and "ks_" in value):
             return key
     return "feature"

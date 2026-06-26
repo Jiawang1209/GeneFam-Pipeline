@@ -73,6 +73,7 @@ process BUILD_STANDARD_REPORT_INDEX {
     path gene_family_copy_number_summary
     path gene_family_species_order
     path gene_family_copy_number_expansion
+    path gene_family_pangenome_summary
     path gene_family_protein_properties
     path gene_family_info_pdf
     path gene_family_info_png
@@ -136,6 +137,7 @@ process BUILD_STANDARD_REPORT_INDEX {
       --gene-family-copy-number-summary ${gene_family_copy_number_summary} \\
       --gene-family-species-order ${gene_family_species_order} \\
       --gene-family-copy-number-expansion ${gene_family_copy_number_expansion} \\
+      --gene-family-pangenome-summary ${gene_family_pangenome_summary} \\
       --gene-family-protein-properties ${gene_family_protein_properties} \\
       --gene-family-info-pdf ${gene_family_info_pdf} \\
       --gene-family-info-png ${gene_family_info_png} \\

@@ -7662,6 +7662,67 @@ Commit:
 Next:
 - Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
 
+## 2026-06-27 - Add gene family pangenome presence summary
+
+Timestamp:
+- 2026-06-27 01:34:01 CST
+
+Context:
+- The gene family information plot already covered copy-number class, species ordering, expansion/contracted status, and protein properties.
+- Large-scale copy-number papers also emphasize pan/core/dispensable presence patterns and copy-number dosage balance, which were not yet represented as a formal result table or report interpretation entry.
+
+Decisions:
+- Add a `gene_family_pangenome_summary.tsv` table derived from per-species family counts.
+- Classify family presence breadth as `core`, `soft_core`, `dispensable`, or `absent` using transparent presence-fraction thresholds.
+- Reuse the existing gene family information PDF/PNG, but add a dedicated plot-manifest and final-report interpretation entry for pangenome/copy-number balance.
+
+Added:
+- `tables/gene_family_pangenome_summary.tsv` output from `build_gene_family_info.py`, the gene family info smoke, and `PLOT_GENE_FAMILY_INFO`.
+- A pangenome presence panel in `scripts/plot_gene_family_info.R`.
+- `gene_family_pangenome_summary` entries in the standard report index, plot manifest, final report, and figure interpretation templates.
+- Tests covering pangenome summary classification, R smoke output, Nextflow output ordering, report index wiring, Reference plotting reuse, and release audit documentation.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_figure_interpretations.py`
+- `bin/genefam/build_gene_family_info.py`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_gene_family_info_smoke.py`
+- `docs/reference_plotting_reuse.md`
+- `docs/release_audit.md`
+- `scripts/plot_gene_family_info.R`
+- `tests/test_build_figure_interpretations.py`
+- `tests/test_build_gene_family_info.py`
+- `tests/test_reference_plotting_reuse.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_gene_family_info_smoke.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/plots.nf`
+- `workflows/modules/standard_postprocess.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_gene_family_info.py tests/test_run_gene_family_info_smoke.py tests/test_build_figure_interpretations.py tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_includes_plot_processes tests/test_standard_branch_report_index.py -q` first failed with 11 failures because the pangenome summary table, plot input, report-index key, and figure interpretation template did not exist yet.
+- `python -m pytest tests/test_build_gene_family_info.py tests/test_run_gene_family_info_smoke.py tests/test_build_figure_interpretations.py tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_includes_plot_processes tests/test_standard_branch_report_index.py tests/test_reference_plotting_reuse.py tests/test_release_audit_docs.py -q` passed with 13 tests after implementation and documentation updates.
+- `python bin/genefam/run_gene_family_info_smoke.py --r-bin /usr/local/bin/R --outdir results/gene_family_info_smoke` passed and produced `gene_family_pangenome_summary.tsv`, `gene_family_info_summary.pdf`, and `gene_family_info_summary.png`.
+- `cat results/gene_family_info_smoke/tables/gene_family_pangenome_summary.tsv` confirmed the smoke example had `total_species=4`, `present_species=3`, `presence_fraction=0.7500`, and `pangenome_presence_class=dispensable`.
+- `python -m pytest tests -q` passed with 344 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`: gene family information smoke, Nextflow standard branch, and related workflow checks passed; `readiness audit` and Docker/Apptainer profile smokes remained the known final-stage runtime/container blockers.
+- `cat results/nextflow_standard_smoke/standard/tables/gene_family_pangenome_summary.tsv` confirmed the Nextflow standard branch publishes the pangenome summary table.
+- `rg -n "gene_family_pangenome_summary" results/nextflow_standard_smoke/standard/report/report_index.tsv results/nextflow_standard_smoke/standard/report/figure_interpretations.tsv results/nextflow_standard_smoke/standard/report/final_report.md` confirmed the new table and figure interpretation are present in the report package.
+
+Commit:
+- hash: pending
+- message: feat: add gene family pangenome summary
+- files: gene family info builder, plotting script, smoke runner, Nextflow wiring, report index, figure interpretations, Reference/release docs, tests, history
+
+Next:
+- Continue the paper-level MVP polish with combined Ks-by-pangenome-class comparison plots when accession-level core/dispensable input tables are available.
+
 ## 2026-06-27 - Add PPI input evidence and network QC outputs
 
 Timestamp:

@@ -1,6 +1,6 @@
 args <- commandArgs(trailingOnly = TRUE)
-if (!length(args) %in% c(4, 6)) {
-  stop("Usage: /usr/local/bin/R --vanilla --slave -f plot_gene_family_info.R --args <copy_number.tsv> <copy_number_summary.tsv> <protein_properties.tsv> [species_order.tsv copy_number_expansion.tsv] <outdir>")
+if (!length(args) %in% c(4, 6, 7)) {
+  stop("Usage: /usr/local/bin/R --vanilla --slave -f plot_gene_family_info.R --args <copy_number.tsv> <copy_number_summary.tsv> <protein_properties.tsv> [species_order.tsv copy_number_expansion.tsv [pangenome_summary.tsv]] <outdir>")
 }
 
 copy_path <- args[[1]]
@@ -8,10 +8,16 @@ summary_path <- args[[2]]
 protein_path <- args[[3]]
 species_order_path <- NULL
 expansion_path <- NULL
+pangenome_path <- NULL
 outdir <- args[[length(args)]]
 if (length(args) == 6) {
   species_order_path <- args[[4]]
   expansion_path <- args[[5]]
+}
+if (length(args) == 7) {
+  species_order_path <- args[[4]]
+  expansion_path <- args[[5]]
+  pangenome_path <- args[[6]]
 }
 dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
@@ -20,11 +26,15 @@ copy_summary <- read.delim(summary_path, check.names = FALSE)
 protein_properties <- read.delim(protein_path, check.names = FALSE)
 species_order <- data.frame()
 copy_expansion <- data.frame()
+pangenome_summary <- data.frame()
 if (!is.null(species_order_path) && file.exists(species_order_path)) {
   species_order <- read.delim(species_order_path, check.names = FALSE)
 }
 if (!is.null(expansion_path) && file.exists(expansion_path)) {
   copy_expansion <- read.delim(expansion_path, check.names = FALSE)
+}
+if (!is.null(pangenome_path) && file.exists(pangenome_path)) {
+  pangenome_summary <- read.delim(pangenome_path, check.names = FALSE)
 }
 
 if (nrow(copy_number) == 0) {
@@ -59,7 +69,10 @@ summary_cols[is.na(summary_cols)] <- "#72B7B2"
 
 draw_plot <- function() {
   has_expansion <- nrow(copy_expansion) > 0
-  if (has_expansion) {
+  has_pangenome <- nrow(pangenome_summary) > 0
+  if (has_expansion && has_pangenome) {
+    layout(matrix(c(1, 2, 3, 4, 5, 5), nrow = 3, byrow = TRUE), heights = c(1, 1.05, 0.9))
+  } else if (has_expansion) {
     layout(matrix(c(1, 2, 3, 4), nrow = 2, byrow = TRUE), heights = c(1, 1.1))
   } else {
     layout(matrix(c(1, 2, 3, 3), nrow = 2, byrow = TRUE), heights = c(1, 1.1))
@@ -119,6 +132,27 @@ draw_plot <- function() {
     abline(h = 2, col = "#E45756", lty = 3)
     abline(h = 0.5, col = "#F58518", lty = 3)
     title("copy-number expansion status")
+  }
+
+  if (has_pangenome) {
+    pangenome_summary$presence_numeric <- suppressWarnings(as.numeric(pangenome_summary$presence_fraction))
+    pangenome_summary$present_numeric <- suppressWarnings(as.numeric(pangenome_summary$present_species))
+    pangenome_summary$absent_numeric <- suppressWarnings(as.numeric(pangenome_summary$absent_species))
+    presence_value <- pangenome_summary$presence_numeric[1]
+    present_value <- pangenome_summary$present_numeric[1]
+    absent_value <- pangenome_summary$absent_numeric[1]
+    class_label <- as.character(pangenome_summary$pangenome_presence_class[1])
+    par(mar = c(5, 5, 4, 2))
+    barplot(
+      c(present_value, absent_value),
+      names.arg = c("present", "absent"),
+      ylab = "Species count",
+      col = c("#54A24B", "#BAB0AC"),
+      border = NA,
+      ylim = c(0, max(c(present_value + absent_value, 1), na.rm = TRUE))
+    )
+    text(1.5, max(c(present_value, absent_value, 1), na.rm = TRUE) * 0.9, paste0("presence = ", round(presence_value * 100, 1), "%\n", class_label), cex = 0.95)
+    title("pangenome presence class")
   }
 
   par(mar = c(6, 5, 4, 2))

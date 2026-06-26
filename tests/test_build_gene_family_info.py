@@ -53,6 +53,17 @@ def test_build_gene_family_info_tables_classifies_copy_number_and_protein_proper
     assert expansion_by_species["Bra"]["expansion_status"] == "baseline"
     assert expansion_by_species["Ath"]["expansion_status"] == "contracted"
     assert expansion_by_species["Bna"]["fold_change_vs_median"] == "2.2500"
+    assert tables.pangenome_summary == [
+        {
+            "total_species": "3",
+            "present_species": "3",
+            "absent_species": "0",
+            "presence_fraction": "1.0000",
+            "pangenome_presence_class": "core",
+            "max_member_count": "9",
+            "median_present_member_count": "4.0000",
+        }
+    ]
 
     protein_by_gene = {row["gene_id"]: row for row in tables.protein_properties}
     assert protein_by_gene["AT1G01010"]["species_id"] == "Ath"
@@ -60,3 +71,27 @@ def test_build_gene_family_info_tables_classifies_copy_number_and_protein_proper
     assert float(protein_by_gene["AT1G01010"]["molecular_weight_kda"]) > 0
     assert protein_by_gene["AT1G01010"]["isoelectric_point"]
     assert protein_by_gene["AT1G01010"]["gravy"]
+
+
+def test_build_gene_family_info_tables_marks_soft_core_and_absent_species():
+    tables = build_gene_family_info_tables(
+        family_counts=[
+            {"species_id": "Ath", "member_count": "1", "hmmer_count": "1", "diamond_count": "1"},
+            {"species_id": "Bra", "member_count": "2", "hmmer_count": "2", "diamond_count": "2"},
+            {"species_id": "Bna", "member_count": "5", "hmmer_count": "5", "diamond_count": "5"},
+            {"species_id": "Osa", "member_count": "0", "hmmer_count": "0", "diamond_count": "0"},
+        ],
+        fasta_records=[],
+    )
+
+    assert tables.pangenome_summary == [
+        {
+            "total_species": "4",
+            "present_species": "3",
+            "absent_species": "1",
+            "presence_fraction": "0.7500",
+            "pangenome_presence_class": "dispensable",
+            "max_member_count": "5",
+            "median_present_member_count": "2.0000",
+        }
+    ]

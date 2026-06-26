@@ -116,6 +116,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "extract_promoters.py" in text
     assert "results/gene_family_info_smoke/tables/gene_family_copy_number.tsv" in text
     assert "results/gene_family_info_smoke/tables/gene_family_copy_number_summary.tsv" in text
+    assert "results/gene_family_info_smoke/tables/gene_family_pangenome_summary.tsv" in text
     assert "results/gene_family_info_smoke/tables/gene_family_protein_properties.tsv" in text
     assert "results/gene_family_info_smoke/plots/gene_family_info_summary.pdf" in text
     assert "results/gene_family_info_smoke/plots/gene_family_info_summary.png" in text

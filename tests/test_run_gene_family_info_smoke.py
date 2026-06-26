@@ -24,6 +24,7 @@ def test_run_gene_family_info_smoke_writes_tables_and_plots(tmp_path):
     assert (outdir / "tables/gene_family_copy_number_summary.tsv").exists()
     assert (outdir / "tables/gene_family_species_order.tsv").exists()
     assert (outdir / "tables/gene_family_copy_number_expansion.tsv").exists()
+    assert (outdir / "tables/gene_family_pangenome_summary.tsv").exists()
     assert (outdir / "tables/gene_family_protein_properties.tsv").exists()
     assert (outdir / "plots/gene_family_info_summary.pdf").exists()
     assert (outdir / "plots/gene_family_info_summary.png").exists()
@@ -31,4 +32,5 @@ def test_run_gene_family_info_smoke_writes_tables_and_plots(tmp_path):
     assert "gene_family_copy_number.tsv" in summary
     assert "gene_family_species_order.tsv" in summary
     assert "gene_family_copy_number_expansion.tsv" in summary
+    assert "gene_family_pangenome_summary.tsv" in summary
     assert "gene_family_info_summary.pdf" in summary

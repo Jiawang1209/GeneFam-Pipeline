@@ -16,6 +16,7 @@ def test_build_standard_report_index_marks_core_outputs_available():
             "gene_family_copy_number_summary": "tables/gene_family_copy_number_summary.tsv",
             "gene_family_species_order": "tables/gene_family_species_order.tsv",
             "gene_family_copy_number_expansion": "tables/gene_family_copy_number_expansion.tsv",
+            "gene_family_pangenome_summary": "tables/gene_family_pangenome_summary.tsv",
             "gene_family_protein_properties": "tables/gene_family_protein_properties.tsv",
             "gene_family_info_pdf": "plots/gene_family_info_summary.pdf",
             "gene_family_info_png": "plots/gene_family_info_summary.png",
@@ -79,6 +80,7 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "gene_family_copy_number_summary",
         "gene_family_species_order",
         "gene_family_copy_number_expansion",
+        "gene_family_pangenome_summary",
         "gene_family_protein_properties",
         "gene_family_info_pdf",
         "gene_family_info_png",
@@ -150,6 +152,7 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
         "gene_family_copy_number_summary": "results/nextflow_standard_smoke/standard/tables/gene_family_copy_number_summary.tsv",
         "gene_family_species_order": "results/nextflow_standard_smoke/standard/tables/gene_family_species_order.tsv",
         "gene_family_copy_number_expansion": "results/nextflow_standard_smoke/standard/tables/gene_family_copy_number_expansion.tsv",
+        "gene_family_pangenome_summary": "results/nextflow_standard_smoke/standard/tables/gene_family_pangenome_summary.tsv",
         "gene_family_protein_properties": "results/nextflow_standard_smoke/standard/tables/gene_family_protein_properties.tsv",
         "gene_family_info_pdf": "results/nextflow_standard_smoke/standard/plots/gene_family_info_summary.pdf",
         "gene_family_info_png": "results/nextflow_standard_smoke/standard/plots/gene_family_info_summary.png",
@@ -225,6 +228,8 @@ def test_build_standard_report_index_cli_writes_tsv(tmp_path):
             "gene_family_species_order.tsv",
             "--gene-family-copy-number-expansion",
             "gene_family_copy_number_expansion.tsv",
+            "--gene-family-pangenome-summary",
+            "gene_family_pangenome_summary.tsv",
             "--gene-family-protein-properties",
             "gene_family_protein_properties.tsv",
             "--gene-family-info-pdf",
@@ -313,6 +318,8 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
             "gene_family_species_order.tsv",
             "--gene-family-copy-number-expansion",
             "gene_family_copy_number_expansion.tsv",
+            "--gene-family-pangenome-summary",
+            "gene_family_pangenome_summary.tsv",
             "--gene-family-protein-properties",
             "gene_family_protein_properties.tsv",
             "--gene-family-info-pdf",
@@ -377,6 +384,7 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
     assert rows["gene_family_info_pdf"]["path"] == "results/demo/plots/gene_family_info_summary.pdf"
     assert rows["gene_family_species_order"]["path"] == "results/demo/tables/gene_family_species_order.tsv"
     assert rows["gene_family_copy_number_expansion"]["path"] == "results/demo/tables/gene_family_copy_number_expansion.tsv"
+    assert rows["gene_family_pangenome_summary"]["path"] == "results/demo/tables/gene_family_pangenome_summary.tsv"
     assert rows["alignment_file"]["path"] == "results/demo/alignment/GDSL.mafft.aln.faa"
     assert rows["phylogeny_tree"]["path"] == "results/demo/phylogeny/GDSL.fasttree.treefile"
     assert rows["motif_summary"]["path"] == "results/demo/tables/motif_summary.tsv"

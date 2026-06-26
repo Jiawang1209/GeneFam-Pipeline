@@ -90,6 +90,7 @@ def test_standard_postprocess_module_extracts_family_sequences_and_report_index(
     assert "--family-members-faa ${family_members_faa}" in module
     assert "--gene-family-species-order ${gene_family_species_order}" in module
     assert "--gene-family-copy-number-expansion ${gene_family_copy_number_expansion}" in module
+    assert "--gene-family-pangenome-summary ${gene_family_pangenome_summary}" in module
     assert "--phylogeny-manifest ${phylogeny_manifest}" in module
     assert "--alignment-file ${alignment_file}" in module
     assert "--phylogeny-tree ${phylogeny_tree}" in module
@@ -407,10 +408,11 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert 'path "tables/gene_family_copy_number_summary.tsv"' in module
     assert 'path "tables/gene_family_species_order.tsv"' in module
     assert 'path "tables/gene_family_copy_number_expansion.tsv"' in module
+    assert 'path "tables/gene_family_pangenome_summary.tsv"' in module
     assert 'path "tables/gene_family_protein_properties.tsv"' in module
     assert 'path "plots/gene_family_info_summary.pdf"' in module
     assert 'path "plots/gene_family_info_summary.png"' in module
-    assert "--args tables/gene_family_copy_number.tsv tables/gene_family_copy_number_summary.tsv tables/gene_family_protein_properties.tsv tables/gene_family_species_order.tsv tables/gene_family_copy_number_expansion.tsv plots" in module
+    assert "--args tables/gene_family_copy_number.tsv tables/gene_family_copy_number_summary.tsv tables/gene_family_protein_properties.tsv tables/gene_family_species_order.tsv tables/gene_family_copy_number_expansion.tsv tables/gene_family_pangenome_summary.tsv plots" in module
 
     assert "process PLOT_PROMOTER_CIS_ELEMENTS" in module
     assert "build_promoter_cis_elements.py" in module
@@ -466,6 +468,7 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert "build_plot_manifest.py" in module
     assert '--plot "family_counts=plots/family_counts.pdf=Family member counts by species"' in module
     assert '--plot "gene_family_info_summary=plots/gene_family_info_summary.pdf=Gene family copy-number and protein-property summary"' in module
+    assert '--plot "gene_family_pangenome_summary=plots/gene_family_info_summary.pdf=Gene family pangenome presence and copy-number balance"' in module
     assert '--plot "tree_features=plots/tree_features.pdf=Tree, motif, gene-structure, and domain composite plot"' in module
     assert '--plot "promoter_cis_elements=plots/promoter_cis_elements.pdf=Promoter cis-element category matrix and top element summary"' in module
     assert '--plot "ppi_ggnetview=plots/ppi_ggnetview.pdf=PPI network generated with ggNetView"' in module
@@ -518,6 +521,7 @@ def test_main_workflow_includes_plot_processes():
     assert "PLOT_GENE_FAMILY_INFO.out[4]," in workflow
     assert "PLOT_GENE_FAMILY_INFO.out[5]," in workflow
     assert "PLOT_GENE_FAMILY_INFO.out[6]," in workflow
+    assert "PLOT_GENE_FAMILY_INFO.out[7]," in workflow
     assert "PLOT_TREE_FEATURES" in workflow
     assert "PLOT_PROMOTER_CIS_ELEMENTS" in workflow
     assert "promoter_cis_gene_element_matrix_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[2]" in workflow

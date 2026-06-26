@@ -137,6 +137,7 @@ process PLOT_GENE_FAMILY_INFO {
     path "tables/gene_family_copy_number_summary.tsv"
     path "tables/gene_family_species_order.tsv"
     path "tables/gene_family_copy_number_expansion.tsv"
+    path "tables/gene_family_pangenome_summary.tsv"
     path "tables/gene_family_protein_properties.tsv"
     path "plots/gene_family_info_summary.pdf"
     path "plots/gene_family_info_summary.png"
@@ -148,7 +149,7 @@ process PLOT_GENE_FAMILY_INFO {
       --family-counts ${family_counts} \\
       --family-members-faa ${family_members_faa} \\
       --outdir tables
-    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_gene_family_info.R --args tables/gene_family_copy_number.tsv tables/gene_family_copy_number_summary.tsv tables/gene_family_protein_properties.tsv tables/gene_family_species_order.tsv tables/gene_family_copy_number_expansion.tsv plots
+    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_gene_family_info.R --args tables/gene_family_copy_number.tsv tables/gene_family_copy_number_summary.tsv tables/gene_family_protein_properties.tsv tables/gene_family_species_order.tsv tables/gene_family_copy_number_expansion.tsv tables/gene_family_pangenome_summary.tsv plots
     """
 }
 
@@ -252,6 +253,7 @@ process BUILD_PLOT_MANIFEST {
     python ${projectDir}/../bin/genefam/build_plot_manifest.py \\
       --plot "family_counts=plots/family_counts.pdf=Family member counts by species" \\
       --plot "gene_family_info_summary=plots/gene_family_info_summary.pdf=Gene family copy-number and protein-property summary" \\
+      --plot "gene_family_pangenome_summary=plots/gene_family_info_summary.pdf=Gene family pangenome presence and copy-number balance" \\
       --plot "tree_features=plots/tree_features.pdf=Tree, motif, gene-structure, and domain composite plot" \\
       --plot "promoter_cis_elements=plots/promoter_cis_elements.pdf=Promoter cis-element category matrix and top element summary" \\
       --plot "ppi_ggnetview=plots/ppi_ggnetview.pdf=PPI network generated with ggNetView" \\

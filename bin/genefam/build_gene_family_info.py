@@ -31,6 +31,15 @@ EXPANSION_FIELDS = [
     "expansion_status",
     "copy_number_class",
 ]
+PANGENOME_FIELDS = [
+    "total_species",
+    "present_species",
+    "absent_species",
+    "presence_fraction",
+    "pangenome_presence_class",
+    "max_member_count",
+    "median_present_member_count",
+]
 PROTEIN_FIELDS = [
     "species_id",
     "gene_id",
@@ -92,6 +101,7 @@ class GeneFamilyInfoTables:
     copy_number_summary: list[dict[str, str]]
     species_order: list[dict[str, str]]
     copy_number_expansion: list[dict[str, str]]
+    pangenome_summary: list[dict[str, str]]
     protein_properties: list[dict[str, str]]
 
 
@@ -223,6 +233,37 @@ def _copy_number_expansion(rows: list[dict[str, str]]) -> list[dict[str, str]]:
     return expansion_rows
 
 
+def _pangenome_presence_class(presence_fraction: float) -> str:
+    if presence_fraction >= 1:
+        return "core"
+    if presence_fraction >= 0.95:
+        return "soft_core"
+    if presence_fraction > 0:
+        return "dispensable"
+    return "absent"
+
+
+def _pangenome_summary(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    counts = [int(row["member_count"]) for row in rows]
+    present_counts = [count for count in counts if count > 0]
+    total_species = len(counts)
+    present_species = len(present_counts)
+    absent_species = total_species - present_species
+    presence_fraction = 0 if total_species == 0 else present_species / total_species
+    median_present = statistics.median(present_counts) if present_counts else 0
+    return [
+        {
+            "total_species": str(total_species),
+            "present_species": str(present_species),
+            "absent_species": str(absent_species),
+            "presence_fraction": f"{presence_fraction:.4f}",
+            "pangenome_presence_class": _pangenome_presence_class(presence_fraction),
+            "max_member_count": str(max(counts) if counts else 0),
+            "median_present_member_count": f"{median_present:.4f}",
+        }
+    ]
+
+
 def _split_fasta_header(header: str) -> tuple[str, str]:
     parts = header.split("|")
     if len(parts) >= 2:
@@ -304,6 +345,7 @@ def build_gene_family_info_tables(
         copy_number_summary=_copy_number_summary(copy_number),
         species_order=_species_order(copy_number),
         copy_number_expansion=_copy_number_expansion(copy_number),
+        pangenome_summary=_pangenome_summary(copy_number),
         protein_properties=_protein_property_rows(fasta_records or []),
     )
 
@@ -322,12 +364,14 @@ def write_tables(tables: GeneFamilyInfoTables, outdir: Path) -> dict[str, Path]:
         "gene_family_copy_number_summary": outdir / "gene_family_copy_number_summary.tsv",
         "gene_family_species_order": outdir / "gene_family_species_order.tsv",
         "gene_family_copy_number_expansion": outdir / "gene_family_copy_number_expansion.tsv",
+        "gene_family_pangenome_summary": outdir / "gene_family_pangenome_summary.tsv",
         "gene_family_protein_properties": outdir / "gene_family_protein_properties.tsv",
     }
     _write_tsv(tables.copy_number, COPY_FIELDS, outputs["gene_family_copy_number"])
     _write_tsv(tables.copy_number_summary, SUMMARY_FIELDS, outputs["gene_family_copy_number_summary"])
     _write_tsv(tables.species_order, SPECIES_ORDER_FIELDS, outputs["gene_family_species_order"])
     _write_tsv(tables.copy_number_expansion, EXPANSION_FIELDS, outputs["gene_family_copy_number_expansion"])
+    _write_tsv(tables.pangenome_summary, PANGENOME_FIELDS, outputs["gene_family_pangenome_summary"])
     _write_tsv(tables.protein_properties, PROTEIN_FIELDS, outputs["gene_family_protein_properties"])
     return outputs
 
