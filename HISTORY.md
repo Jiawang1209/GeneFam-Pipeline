@@ -91,7 +91,7 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because readiness/Docker/Apptainer remain unavailable, but improved the release matrix to `passed=40 failed=3`; `standard branch expression smoke` and `expression heatmap visualization smoke` passed.
 
 Commit:
-- hash: pending
+- hash: 6768692
 - message: feat: add annotated expression heatmap workflow
 - files: expression summary builder, R plot enhancement, smoke runner, standard Nextflow/report/release/docs/tests/history
 
