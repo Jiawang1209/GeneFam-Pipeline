@@ -24,6 +24,7 @@ def test_build_bootstrap_plan_groups_missing_commands_into_actionable_steps():
     assert "conda env update -n GeneFamilyFlow -f envs/GeneFamilyFlow.conda.yaml --prune" in plan["shell"]
     assert "conda run -n GeneFamilyFlow nextflow -version" in plan["shell"]
     assert "conda run -n GeneFamilyFlow FastTree -expert >/dev/null" in plan["shell"]
+    assert "conda run -n GeneFamilyFlow iqtree2 --version || conda run -n GeneFamilyFlow iqtree --version" in plan["shell"]
     assert "docker build -t genefam-pipeline:latest ." in plan["shell"]
     assert "docker run --rm -v \"$PWD/results:/opt/GeneFam-Pipeline/results\" genefam-pipeline:latest" in plan["shell"]
     assert plan["shell"].index("docker build -t genefam-pipeline:latest .") < plan["shell"].index(

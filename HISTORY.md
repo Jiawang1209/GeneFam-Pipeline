@@ -6905,6 +6905,44 @@ Commit:
 Next:
 - Continue closing paper-level report polish and keep Docker/Apptainer profile smokes as explicit final-stage packaging work.
 
+## 2026-06-27 - Add IQ-TREE fallback to runtime bootstrap script
+
+Timestamp:
+- 2026-06-27 02:21:18 CST
+
+Context:
+- Readiness and software-version collection now accept `iqtree` as a fallback when `iqtree2` is not exposed by the active Conda environment.
+- The generated `runtime_bootstrap.sh` still hard-coded `conda run -n GeneFamilyFlow iqtree2 --version`, which could make the recovery script fail on the same environment where reports correctly detect IQ-TREE through `iqtree`.
+
+Decisions:
+- Add the same `iqtree2` then `iqtree` fallback to the generated runtime bootstrap script.
+- Document the alias behavior in `runtime_bootstrap_plan.md`.
+
+Added:
+- A bootstrap-plan regression test requiring the generated shell script to include the IQ-TREE fallback command.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/plan_runtime_bootstrap.py`
+- `tests/test_plan_runtime_bootstrap.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_plan_runtime_bootstrap.py -q` first failed because the generated shell still only used `iqtree2 --version`.
+- `python -m pytest tests/test_plan_runtime_bootstrap.py -q` passed with 3 tests after implementation.
+- `python bin/genefam/plan_runtime_bootstrap.py --readiness results/readiness/command_readiness.tsv --outdir results/readiness` regenerated the bootstrap plan and shell.
+- `rg -n "iqtree2 --version|iqtree --version|IQ-TREE verification" results/readiness/runtime_bootstrap.sh results/readiness/runtime_bootstrap_plan.md` confirmed the generated artifacts include the fallback and note.
+- `python -m pytest tests -q` passed with 351 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `0`; release checks reported `Passed: 43`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+
+Commit:
+- pending
+
+Next:
+- Continue final-stage container hardening while preserving the current analysis-flow release readiness.
+
 ## 2026-06-27 - Add density and duplicate-type tracks to MCScanX circlize plots
 
 Timestamp:
