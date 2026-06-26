@@ -69,6 +69,7 @@ def test_nextflow_config_has_container_profiles():
     assert "params.run_ppi = false" in config
     assert "params.ppi_edges = null" in config
     assert "params.ppi_nodes = null" in config
+    assert "params.gene_family_species_order = null" in config
     assert "params.mcscanx_collinearity = null" in config
     assert "params.kaks_results = null" in config
     assert "params.mcscanx_cds_a = null" in config

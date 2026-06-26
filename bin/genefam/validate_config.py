@@ -72,6 +72,12 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
     plotting = config.get("plotting", {}) or {}
     if plotting.get("reuse_policy") not in {"adapt_not_modify"}:
         errors.append("plotting.reuse_policy must be adapt_not_modify")
+    if (
+        check_paths
+        and plotting.get("gene_family_species_order")
+        and not _path_exists(str(plotting["gene_family_species_order"]), base_dir)
+    ):
+        errors.append(f"plotting.gene_family_species_order path does not exist: {plotting['gene_family_species_order']}")
 
     dev = config.get("dev", {}) or {}
     if dev.get("mock_external_tools") is True and not dev.get("mock_evidence_dir"):

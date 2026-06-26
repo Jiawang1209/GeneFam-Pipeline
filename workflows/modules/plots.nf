@@ -145,9 +145,15 @@ process PLOT_GENE_FAMILY_INFO {
     script:
     """
     mkdir -p tables plots
+    speciesOrderArg=""
+    speciesOrderParam="${params.gene_family_species_order}"
+    if [ -n "\${speciesOrderParam}" ] && [ "\${speciesOrderParam}" != "null" ]; then
+      speciesOrderArg="--species-order ${params.gene_family_species_order}"
+    fi
     python ${projectDir}/../bin/genefam/build_gene_family_info.py \\
       --family-counts ${family_counts} \\
       --family-members-faa ${family_members_faa} \\
+      \${speciesOrderArg} \\
       --outdir tables
     ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_gene_family_info.R --args tables/gene_family_copy_number.tsv tables/gene_family_copy_number_summary.tsv tables/gene_family_protein_properties.tsv tables/gene_family_species_order.tsv tables/gene_family_copy_number_expansion.tsv tables/gene_family_pangenome_summary.tsv plots
     """

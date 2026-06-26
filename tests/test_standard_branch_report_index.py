@@ -383,6 +383,9 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
     assert rows["family_members_faa"]["path"] == "results/demo/sequences/family_members.faa"
     assert rows["gene_family_info_pdf"]["path"] == "results/demo/plots/gene_family_info_summary.pdf"
     assert rows["gene_family_species_order"]["path"] == "results/demo/tables/gene_family_species_order.tsv"
+    assert rows["gene_family_species_order"]["description"] == (
+        "Gene family species plotting order from external species-tree order or copy-number rank"
+    )
     assert rows["gene_family_copy_number_expansion"]["path"] == "results/demo/tables/gene_family_copy_number_expansion.tsv"
     assert rows["gene_family_pangenome_summary"]["path"] == "results/demo/tables/gene_family_pangenome_summary.tsv"
     assert rows["alignment_file"]["path"] == "results/demo/alignment/GDSL.mafft.aln.faa"

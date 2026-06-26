@@ -187,6 +187,19 @@ AT1G01010 GDSL Arabidopsis_thaliana PF00657
 
 The PPI module writes normalized edge, node, and hub tables before `scripts/plot_ppi_ggnetview.R` renders `ppi_ggnetview.pdf/png` with `ggNetView`. If `ggNetView` is missing, the status table reports `missing_dependency` and the plot files are explicit placeholders rather than silent fallback plots.
 
+## Large-Scale Copy-Number Species Order
+
+For large multi-species copy-number figures, `bin/genefam/build_gene_family_info.py` accepts an optional species-tree order table:
+
+```text
+species_id plot_order clade
+Oryza_sativa 1 monocot
+Arabidopsis_thaliana 2 brassicaceae
+Brassica_rapa 3 brassicaceae
+```
+
+Set `params.gene_family_species_order` in Nextflow or `plotting.gene_family_species_order` in YAML to point at this table. The builder writes the normalized order to `gene_family_species_order.tsv`; rows sourced from the external table are marked `order_source=external`, while selected species absent from the external table are appended after the tree-ordered rows as `order_source=copy_number_append`.
+
 ## Motif Summary
 
 `bin/genefam/parse_meme_motifs.py` parses MEME text output into:

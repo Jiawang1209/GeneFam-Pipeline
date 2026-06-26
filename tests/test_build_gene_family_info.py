@@ -32,6 +32,8 @@ def test_build_gene_family_info_tables_classifies_copy_number_and_protein_proper
             "copy_number_class": "high_copy",
             "copy_number_rank": "1",
             "plot_order": "1",
+            "clade": "unassigned",
+            "order_source": "copy_number",
         },
         {
             "species_id": "Bra",
@@ -39,6 +41,8 @@ def test_build_gene_family_info_tables_classifies_copy_number_and_protein_proper
             "copy_number_class": "multi_copy",
             "copy_number_rank": "2",
             "plot_order": "2",
+            "clade": "unassigned",
+            "order_source": "copy_number",
         },
         {
             "species_id": "Ath",
@@ -46,6 +50,8 @@ def test_build_gene_family_info_tables_classifies_copy_number_and_protein_proper
             "copy_number_class": "single_copy",
             "copy_number_rank": "3",
             "plot_order": "3",
+            "clade": "unassigned",
+            "order_source": "copy_number",
         },
     ]
     expansion_by_species = {row["species_id"]: row for row in tables.copy_number_expansion}
@@ -95,3 +101,28 @@ def test_build_gene_family_info_tables_marks_soft_core_and_absent_species():
             "median_present_member_count": "2.0000",
         }
     ]
+
+
+def test_build_gene_family_info_tables_uses_external_species_order_for_large_scale_plots():
+    tables = build_gene_family_info_tables(
+        family_counts=[
+            {"species_id": "Ath", "member_count": "1", "hmmer_count": "1", "diamond_count": "1"},
+            {"species_id": "Bra", "member_count": "4", "hmmer_count": "4", "diamond_count": "3"},
+            {"species_id": "Bna", "member_count": "9", "hmmer_count": "9", "diamond_count": "8"},
+            {"species_id": "Osa", "member_count": "0", "hmmer_count": "0", "diamond_count": "0"},
+        ],
+        fasta_records=[],
+        species_order_records=[
+            {"species_id": "Osa", "plot_order": "1", "clade": "monocot"},
+            {"species_id": "Ath", "plot_order": "2", "clade": "brassicaceae"},
+            {"species_id": "Bra", "plot_order": "3", "clade": "brassicaceae"},
+        ],
+    )
+
+    assert [row["species_id"] for row in tables.species_order] == ["Osa", "Ath", "Bra", "Bna"]
+    assert [row["plot_order"] for row in tables.species_order] == ["1", "2", "3", "4"]
+    order_by_species = {row["species_id"]: row for row in tables.species_order}
+    assert order_by_species["Osa"]["order_source"] == "external"
+    assert order_by_species["Osa"]["clade"] == "monocot"
+    assert order_by_species["Bna"]["order_source"] == "copy_number_append"
+    assert order_by_species["Bna"]["clade"] == "unassigned"

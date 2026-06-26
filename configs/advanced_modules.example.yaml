@@ -71,6 +71,7 @@ wgd_events:
 
 plotting:
   reuse_reference_scripts: true
+  gene_family_species_order: data/metadata/species_tree_order.tsv
   reference_script_roots:
     - Reference/Long_Weixiong_20240323_1_GDSL/R
     - Reference/Large-Scale Plant Genomic Identification and Analysis Uncover ASMT:COMT Copy Number Variation Driving Melatonin Dosage Balance./source_code

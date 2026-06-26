@@ -15,10 +15,11 @@ if str(REPO_ROOT) not in sys.path:
 from bin.genefam.build_gene_family_info import build_gene_family_info_tables, read_fasta, read_tsv, write_tables
 
 
-def _write_demo_inputs(input_dir: Path) -> tuple[Path, Path]:
+def _write_demo_inputs(input_dir: Path) -> tuple[Path, Path, Path]:
     input_dir.mkdir(parents=True, exist_ok=True)
     family_counts = input_dir / "family_counts.tsv"
     family_members = input_dir / "family_members.faa"
+    species_order = input_dir / "species_tree_order.tsv"
     family_counts.write_text(
         "\n".join(
             [
@@ -48,14 +49,26 @@ def _write_demo_inputs(input_dir: Path) -> tuple[Path, Path]:
         ),
         encoding="utf-8",
     )
-    return family_counts, family_members
+    species_order.write_text(
+        "\n".join(
+            [
+                "species_id\tplot_order\tclade",
+                "Osa\t1\tmonocot",
+                "Ath\t2\tbrassicaceae",
+                "Bra\t3\tbrassicaceae",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    return family_counts, family_members, species_order
 
 
 def run_gene_family_info_smoke(r_bin: str, outdir: Path) -> dict[str, Path]:
     table_dir = outdir / "tables"
     plot_dir = outdir / "plots"
-    family_counts, family_members = _write_demo_inputs(outdir / "inputs")
-    tables = build_gene_family_info_tables(read_tsv(family_counts), read_fasta(family_members))
+    family_counts, family_members, species_order = _write_demo_inputs(outdir / "inputs")
+    tables = build_gene_family_info_tables(read_tsv(family_counts), read_fasta(family_members), read_tsv(species_order))
     outputs = write_tables(tables, table_dir)
     subprocess.run(
         [
@@ -87,6 +100,7 @@ def run_gene_family_info_smoke(r_bin: str, outdir: Path) -> dict[str, Path]:
                 f"Copy number table: `{outputs['gene_family_copy_number']}`",
                 f"Copy number summary: `{outputs['gene_family_copy_number_summary']}`",
                 f"Species plot order: `{outputs['gene_family_species_order']}`",
+                f"External species order: `{species_order}`",
                 f"Copy-number expansion: `{outputs['gene_family_copy_number_expansion']}`",
                 f"Pangenome summary: `{outputs['gene_family_pangenome_summary']}`",
                 f"Protein properties: `{outputs['gene_family_protein_properties']}`",

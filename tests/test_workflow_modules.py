@@ -426,6 +426,12 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert 'path "tables/gene_family_protein_properties.tsv"' in module
     assert 'path "plots/gene_family_info_summary.pdf"' in module
     assert 'path "plots/gene_family_info_summary.png"' in module
+    assert 'speciesOrderArg=""' in module
+    assert 'speciesOrderParam="${params.gene_family_species_order}"' in module
+    assert "params.gene_family_species_order" in module
+    assert '[ "\\${speciesOrderParam}" != "null" ]' in module
+    assert 'speciesOrderArg="--species-order ${params.gene_family_species_order}"' in module
+    assert "${speciesOrderArg}" in module
     assert "--args tables/gene_family_copy_number.tsv tables/gene_family_copy_number_summary.tsv tables/gene_family_protein_properties.tsv tables/gene_family_species_order.tsv tables/gene_family_copy_number_expansion.tsv tables/gene_family_pangenome_summary.tsv plots" in module
 
     assert "process PLOT_PROMOTER_CIS_ELEMENTS" in module

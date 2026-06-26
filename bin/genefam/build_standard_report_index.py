@@ -17,7 +17,7 @@ DESCRIPTIONS = {
     "family_members_faa": "Family member peptide FASTA",
     "gene_family_copy_number": "Gene family copy-number table with per-species classes",
     "gene_family_copy_number_summary": "Gene family copy-number class summary",
-    "gene_family_species_order": "Gene family species plotting order ranked by copy number",
+    "gene_family_species_order": "Gene family species plotting order from external species-tree order or copy-number rank",
     "gene_family_copy_number_expansion": "Gene family copy-number expansion and contraction status relative to the median",
     "gene_family_pangenome_summary": "Gene family pan-genome presence summary with core, soft-core, dispensable, or absent classification",
     "gene_family_protein_properties": "Gene family protein length, molecular weight, pI, and GRAVY table",

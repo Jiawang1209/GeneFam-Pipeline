@@ -34,6 +34,69 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 03:36 - Add external species-tree order for large-scale copy-number plots
+
+Context:
+- The active `/goal` requires large-scale, multi-species gene-family copy-number visualizations aligned with the `Reference/` paper examples.
+- `docs/reference_plotting_reuse.md` still marked large-scale copy-number/expansion plotting as `partial` because species-tree ordered large-scale layouts were not yet supported.
+- The existing gene-family information plot ordered species only by copy-number rank, which is useful for summary plots but not enough for paper-style broad species comparisons.
+
+Decisions:
+- Add an optional species-tree order table for gene-family information plots instead of replacing the default copy-number ranking behavior.
+- Preserve default behavior when no external order is provided, with `order_source=copy_number`.
+- When an external species order is provided, keep listed species in external order and append selected but unlisted species by copy-number rank with `order_source=copy_number_append`.
+- Record optional `clade` labels in `gene_family_species_order.tsv` so report-ready copy-number figures can carry tree/clade context.
+- Guard the Nextflow shell wrapper against `params.gene_family_species_order = null`, because Nextflow interpolates that value as the string `null` inside process scripts.
+
+Added:
+- Optional `--species-order` input for `bin/genefam/build_gene_family_info.py`.
+- `clade` and `order_source` columns in `gene_family_species_order.tsv`.
+- `params.gene_family_species_order = null` in `workflows/nextflow.config`.
+- `plotting.gene_family_species_order` example in `configs/advanced_modules.example.yaml`.
+- Input-contract documentation for the large-scale copy-number species order table.
+- Tests for external species-tree ordering, appended unlisted species, Nextflow null guarding, config path validation, smoke output ordering, and report-index wording.
+
+Modified:
+- `bin/genefam/build_gene_family_info.py`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_gene_family_info_smoke.py`
+- `bin/genefam/validate_config.py`
+- `configs/advanced_modules.example.yaml`
+- `docs/input_contract.md`
+- `docs/reference_plotting_reuse.md`
+- `tests/test_build_gene_family_info.py`
+- `tests/test_reference_plotting_reuse.py`
+- `tests/test_run_gene_family_info_smoke.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_validate_config.py`
+- `tests/test_workflow_modules.py`
+- `workflows/modules/plots.nf`
+- `workflows/nextflow.config`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_gene_family_info.py::test_build_gene_family_info_tables_uses_external_species_order_for_large_scale_plots tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin -q` first failed because the builder did not accept `species_order_records` and the Nextflow module did not pass optional species order.
+- `python -m pytest tests/test_run_gene_family_info_smoke.py::test_run_gene_family_info_smoke_writes_tables_and_plots -q` first failed because the smoke runner still wrote copy-number-ranked order; it passed after adding a demo `species_tree_order.tsv`.
+- `python -m pytest tests/test_validate_config.py::test_validate_config_checks_gene_family_species_order_path_when_provided -q` first failed because `validate_config.py` did not check `plotting.gene_family_species_order`; it passed after adding the path check.
+- `python -m pytest tests/test_standard_branch_report_index.py::test_build_standard_report_index_cli_can_write_published_paths -q` first failed because the report index still described species order as copy-number-only; it passed after updating the description.
+- `python bin/genefam/run_gene_family_info_smoke.py --r-bin /usr/local/bin/R --outdir results/gene_family_info_smoke` generated `gene_family_species_order.tsv`, `gene_family_info_summary.pdf`, and `gene_family_info_summary.png`; the order table contains `Osa/Ath/Bra` as `external` and `Bna` as `copy_number_append`.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_standard_smoke_debug` first failed because `params.gene_family_species_order = null` was interpolated as `--species-order null`; it passed after adding the null guard.
+- `python -m pytest tests -q` passed with 359 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 44`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the remaining optional failures are Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `results/publication_report_audit/publication_report_audit.md` reports `Passed: 4`, `Failed: 0`, and `Complete: true`.
+
+Commit:
+- hash: pending
+- message: feat: add species-tree order for copy-number plots
+- files: gene-family info builder/smoke, Nextflow plot module/config, report index, validation, docs, tests, history
+
+Next:
+- Continue final acceptance hardening and, when Docker/Apptainer are available, run `bash results/readiness/runtime_bootstrap.sh` followed by the container profile smokes and release gate.
+
 ## 2026-06-27 03:21 - Document publication audit in README acceptance flow
 
 Context:

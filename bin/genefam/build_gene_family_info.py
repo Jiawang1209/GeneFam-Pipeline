@@ -22,7 +22,15 @@ COPY_FIELDS = [
     "percent_of_max",
 ]
 SUMMARY_FIELDS = ["copy_number_class", "species_count", "mean_member_count", "max_member_count"]
-SPECIES_ORDER_FIELDS = ["species_id", "member_count", "copy_number_class", "copy_number_rank", "plot_order"]
+SPECIES_ORDER_FIELDS = [
+    "species_id",
+    "member_count",
+    "copy_number_class",
+    "copy_number_rank",
+    "plot_order",
+    "clade",
+    "order_source",
+]
 EXPANSION_FIELDS = [
     "species_id",
     "member_count",
@@ -185,7 +193,58 @@ def _copy_number_summary(rows: list[dict[str, str]]) -> list[dict[str, str]]:
     ]
 
 
-def _species_order(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+def _species_order(rows: list[dict[str, str]], species_order_records: list[dict[str, str]] | None = None) -> list[dict[str, str]]:
+    by_species = {row["species_id"]: row for row in rows}
+    if species_order_records:
+        external_rows: list[tuple[int, str, str]] = []
+        for index, record in enumerate(species_order_records, start=1):
+            species_id = record.get("species_id", "").strip()
+            if not species_id or species_id not in by_species:
+                continue
+            raw_order = record.get("plot_order") or record.get("order") or str(index)
+            try:
+                plot_order = int(float(raw_order))
+            except ValueError:
+                plot_order = index
+            external_rows.append((plot_order, species_id, record.get("clade", "").strip() or "unassigned"))
+
+        seen: set[str] = set()
+        ordered_output: list[dict[str, str]] = []
+        for plot_order, species_id, clade in sorted(external_rows, key=lambda item: (item[0], item[1])):
+            if species_id in seen:
+                continue
+            seen.add(species_id)
+            row = by_species[species_id]
+            ordered_output.append(
+                {
+                    "species_id": row["species_id"],
+                    "member_count": row["member_count"],
+                    "copy_number_class": row["copy_number_class"],
+                    "copy_number_rank": row["copy_number_rank"],
+                    "plot_order": str(len(ordered_output) + 1),
+                    "clade": clade,
+                    "order_source": "external",
+                }
+            )
+
+        appended = sorted(
+            [row for row in rows if row["species_id"] not in seen],
+            key=lambda row: (int(row["copy_number_rank"]), row["species_id"]),
+        )
+        for row in appended:
+            ordered_output.append(
+                {
+                    "species_id": row["species_id"],
+                    "member_count": row["member_count"],
+                    "copy_number_class": row["copy_number_class"],
+                    "copy_number_rank": row["copy_number_rank"],
+                    "plot_order": str(len(ordered_output) + 1),
+                    "clade": "unassigned",
+                    "order_source": "copy_number_append",
+                }
+            )
+        return ordered_output
+
     ordered = sorted(rows, key=lambda row: (int(row["copy_number_rank"]), row["species_id"]))
     return [
         {
@@ -194,6 +253,8 @@ def _species_order(rows: list[dict[str, str]]) -> list[dict[str, str]]:
             "copy_number_class": row["copy_number_class"],
             "copy_number_rank": row["copy_number_rank"],
             "plot_order": str(index),
+            "clade": "unassigned",
+            "order_source": "copy_number",
         }
         for index, row in enumerate(ordered, start=1)
     ]
@@ -337,13 +398,15 @@ def _protein_property_rows(fasta_records: list[tuple[str, str]]) -> list[dict[st
 
 
 def build_gene_family_info_tables(
-    family_counts: list[dict[str, str]], fasta_records: list[tuple[str, str]] | None = None
+    family_counts: list[dict[str, str]],
+    fasta_records: list[tuple[str, str]] | None = None,
+    species_order_records: list[dict[str, str]] | None = None,
 ) -> GeneFamilyInfoTables:
     copy_number = _copy_number_rows(family_counts)
     return GeneFamilyInfoTables(
         copy_number=copy_number,
         copy_number_summary=_copy_number_summary(copy_number),
-        species_order=_species_order(copy_number),
+        species_order=_species_order(copy_number, species_order_records),
         copy_number_expansion=_copy_number_expansion(copy_number),
         pangenome_summary=_pangenome_summary(copy_number),
         protein_properties=_protein_property_rows(fasta_records or []),
@@ -380,10 +443,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--family-counts", required=True, type=Path)
     parser.add_argument("--family-members-faa", default=None, type=Path)
+    parser.add_argument("--species-order", default=None, type=Path)
     parser.add_argument("--outdir", required=True, type=Path)
     args = parser.parse_args()
     fasta_records = read_fasta(args.family_members_faa) if args.family_members_faa else []
-    tables = build_gene_family_info_tables(read_tsv(args.family_counts), fasta_records)
+    species_order_records = read_tsv(args.species_order) if args.species_order else None
+    tables = build_gene_family_info_tables(read_tsv(args.family_counts), fasta_records, species_order_records)
     write_tables(tables, args.outdir)
 
 
