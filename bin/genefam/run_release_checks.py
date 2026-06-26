@@ -394,6 +394,17 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "Ka/Ks WGD annotation plot smoke",
+            [
+                python,
+                "bin/genefam/run_kaks_wgd_plot_smoke.py",
+                "--r-bin",
+                "/usr/local/bin/R",
+                "--outdir",
+                "results/kaks_wgd_plot_smoke",
+            ],
+        ),
+        CheckSpec(
             "Nextflow mock MVP smoke",
             [
                 python,

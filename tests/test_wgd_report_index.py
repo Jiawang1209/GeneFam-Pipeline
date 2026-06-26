@@ -20,6 +20,12 @@ def test_build_wgd_report_index_points_to_published_outputs():
         "status": "available",
         "description": "Named WGD event evidence including gamma beta alpha theta labels",
     }
+    assert by_key["kaks_wgd_annotations"] == {
+        "key": "kaks_wgd_annotations",
+        "path": "results/nextflow_wgd_smoke/wgd/tables/kaks_wgd_annotations.tsv",
+        "status": "available",
+        "description": "WGD event labels and Ks positions used to annotate the Ks distribution plot",
+    }
     assert by_key["family_event_retention_summary"]["path"].endswith(
         "tables/family_event_retention_summary.tsv"
     )
@@ -61,6 +67,7 @@ def test_build_wgd_report_index_cli_writes_tsv(tmp_path):
     rows = {row["key"]: row for row in read_tsv(out)}
     assert rows["wgd_run_config_snapshot"]["path"] == "results/demo_wgd/tables/wgd_run_config_snapshot.tsv"
     assert rows["wgd_layers"]["path"] == "results/demo_wgd/tables/wgd_layers.tsv"
+    assert rows["kaks_wgd_annotations"]["path"] == "results/demo_wgd/tables/kaks_wgd_annotations.tsv"
     assert rows["wgd_event_evidence"]["status"] == "available"
     assert rows["ks_distribution_pdf"]["path"] == "results/demo_wgd/plots/ks_distribution.pdf"
     assert rows["duplicate_type_kaks_png"]["path"] == "results/demo_wgd/plots/duplicate_type_kaks.png"

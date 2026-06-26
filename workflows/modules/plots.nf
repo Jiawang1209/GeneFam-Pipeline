@@ -21,6 +21,7 @@ process PLOT_KAKS {
 
     input:
     path kaks_pairs
+    path kaks_annotations
 
     output:
     path "plots/ks_distribution.pdf"
@@ -28,7 +29,7 @@ process PLOT_KAKS {
 
     script:
     """
-    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_kaks.R --args ${kaks_pairs} plots
+    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_kaks.R --args ${kaks_pairs} ${kaks_annotations} plots
     """
 }
 

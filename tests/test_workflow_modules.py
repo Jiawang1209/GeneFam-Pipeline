@@ -251,6 +251,12 @@ def test_duplication_retention_module_exposes_wgd_helper_processes():
     assert "--bins ${ks_bins}" in module
     assert "--out wgd_layers.tsv" in module
 
+    assert "process BUILD_KAKS_WGD_ANNOTATIONS" in module
+    assert "build_kaks_plot_annotations.py" in module
+    assert "--classified-pairs ${classified_pairs}" in module
+    assert "--out kaks_wgd_annotations.tsv" in module
+    assert 'path "kaks_wgd_annotations.tsv"' in module
+
     assert "process BUILD_WGD_EVENT_EVIDENCE" in module
     assert "build_wgd_event_evidence.py" in module
     assert "--events-config ${events_config}" in module
@@ -311,7 +317,9 @@ def test_main_workflow_includes_duplication_retention_processes():
     assert "NORMALIZE_DUPLICATE_TYPES" in workflow
     assert "JOIN_FAMILY_DUPLICATES" in workflow
     assert "CLASSIFY_WGD_LAYERS" in workflow
-    assert "PLOT_KAKS(kaks_pairs_ch)" in workflow
+    assert "BUILD_KAKS_WGD_ANNOTATIONS" in workflow
+    assert "BUILD_KAKS_WGD_ANNOTATIONS(CLASSIFY_WGD_LAYERS.out)" in workflow
+    assert "PLOT_KAKS(kaks_pairs_ch, BUILD_KAKS_WGD_ANNOTATIONS.out)" in workflow
     assert "BUILD_WGD_EVENT_EVIDENCE" in workflow
     assert "ANNOTATE_FAMILY_WGD_EVENTS" in workflow
     assert "SUMMARIZE_FAMILY_EVENT_RETENTION" in workflow
@@ -352,7 +360,7 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
 
     assert "process PLOT_KAKS" in module
     assert "${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_kaks.R" in module
-    assert "--args ${kaks_pairs} plots" in module
+    assert "--args ${kaks_pairs} ${kaks_annotations} plots" in module
     assert 'path "plots/ks_distribution.pdf"' in module
     assert 'path "plots/ks_distribution.png"' in module
 

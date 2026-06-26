@@ -241,6 +241,19 @@ def test_default_checks_include_duplicate_type_kaks_visualization_smoke():
     assert "--outdir results/duplicate_type_kaks_smoke" in command
 
 
+def test_default_checks_include_kaks_wgd_annotation_plot_smoke():
+    checks = default_checks()
+    names = [check.name for check in checks]
+
+    assert names.index("Ka/Ks WGD annotation plot smoke") > names.index("WGD event smoke")
+    assert names.index("Ka/Ks WGD annotation plot smoke") < names.index("Nextflow WGD event smoke")
+    smoke = next(check for check in checks if check.name == "Ka/Ks WGD annotation plot smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_kaks_wgd_plot_smoke.py" in command
+    assert "--r-bin /usr/local/bin/R" in command
+    assert "--outdir results/kaks_wgd_plot_smoke" in command
+
+
 def test_default_checks_do_not_include_handoff_report_as_a_stale_input_check():
     checks = default_checks()
     names = [check.name for check in checks]

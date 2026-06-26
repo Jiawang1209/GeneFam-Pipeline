@@ -119,6 +119,24 @@ process CLASSIFY_WGD_LAYERS {
     """
 }
 
+process BUILD_KAKS_WGD_ANNOTATIONS {
+    tag "Ka/Ks WGD plot annotations"
+    publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
+
+    input:
+    path classified_pairs
+
+    output:
+    path "kaks_wgd_annotations.tsv"
+
+    script:
+    """
+    python ${projectDir}/../bin/genefam/build_kaks_plot_annotations.py \\
+      --classified-pairs ${classified_pairs} \\
+      --out kaks_wgd_annotations.tsv
+    """
+}
+
 process BUILD_WGD_EVENT_EVIDENCE {
     tag "WGD event evidence"
     publishDir "${params.outdir}/tables", mode: "copy", overwrite: true

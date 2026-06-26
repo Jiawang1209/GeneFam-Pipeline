@@ -6773,6 +6773,61 @@ Commit:
 Next:
 - Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
 
+## 2026-06-27 - Add WGD event annotations to Ks distribution plots
+
+Timestamp:
+- 2026-06-27 00:44:00 CST
+
+Context:
+- The WGD branch already classified Ks pairs into anonymous WGD layers and named events such as alpha, beta, gamma, and theta.
+- The Ks distribution plot was still a plain histogram, so the visual output did not directly show WGD event peaks/layers.
+
+Decisions:
+- Add a dedicated `kaks_wgd_annotations.tsv` plotting table derived from `wgd_layers.tsv`.
+- Keep `wgd_event_evidence.tsv` as the interpretation/evidence table, and use the new annotation table only for figure labels and label positions.
+- Preserve the old `plot_kaks.R <kaks.tsv> <outdir>` interface while adding the WGD-aware `plot_kaks.R <kaks.tsv> <kaks_wgd_annotations.tsv> <outdir>` mode.
+
+Added:
+- `bin/genefam/build_kaks_plot_annotations.py`
+- `bin/genefam/run_kaks_wgd_plot_smoke.py`
+- `tests/test_build_kaks_plot_annotations.py`
+- `tests/test_run_kaks_wgd_plot_smoke.py`
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_wgd_report_index.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/reference_plotting_reuse.md`
+- `scripts/plot_kaks.R`
+- `tests/test_reference_plotting_reuse.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_wgd_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/duplication_retention.nf`
+- `workflows/modules/plots.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_kaks_plot_annotations.py tests/test_run_kaks_wgd_plot_smoke.py -q` first failed because `bin.genefam.build_kaks_plot_annotations` did not exist.
+- `python -m pytest tests/test_workflow_modules.py::test_duplication_retention_module_exposes_wgd_helper_processes tests/test_workflow_modules.py::test_main_workflow_includes_duplication_retention_processes tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_wgd_report_index.py tests/test_run_release_checks.py::test_default_checks_include_kaks_wgd_annotation_plot_smoke tests/test_reference_plotting_reuse.py -q` first failed because the new annotation table was not wired into Nextflow, report indexing, release checks, or the reference plotting matrix.
+- `python -m pytest tests/test_workflow_modules.py::test_duplication_retention_module_exposes_wgd_helper_processes tests/test_workflow_modules.py::test_main_workflow_includes_duplication_retention_processes tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_wgd_report_index.py tests/test_run_release_checks.py::test_default_checks_include_kaks_wgd_annotation_plot_smoke tests/test_reference_plotting_reuse.py tests/test_build_kaks_plot_annotations.py tests/test_run_kaks_wgd_plot_smoke.py -q` passed with 10 tests.
+- `python bin/genefam/run_kaks_wgd_plot_smoke.py --r-bin /usr/local/bin/R --outdir results/kaks_wgd_plot_smoke` passed and wrote `tables/kaks_wgd_annotations.tsv`, `plots/ks_distribution.pdf`, and `plots/ks_distribution.png`.
+- `python bin/genefam/run_nextflow_wgd_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_wgd_smoke` passed and published alpha, beta, gamma, theta annotations in `results/nextflow_wgd_smoke/wgd/tables/kaks_wgd_annotations.tsv`.
+- `python bin/genefam/run_nextflow_wgd_smoke.py --conda-env GeneFamilyFlow --mode raw-mcscanx-kaks --outdir results/nextflow_wgd_raw_smoke` passed and published `tables/kaks_wgd_annotations.tsv` for the raw MCScanX/KaKs entry.
+- `python -m pytest tests -q` passed with 342 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` with `41 passed / 3 failed`; the new `Ka/Ks WGD annotation plot smoke` passed, while `readiness audit` failed and Docker/Apptainer profile smokes remained optional failures.
+
+Commit:
+- hash: pending
+- message: feat: annotate ks plots with wgd layers
+- files: Ka/Ks WGD annotation builder, smoke runner, R plot script, Nextflow WGD wiring, WGD report index, release checks, plotting reuse docs, tests, history
+
+Next:
+- Continue paper-level visualization polish and final MVP acceptance while container profile execution remains outside the current no-container phase.
+
 ## 2026-06-25 16:08 - Add promoter and feature-summary visualization smokes
 
 Context:
