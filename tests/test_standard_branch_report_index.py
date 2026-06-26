@@ -19,6 +19,13 @@ def test_build_standard_report_index_marks_core_outputs_available():
             "motif_summary": "tables/motif_summary.tsv",
             "gene_structure_summary": "tables/gene_structure_summary.tsv",
             "chromosome_locations": "tables/chromosome_locations.tsv",
+            "promoters_bed": "",
+            "promoters_fasta": "",
+            "feature_summary": "",
+            "feature_summary_pdf": "",
+            "feature_summary_png": "",
+            "mcscanx_circlize_pdf": "",
+            "mcscanx_circlize_png": "",
             "family_expression": "",
             "wgd_handoff_manifest": "tables/wgd_handoff_manifest.tsv",
             "plot_manifest": "tables/plot_manifest.tsv",
@@ -41,10 +48,20 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "motif_summary",
         "gene_structure_summary",
         "chromosome_locations",
+        "promoters_bed",
+        "promoters_fasta",
+        "feature_summary",
+        "feature_summary_pdf",
+        "feature_summary_png",
+        "mcscanx_circlize_pdf",
+        "mcscanx_circlize_png",
         "family_expression",
         "wgd_handoff_manifest",
     }
     assert next(row for row in rows if row["key"] == "family_expression")["status"] == "missing"
+    assert next(row for row in rows if row["key"] == "promoters_bed")["status"] == "missing"
+    assert next(row for row in rows if row["key"] == "feature_summary_pdf")["status"] == "missing"
+    assert next(row for row in rows if row["key"] == "mcscanx_circlize_pdf")["status"] == "missing"
 
 
 def test_published_paths_map_standard_outputs_to_user_results_tree():
@@ -63,6 +80,13 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
         "motif_summary": "results/nextflow_standard_smoke/standard/tables/motif_summary.tsv",
         "gene_structure_summary": "results/nextflow_standard_smoke/standard/tables/gene_structure_summary.tsv",
         "chromosome_locations": "results/nextflow_standard_smoke/standard/tables/chromosome_locations.tsv",
+        "promoters_bed": "",
+        "promoters_fasta": "",
+        "feature_summary": "",
+        "feature_summary_pdf": "",
+        "feature_summary_png": "",
+        "mcscanx_circlize_pdf": "",
+        "mcscanx_circlize_png": "",
         "family_expression": "",
         "wgd_handoff_manifest": "results/nextflow_standard_smoke/standard/tables/wgd_handoff_manifest.tsv",
         "plot_manifest": "results/nextflow_standard_smoke/standard/report/plot_manifest.tsv",

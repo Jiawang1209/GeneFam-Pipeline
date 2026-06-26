@@ -174,6 +174,28 @@ nextflow run workflows/main.nf \
 
 建议第一轮使用 `fasttree`，因为它快，适合多物种大基因家族。等结果稳定后，如果你需要更正式的系统发育树，再考虑 `iqtree`。
 
+如果你已经准备好了规范化的 MCScanX syntenic pair 表，也可以在正式标准分支里打开 feature summary 和 MCScanX circlize 图：
+
+```bash
+nextflow run workflows/main.nf \
+  -c workflows/nextflow.config \
+  -profile activated \
+  --config configs/my_3species.yaml \
+  --run_identification true \
+  --tree_builder fasttree \
+  --run_feature_summary true \
+  --run_mcscanx_circlize true \
+  --syntenic_pairs path/to/syntenic_pairs.tsv
+```
+
+如果要在正式标准分支里提取启动子，需要每个物种都有 genome FASTA，并打开：
+
+```bash
+--run_promoter true \
+--promoter_upstream_bp 2000 \
+--promoter_downstream_bp 0
+```
+
 ## 结果在哪里看
 
 常见结果会在你的 `project.outdir` 下面，例如：

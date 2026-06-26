@@ -526,6 +526,20 @@ def test_default_checks_include_nextflow_standard_manifest_smoke_before_wgd():
     assert "--outdir results/nextflow_standard_manifest_smoke" in command
 
 
+def test_default_checks_include_nextflow_standard_visualization_smoke_before_wgd():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("Nextflow standard visualization smoke") > names.index("Nextflow standard branch smoke")
+    assert names.index("Nextflow standard visualization smoke") < names.index("Nextflow WGD event smoke")
+    smoke = next(check for check in default_checks() if check.name == "Nextflow standard visualization smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_nextflow_standard_smoke.py" in command
+    assert "--run-feature-summary" in command
+    assert "--run-mcscanx-circlize" in command
+    assert "--syntenic-pairs tests/fixtures/mcscanx/syntenic_pairs.tsv" in command
+    assert "--outdir results/nextflow_standard_feature_smoke" in command
+
+
 def test_default_checks_include_nextflow_wgd_smoke_before_readiness():
     names = [check.name for check in default_checks()]
 

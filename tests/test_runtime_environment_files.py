@@ -58,6 +58,12 @@ def test_nextflow_config_has_container_profiles():
     assert 'params.tree_builder = "fasttree"' in config
     assert "params.use_hmmer = true" in config
     assert "params.use_diamond = true" in config
+    assert "params.run_promoter = false" in config
+    assert "params.promoter_upstream_bp = 2000" in config
+    assert "params.promoter_downstream_bp = 0" in config
+    assert "params.run_feature_summary = false" in config
+    assert "params.run_mcscanx_circlize = false" in config
+    assert "params.syntenic_pairs = null" in config
 
 
 def test_readiness_checklist_documents_command_audit():

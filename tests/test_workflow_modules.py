@@ -91,6 +91,13 @@ def test_standard_postprocess_module_extracts_family_sequences_and_report_index(
     assert "--phylogeny-manifest ${phylogeny_manifest}" in module
     assert "--alignment-file ${alignment_file}" in module
     assert "--phylogeny-tree ${phylogeny_tree}" in module
+    assert '--promoters-bed "${promoters_bed}"' in module
+    assert '--promoters-fasta "${promoters_fasta}"' in module
+    assert '--feature-summary "${feature_summary}"' in module
+    assert '--feature-summary-pdf "${feature_summary_pdf}"' in module
+    assert '--feature-summary-png "${feature_summary_png}"' in module
+    assert '--mcscanx-circlize-pdf "${mcscanx_circlize_pdf}"' in module
+    assert '--mcscanx-circlize-png "${mcscanx_circlize_png}"' in module
     assert "--wgd-handoff-manifest ${wgd_handoff_manifest}" in module
     assert "--published-outdir ${params.outdir}" in module
     assert "--out report_index.tsv" in module
@@ -116,6 +123,9 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "if (asBooleanParam(params.mock_external_tools))" in workflow
     assert "include { BUILD_IDENTIFICATION_INPUTS } from './modules/identification_inputs.nf'" in workflow
     assert "include { BUILD_RUN_CONFIG_SNAPSHOT; EXTRACT_FAMILY_SEQUENCES; BUILD_WGD_HANDOFF_MANIFEST; BUILD_STANDARD_REPORT_INDEX; ASSEMBLE_STANDARD_REPORT } from './modules/standard_postprocess.nf'" in workflow
+    assert "EXTRACT_PROMOTERS;" in workflow
+    assert "PLOT_FEATURE_SUMMARY;" in workflow
+    assert "PLOT_MCSCANX_CIRCLIZE;" in workflow
     assert "include { HMMER_SEARCH } from './modules/hmmer_search.nf'" in workflow
     assert "include { DIAMOND_SEARCH } from './modules/diamond_search.nf'" in workflow
     assert "DOMAIN_FILTER;" in workflow
@@ -146,6 +156,14 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "BUILD_WGD_HANDOFF_MANIFEST(CONCAT_FAMILY_CANDIDATES.out)" in workflow
     assert "FAMILY_SUMMARY(CONCAT_FAMILY_CANDIDATES.out)" in workflow
     assert "EXTRACT_FAMILY_SEQUENCES(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)" in workflow
+    assert "if (asBooleanParam(params.run_promoter))" in workflow
+    assert "EXTRACT_PROMOTERS(" in workflow
+    assert "CONCAT_FAMILY_CANDIDATES.out," in workflow
+    assert "PREPARE_SPECIES.out," in workflow
+    assert "if (asBooleanParam(params.run_feature_summary))" in workflow
+    assert "PLOT_FEATURE_SUMMARY(" in workflow
+    assert "if (asBooleanParam(params.run_mcscanx_circlize))" in workflow
+    assert "PLOT_MCSCANX_CIRCLIZE(" in workflow
     assert "PREPARE_ALIGNMENT_INPUTS(family_name_ch, EXTRACT_FAMILY_SEQUENCES.out, aligner_ch, alignment_outdir_ch)" in workflow
     assert "PREPARE_PHYLOGENY_INPUTS(PREPARE_ALIGNMENT_INPUTS.out, tree_builder_ch, phylogeny_outdir_ch)" in workflow
     assert "PLOT_FAMILY_COUNTS(FAMILY_SUMMARY.out)" in workflow
@@ -273,6 +291,22 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert "--args ${expression_matrix} plots" in module
     assert 'path "plots/expression_heatmap.pdf"' in module
 
+    assert "process PLOT_FEATURE_SUMMARY" in module
+    assert "summarize_feature_tables.py" in module
+    assert "plot_feature_summary.R" in module
+    assert "--domains ${domains}" in module
+    assert 'path "tables/feature_summary.tsv"' in module
+    assert 'path "plots/feature_summary.pdf"' in module
+    assert 'path "plots/feature_summary.png"' in module
+
+    assert "process PLOT_MCSCANX_CIRCLIZE" in module
+    assert "build_circlize_inputs.py" in module
+    assert "plot_mcscanx_circlize.R" in module
+    assert "--chromosome-locations ${chromosome_locations}" in module
+    assert "--syntenic-pairs ${syntenic_pairs}" in module
+    assert 'path "tables/circlize_chromosomes.tsv"' in module
+    assert 'path "plots/mcscanx_circlize.pdf"' in module
+
     assert "process BUILD_PLOT_MANIFEST" in module
     assert 'publishDir "${params.outdir}/report", mode: "copy", overwrite: true' in module
     assert "build_plot_manifest.py" in module
@@ -280,6 +314,19 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert '--plot "ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs"' in module
     assert '--plot "expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap"' in module
     assert "--out plot_manifest.tsv" in module
+
+
+def test_annotation_module_extracts_promoters_for_standard_branch():
+    module = Path("workflows/modules/annotation_integration.nf").read_text(encoding="utf-8")
+
+    assert "process EXTRACT_PROMOTERS" in module
+    assert "extract_promoters.py" in module
+    assert "--family-candidates ${family_candidates}" in module
+    assert "--species-manifest ${species_manifest}" in module
+    assert "--upstream-bp ${upstream_bp}" in module
+    assert "--downstream-bp ${downstream_bp}" in module
+    assert "--out-bed tables/promoters.bed" in module
+    assert "--out-fasta sequences/promoters.fa" in module
 
 
 def test_standard_nextflow_modules_publish_user_facing_outputs():

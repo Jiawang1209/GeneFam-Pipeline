@@ -329,6 +329,21 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "Nextflow standard visualization smoke",
+            [
+                python,
+                "bin/genefam/run_nextflow_standard_smoke.py",
+                "--conda-env",
+                "GeneFamilyFlow",
+                "--run-feature-summary",
+                "--run-mcscanx-circlize",
+                "--syntenic-pairs",
+                "tests/fixtures/mcscanx/syntenic_pairs.tsv",
+                "--outdir",
+                "results/nextflow_standard_feature_smoke",
+            ],
+        ),
+        CheckSpec(
             "Nextflow standard manifest smoke",
             [
                 python,

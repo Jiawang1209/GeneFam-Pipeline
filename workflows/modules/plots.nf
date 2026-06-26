@@ -47,6 +47,67 @@ process PLOT_EXPRESSION_HEATMAP {
     """
 }
 
+process PLOT_FEATURE_SUMMARY {
+    tag "plot feature summary"
+    publishDir "${params.outdir}", mode: "copy", overwrite: true
+
+    input:
+    val domains
+    path motifs
+    path gene_structures
+    val synteny
+    val promoters
+
+    output:
+    path "tables/feature_summary.tsv"
+    path "plots/feature_summary.pdf"
+    path "plots/feature_summary.png"
+
+    script:
+    def domainArg = domains ? "--domains ${domains}" : ""
+    def syntenyArg = synteny ? "--synteny ${synteny}" : ""
+    def promoterArg = promoters ? "--promoters ${promoters}" : ""
+    """
+    mkdir -p tables plots
+    python ${projectDir}/../bin/genefam/summarize_feature_tables.py \\
+      ${domainArg} \\
+      --motifs ${motifs} \\
+      --gene-structures ${gene_structures} \\
+      ${syntenyArg} \\
+      ${promoterArg} \\
+      --out tables/feature_summary.tsv
+    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_feature_summary.R --args tables/feature_summary.tsv plots
+    """
+}
+
+process PLOT_MCSCANX_CIRCLIZE {
+    tag "plot MCScanX circlize"
+    publishDir "${params.outdir}", mode: "copy", overwrite: true
+
+    input:
+    path chromosome_locations
+    path syntenic_pairs
+
+    output:
+    path "tables/circlize_chromosomes.tsv"
+    path "tables/circlize_links.tsv"
+    path "tables/circlize_skipped_links.tsv"
+    path "plots/mcscanx_circlize.pdf"
+    path "plots/mcscanx_circlize.png"
+
+    script:
+    """
+    mkdir -p tables plots
+    python ${projectDir}/../bin/genefam/build_circlize_inputs.py \\
+      --chromosome-locations ${chromosome_locations} \\
+      --syntenic-pairs ${syntenic_pairs} \\
+      --out-chromosomes tables/circlize_chromosomes.tsv \\
+      --out-links tables/circlize_links.tsv \\
+      --out-skipped tables/circlize_skipped_links.tsv
+    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_mcscanx_circlize.R --args tables/circlize_chromosomes.tsv tables/circlize_links.tsv plots
+    """
+}
+
 process BUILD_PLOT_MANIFEST {
     tag "plot manifest"
     publishDir "${params.outdir}/report", mode: "copy", overwrite: true

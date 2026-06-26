@@ -76,6 +76,13 @@ process BUILD_STANDARD_REPORT_INDEX {
     path motif_summary
     path gene_structure_summary
     path chromosome_locations
+    val promoters_bed
+    val promoters_fasta
+    val feature_summary
+    val feature_summary_pdf
+    val feature_summary_png
+    val mcscanx_circlize_pdf
+    val mcscanx_circlize_png
     val family_expression
     path wgd_handoff_manifest
     path plot_manifest
@@ -98,6 +105,13 @@ process BUILD_STANDARD_REPORT_INDEX {
       --motif-summary ${motif_summary} \\
       --gene-structure-summary ${gene_structure_summary} \\
       --chromosome-locations ${chromosome_locations} \\
+      --promoters-bed "${promoters_bed}" \\
+      --promoters-fasta "${promoters_fasta}" \\
+      --feature-summary "${feature_summary}" \\
+      --feature-summary-pdf "${feature_summary_pdf}" \\
+      --feature-summary-png "${feature_summary_png}" \\
+      --mcscanx-circlize-pdf "${mcscanx_circlize_pdf}" \\
+      --mcscanx-circlize-png "${mcscanx_circlize_png}" \\
       --family-expression "${family_expression}" \\
       --wgd-handoff-manifest ${wgd_handoff_manifest} \\
       --plot-manifest ${plot_manifest} \\

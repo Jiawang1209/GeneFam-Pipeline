@@ -40,6 +40,10 @@ def test_build_nextflow_command_targets_standard_identification_branch():
         "true",
         "--standard_stop_after_family_candidates",
         "false",
+        "--run_feature_summary",
+        "false",
+        "--run_mcscanx_circlize",
+        "false",
         "--mock_evidence_dir",
         "tests/fixtures/mock_evidence",
         "--outdir",
@@ -92,6 +96,26 @@ def test_build_nextflow_command_passes_identification_params():
     assert command[command.index("--mock_external_tools") + 1] == "false"
     assert "--standard_stop_after_family_candidates" in command
     assert command[command.index("--standard_stop_after_family_candidates") + 1] == "true"
+
+
+def test_build_nextflow_command_can_enable_standard_visualization_modules():
+    command = build_nextflow_command(
+        nextflow_bin="nextflow",
+        config="configs/example.config.yaml",
+        groups="configs/species_groups.yaml",
+        mock_evidence_dir="tests/fixtures/mock_evidence",
+        outdir="results/nextflow_standard_feature_smoke/standard",
+        run_feature_summary=True,
+        run_mcscanx_circlize=True,
+        syntenic_pairs="tests/fixtures/mcscanx/syntenic_pairs.tsv",
+    )
+
+    assert "--run_feature_summary" in command
+    assert command[command.index("--run_feature_summary") + 1] == "true"
+    assert "--run_mcscanx_circlize" in command
+    assert command[command.index("--run_mcscanx_circlize") + 1] == "true"
+    assert "--syntenic_pairs" in command
+    assert command[command.index("--syntenic_pairs") + 1] == "tests/fixtures/mcscanx/syntenic_pairs.tsv"
 
 
 def test_build_nextflow_command_supports_manifest_config():
@@ -169,6 +193,25 @@ def test_expected_published_outputs_cover_standard_user_results(tmp_path):
         standard_outdir / "plots/family_counts.pdf",
         standard_outdir / "plots/family_counts.png",
     ]
+
+
+def test_expected_published_outputs_can_include_standard_visualization_modules(tmp_path):
+    standard_outdir = tmp_path / "standard"
+
+    outputs = expected_published_outputs(
+        standard_outdir,
+        feature_summary=True,
+        mcscanx_circlize=True,
+    )
+
+    assert standard_outdir / "tables/feature_summary.tsv" in outputs
+    assert standard_outdir / "plots/feature_summary.pdf" in outputs
+    assert standard_outdir / "plots/feature_summary.png" in outputs
+    assert standard_outdir / "tables/circlize_chromosomes.tsv" in outputs
+    assert standard_outdir / "tables/circlize_links.tsv" in outputs
+    assert standard_outdir / "tables/circlize_skipped_links.tsv" in outputs
+    assert standard_outdir / "plots/mcscanx_circlize.pdf" in outputs
+    assert standard_outdir / "plots/mcscanx_circlize.png" in outputs
 
 
 def test_expected_single_tool_outputs_stop_after_family_candidates(tmp_path):

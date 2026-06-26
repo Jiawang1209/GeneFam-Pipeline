@@ -57,3 +57,30 @@ process SUBSET_EXPRESSION_MATRIX {
       --out family_expression.tsv
     """
 }
+
+process EXTRACT_PROMOTERS {
+    tag "promoters"
+    publishDir "${params.outdir}", mode: "copy", overwrite: true
+
+    input:
+    path family_candidates
+    path species_manifest
+    val upstream_bp
+    val downstream_bp
+
+    output:
+    path "tables/promoters.bed"
+    path "sequences/promoters.fa"
+
+    script:
+    """
+    mkdir -p tables sequences
+    python ${projectDir}/../bin/genefam/extract_promoters.py \\
+      --family-candidates ${family_candidates} \\
+      --species-manifest ${species_manifest} \\
+      --upstream-bp ${upstream_bp} \\
+      --downstream-bp ${downstream_bp} \\
+      --out-bed tables/promoters.bed \\
+      --out-fasta sequences/promoters.fa
+    """
+}

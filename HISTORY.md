@@ -6398,6 +6398,64 @@ Commit:
 Next:
 - Review the Chinese guide during the first real 3-species run and adjust examples to the user's actual species names and data paths.
 
+## 2026-06-26 19:36 - Wire standard visualization modules into Nextflow
+
+Context:
+- The user asked to continue development while away, prioritizing promoter/MCScanX/feature-summary integration into the formal Nextflow branch before deeper MCScanX/KaKs automation, report upgrades, and visualization expansion.
+- Promoter extraction, feature-summary plotting, and MCScanX circlize plotting already existed as Python/R scripts and smoke checks, but were not yet wired into the standard Nextflow branch.
+
+Decisions:
+- Add optional Nextflow switches instead of forcing these modules on by default.
+- Keep `run_promoter`, `run_feature_summary`, and `run_mcscanx_circlize` defaulted to `false` so existing standard runs do not require genome FASTA or synteny inputs.
+- Let report index entries mark these outputs as `missing` unless the corresponding module is enabled.
+- Use a normalized `syntenic_pairs.tsv` fixture for formal Nextflow visualization smoke rather than passing raw MCScanX `.collinearity` to the circlize step.
+
+Added:
+- `tests/fixtures/mcscanx/syntenic_pairs.tsv`
+
+Modified:
+- `workflows/nextflow.config`
+- `workflows/main.nf`
+- `workflows/modules/annotation_integration.nf`
+- `workflows/modules/plots.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_nextflow_standard_smoke.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/release_audit.md`
+- `README.md`
+- `README.zh-CN.md`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_workflow_modules.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_run_nextflow_standard_smoke.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_release_audit_docs.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_runtime_environment_files.py::test_nextflow_config_has_container_profiles tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_workflow_modules.py::test_annotation_module_extracts_promoters_for_standard_branch tests/test_standard_branch_report_index.py -q` first failed with 7 expected failures because params, processes, workflow wiring, and report index keys were missing.
+- The same targeted test group passed with 9 tests after adding optional Nextflow params, `EXTRACT_PROMOTERS`, `PLOT_FEATURE_SUMMARY`, `PLOT_MCSCANX_CIRCLIZE`, and report-index keys.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_standard_smoke` passed, confirming default-off optional visualization modules do not break the standard branch.
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py::test_build_nextflow_command_can_enable_standard_visualization_modules tests/test_run_nextflow_standard_smoke.py::test_expected_published_outputs_can_include_standard_visualization_modules -q` first failed because the standard Nextflow smoke runner did not expose visualization module flags.
+- The same runner tests passed after adding `--run-feature-summary`, `--run-mcscanx-circlize`, `--syntenic-pairs`, and expected visualization outputs.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_standard_feature_smoke --run-feature-summary --run-mcscanx-circlize --syntenic-pairs tests/fixtures/mcscanx/syntenic_pairs.tsv` passed and wrote feature-summary plus MCScanX circlize outputs under `results/nextflow_standard_feature_smoke/standard/`.
+- `python -m pytest tests -q` passed with 297 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`, as expected while Docker/Apptainer remain unavailable, after refreshing release evidence.
+- `results/release_checks/release_checks.md` reports `Passed: 32`, `Required failed: 1`, `Optional failed: 2`; `Nextflow standard visualization smoke` passed.
+- `results/objective_audit/objective_audit.md` still reports `Achieved: 11`, `Blocked: 1`, `Missing: 0`.
+
+Commit:
+- hash: not created yet
+- message: pending
+- files: Nextflow standard visualization wiring, report-index optional outputs, smoke runner, release checks, docs, tests, history
+
+Next:
+- Continue with true MCScanX/KaKs endpoint automation and richer report/visualization outputs.
+
 ## 2026-06-25 - Stabilize standard Nextflow alignment and FastTree readiness
 
 Timestamp:

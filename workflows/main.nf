@@ -16,7 +16,7 @@ include { FAMILY_SUMMARY } from './modules/family_summary.nf'
 include { BUILD_RUN_CONFIG_SNAPSHOT; EXTRACT_FAMILY_SEQUENCES; BUILD_WGD_HANDOFF_MANIFEST; BUILD_STANDARD_REPORT_INDEX; ASSEMBLE_STANDARD_REPORT } from './modules/standard_postprocess.nf'
 include { MOCK_MVP } from './modules/mock_mvp.nf'
 include { ASSEMBLE_REPORT } from './modules/report.nf'
-include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
+include { PLOT_FAMILY_COUNTS; PLOT_KAKS; PLOT_EXPRESSION_HEATMAP; PLOT_FEATURE_SUMMARY; PLOT_MCSCANX_CIRCLIZE; BUILD_PLOT_MANIFEST } from './modules/plots.nf'
 include {
     PREPARE_ALIGNMENT_INPUTS;
     RUN_ALIGNMENT;
@@ -27,6 +27,7 @@ include {
 include {
     EXTRACT_CHROMOSOME_LOCATIONS;
     EXTRACT_GENE_STRUCTURE;
+    EXTRACT_PROMOTERS;
     SUBSET_EXPRESSION_MATRIX
 } from './modules/annotation_integration.nf'
 include {
@@ -170,6 +171,46 @@ workflow {
             PARSE_MEME_MOTIFS(meme_txt_ch, family_name_ch)
             EXTRACT_GENE_STRUCTURE(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
             EXTRACT_CHROMOSOME_LOCATIONS(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
+            promoters_bed_ch = Channel.value("")
+            promoters_fasta_ch = Channel.value("")
+            if (asBooleanParam(params.run_promoter)) {
+                EXTRACT_PROMOTERS(
+                    CONCAT_FAMILY_CANDIDATES.out,
+                    PREPARE_SPECIES.out,
+                    Channel.value(params.promoter_upstream_bp),
+                    Channel.value(params.promoter_downstream_bp)
+                )
+                promoters_bed_ch = EXTRACT_PROMOTERS.out[0]
+                promoters_fasta_ch = EXTRACT_PROMOTERS.out[1]
+            }
+            feature_summary_ch = Channel.value("")
+            feature_summary_pdf_ch = Channel.value("")
+            feature_summary_png_ch = Channel.value("")
+            if (asBooleanParam(params.run_feature_summary)) {
+                domains_ch = Channel.value(params.filtered_domains ? file(params.filtered_domains) : "")
+                synteny_ch = Channel.value(params.syntenic_pairs ? file(params.syntenic_pairs) : "")
+                PLOT_FEATURE_SUMMARY(
+                    domains_ch,
+                    PARSE_MEME_MOTIFS.out,
+                    EXTRACT_GENE_STRUCTURE.out,
+                    synteny_ch,
+                    promoters_bed_ch
+                )
+                feature_summary_ch = PLOT_FEATURE_SUMMARY.out[0]
+                feature_summary_pdf_ch = PLOT_FEATURE_SUMMARY.out[1]
+                feature_summary_png_ch = PLOT_FEATURE_SUMMARY.out[2]
+            }
+            mcscanx_circlize_pdf_ch = Channel.value("")
+            mcscanx_circlize_png_ch = Channel.value("")
+            if (asBooleanParam(params.run_mcscanx_circlize)) {
+                if (!params.syntenic_pairs) {
+                    error "Missing required parameter for --run_mcscanx_circlize true: --syntenic_pairs"
+                }
+                syntenic_pairs_ch = Channel.value(file(params.syntenic_pairs))
+                PLOT_MCSCANX_CIRCLIZE(EXTRACT_CHROMOSOME_LOCATIONS.out, syntenic_pairs_ch)
+                mcscanx_circlize_pdf_ch = PLOT_MCSCANX_CIRCLIZE.out[3]
+                mcscanx_circlize_png_ch = PLOT_MCSCANX_CIRCLIZE.out[4]
+            }
             family_expression_report_ch = Channel.value("")
             if (params.expression_matrix) {
                 expression_matrix_ch = Channel.value(file(params.expression_matrix))
@@ -191,6 +232,13 @@ workflow {
                 PARSE_MEME_MOTIFS.out,
                 EXTRACT_GENE_STRUCTURE.out,
                 EXTRACT_CHROMOSOME_LOCATIONS.out,
+                promoters_bed_ch,
+                promoters_fasta_ch,
+                feature_summary_ch,
+                feature_summary_pdf_ch,
+                feature_summary_png_ch,
+                mcscanx_circlize_pdf_ch,
+                mcscanx_circlize_png_ch,
                 family_expression_report_ch,
                 BUILD_WGD_HANDOFF_MANIFEST.out,
                 BUILD_PLOT_MANIFEST.out

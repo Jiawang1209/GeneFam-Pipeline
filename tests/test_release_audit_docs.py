@@ -119,7 +119,11 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "build_wgd_run_config_snapshot.py" in text
     assert "run_nextflow_smoke.py" in text
     assert "run_nextflow_single_tool_smoke.py" in text
+    assert "--run-feature-summary" in text
+    assert "--run-mcscanx-circlize" in text
+    assert "--syntenic-pairs tests/fixtures/mcscanx/syntenic_pairs.tsv" in text
     assert "results/nextflow_standard_manifest_smoke" in text
+    assert "results/nextflow_standard_feature_smoke" in text
     assert "run_container_profile_smoke.py" in text
     assert "run_nextflow_wgd_smoke.py" in text
     assert "run_prepared_wgd_handoff_example.py" in text
@@ -142,6 +146,9 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/feature_summary_smoke/tables/feature_summary.tsv" in text
     assert "results/feature_summary_smoke/plots/feature_summary.pdf" in text
     assert "results/feature_summary_smoke/plots/feature_summary.png" in text
+    assert "results/nextflow_standard_feature_smoke/standard/tables/feature_summary.tsv" in text
+    assert "results/nextflow_standard_feature_smoke/standard/plots/feature_summary.pdf" in text
+    assert "results/nextflow_standard_feature_smoke/standard/plots/feature_summary.png" in text
     assert "tests/fixtures/alignment/family_members.faa" in text
     assert "results/alignment_phylogeny_smoke/tables/alignment_manifest.tsv" in text
     assert "results/alignment_phylogeny_smoke/tables/phylogeny_manifest.tsv" in text
@@ -163,6 +170,11 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/mcscanx_circlize_smoke/tables/circlize_skipped_links.tsv" in text
     assert "results/mcscanx_circlize_smoke/plots/mcscanx_circlize.pdf" in text
     assert "results/mcscanx_circlize_smoke/plots/mcscanx_circlize.png" in text
+    assert "results/nextflow_standard_feature_smoke/standard/plots/mcscanx_circlize.pdf" in text
+    assert "results/nextflow_standard_feature_smoke/standard/plots/mcscanx_circlize.png" in text
+    assert "PLOT_FEATURE_SUMMARY" in text
+    assert "PLOT_MCSCANX_CIRCLIZE" in text
+    assert "EXTRACT_PROMOTERS" in text
     assert "circlize" in text
     assert "MCScanX syntenic pair and block summaries" in text
     assert "MEME motif count and site summaries" in text

@@ -43,8 +43,12 @@ def load_standard_params(config_path: Path) -> dict[str, str]:
     }
 
 
-def expected_published_outputs(standard_outdir: Path) -> list[Path]:
-    return [
+def expected_published_outputs(
+    standard_outdir: Path,
+    feature_summary: bool = False,
+    mcscanx_circlize: bool = False,
+) -> list[Path]:
+    outputs = [
         standard_outdir / "tables/species_manifest.tsv",
         standard_outdir / "tables/run_config_snapshot.tsv",
         standard_outdir / "tables/family_candidates.tsv",
@@ -64,6 +68,25 @@ def expected_published_outputs(standard_outdir: Path) -> list[Path]:
         standard_outdir / "plots/family_counts.pdf",
         standard_outdir / "plots/family_counts.png",
     ]
+    if feature_summary:
+        outputs.extend(
+            [
+                standard_outdir / "tables/feature_summary.tsv",
+                standard_outdir / "plots/feature_summary.pdf",
+                standard_outdir / "plots/feature_summary.png",
+            ]
+        )
+    if mcscanx_circlize:
+        outputs.extend(
+            [
+                standard_outdir / "tables/circlize_chromosomes.tsv",
+                standard_outdir / "tables/circlize_links.tsv",
+                standard_outdir / "tables/circlize_skipped_links.tsv",
+                standard_outdir / "plots/mcscanx_circlize.pdf",
+                standard_outdir / "plots/mcscanx_circlize.png",
+            ]
+        )
+    return outputs
 
 
 def expected_single_tool_outputs(standard_outdir: Path) -> list[Path]:
@@ -85,6 +108,9 @@ def build_nextflow_command(
     final_rule: str = "intersection",
     mock_external_tools: bool | str = True,
     stop_after_family_candidates: bool | str = False,
+    run_feature_summary: bool | str = False,
+    run_mcscanx_circlize: bool | str = False,
+    syntenic_pairs: str | None = None,
 ) -> list[str]:
     command = [
         nextflow_bin,
@@ -113,12 +139,18 @@ def build_nextflow_command(
             _bool_param(mock_external_tools),
             "--standard_stop_after_family_candidates",
             _bool_param(stop_after_family_candidates),
+            "--run_feature_summary",
+            _bool_param(run_feature_summary),
+            "--run_mcscanx_circlize",
+            _bool_param(run_mcscanx_circlize),
             "--mock_evidence_dir",
             mock_evidence_dir,
             "--outdir",
             outdir,
         ]
     )
+    if syntenic_pairs:
+        command.extend(["--syntenic_pairs", syntenic_pairs])
     return command
 
 
@@ -156,6 +188,9 @@ def run_nextflow_standard_smoke(
     outdir: Path,
     conda_env: str | None = None,
     stop_after_family_candidates: bool | str = False,
+    run_feature_summary: bool | str = False,
+    run_mcscanx_circlize: bool | str = False,
+    syntenic_pairs: str | None = None,
 ) -> dict[str, str]:
     resolved_nextflow = resolve_nextflow_binary(nextflow_bin, conda_env=conda_env)
     standard_params = load_standard_params(Path(config))
@@ -169,6 +204,9 @@ def run_nextflow_standard_smoke(
         outdir=str(outdir / "standard"),
         profile=profile,
         stop_after_family_candidates=stop_after_family_candidates,
+        run_feature_summary=run_feature_summary,
+        run_mcscanx_circlize=run_mcscanx_circlize,
+        syntenic_pairs=syntenic_pairs,
         **standard_params,
     )
     if not resolved_nextflow:
@@ -189,7 +227,11 @@ def run_nextflow_standard_smoke(
     expected_outputs = (
         expected_single_tool_outputs(standard_outdir)
         if _bool_param(stop_after_family_candidates) == "true"
-        else expected_published_outputs(standard_outdir)
+        else expected_published_outputs(
+            standard_outdir,
+            feature_summary=_bool_param(run_feature_summary) == "true",
+            mcscanx_circlize=_bool_param(run_mcscanx_circlize) == "true",
+        )
     )
     missing_outputs = [path for path in expected_outputs if not path.exists()]
     passed = completed.returncode == 0 and not missing_outputs
@@ -218,6 +260,9 @@ def main() -> None:
     parser.add_argument("--groups", default="configs/species_groups.yaml")
     parser.add_argument("--mock-evidence-dir", default="tests/fixtures/mock_evidence")
     parser.add_argument("--outdir", default=Path("results/nextflow_standard_smoke"), type=Path)
+    parser.add_argument("--run-feature-summary", action="store_true")
+    parser.add_argument("--run-mcscanx-circlize", action="store_true")
+    parser.add_argument("--syntenic-pairs", default=None)
     args = parser.parse_args()
     row = run_nextflow_standard_smoke(
         args.nextflow_bin,
@@ -226,6 +271,9 @@ def main() -> None:
         args.mock_evidence_dir,
         args.outdir,
         conda_env=args.conda_env,
+        run_feature_summary=args.run_feature_summary,
+        run_mcscanx_circlize=args.run_mcscanx_circlize,
+        syntenic_pairs=args.syntenic_pairs,
     )
     _write_tsv(row, args.outdir / "nextflow_standard_smoke.tsv")
     _write_markdown(row, args.outdir / "nextflow_standard_smoke.md")
