@@ -176,10 +176,10 @@ def build_objective_audit(
             "Report-ready gene-family information, feature summary, promoter extraction and cis-element, tree/motif/gene-structure/domain, synteny/circlize, PPI, and annotated expression heatmap figures are exercised by script smoke checks and formal Nextflow report evidence.",
         ),
         _achieved_if(
-            _all_passed(release, ["gene family information visualization smoke"]),
+            _all_passed(release, ["gene family information visualization smoke", "Nextflow standard visualization smoke"]),
             "gene family information and copy-number visualization",
-            "gene family information visualization smoke",
-            "Gene-family information, copy-number balance, pangenome class, expansion/contraction, and protein-property summary plots are exercised.",
+            "gene family information visualization smoke and Nextflow standard visualization smoke",
+            "Gene-family information, copy-number balance, pangenome class, expansion/contraction, protein-property summary plots, and Nextflow report evidence are exercised.",
         ),
         _achieved_if(
             _all_passed(release, ["tree feature visualization smoke", "feature summary visualization smoke"]),

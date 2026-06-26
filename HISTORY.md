@@ -34,6 +34,48 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 07:08 - Require Nextflow report evidence for copy-number audit
+
+Context:
+- The active `/goal` requires gene-family information, copy-number, pangenome, and protein-property summary figures to be connected to the formal Nextflow/YAML/report-index/final-report/release-check workflow.
+- The standard feature report already registered copy-number, copy-number summary, expansion/contraction, pangenome summary, protein-property tables, and gene-family information PDF/PNG plots.
+- The objective audit copy-number row still treated the standalone `gene family information visualization smoke` as sufficient evidence.
+
+Decisions:
+- Keep `gene family information visualization smoke` as module-level proof.
+- Require `Nextflow standard visualization smoke` as the formal report-integration proof for the `gene family information and copy-number visualization` objective row.
+- Make the objective audit note explicitly mention Nextflow report evidence for gene-family/copy-number plots.
+
+Added:
+- Regression test that the copy-number objective row is missing when only the standalone gene-family information smoke is present.
+- Regression expectations that the achieved copy-number objective row names `Nextflow standard visualization smoke` and `Nextflow report evidence`.
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+- `results/objective_audit/objective_audit.md`
+- `results/objective_audit/objective_audit.tsv`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_objective_audit_lists_named_paper_level_visualization_requirements tests/test_audit_objective_completion.py::test_gene_family_information_copy_number_requires_nextflow_standard_visualization_smoke -q` first failed because the copy-number row evidence only contained `gene family information visualization smoke` and still marked standalone evidence as achieved.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 27 tests.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and the copy-number row now lists `gene family information visualization smoke and Nextflow standard visualization smoke`.
+- `python -m pytest tests -q` passed with 387 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `rg -n "gene family information and copy-number visualization|Nextflow report evidence|gene_family_info|gene_family_copy_number" results/objective_audit/objective_audit.md results/release_checks/release_checks.tsv results/nextflow_standard_feature_smoke/standard/report/report_index.tsv results/nextflow_standard_feature_smoke/standard/report/final_report.md` confirmed objective-audit, release-check, report-index, and final-report coverage.
+
+Commit:
+- hash: pending
+- message: `test: require nextflow evidence for copy number audit`
+- files: objective audit copy-number evidence rule, regression tests, refreshed objective audit outputs, and history entry.
+
+Next:
+- Continue tightening any remaining visualization rows whose standalone smoke evidence is stronger than the formal Nextflow report proof.
+
 ## 2026-06-27 07:02 - Require Nextflow report evidence for expression heatmap audit
 
 Context:

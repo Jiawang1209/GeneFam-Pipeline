@@ -201,6 +201,12 @@ def test_objective_audit_lists_named_paper_level_visualization_requirements():
         assert by_requirement[requirement]["status"] == "achieved"
 
     assert "copy-number" in by_requirement["gene family information and copy-number visualization"]["note"]
+    assert "Nextflow standard visualization smoke" in by_requirement[
+        "gene family information and copy-number visualization"
+    ]["evidence"]
+    assert "Nextflow report evidence" in by_requirement[
+        "gene family information and copy-number visualization"
+    ]["note"]
     assert "tree/motif/gene-structure/domain" in by_requirement["tree motif gene-structure domain visualization"]["note"]
     assert "MCScanX" in by_requirement["MCScanX synteny circlize visualization"]["note"]
     assert "Nextflow standard visualization smoke" in by_requirement["promoter cis-element visualization"]["evidence"]
@@ -237,6 +243,31 @@ def test_mcscanx_synteny_circlize_visualization_requires_nextflow_standard_visua
 
     assert by_requirement["MCScanX synteny circlize visualization"]["status"] == "missing"
     assert "Nextflow standard visualization smoke" in by_requirement["MCScanX synteny circlize visualization"]["evidence"]
+
+
+def test_gene_family_information_copy_number_requires_nextflow_standard_visualization_smoke():
+    release_rows = [
+        _release_row("gene family information visualization smoke"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["gene family information and copy-number visualization"]["status"] == "missing"
+    assert "Nextflow standard visualization smoke" in by_requirement[
+        "gene family information and copy-number visualization"
+    ]["evidence"]
 
 
 def test_ppi_ggnetview_visualization_requires_nextflow_standard_visualization_smoke():
