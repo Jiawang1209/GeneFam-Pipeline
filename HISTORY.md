@@ -73,7 +73,7 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because readiness/Docker/Apptainer remain unavailable, but the release matrix stayed at `passed=40 failed=3`; `tree feature visualization smoke` passed and `results/tree_feature_smoke/tables/tree_feature_matrix.tsv` contains `motif_architecture` and `domain_architecture`.
 
 Commit:
-- hash: pending
+- hash: 44e624f
 - message: feat: add per-gene tree feature architecture tracks
 - files: tree feature matrix builder, tree feature plot, smoke defaults, release/reference docs, tests, history
 
