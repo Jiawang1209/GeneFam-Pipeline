@@ -172,6 +172,8 @@ def test_objective_audit_lists_named_paper_level_visualization_requirements():
         _release_row("Ka/Ks WGD annotation plot smoke"),
         _release_row("duplicate-type Ka/Ks visualization smoke"),
         _release_row("pangenome-class Ka/Ks visualization smoke"),
+        _release_row("Nextflow WGD event smoke"),
+        _release_row("WGD publication report audit"),
     ]
     readiness_rows = [
         _readiness_row("nextflow"),
@@ -223,6 +225,35 @@ def test_objective_audit_lists_named_paper_level_visualization_requirements():
     assert "ggNetView" in by_requirement["PPI ggNetView visualization"]["note"]
     assert "Nextflow report evidence" in by_requirement["PPI ggNetView visualization"]["note"]
     assert "gamma beta alpha theta" in by_requirement["Ka/Ks WGD visualization"]["note"]
+    assert "Nextflow WGD event smoke" in by_requirement["Ka/Ks WGD visualization"]["evidence"]
+    assert "WGD publication report audit" in by_requirement["Ka/Ks WGD visualization"]["evidence"]
+    assert "Nextflow report evidence" in by_requirement["Ka/Ks WGD visualization"]["note"]
+
+
+def test_kaks_wgd_visualization_requires_nextflow_wgd_report_evidence():
+    release_rows = [
+        _release_row("Ka/Ks WGD annotation plot smoke"),
+        _release_row("duplicate-type Ka/Ks visualization smoke"),
+        _release_row("pangenome-class Ka/Ks visualization smoke"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["Ka/Ks WGD visualization"]["status"] == "missing"
+    assert "Nextflow WGD event smoke" in by_requirement["Ka/Ks WGD visualization"]["evidence"]
+    assert "WGD publication report audit" in by_requirement["Ka/Ks WGD visualization"]["evidence"]
 
 
 def test_mcscanx_synteny_circlize_visualization_requires_nextflow_standard_visualization_smoke():

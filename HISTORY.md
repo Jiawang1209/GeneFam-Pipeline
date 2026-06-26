@@ -9750,6 +9750,48 @@ Commit:
 Next:
 - Keep Docker/Apptainer runtime verification as the remaining final-stage external blocker; continue polishing Reference-level figure fidelity where useful.
 
+## 2026-06-27 - Require Nextflow report evidence for Ka/Ks WGD audit
+
+Timestamp:
+- 2026-06-27 07:22 CST
+
+Context:
+- The Ka/Ks WGD objective audit already checked standalone Ks distribution, duplicate-type Ka/Ks, and pangenome-class Ka/Ks visualization smokes.
+- The active MVP goal requires gamma beta alpha theta WGD interpretation and Ka/Ks figures to be connected to the formal Nextflow WGD branch and publication-style report, not only standalone plotting scripts.
+
+Decisions:
+- Require `Nextflow WGD event smoke` for the `Ka/Ks WGD visualization` objective row.
+- Require `WGD publication report audit` for the same objective row so the WGD figures must include report-registered close reading and method/software evidence.
+- Keep container runtime verification deferred to the final packaging phase; no Docker/Apptainer requirement was promoted from optional to required.
+
+Added:
+- Regression test proving Ka/Ks WGD visualization remains `missing` when standalone WGD plot smokes pass but formal Nextflow WGD/report evidence is absent.
+- Objective-audit evidence text that explicitly names `Nextflow WGD event smoke` and `WGD publication report audit`.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_objective_audit_lists_named_paper_level_visualization_requirements tests/test_audit_objective_completion.py::test_kaks_wgd_visualization_requires_nextflow_wgd_report_evidence -q` first failed with the old rule because Ka/Ks WGD visualization was achieved without `Nextflow WGD event smoke` or `WGD publication report audit`.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 29 tests after implementation.
+- `python -m pytest tests -q` passed with 389 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 45`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` passed and reported `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+- `rg -n "Ka/Ks WGD visualization|Nextflow WGD event smoke|WGD publication report audit|Nextflow report evidence" results/objective_audit/objective_audit.md results/release_checks/release_checks.tsv` confirmed the Ka/Ks WGD audit row now requires the formal WGD Nextflow smoke and WGD publication report audit.
+
+Commit:
+- hash: pending
+- message: test: require nextflow evidence for wgd audit
+- files: objective audit rule, objective audit tests, history
+
+Next:
+- Continue final MVP hardening with container/runtime packaging still intentionally deferred until the analysis flow and report gates are fully stable.
+
 ## 2026-06-27 - Surface WGD publication audit in delivery outputs
 
 Timestamp:

@@ -239,11 +239,13 @@ def build_objective_audit(
                     "Ka/Ks WGD annotation plot smoke",
                     "duplicate-type Ka/Ks visualization smoke",
                     "pangenome-class Ka/Ks visualization smoke",
+                    "Nextflow WGD event smoke",
+                    "WGD publication report audit",
                 ],
             ),
             "Ka/Ks WGD visualization",
-            "Ka/Ks WGD annotation plot smoke, duplicate-type Ka/Ks visualization smoke, and pangenome-class Ka/Ks visualization smoke",
-            "Ks distribution, gamma beta alpha theta WGD-layer annotations, duplicate-type Ka/Ks panels, and pangenome-class Ka/Ks panels are exercised.",
+            "Ka/Ks WGD annotation plot smoke, duplicate-type Ka/Ks visualization smoke, pangenome-class Ka/Ks visualization smoke, Nextflow WGD event smoke, and WGD publication report audit",
+            "Ks distribution, gamma beta alpha theta WGD-layer annotations, duplicate-type Ka/Ks panels, pangenome-class Ka/Ks panels, WGD final-report close reading, and Nextflow report evidence are exercised.",
         ),
         _achieved_if(
             _all_passed(
