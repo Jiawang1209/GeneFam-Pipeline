@@ -92,6 +92,12 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
             [
                 "# GeneFam-Pipeline Final Report",
                 "### Software Versions",
+                "| component | kind | version | status | source |",
+                "| --- | --- | --- | --- | --- |",
+                "| FastTree | tool | 2.1.11 | detected | fasttree -help |",
+                "| MAFFT | tool | 7.520 | detected | mafft --version |",
+                "| ggNetView | R_package | 0.1.0 | detected | R packageVersion |",
+                "| R | runtime | 4.4.0 | detected | /usr/local/bin/R --version |",
                 "## Figure Result Interpretations",
                 "### tree_features: Tree, motif, gene-structure, and domain composite",
                 "- QC tables: tables/tree_feature_matrix.tsv",
@@ -244,6 +250,9 @@ def test_publication_report_audit_cli_writes_markdown_and_tsv(tmp_path):
         "\n".join(
             [
                 "### Software Versions",
+                "| component | kind | version | status | source |",
+                "| --- | --- | --- | --- | --- |",
+                "| R | runtime | 4.4.0 | detected | /usr/local/bin/R --version |",
                 "## Figure Result Interpretations",
                 "### family_counts: Family copy number",
                 "- QC tables: tables/family_counts.tsv",
@@ -281,6 +290,64 @@ def test_publication_report_audit_cli_writes_markdown_and_tsv(tmp_path):
     assert "plot_files_exist\tpassed" in out_tsv.read_text(encoding="utf-8")
     assert "figure_interpretation_coverage\tpassed" in out_tsv.read_text(encoding="utf-8")
     assert "Complete: true" in out_md.read_text(encoding="utf-8")
+
+
+def test_publication_report_audit_requires_software_versions_embedded_in_final_report(tmp_path):
+    plot_manifest = tmp_path / "plot_manifest.tsv"
+    figure_interpretations = tmp_path / "figure_interpretations.tsv"
+    software_versions = tmp_path / "software_versions.tsv"
+    final_report = tmp_path / "final_report.md"
+    (tmp_path / "plots").mkdir()
+    (tmp_path / "plots/tree_features.pdf").write_bytes(b"%PDF tree")
+
+    _write_tsv(plot_manifest, ["plot_key", "path", "description"], [["tree_features", "plots/tree_features.pdf", "Tree features"]])
+    _write_tsv(
+        figure_interpretations,
+        ["figure_key", "qc_tables", "method_and_software", "reproducibility", "result_reading_status", "output_path"],
+        [[
+            "tree_features",
+            "tables/tree_feature_matrix.tsv",
+            "plot_tree_features.R; /usr/local/bin/R",
+            "python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
+            "figure-specific close reading",
+            "plots/tree_features.pdf",
+        ]],
+    )
+    _write_tsv(
+        software_versions,
+        ["component", "kind", "version", "status", "source"],
+        [
+            ["FastTree", "tool", "2.1.11", "detected", "fasttree -help"],
+            ["R", "runtime", "4.4.0", "detected", "/usr/local/bin/R --version"],
+        ],
+    )
+    final_report.write_text(
+        "\n".join(
+            [
+                "### Software Versions",
+                "## Figure Result Interpretations",
+                "### tree_features: Tree features",
+                "- QC tables: tables/tree_feature_matrix.tsv",
+                "- Method/software: plot_tree_features.R; /usr/local/bin/R",
+                "- Reproducibility: python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
+                "- Result reading status: figure-specific close reading",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    rows = audit_publication_report(
+        plot_manifest=plot_manifest,
+        figure_interpretations=figure_interpretations,
+        software_versions=software_versions,
+        final_report=final_report,
+    )
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["software_versions_present"]["status"] == "passed"
+    assert by_check["final_report_embeds_publication_sections"]["status"] == "failed"
+    assert "software_version:FastTree:2.1.11" in by_check["final_report_embeds_publication_sections"]["note"]
+    assert "software_version:R:4.4.0" in by_check["final_report_embeds_publication_sections"]["note"]
 
 
 def test_publication_report_audit_flags_template_guided_reading_status(tmp_path):

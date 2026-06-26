@@ -34,6 +34,46 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 05:13 - Require software versions in final reports
+
+Context:
+- The active `/goal` requires final reports to document software and R package versions in the methods/report package, including tools such as FastTree, MCScanX, Ka/Ks tooling, ggNetView, and `/usr/local/bin/R`.
+- The publication audit already required a non-empty `software_versions.tsv` and a `### Software Versions` heading, but it did not verify that the final Markdown report embedded the actual component/version values.
+- A final report could therefore pass with a complete version TSV while omitting specific software version rows from the user-facing report.
+
+Decisions:
+- Treat every detected non-missing `software_versions.tsv` row as final-report evidence that must be embedded by component and version.
+- Reuse `final_report_embeds_publication_sections` so the publication report audit remains a compact five-row gate.
+- Keep Docker/Apptainer runtime checks optional until the final packaging stage, as agreed.
+
+Added:
+- Regression test proving a report fails publication audit when FastTree/R version rows exist in `software_versions.tsv` but are absent from `final_report.md`.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `tests/test_audit_publication_report.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_requires_software_versions_embedded_in_final_report -q` first failed because final-report embedding did not check software version rows; it passed after adding the check.
+- `python -m pytest tests/test_audit_publication_report.py -q` passed with 7 tests.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` exited 0 and reported `Passed: 5`, `Failed: 0`, `Complete: true`.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv --software-versions results/nextflow_wgd_smoke/wgd/report/software_versions.tsv --final-report results/nextflow_wgd_smoke/wgd/report/final_report.md --out-tsv results/publication_report_audit/wgd_publication_report_audit.tsv --out-md results/publication_report_audit/wgd_publication_report_audit.md` exited 0 and reported `Passed: 5`, `Failed: 0`, `Complete: true`.
+- `python -m pytest tests/test_audit_publication_report.py tests/test_run_release_checks.py::test_default_checks_include_publication_report_audit_after_visualization_report tests/test_run_release_checks.py::test_default_checks_include_wgd_publication_report_audit_after_wgd_smoke -q` passed with 9 tests.
+- `python -m pytest tests -q` passed with 373 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+
+Commit:
+- hash: pending
+- message: test: require software versions in final reports
+- files: publication report audit, audit tests, history
+
+Next:
+- Continue final MVP audit work across report polish and acceptance surfaces; Docker/Apptainer profile verification remains the final external runtime step.
+
 ## 2026-06-27 05:06 - Require final reports to embed reading status
 
 Context:

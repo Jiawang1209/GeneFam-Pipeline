@@ -88,6 +88,22 @@ def _report_contains(report_text: str, needle: str) -> bool:
     return needle in report_text
 
 
+def _missing_software_versions_in_report(
+    report_text: str,
+    version_rows: list[dict[str, str]],
+) -> list[str]:
+    missing: list[str] = []
+    for row in version_rows:
+        component = row.get("component", "").strip()
+        version = row.get("version", "").strip()
+        if component and version and (
+            not _report_contains(report_text, component)
+            or not _report_contains(report_text, version)
+        ):
+            missing.append(f"software_version:{component}:{version}")
+    return missing
+
+
 def audit_publication_report(
     plot_manifest: Path,
     figure_interpretations: Path,
@@ -119,6 +135,7 @@ def audit_publication_report(
     for section in ["### Software Versions", "## Figure Result Interpretations"]:
         if not _report_contains(report_text, section):
             missing_report_sections.append(section)
+    missing_report_sections.extend(_missing_software_versions_in_report(report_text, version_rows))
     for key in plot_keys:
         if not _report_contains(report_text, f"### {key}:"):
             missing_report_sections.append(f"figure:{key}")
