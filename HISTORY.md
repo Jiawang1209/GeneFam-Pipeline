@@ -6391,8 +6391,8 @@ Verification:
 - `rg -n "README.zh-CN|validate_config|run_identification|MCScanX|gamma|beta|alpha|theta|3 个物种|GeneFamilyFlow" README.md README.zh-CN.md` confirmed the Chinese entry link and key usage sections.
 
 Commit:
-- hash: not created yet
-- message: pending
+- hash: 6710fafe47fe60f5747d177fa3e271d6a748c562
+- message: docs: add Chinese README guide
 - files: Chinese README, English README link, history
 
 Next:
