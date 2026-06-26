@@ -112,6 +112,8 @@ def test_run_container_profile_smoke_cli_writes_outputs(tmp_path):
     )
 
     assert completed.returncode == 1
+    assert "bash results/readiness/runtime_bootstrap.sh" in completed.stdout
+    assert "run_container_profile_smoke.py --profile docker" in completed.stdout
     assert (outdir / "container_profile_smoke.tsv").read_text(encoding="utf-8").startswith(
         "check\tprofile\tstatus\texit_code\tcommand\tnote\n"
     )

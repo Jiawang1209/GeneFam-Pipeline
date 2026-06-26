@@ -180,6 +180,7 @@ def main() -> None:
     )
     write_tsv(row, args.outdir / "container_profile_smoke.tsv")
     write_markdown(row, args.outdir / "container_profile_smoke.md")
+    print(row["note"])
     sys.exit(0 if row["status"] == "passed" else 1)
 
 

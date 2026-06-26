@@ -6986,6 +6986,43 @@ Commit:
 Next:
 - Continue final-stage container hardening; full Docker/Apptainer execution still requires installing or exposing those runtimes on the machine.
 
+## 2026-06-27 - Surface container runtime recovery notes in release checks
+
+Timestamp:
+- 2026-06-27 02:32:21 CST
+
+Context:
+- Container profile smoke Markdown files contained actionable missing-runtime recovery notes.
+- `results/release_checks/release_checks.md` still showed blank notes for optional Docker and Apptainer failures because `run_container_profile_smoke.py` wrote diagnostics only to files, not stdout/stderr captured by the release runner.
+
+Decisions:
+- Print the container profile smoke note from the CLI after writing TSV and Markdown outputs.
+- Keep the structured TSV/Markdown outputs unchanged.
+
+Added:
+- A CLI regression test requiring missing-runtime container profile smoke output to include the runtime bootstrap command and profile rerun command on stdout.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_container_profile_smoke.py`
+- `tests/test_run_container_profile_smoke.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_container_profile_smoke.py -q` first failed because the CLI stdout was empty.
+- `python -m pytest tests/test_run_container_profile_smoke.py -q` passed with 6 tests after printing the note.
+- `python -m pytest tests -q` passed with 351 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `0`; release checks reported `Passed: 43`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `rg -n "Docker profile smoke|Apptainer profile smoke|runtime_bootstrap.sh|Expected diagnostic output" results/release_checks/release_checks.md` confirmed the release summary now includes actionable recovery notes for both optional container profile failures.
+
+Commit:
+- pending
+
+Next:
+- Continue final-stage container hardening; true Docker/Apptainer profile success still depends on installing or exposing those runtimes.
+
 ## 2026-06-27 - Add density and duplicate-type tracks to MCScanX circlize plots
 
 Timestamp:
