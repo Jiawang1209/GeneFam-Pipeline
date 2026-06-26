@@ -20,6 +20,11 @@ DESCRIPTIONS = {
     "retention_enrichment": "Duplicate-type retention enrichment for family members",
     "ks_distribution_pdf": "Ks distribution PDF plot for WGD-layer interpretation",
     "ks_distribution_png": "Ks distribution PNG plot for WGD-layer interpretation",
+    "duplicate_type_kaks": "Pairwise Ka/Ks values joined to duplicate type classes",
+    "duplicate_type_kaks_summary": "Duplicate-type grouped Ka/Ks summary table",
+    "duplicate_type_kaks_skipped": "Ka/Ks pairs skipped because duplicate type evidence was missing",
+    "duplicate_type_kaks_pdf": "Duplicate-type grouped Ks and Ka/Ks PDF plot",
+    "duplicate_type_kaks_png": "Duplicate-type grouped Ks and Ka/Ks PNG plot",
 }
 
 
@@ -36,6 +41,11 @@ def build_report_index(published_outdir: str) -> list[dict[str, str]]:
         "retention_enrichment": outdir / "tables/retention_enrichment.tsv",
         "ks_distribution_pdf": outdir / "plots/ks_distribution.pdf",
         "ks_distribution_png": outdir / "plots/ks_distribution.png",
+        "duplicate_type_kaks": outdir / "tables/duplicate_type_kaks.tsv",
+        "duplicate_type_kaks_summary": outdir / "tables/duplicate_type_kaks_summary.tsv",
+        "duplicate_type_kaks_skipped": outdir / "tables/duplicate_type_kaks_skipped.tsv",
+        "duplicate_type_kaks_pdf": outdir / "plots/duplicate_type_kaks.pdf",
+        "duplicate_type_kaks_png": outdir / "plots/duplicate_type_kaks.png",
     }
     return [
         {

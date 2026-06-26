@@ -24,3 +24,4 @@ def test_reference_plotting_reuse_tracks_paper_figure_alignment_status():
     assert "| PPI network | `Reference/Long_Weixiong_20240323_1_GDSL/R/11.ppi.R`" in text
     assert "| Tree + motif + gene structure + domain |" in text
     assert "| promoter cis-element |" in text
+    assert "| MCScanX duplicate type + Ka/Ks | `Reference/Long_Weixiong_20240323_1_GDSL/R/9.mcscanx_KaKs.R` | `bin/genefam/build_duplicate_type_kaks.py`; `scripts/plot_duplicate_type_kaks.R`; WGD branch `plots/duplicate_type_kaks.pdf/png` | done |" in text

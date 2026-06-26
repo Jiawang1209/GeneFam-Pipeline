@@ -31,6 +31,13 @@ def test_build_wgd_report_index_points_to_published_outputs():
         "description": "Ks distribution PDF plot for WGD-layer interpretation",
     }
     assert by_key["ks_distribution_png"]["path"].endswith("plots/ks_distribution.png")
+    assert by_key["duplicate_type_kaks_pdf"] == {
+        "key": "duplicate_type_kaks_pdf",
+        "path": "results/nextflow_wgd_smoke/wgd/plots/duplicate_type_kaks.pdf",
+        "status": "available",
+        "description": "Duplicate-type grouped Ks and Ka/Ks PDF plot",
+    }
+    assert by_key["duplicate_type_kaks_summary"]["path"].endswith("tables/duplicate_type_kaks_summary.tsv")
 
 
 def test_build_wgd_report_index_cli_writes_tsv(tmp_path):
@@ -56,3 +63,4 @@ def test_build_wgd_report_index_cli_writes_tsv(tmp_path):
     assert rows["wgd_layers"]["path"] == "results/demo_wgd/tables/wgd_layers.tsv"
     assert rows["wgd_event_evidence"]["status"] == "available"
     assert rows["ks_distribution_pdf"]["path"] == "results/demo_wgd/plots/ks_distribution.pdf"
+    assert rows["duplicate_type_kaks_png"]["path"] == "results/demo_wgd/plots/duplicate_type_kaks.png"

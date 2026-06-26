@@ -338,6 +338,21 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "duplicate-type Ka/Ks visualization smoke",
+            [
+                python,
+                "bin/genefam/run_duplicate_type_kaks_smoke.py",
+                "--duplicates",
+                "examples/prepared_wgd_handoff/duplicate_types.tsv",
+                "--kaks-pairs",
+                "examples/prepared_wgd_handoff/kaks_pairs.tsv",
+                "--r-bin",
+                "/usr/local/bin/R",
+                "--outdir",
+                "results/duplicate_type_kaks_smoke",
+            ],
+        ),
+        CheckSpec(
             "retention enrichment smoke",
             [
                 python,

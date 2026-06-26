@@ -197,6 +197,32 @@ process RETENTION_ENRICHMENT {
     """
 }
 
+process PLOT_DUPLICATE_TYPE_KAKS {
+    tag "plot duplicate-type Ka/Ks"
+    publishDir "${params.outdir}", mode: "copy", overwrite: true
+
+    input:
+    path normalized_duplicates
+    path kaks_pairs
+
+    output:
+    path "tables/duplicate_type_kaks.tsv"
+    path "tables/duplicate_type_kaks_summary.tsv"
+    path "tables/duplicate_type_kaks_skipped.tsv"
+    path "plots/duplicate_type_kaks.pdf"
+    path "plots/duplicate_type_kaks.png"
+
+    script:
+    """
+    mkdir -p tables plots
+    python ${projectDir}/../bin/genefam/build_duplicate_type_kaks.py \\
+      --duplicates ${normalized_duplicates} \\
+      --kaks-pairs ${kaks_pairs} \\
+      --outdir tables
+    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_duplicate_type_kaks.R --args tables/duplicate_type_kaks.tsv tables/duplicate_type_kaks_summary.tsv plots
+    """
+}
+
 process BUILD_WGD_REPORT_INDEX {
     tag "WGD report index"
     publishDir "${params.outdir}/report", mode: "copy", overwrite: true

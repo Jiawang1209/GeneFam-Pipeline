@@ -34,6 +34,61 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 00:12 - Add duplicate-type Ka/Ks visualization for WGD branch
+
+Context:
+- The active `/goal` requires paper-level visualization aligned with `Reference/Long_Weixiong_20240323_1_GDSL/R/9.mcscanx_KaKs.R`.
+- The WGD branch already generated MCScanX/KaKs handoff tables and a basic Ks distribution, but duplicate-type grouped Ka/Ks panels and summary/QC tables were still missing.
+
+Decisions:
+- Add a dedicated duplicate-type Ka/Ks table builder instead of overloading the generic Ks histogram.
+- Classify each Ka/Ks pair by duplicate type: same-type pairs keep their duplicate class, cross-type pairs become `mixed`, and pairs missing duplicate evidence are written to a skipped-pair QC table.
+- Use base R plotting for dependency-light PDF/PNG output with Ks box/point panels, Ka/Ks box/point panels, and pair-count bars.
+- Wire the process into the WGD Nextflow branch after duplicate-type normalization so both prepared input and raw MCScanX/KaKs handoff modes get the same plot.
+
+Added:
+- `bin/genefam/build_duplicate_type_kaks.py`
+- `bin/genefam/run_duplicate_type_kaks_smoke.py`
+- `scripts/plot_duplicate_type_kaks.R`
+- `tests/test_build_duplicate_type_kaks.py`
+- `tests/test_run_duplicate_type_kaks_smoke.py`
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/build_wgd_report_index.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/reference_plotting_reuse.md`
+- `docs/release_audit.md`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_reference_plotting_reuse.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_wgd_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/duplication_retention.nf`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_duplicate_type_kaks.py tests/test_run_duplicate_type_kaks_smoke.py -q` first failed because `bin.genefam.build_duplicate_type_kaks` did not exist, then passed with 3 tests after adding the builder, smoke runner, and R plot.
+- `python -m pytest tests/test_workflow_modules.py tests/test_wgd_report_index.py tests/test_run_release_checks.py tests/test_reference_plotting_reuse.py tests/test_release_audit_docs.py -q` first failed on missing WGD process/report/release/docs wiring, then passed after formal integration.
+- `python bin/genefam/run_duplicate_type_kaks_smoke.py --duplicates examples/prepared_wgd_handoff/duplicate_types.tsv --kaks-pairs examples/prepared_wgd_handoff/kaks_pairs.tsv --r-bin /usr/local/bin/R --outdir results/duplicate_type_kaks_smoke` generated duplicate-type Ka/Ks tables and `duplicate_type_kaks.pdf/png`.
+- `python bin/genefam/run_nextflow_wgd_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_wgd_smoke` passed and generated WGD duplicate-type Ka/Ks plots.
+- `python bin/genefam/run_nextflow_wgd_smoke.py --conda-env GeneFamilyFlow --mode raw-mcscanx-kaks --outdir results/nextflow_wgd_raw_smoke` passed and generated raw MCScanX/KaKs duplicate-type Ka/Ks plots.
+- `python -m pytest tests -q` passed with 331 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because runtime readiness and Docker/Apptainer smokes remain blocked, but the release matrix improved to `passed=39 failed=3`; the new `duplicate-type Ka/Ks visualization smoke` passed.
+
+Commit:
+- hash: pending
+- message: feat: add duplicate type kaks visualization
+- files: duplicate-type Ka/Ks builder, R plot, smoke runner, WGD Nextflow/report/release/docs/tests/history
+
+Next:
+- Continue Reference-level refinement with expression heatmap sample annotations, richer WGD peak/layer annotations, and final container/runtime unblocking after workflow development.
+
 ## 2026-06-27 00:01 - Add gene family information and copy-number visualization
 
 Context:

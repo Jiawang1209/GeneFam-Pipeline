@@ -227,6 +227,20 @@ def test_default_checks_include_nextflow_single_tool_smoke():
     assert "--outdir results/nextflow_single_tool_smoke" in command
 
 
+def test_default_checks_include_duplicate_type_kaks_visualization_smoke():
+    checks = default_checks()
+    names = [check.name for check in checks]
+
+    assert names.index("duplicate-type Ka/Ks visualization smoke") > names.index("Ka/Ks parser smoke")
+    smoke = next(check for check in checks if check.name == "duplicate-type Ka/Ks visualization smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_duplicate_type_kaks_smoke.py" in command
+    assert "--duplicates examples/prepared_wgd_handoff/duplicate_types.tsv" in command
+    assert "--kaks-pairs examples/prepared_wgd_handoff/kaks_pairs.tsv" in command
+    assert "--r-bin /usr/local/bin/R" in command
+    assert "--outdir results/duplicate_type_kaks_smoke" in command
+
+
 def test_default_checks_do_not_include_handoff_report_as_a_stale_input_check():
     checks = default_checks()
     names = [check.name for check in checks]

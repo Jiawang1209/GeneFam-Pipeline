@@ -273,6 +273,16 @@ def test_duplication_retention_module_exposes_wgd_helper_processes():
     assert "--background-duplicates ${background_duplicates}" in module
     assert "--out retention_enrichment.tsv" in module
 
+    assert "process PLOT_DUPLICATE_TYPE_KAKS" in module
+    assert "build_duplicate_type_kaks.py" in module
+    assert "plot_duplicate_type_kaks.R" in module
+    assert "--duplicates ${normalized_duplicates}" in module
+    assert "--kaks-pairs ${kaks_pairs}" in module
+    assert 'path "tables/duplicate_type_kaks.tsv"' in module
+    assert 'path "tables/duplicate_type_kaks_summary.tsv"' in module
+    assert 'path "plots/duplicate_type_kaks.pdf"' in module
+    assert 'path "plots/duplicate_type_kaks.png"' in module
+
     assert "process BUILD_WGD_REPORT_INDEX" in module
     assert "build_wgd_report_index.py" in module
     assert "--published-outdir ${published_outdir}" in module
@@ -306,6 +316,8 @@ def test_main_workflow_includes_duplication_retention_processes():
     assert "ANNOTATE_FAMILY_WGD_EVENTS" in workflow
     assert "SUMMARIZE_FAMILY_EVENT_RETENTION" in workflow
     assert "RETENTION_ENRICHMENT" in workflow
+    assert "PLOT_DUPLICATE_TYPE_KAKS" in workflow
+    assert "PLOT_DUPLICATE_TYPE_KAKS(NORMALIZE_DUPLICATE_TYPES.out, kaks_pairs_ch)" in workflow
     assert "BUILD_WGD_REPORT_INDEX(outdir_ch)" in workflow
     assert "BUILD_WGD_RUN_CONFIG_SNAPSHOT.out," in workflow
     assert "ASSEMBLE_WGD_REPORT(" in workflow

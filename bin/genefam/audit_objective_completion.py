@@ -146,14 +146,15 @@ def build_objective_audit(
                 release,
                 [
                     "Ka/Ks parser smoke",
+                    "duplicate-type Ka/Ks visualization smoke",
                     "retention enrichment smoke",
                     "WGD event smoke",
                     "prepared WGD handoff example",
                 ],
             ),
             "Ka/Ks and retention analysis",
-            "Ka/Ks parser smoke, retention enrichment smoke, and WGD/retention smoke outputs",
-            "Ka/Ks selection categories, retention class, family-event membership, retention enrichment, and retention summaries are generated from prepared evidence.",
+            "Ka/Ks parser smoke, duplicate-type Ka/Ks visualization smoke, retention enrichment smoke, and WGD/retention smoke outputs",
+            "Ka/Ks selection categories, duplicate-type grouped Ka/Ks panels, retention class, family-event membership, retention enrichment, and retention summaries are generated from prepared evidence.",
         ),
         _achieved_if(
             _all_passed(
