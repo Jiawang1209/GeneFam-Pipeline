@@ -34,6 +34,45 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 05:26 - Clarify final-report closure in objective audit
+
+Context:
+- The active `/goal` requires the final/conclusion report to contain close reading for every figure, software and R package versions, QC, and reproducibility information.
+- Publication report audit now enforces those details, but the higher-level objective audit still described the final-report requirement as generic per-figure interpretation.
+- The MVP acceptance surface should explicitly state that final reports are closed by complete per-figure close-reading text, not only by a figure interpretation row.
+
+Decisions:
+- Keep the objective audit row shape unchanged.
+- Strengthen the `final reports` note to name the complete closure fields: input data, what the figure shows, key observations, biological interpretation, QC warnings, QC tables, method/software, software/R package versions, reproducibility commands, reading status, output paths, and registered plot files.
+- Treat this as an acceptance evidence improvement, not a report-generation behavior change.
+
+Added:
+- Regression test requiring the objective audit `final reports` note to mention complete per-figure close-reading text, software/R package versions, QC, and reproducibility commands.
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_note_names_complete_publication_report_closure -q` first failed because the objective audit note only mentioned generic per-figure interpretation; it passed after strengthening the note.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 22 tests.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and refreshed `results/objective_audit/objective_audit.md`.
+- `python -m pytest tests/test_audit_objective_completion.py tests/test_run_release_checks.py::test_write_objective_audit_uses_release_rows_and_readiness_tsv tests/test_run_release_checks.py::test_write_objective_audit_requires_expression_smoke_for_expression_integration -q` passed with 24 tests.
+- `python -m pytest tests -q` passed with 375 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+
+Commit:
+- hash: pending
+- message: test: clarify final report objective closure
+- files: objective audit, objective audit tests, history
+
+Next:
+- Continue final MVP audit work across delivery polish and acceptance surfaces; Docker/Apptainer profile verification remains the final external runtime step.
+
 ## 2026-06-27 05:19 - Require complete figure close readings in final reports
 
 Context:
