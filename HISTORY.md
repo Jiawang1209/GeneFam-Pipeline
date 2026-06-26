@@ -8665,7 +8665,7 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` passed required checks and reported `Release ready: true`, with only optional Docker and Apptainer profile smokes failing because those runtimes are not installed.
 
 Commit:
-- hash: pending
+- hash: e970d5b46db5aedcc713a974aafe6cef9e212beb
 - message: feat: audit publication plot files
 - files: publication report audit, plot manifest module, audit/workflow tests, history
 
