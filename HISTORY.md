@@ -8770,7 +8770,7 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 45`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
 
 Commit:
-- hash: pending
+- hash: 8035842aaf70c3bcd3383d089165f53042f7350d
 - message: feat: add wgd publication report closure
 - files: WGD Nextflow report wiring, WGD smoke/release/objective checks, tests, history
 
