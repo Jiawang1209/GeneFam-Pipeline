@@ -6856,8 +6856,8 @@ Verification:
 - `rg -n "publication_report_audit|paper-style report closure|figure interpretations|software versions|reproducibility" docs/quickstart.md` confirmed the documented local acceptance and publication audit entrypoints.
 
 Commit:
-- hash: pending
-- message: pending
+- hash: af10a4ece382e81578184e56be2e94c4ba0a72c4
+- message: docs: explain publication audit quickstart
 - files: quickstart docs, quickstart docs test, history
 
 Next:
