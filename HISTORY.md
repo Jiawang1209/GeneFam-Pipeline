@@ -34,6 +34,53 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 04:38 - Add figure-specific WGD plot close readings
+
+Context:
+- The active `/goal` requires paper-level reports with close reading for every figure, including WGD/evolution figures.
+- The WGD report already passed publication audit, but `ks_distribution`, `duplicate_type_kaks`, and `pangenome_kaks` shared one generic Ka/Ks interpretation template.
+- That was acceptable structurally but weak for a paper-style result package where each WGD figure should explain its own evidence layer.
+
+Decisions:
+- Keep the generic `kaks` template for unspecific Ka/Ks plots.
+- Add figure-specific templates for `ks_distribution`, `duplicate_type_kaks`, and `pangenome_kaks` before the generic Ka/Ks matcher.
+- Make each WGD figure point to its own QC tables, method/software, reproducibility command, and interpretation status.
+- Document the WGD close-reading contract in `docs/release_audit.md`.
+
+Added:
+- Dedicated close-reading template for Ks distribution and named WGD-layer support.
+- Dedicated close-reading template for duplicate-type grouped Ka/Ks selection.
+- Dedicated close-reading template for pangenome-class grouped Ka/Ks selection.
+- Tests requiring WGD Ka/Ks plots to have distinct figure-specific interpretations.
+
+Modified:
+- `bin/genefam/build_figure_interpretations.py`
+- `tests/test_build_figure_interpretations.py`
+- `tests/test_release_audit_docs.py`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_figure_interpretations.py::test_wgd_kaks_plots_have_figure_specific_close_reading_templates -q` first failed because the WGD plots used the generic `Ka/Ks and Ks distribution overview` template; it passed after adding the specific templates and matcher order.
+- `python -m pytest tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` first failed because release audit did not document WGD figure-specific close reading; it passed after updating the document.
+- `python -m pytest tests/test_build_figure_interpretations.py tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_run_nextflow_wgd_smoke.py -q` passed with 9 tests.
+- `python bin/genefam/run_nextflow_wgd_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_wgd_smoke` refreshed the WGD report outputs.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv --software-versions results/nextflow_wgd_smoke/wgd/report/software_versions.tsv --final-report results/nextflow_wgd_smoke/wgd/report/final_report.md --out-tsv results/publication_report_audit/wgd_publication_report_audit.tsv --out-md results/publication_report_audit/wgd_publication_report_audit.md` exited 0 and reported `Passed: 5`, `Failed: 0`, `Complete: true`.
+- `rg -n "Ks distribution and named|Duplicate-type grouped|Pangenome-class grouped|figure-specific close reading|run_duplicate_type_kaks_smoke|run_pangenome_kaks_smoke" results/nextflow_wgd_smoke/wgd/report/final_report.md results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv` showed the three WGD figure-specific interpretation sections in the final report and TSV.
+- `python -m pytest tests -q` passed with 368 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the remaining optional failures are Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+
+Commit:
+- hash: pending
+- message: feat: add wgd figure-specific readings
+- files: figure interpretation builder, WGD report/documentation tests, release audit, history
+
+Next:
+- Continue tightening publication-level report semantics for any remaining figure families with overly generic interpretation text; Docker/Apptainer profile verification remains the final external runtime step.
+
 ## 2026-06-27 04:31 - Surface final packaging blocker in delivery bundle
 
 Context:

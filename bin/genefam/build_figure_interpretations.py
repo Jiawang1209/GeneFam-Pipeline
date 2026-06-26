@@ -46,6 +46,27 @@ TEMPLATES = {
         "Inspect Ks peaks, ratios above or below 1, and whether configured WGD layers are well separated.",
         "Ks-supported layers provide observational evidence; gamma/beta/alpha/theta labels remain configured interpretations.",
     ),
+    "ks_distribution": (
+        "Ks distribution and named WGD-layer support",
+        "Normalized Ka/Ks pair table with configured WGD-layer intervals",
+        "Genome-duplication pair Ks values, Ka/Ks ratios, and configured event windows used to support named WGD layers.",
+        "Inspect the number of duplicated pairs inside each Ks interval, whether peaks are separated, and whether low-count layers should be treated cautiously.",
+        "Ks-supported layers provide observational evidence; gamma/beta/alpha/theta labels are historical interpretations that must be reconciled with synteny and phylogeny.",
+    ),
+    "duplicate_type_kaks": (
+        "Duplicate-type grouped Ka/Ks selection overview",
+        "Duplicate classification table joined to normalized Ka/Ks pair metrics",
+        "Ka/Ks and Ks distributions grouped by WGD, tandem, proximal, transposed, or dispersed duplicate classes.",
+        "Inspect whether WGD-derived pairs differ from local duplicate classes in Ks age, Ka/Ks ratio, and pair count support.",
+        "Duplicate-type contrasts help separate WGD retention from local duplication dynamics and highlight classes with possible relaxed or purifying selection.",
+    ),
+    "pangenome_kaks": (
+        "Pangenome-class grouped Ka/Ks selection overview",
+        "Pangenome class table joined to normalized Ka/Ks pair metrics",
+        "Ka/Ks and Ks distributions grouped by core, soft-core, dispensable, and private gene-pair classes.",
+        "Inspect whether broadly retained classes have lower Ka/Ks values than dispensable/private classes and whether each class has enough pairs.",
+        "Pangenome-class contrasts connect retention breadth with selection pressure and can flag dosage-sensitive conserved genes versus lineage-variable candidates.",
+    ),
     "expression": (
         "Expression heatmap",
         "Family expression matrix and sample metadata",
@@ -95,6 +116,9 @@ QC_TABLES = {
     "family": "tables/gene_family_copy_number.tsv; tables/gene_family_copy_number_summary.tsv; tables/gene_family_copy_number_expansion.tsv; tables/gene_family_protein_properties.tsv",
     "mcscanx": "tables/circlize_link_density.tsv; tables/circlize_duplicate_type_tracks.tsv; tables/circlize_skipped_links.tsv; tables/mcscanx_summary.tsv",
     "kaks": "tables/kaks_wgd_annotations.tsv; WGD Event Evidence table; tables/pangenome_kaks_summary.tsv; tables/duplicate_type_kaks_summary.tsv",
+    "ks_distribution": "tables/kaks_wgd_annotations.tsv; WGD Event Evidence table; tables/kaks_pairs.tsv; tables/family_wgd_event_membership.tsv",
+    "duplicate_type_kaks": "tables/duplicate_type_kaks.tsv; tables/duplicate_type_kaks_summary.tsv; tables/duplicate_type_kaks_skipped.tsv; tables/normalized_duplicate_types.tsv",
+    "pangenome_kaks": "tables/pangenome_kaks.tsv; tables/pangenome_kaks_summary.tsv; tables/pangenome_kaks_skipped.tsv; tables/gene_family_pangenome_summary.tsv",
     "expression": "tables/expression_sample_metadata.tsv; tables/expression_group_matrix.tsv; tables/expression_gene_summary.tsv",
     "promoter": "tables/promoter_cis_category_summary.tsv; tables/promoter_cis_element_annotations.tsv; tables/promoter_cis_gene_element_matrix.tsv",
     "ppi": "tables/ppi_input_evidence.tsv; tables/ppi_network_qc.tsv; tables/ppi_hubs.tsv; tables/ppi_ggnetview_status.tsv",
@@ -108,6 +132,9 @@ METHOD_AND_SOFTWARE = {
     "family": "build_gene_family_info.py; plot_gene_family_info.R; /usr/local/bin/R; GeneFamilyFlow",
     "mcscanx": "MCScanX; build_circlize_inputs.py; plot_mcscanx_circlize.R; circlize; /usr/local/bin/R; GeneFamilyFlow",
     "kaks": "KaKs_Calculator/PAML-compatible Ka/Ks table; classify_wgd_layers.py; build_kaks_plot_annotations.py; plot_kaks.R; plot_pangenome_kaks.R; /usr/local/bin/R; GeneFamilyFlow",
+    "ks_distribution": "KaKs_Calculator/PAML-compatible Ka/Ks table; classify_wgd_layers.py; build_kaks_plot_annotations.py; plot_kaks.R; /usr/local/bin/R; GeneFamilyFlow",
+    "duplicate_type_kaks": "MCScanX duplicate classes; build_duplicate_type_kaks.py; plot_duplicate_type_kaks.R; /usr/local/bin/R; GeneFamilyFlow",
+    "pangenome_kaks": "Gene-family pangenome classes; build_pangenome_kaks.py; plot_pangenome_kaks.R; /usr/local/bin/R; GeneFamilyFlow",
     "expression": "build_expression_summary.py; plot_expression_heatmap.R; pheatmap/ComplexHeatmap-compatible R output; /usr/local/bin/R; GeneFamilyFlow",
     "promoter": "extract_promoters.py; build_promoter_cis_elements.py; plot_promoter_cis_elements.R; /usr/local/bin/R; GeneFamilyFlow",
     "ppi": "build_ppi_tables.py; plot_ppi_ggnetview.R; ggNetView; /usr/local/bin/R; GeneFamilyFlow",
@@ -121,6 +148,9 @@ REPRODUCIBILITY = {
     "family": "python bin/genefam/run_gene_family_info_smoke.py --r-bin /usr/local/bin/R --outdir results/gene_family_info_smoke",
     "mcscanx": "python bin/genefam/run_mcscanx_circlize_smoke.py --r-bin /usr/local/bin/R --outdir results/mcscanx_circlize_smoke",
     "kaks": "python bin/genefam/run_kaks_wgd_plot_smoke.py --r-bin /usr/local/bin/R --outdir results/kaks_wgd_plot_smoke",
+    "ks_distribution": "python bin/genefam/run_kaks_wgd_plot_smoke.py --r-bin /usr/local/bin/R --outdir results/kaks_wgd_plot_smoke",
+    "duplicate_type_kaks": "python bin/genefam/run_duplicate_type_kaks_smoke.py --r-bin /usr/local/bin/R --outdir results/duplicate_type_kaks_smoke",
+    "pangenome_kaks": "python bin/genefam/run_pangenome_kaks_smoke.py --r-bin /usr/local/bin/R --outdir results/pangenome_kaks_smoke",
     "expression": "python bin/genefam/run_expression_heatmap_smoke.py --expression tests/fixtures/expression/family_expression.tsv --metadata tests/fixtures/expression/sample_metadata.tsv --r-bin /usr/local/bin/R --outdir results/expression_heatmap_smoke",
     "promoter": "python bin/genefam/run_promoter_cis_smoke.py --r-bin /usr/local/bin/R --outdir results/promoter_cis_smoke",
     "ppi": "python bin/genefam/run_ppi_ggnetview_plot_smoke.py --r-bin /usr/local/bin/R --outdir results/ppi_ggnetview_plot_smoke",
@@ -134,6 +164,9 @@ READING_STATUS = {
     "family": "template-guided close reading; validate copy-number calls, selected species, and family-member evidence before manuscript use",
     "mcscanx": "template-guided close reading; validate skipped links, chromosome coordinates, and MCScanX block evidence before manuscript use",
     "kaks": "template-guided close reading; validate Ks peak separation, pair counts, and configured WGD event metadata before naming gamma/beta/alpha/theta layers",
+    "ks_distribution": "figure-specific close reading; validate Ks bin boundaries, event labels, pair counts, and synteny/phylogeny support before naming gamma/beta/alpha/theta layers",
+    "duplicate_type_kaks": "figure-specific close reading; validate duplicate class assignments, skipped pairs, and per-class sample sizes before interpreting selection differences",
+    "pangenome_kaks": "figure-specific close reading; validate pangenome class thresholds, skipped pairs, and class sample sizes before interpreting retention breadth",
     "expression": "template-guided close reading; validate sample metadata, normalization, and replicate structure before biological conclusions",
     "promoter": "template-guided close reading; validate promoter extraction window, motif source, and category mapping before regulatory conclusions",
     "ppi": "template-guided close reading; validate interaction evidence, hub ranking, and ggNetView status before network interpretation",
@@ -145,6 +178,9 @@ READING_STATUS = {
 
 def _template_key(plot_key: str, path: str) -> str:
     value = f"{plot_key} {path}".lower()
+    for key in ["duplicate_type_kaks", "pangenome_kaks", "ks_distribution"]:
+        if key in value:
+            return key
     for key in ["mcscanx", "kaks", "expression", "promoter", "ppi", "pangenome", "tree", "feature", "family"]:
         if key in value or (key == "kaks" and "ks_" in value):
             return key

@@ -60,3 +60,31 @@ def test_figure_interpretation_reproducibility_scripts_exist():
         command = shlex.split(row["reproducibility"])
         script = command[1]
         assert Path(script).exists(), row
+
+
+def test_wgd_kaks_plots_have_figure_specific_close_reading_templates():
+    plots = [
+        {"plot_key": "ks_distribution", "path": "plots/ks_distribution.pdf"},
+        {"plot_key": "duplicate_type_kaks", "path": "plots/duplicate_type_kaks.pdf"},
+        {"plot_key": "pangenome_kaks", "path": "plots/pangenome_kaks.pdf"},
+    ]
+
+    rows = build_figure_interpretations(plots)
+    by_key = {row["figure_key"]: row for row in rows}
+
+    assert by_key["ks_distribution"]["title"] == "Ks distribution and named WGD-layer support"
+    assert "gamma/beta/alpha/theta" in by_key["ks_distribution"]["biological_interpretation"]
+    assert "run_kaks_wgd_plot_smoke.py" in by_key["ks_distribution"]["reproducibility"]
+
+    assert by_key["duplicate_type_kaks"]["title"] == "Duplicate-type grouped Ka/Ks selection overview"
+    assert "WGD, tandem, proximal, transposed, or dispersed" in by_key["duplicate_type_kaks"]["what_figure_shows"]
+    assert "tables/duplicate_type_kaks_summary.tsv" in by_key["duplicate_type_kaks"]["qc_tables"]
+    assert "run_duplicate_type_kaks_smoke.py" in by_key["duplicate_type_kaks"]["reproducibility"]
+
+    assert by_key["pangenome_kaks"]["title"] == "Pangenome-class grouped Ka/Ks selection overview"
+    assert "core, soft-core, dispensable, and private" in by_key["pangenome_kaks"]["what_figure_shows"]
+    assert "tables/pangenome_kaks_summary.tsv" in by_key["pangenome_kaks"]["qc_tables"]
+    assert "run_pangenome_kaks_smoke.py" in by_key["pangenome_kaks"]["reproducibility"]
+
+    titles = {row["title"] for row in rows}
+    assert len(titles) == 3

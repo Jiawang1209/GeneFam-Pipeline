@@ -85,6 +85,10 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/publication_report_audit/publication_report_audit.tsv" in text
     assert "results/publication_report_audit/publication_report_audit.md" in text
     assert "WGD publication report audit" in text
+    assert "figure-specific close reading" in text
+    assert "Ks bin boundaries" in text
+    assert "duplicate class assignments" in text
+    assert "pangenome class thresholds" in text
     assert "results/publication_report_audit/wgd_publication_report_audit.tsv" in text
     assert "results/publication_report_audit/wgd_publication_report_audit.md" in text
     assert "results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv" in text

@@ -219,6 +219,8 @@ The release checks runner writes:
 
 The delivery manifest includes a `final_stage_blocker` row. For the current analysis-flow MVP, that row is `blocked` only when objective-audit evidence shows a remaining external packaging/runtime blocker such as missing Docker/Apptainer commands; it is the first machine-readable place to check after the release gate reports zero required failures.
 
+The WGD publication report audit now expects figure-specific close reading for the WGD plot family instead of one generic Ka/Ks paragraph. The `ks_distribution` interpretation must call out Ks bin boundaries, event labels, pair counts, and synteny/phylogeny support before naming gamma/beta/alpha/theta layers. The `duplicate_type_kaks` interpretation must call out duplicate class assignments, skipped pairs, and per-class sample sizes. The `pangenome_kaks` interpretation must call out pangenome class thresholds, skipped pairs, and class sample sizes.
+
 The Markdown summary reports `Required failed` and `Optional failed` separately. Container profile smoke checks are optional evidence; the required readiness audit remains the release-blocking signal while Docker/Apptainer are unavailable.
 
 ## Requirement Audit
