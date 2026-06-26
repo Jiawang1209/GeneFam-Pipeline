@@ -6821,7 +6821,7 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` with `41 passed / 3 failed`; `MCScanX circlize visualization smoke` passed and included the two new support tables, while `readiness audit` failed and Docker/Apptainer profile smokes remained optional failures.
 
 Commit:
-- hash: pending
+- hash: 2d41dab
 - message: feat: add circlize density tracks
 - files: circlize input builder, circlize R plot, MCScanX circlize smoke, standard report index, Nextflow wiring, reference plotting docs, tests, history
 
