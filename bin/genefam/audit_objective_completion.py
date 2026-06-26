@@ -213,10 +213,10 @@ def build_objective_audit(
             "RNA-seq expression subsetting, sample metadata integration, group summaries, gene-level QC, and expression heatmap plotting are exercised.",
         ),
         _achieved_if(
-            _all_passed(release, ["PPI ggNetView plot smoke"]),
+            _all_passed(release, ["PPI ggNetView plot smoke", "Nextflow standard visualization smoke"]),
             "PPI ggNetView visualization",
-            "PPI ggNetView plot smoke",
-            "PPI edge/node normalization, hub summaries, network QC, ggNetView status, and ggNetView-rendered network plots are exercised.",
+            "PPI ggNetView plot smoke and Nextflow standard visualization smoke",
+            "PPI edge/node normalization, hub summaries, network QC, ggNetView status, ggNetView-rendered network plots, and Nextflow report evidence are exercised.",
         ),
         _achieved_if(
             _all_passed(

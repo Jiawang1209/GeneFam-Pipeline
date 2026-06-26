@@ -34,6 +34,48 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 06:55 - Require Nextflow report evidence for PPI ggNetView audit
+
+Context:
+- The active `/goal` requires ggNetView PPI figures to be connected to the formal Nextflow/YAML/report-index/final-report/release-check workflow.
+- The release checks already ran `--run-ppi` inside `Nextflow standard visualization smoke`, and the standard feature report already registered PPI tables, QC, ggNetView status, and PDF/PNG plots.
+- The objective audit PPI row still treated the standalone `PPI ggNetView plot smoke` as sufficient evidence.
+
+Decisions:
+- Keep standalone `PPI ggNetView plot smoke` as module-level proof.
+- Require `Nextflow standard visualization smoke` as the formal report-integration proof for the `PPI ggNetView visualization` objective row.
+- Make the objective audit note explicitly mention Nextflow report evidence for PPI.
+
+Added:
+- Regression test that the PPI objective row is missing when only the standalone PPI plot smoke is present.
+- Regression expectations that the achieved PPI objective row names `Nextflow standard visualization smoke` and `Nextflow report evidence`.
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+- `results/objective_audit/objective_audit.md`
+- `results/objective_audit/objective_audit.tsv`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_objective_audit_lists_named_paper_level_visualization_requirements tests/test_audit_objective_completion.py::test_ppi_ggnetview_visualization_requires_nextflow_standard_visualization_smoke -q` first failed because the PPI row evidence only contained `PPI ggNetView plot smoke` and still marked standalone PPI evidence as achieved.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 25 tests.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and the PPI row now lists `PPI ggNetView plot smoke and Nextflow standard visualization smoke`.
+- `python -m pytest tests -q` passed with 385 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `rg -n "PPI ggNetView visualization|Nextflow report evidence|--run-ppi|ppi_ggnetview" results/objective_audit/objective_audit.md results/release_checks/release_checks.tsv results/nextflow_standard_feature_smoke/standard/report/report_index.tsv results/nextflow_standard_feature_smoke/standard/report/final_report.md` confirmed objective-audit, release-check, report-index, and final-report coverage.
+
+Commit:
+- hash: pending
+- message: `test: require nextflow evidence for ppi audit`
+- files: objective audit PPI evidence rule, regression tests, refreshed objective audit outputs, and history entry.
+
+Next:
+- Continue tightening any remaining visualization rows whose standalone smoke evidence is stronger than the formal Nextflow report proof.
+
 ## 2026-06-27 06:48 - Wire promoter extraction into standard Nextflow visualization smoke
 
 Context:
