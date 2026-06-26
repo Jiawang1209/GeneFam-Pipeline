@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import statistics
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
@@ -21,6 +22,15 @@ COPY_FIELDS = [
     "percent_of_max",
 ]
 SUMMARY_FIELDS = ["copy_number_class", "species_count", "mean_member_count", "max_member_count"]
+SPECIES_ORDER_FIELDS = ["species_id", "member_count", "copy_number_class", "copy_number_rank", "plot_order"]
+EXPANSION_FIELDS = [
+    "species_id",
+    "member_count",
+    "median_member_count",
+    "fold_change_vs_median",
+    "expansion_status",
+    "copy_number_class",
+]
 PROTEIN_FIELDS = [
     "species_id",
     "gene_id",
@@ -80,6 +90,8 @@ KD_SCALE = {
 class GeneFamilyInfoTables:
     copy_number: list[dict[str, str]]
     copy_number_summary: list[dict[str, str]]
+    species_order: list[dict[str, str]]
+    copy_number_expansion: list[dict[str, str]]
     protein_properties: list[dict[str, str]]
 
 
@@ -163,6 +175,54 @@ def _copy_number_summary(rows: list[dict[str, str]]) -> list[dict[str, str]]:
     ]
 
 
+def _species_order(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    ordered = sorted(rows, key=lambda row: (int(row["copy_number_rank"]), row["species_id"]))
+    return [
+        {
+            "species_id": row["species_id"],
+            "member_count": row["member_count"],
+            "copy_number_class": row["copy_number_class"],
+            "copy_number_rank": row["copy_number_rank"],
+            "plot_order": str(index),
+        }
+        for index, row in enumerate(ordered, start=1)
+    ]
+
+
+def _expansion_status(member_count: int, median_count: float) -> str:
+    if member_count <= 0:
+        return "absent"
+    if median_count <= 0:
+        return "baseline"
+    fold_change = member_count / median_count
+    if fold_change >= 2:
+        return "expanded"
+    if fold_change <= 0.5:
+        return "contracted"
+    return "baseline"
+
+
+def _copy_number_expansion(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    counts = [int(row["member_count"]) for row in rows if int(row["member_count"]) > 0]
+    median_count = statistics.median(counts) if counts else 0
+    ordered = sorted(rows, key=lambda row: (int(row["copy_number_rank"]), row["species_id"]))
+    expansion_rows: list[dict[str, str]] = []
+    for row in ordered:
+        member_count = int(row["member_count"])
+        fold_change = 0 if median_count <= 0 else member_count / median_count
+        expansion_rows.append(
+            {
+                "species_id": row["species_id"],
+                "member_count": row["member_count"],
+                "median_member_count": f"{median_count:.4f}",
+                "fold_change_vs_median": f"{fold_change:.4f}",
+                "expansion_status": _expansion_status(member_count, median_count),
+                "copy_number_class": row["copy_number_class"],
+            }
+        )
+    return expansion_rows
+
+
 def _split_fasta_header(header: str) -> tuple[str, str]:
     parts = header.split("|")
     if len(parts) >= 2:
@@ -242,6 +302,8 @@ def build_gene_family_info_tables(
     return GeneFamilyInfoTables(
         copy_number=copy_number,
         copy_number_summary=_copy_number_summary(copy_number),
+        species_order=_species_order(copy_number),
+        copy_number_expansion=_copy_number_expansion(copy_number),
         protein_properties=_protein_property_rows(fasta_records or []),
     )
 
@@ -258,10 +320,14 @@ def write_tables(tables: GeneFamilyInfoTables, outdir: Path) -> dict[str, Path]:
     outputs = {
         "gene_family_copy_number": outdir / "gene_family_copy_number.tsv",
         "gene_family_copy_number_summary": outdir / "gene_family_copy_number_summary.tsv",
+        "gene_family_species_order": outdir / "gene_family_species_order.tsv",
+        "gene_family_copy_number_expansion": outdir / "gene_family_copy_number_expansion.tsv",
         "gene_family_protein_properties": outdir / "gene_family_protein_properties.tsv",
     }
     _write_tsv(tables.copy_number, COPY_FIELDS, outputs["gene_family_copy_number"])
     _write_tsv(tables.copy_number_summary, SUMMARY_FIELDS, outputs["gene_family_copy_number_summary"])
+    _write_tsv(tables.species_order, SPECIES_ORDER_FIELDS, outputs["gene_family_species_order"])
+    _write_tsv(tables.copy_number_expansion, EXPANSION_FIELDS, outputs["gene_family_copy_number_expansion"])
     _write_tsv(tables.protein_properties, PROTEIN_FIELDS, outputs["gene_family_protein_properties"])
     return outputs
 

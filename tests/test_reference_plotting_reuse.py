@@ -22,6 +22,7 @@ def test_reference_plotting_reuse_tracks_paper_figure_alignment_status():
         assert phrase in text
 
     assert "| PPI network | `Reference/Long_Weixiong_20240323_1_GDSL/R/11.ppi.R`" in text
+    assert "| Gene family information summary | `Reference/Long_Weixiong_20240323_1_GDSL/R/5.GeneFamily_Info.R` | `bin/genefam/summarize_family.py`; `build_gene_family_info.py`; `scripts/plot_gene_family_info.R`; `PLOT_GENE_FAMILY_INFO`; `tables/gene_family_species_order.tsv`; `tables/gene_family_copy_number_expansion.tsv`; `plots/gene_family_info_summary.pdf/png` | done |" in text
     assert "| Tree + motif + gene structure + domain | `Reference/Long_Weixiong_20240323_1_GDSL/R/6.tree.R` | `build_tree_feature_matrix.py`; `scripts/plot_tree_features.R`; `PLOT_TREE_FEATURES`; `tables/tree_feature_matrix.tsv`; `plots/tree_features.pdf/png` | done |" in text
     assert "| promoter cis-element | `Reference/Long_Weixiong_20240323_1_GDSL/R/10.promoter.R` | `extract_promoters.py`; `build_promoter_cis_elements.py`; `scripts/plot_promoter_cis_elements.R`; `PLOT_PROMOTER_CIS_ELEMENTS`; `tables/promoter_cis_gene_element_matrix.tsv`; `tables/promoter_cis_element_annotations.tsv`; `plots/promoter_cis_elements.pdf/png` | done |" in text
     assert "| MCScanX/circlize synteny | `Reference/Long_Weixiong_20240323_1_GDSL/R/9.Circos_*.R` | `build_circlize_inputs.py`; `scripts/plot_mcscanx_circlize.R`; `PLOT_MCSCANX_CIRCLIZE`; `tables/circlize_link_density.tsv`; `tables/circlize_duplicate_type_tracks.tsv`; `plots/mcscanx_circlize.pdf/png` | done |" in text

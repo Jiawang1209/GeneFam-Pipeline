@@ -330,6 +330,8 @@ workflow {
                 PLOT_GENE_FAMILY_INFO.out[2],
                 PLOT_GENE_FAMILY_INFO.out[3],
                 PLOT_GENE_FAMILY_INFO.out[4],
+                PLOT_GENE_FAMILY_INFO.out[5],
+                PLOT_GENE_FAMILY_INFO.out[6],
                 PREPARE_ALIGNMENT_INPUTS.out,
                 RUN_ALIGNMENT.out,
                 PREPARE_PHYLOGENY_INPUTS.out,

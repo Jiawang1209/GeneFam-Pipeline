@@ -88,6 +88,8 @@ def test_standard_postprocess_module_extracts_family_sequences_and_report_index(
     assert "build_standard_report_index.py" in module
     assert "--run-config-snapshot ${run_config_snapshot}" in module
     assert "--family-members-faa ${family_members_faa}" in module
+    assert "--gene-family-species-order ${gene_family_species_order}" in module
+    assert "--gene-family-copy-number-expansion ${gene_family_copy_number_expansion}" in module
     assert "--phylogeny-manifest ${phylogeny_manifest}" in module
     assert "--alignment-file ${alignment_file}" in module
     assert "--phylogeny-tree ${phylogeny_tree}" in module
@@ -396,9 +398,12 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert "--family-members-faa ${family_members_faa}" in module
     assert 'path "tables/gene_family_copy_number.tsv"' in module
     assert 'path "tables/gene_family_copy_number_summary.tsv"' in module
+    assert 'path "tables/gene_family_species_order.tsv"' in module
+    assert 'path "tables/gene_family_copy_number_expansion.tsv"' in module
     assert 'path "tables/gene_family_protein_properties.tsv"' in module
     assert 'path "plots/gene_family_info_summary.pdf"' in module
     assert 'path "plots/gene_family_info_summary.png"' in module
+    assert "--args tables/gene_family_copy_number.tsv tables/gene_family_copy_number_summary.tsv tables/gene_family_protein_properties.tsv tables/gene_family_species_order.tsv tables/gene_family_copy_number_expansion.tsv plots" in module
 
     assert "process PLOT_PROMOTER_CIS_ELEMENTS" in module
     assert "build_promoter_cis_elements.py" in module
@@ -499,6 +504,11 @@ def test_main_workflow_includes_plot_processes():
     assert "PLOT_EXPRESSION_HEATMAP" in workflow
     assert "PLOT_EXPRESSION_HEATMAP(SUBSET_EXPRESSION_MATRIX.out, expression_metadata_ch)" in workflow
     assert "PLOT_GENE_FAMILY_INFO" in workflow
+    assert "PLOT_GENE_FAMILY_INFO.out[2]," in workflow
+    assert "PLOT_GENE_FAMILY_INFO.out[3]," in workflow
+    assert "PLOT_GENE_FAMILY_INFO.out[4]," in workflow
+    assert "PLOT_GENE_FAMILY_INFO.out[5]," in workflow
+    assert "PLOT_GENE_FAMILY_INFO.out[6]," in workflow
     assert "PLOT_TREE_FEATURES" in workflow
     assert "PLOT_PROMOTER_CIS_ELEMENTS" in workflow
     assert "promoter_cis_gene_element_matrix_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[2]" in workflow

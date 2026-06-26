@@ -6882,6 +6882,59 @@ Commit:
 Next:
 - Continue remaining paper-level visualization polish, especially copy-number/gene-family summary and large-scale pangenome/Ks interpretation gaps.
 
+## 2026-06-27 - Add gene family copy-number expansion panels
+
+Timestamp:
+- 2026-06-27 01:13:00 CST
+
+Context:
+- The gene family information plot already included per-species copy number, copy-number classes, and protein-property panels.
+- The reference plotting matrix still marked gene family information and large-scale copy-number expansion as partial because species ordering and expansion/contracted interpretation tables were missing.
+
+Decisions:
+- Add `gene_family_species_order.tsv` to provide a stable copy-number-ranked plotting order.
+- Add `gene_family_copy_number_expansion.tsv` to classify each species as `expanded`, `baseline`, `contracted`, or `absent` relative to the nonzero median copy number.
+- Extend `plot_gene_family_info.R` with an enhanced six-argument mode that draws a copy-number expansion status panel while preserving the old four-argument interface.
+- Wire the new tables into `PLOT_GENE_FAMILY_INFO`, the standard report index, and the main workflow output positions.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_gene_family_info.py`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_gene_family_info_smoke.py`
+- `docs/reference_plotting_reuse.md`
+- `scripts/plot_gene_family_info.R`
+- `tests/test_build_gene_family_info.py`
+- `tests/test_reference_plotting_reuse.py`
+- `tests/test_run_gene_family_info_smoke.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/plots.nf`
+- `workflows/modules/standard_postprocess.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_gene_family_info.py tests/test_run_gene_family_info_smoke.py tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_standard_branch_report_index.py tests/test_reference_plotting_reuse.py -q` first failed because species-order and copy-number expansion tables were not implemented or wired.
+- `python -m pytest tests/test_build_gene_family_info.py tests/test_run_gene_family_info_smoke.py tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_includes_plot_processes tests/test_standard_branch_report_index.py tests/test_reference_plotting_reuse.py -q` passed with 10 tests after implementation.
+- `python bin/genefam/run_gene_family_info_smoke.py --r-bin /usr/local/bin/R --outdir results/gene_family_info_smoke` passed and wrote `tables/gene_family_species_order.tsv`, `tables/gene_family_copy_number_expansion.tsv`, and `plots/gene_family_info_summary.pdf/png`.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_standard_smoke` passed and the standard report index marked `gene_family_species_order` and `gene_family_copy_number_expansion` as available.
+- `python -m pytest tests -q` passed with 343 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` with `41 passed / 3 failed`; `gene family information visualization smoke` and `Nextflow standard branch smoke` passed, while `readiness audit` failed and Docker/Apptainer profile smokes remained optional failures.
+
+Commit:
+- hash: pending
+- message: feat: add copy number expansion summary
+- files: gene family info builder, R plot, smoke runner, standard report index, Nextflow wiring, reference plotting docs, tests, history
+
+Next:
+- Continue remaining paper-level polish for PPI upstream-network documentation and large-scale pangenome/Ks interpretation templates, then final MVP acceptance audit.
+
 ## 2026-06-27 - Add WGD event annotations to Ks distribution plots
 
 Timestamp:
