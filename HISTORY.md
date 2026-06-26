@@ -7060,7 +7060,9 @@ Verification:
 - The same `rg` check confirmed release checks regenerated the enhanced handoff artifacts with the new analysis-flow status.
 
 Commit:
-- pending
+- hash: 82e5311c66cce972f24fcdb9a2a8bfe87907a660
+- message: feat: clarify analysis flow handoff status
+- files: handoff report builder, handoff tests, history
 
 Next:
 - Continue final-stage container hardening; true Docker/Apptainer profile success still depends on installing or exposing those runtimes.
