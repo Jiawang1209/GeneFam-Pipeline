@@ -8716,7 +8716,7 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 44`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
 
 Commit:
-- hash: pending
+- hash: 887791802f51cf3d084c414a0c2f9eb4854ec398
 - message: feat: gate full publication visualization smoke
 - files: standard smoke wrapper, release checks, annotation integration module, tests, history
 
