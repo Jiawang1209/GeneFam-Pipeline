@@ -68,7 +68,7 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and produced `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
 
 Commit:
-- hash: pending
+- hash: 0ef2b2516b81ddabf5516f4e658dc91703998533
 - message: test: require figure method software versions
 - files: publication report audit, publication audit tests, history
 
