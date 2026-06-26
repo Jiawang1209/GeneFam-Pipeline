@@ -7060,7 +7060,9 @@ Verification:
 - The same `rg` check confirmed release checks regenerated the enhanced delivery bundle with the new rows.
 
 Commit:
-- pending
+- hash: 69c64c9f26299d7ed226c0906935d5701c45b4b1
+- message: feat: add container diagnostics to delivery bundle
+- files: delivery bundle builder, delivery bundle tests, history
 
 Next:
 - Continue final-stage container hardening; true Docker/Apptainer profile success still depends on installing or exposing those runtimes.
