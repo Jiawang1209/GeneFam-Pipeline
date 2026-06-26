@@ -9750,6 +9750,47 @@ Commit:
 Next:
 - Keep Docker/Apptainer runtime verification as the remaining final-stage external blocker; continue polishing Reference-level figure fidelity where useful.
 
+## 2026-06-27 - Require WGD figures in paper-level visualization audit
+
+Timestamp:
+- 2026-06-27 07:27 CST
+
+Context:
+- The dedicated `Ka/Ks WGD visualization` objective row already required Ks distribution, duplicate-type Ka/Ks, pangenome-class Ka/Ks, `Nextflow WGD event smoke`, and `WGD publication report audit`.
+- The broader `paper-level visualization modules` row still considered the paper-level figure set complete without those WGD figure/report checks, which made the top-level visualization gate weaker than the actual MVP promise.
+
+Decisions:
+- Promote the Ka/Ks/WGD figure evidence into the aggregate paper-level visualization objective.
+- Keep WGD-specific biological interpretation in the dedicated Ka/Ks WGD row, while making the aggregate row prove that the whole paper-style figure suite includes WGD plots and WGD report evidence.
+
+Added:
+- Regression test proving `paper-level visualization modules` stays `missing` when standard visualizations pass but Ka/Ks/WGD figures and WGD report evidence are absent.
+- Aggregate visualization evidence text that explicitly includes `Ka/Ks WGD annotation plot smoke`, `duplicate-type Ka/Ks visualization smoke`, `pangenome-class Ka/Ks visualization smoke`, `Nextflow WGD event smoke`, and `WGD publication report audit`.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_paper_level_visualization_modules_require_wgd_visualization_evidence -q` first failed with the old rule because the aggregate paper-level visualization row was `achieved` without WGD figure/report evidence.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 30 tests after implementation.
+- `python -m pytest tests -q` passed with 390 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 45`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` passed and reported `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+- `rg -n "paper-level visualization modules|Ka/Ks WGD annotation plot smoke|WGD publication report audit|Ks distribution" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed the aggregate paper-level visualization row now names the WGD figure and report evidence.
+
+Commit:
+- hash: pending
+- message: test: require wgd figures in paper visualization audit
+- files: objective audit rule, objective audit tests, history
+
+Next:
+- Continue final MVP hardening with Docker/Apptainer packaging still intentionally deferred to the final runtime stage.
+
 ## 2026-06-27 - Require Nextflow report evidence for Ka/Ks WGD audit
 
 Timestamp:
