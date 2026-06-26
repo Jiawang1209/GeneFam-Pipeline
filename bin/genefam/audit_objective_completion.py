@@ -257,11 +257,18 @@ def build_objective_audit(
         _achieved_if(
             _all_passed(
                 release,
-                ["chromosome location smoke", "standard branch smoke", "standard branch expression smoke", "quickstart handoff"],
+                [
+                    "chromosome location smoke",
+                    "standard branch smoke",
+                    "Nextflow standard branch smoke",
+                    "standard branch expression smoke",
+                    "expression heatmap visualization smoke",
+                    "quickstart handoff",
+                ],
             ),
             "chromosome and expression integration",
-            "chromosome location smoke, standard branch, expression smoke, and quickstart outputs",
-            "Chromosome locations and an RNA-seq expression matrix subset are represented in standard reports.",
+            "chromosome location smoke, standard branch smoke, Nextflow standard branch smoke, standard branch expression smoke, expression heatmap visualization smoke, and quickstart outputs",
+            "Chromosome locations, RNA-seq expression matrix subsets, expression heatmap figures, and standard report handoff are exercised through script evidence and the formal Nextflow standard branch.",
         ),
         _achieved_if(
             release.get("quickstart handoff") == "passed",

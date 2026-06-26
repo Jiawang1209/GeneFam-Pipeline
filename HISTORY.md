@@ -9750,6 +9750,47 @@ Commit:
 Next:
 - Keep Docker/Apptainer runtime verification as the remaining final-stage external blocker; continue polishing Reference-level figure fidelity where useful.
 
+## 2026-06-27 - Require Nextflow and heatmap evidence for chromosome expression audit
+
+Timestamp:
+- 2026-06-27 07:44 CST
+
+Context:
+- The objective requires chromosome localization and RNA-seq expression integration as part of the paper-level MVP.
+- The dedicated expression heatmap objective already required `expression heatmap visualization smoke` and `Nextflow standard visualization smoke`, but the higher-level `chromosome and expression integration` row only required chromosome location, standard branch, expression subset, and quickstart evidence.
+
+Decisions:
+- Require `Nextflow standard branch smoke` for the `chromosome and expression integration` objective row.
+- Require `expression heatmap visualization smoke` for the same row so expression integration includes report-ready heatmap figure evidence, not only matrix subsetting.
+- Update the row note to state that chromosome locations, RNA-seq subsets, heatmap figures, and standard report handoff are exercised through script evidence and the formal Nextflow standard branch.
+
+Added:
+- Regression test proving `chromosome and expression integration` remains `missing` when formal Nextflow standard branch and expression heatmap evidence are absent.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_chromosome_and_expression_integration_requires_nextflow_and_heatmap_evidence -q` first failed with the old rule because chromosome/expression integration was `achieved` without `Nextflow standard branch smoke` or `expression heatmap visualization smoke`.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 33 tests after implementation.
+- `python -m pytest tests -q` passed with 393 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 45`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` passed and reported `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+- `rg -n "chromosome and expression integration|Nextflow standard branch smoke|expression heatmap visualization smoke|formal Nextflow standard branch" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed the chromosome/expression integration row now names the formal Nextflow and heatmap evidence.
+
+Commit:
+- hash: pending
+- message: test: require nextflow heatmap evidence for chromosome expression audit
+- files: objective audit rule, objective audit tests, history
+
+Next:
+- Continue final MVP hardening with Docker/Apptainer packaging still intentionally deferred to the final runtime stage.
+
 ## 2026-06-27 - Name Nextflow WGD evidence in WGD event audit
 
 Timestamp:

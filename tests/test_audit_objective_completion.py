@@ -806,6 +806,33 @@ def test_chromosome_and_expression_integration_requires_chromosome_smoke():
     assert "chromosome location smoke" in by_requirement["chromosome and expression integration"]["evidence"]
 
 
+def test_chromosome_and_expression_integration_requires_nextflow_and_heatmap_evidence():
+    release_rows = [
+        _release_row("chromosome location smoke"),
+        _release_row("standard branch smoke"),
+        _release_row("standard branch expression smoke"),
+        _release_row("quickstart handoff"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["chromosome and expression integration"]["status"] == "missing"
+    assert "Nextflow standard branch smoke" in by_requirement["chromosome and expression integration"]["evidence"]
+    assert "expression heatmap visualization smoke" in by_requirement["chromosome and expression integration"]["evidence"]
+
+
 def test_nextflow_dsl2_requires_alignment_phylogeny_smoke_evidence():
     release_rows = [
         _release_row("Nextflow mock MVP smoke"),
