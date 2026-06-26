@@ -81,7 +81,7 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and produced `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
 
 Commit:
-- hash: pending
+- hash: 9d37e7b8b21ce48e531f64f500b001c8e389cbda
 - message: test: require figure output path consistency
 - files: publication audit, delivery bundle, docs/tests, history
 
