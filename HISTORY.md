@@ -34,6 +34,51 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 04:45 - Split standard family-information figure readings
+
+Context:
+- The active `/goal` requires the final report to include close reading for every figure.
+- The standard publication report already passed structural audit, but `family_counts` and `gene_family_info_summary` shared the same family copy-number interpretation.
+- This made the simple member-count plot and the richer gene-family information panel too hard to distinguish in paper-style reporting.
+
+Decisions:
+- Keep the generic `family` template for unspecified family plots.
+- Add figure-specific templates for `family_counts` and `gene_family_info_summary`.
+- Restrict `gene_family_info_summary` matching to the plot key so `gene_family_pangenome_summary` still uses the pangenome template even when it shares the same PDF output path.
+- Document the standard family-information close-reading contract in `docs/release_audit.md`.
+
+Added:
+- Dedicated close-reading template for the family member count overview.
+- Dedicated close-reading template for the gene family information and dosage-balance summary.
+- Tests requiring `family_counts` and `gene_family_info_summary` to have distinct close-reading templates.
+
+Modified:
+- `bin/genefam/build_figure_interpretations.py`
+- `tests/test_build_figure_interpretations.py`
+- `tests/test_release_audit_docs.py`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_figure_interpretations.py::test_standard_family_count_and_gene_family_info_have_distinct_close_readings -q` first failed because both plots still used the generic family copy-number template; it passed after adding the two specific templates and narrowing `gene_family_info_summary` matching to the exact plot key.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --run-feature-summary --run-mcscanx-circlize --syntenic-pairs tests/fixtures/mcscanx/syntenic_pairs.tsv --run-promoter-cis --promoter-cis-elements tests/fixtures/promoter_cis/plantcare.tsv --run-ppi --ppi-edges tests/fixtures/ppi/ppi_edges.tsv --ppi-nodes tests/fixtures/ppi/ppi_nodes.tsv --expression-matrix tests/fixtures/expression/family_expression.tsv --expression-metadata tests/fixtures/expression/sample_metadata.tsv --outdir results/nextflow_standard_feature_smoke` refreshed the standard report outputs.
+- `rg -n "Family member count overview|Gene family information and dosage-balance summary|figure-specific close reading; validate selected species|figure-specific close reading; validate species order" results/nextflow_standard_feature_smoke/standard/report/final_report.md results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv` showed distinct report sections for the two standard family-information figures.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` exited 0 and reported `Passed: 5`, `Failed: 0`, `Complete: true`.
+- `python -m pytest tests/test_build_figure_interpretations.py tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_run_nextflow_standard_smoke.py -q` passed with 21 tests.
+- `python -m pytest tests -q` passed with 369 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the remaining optional failures are Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+
+Commit:
+- hash: pending
+- message: feat: split standard family figure readings
+- files: figure interpretation builder, standard report/documentation tests, release audit, history
+
+Next:
+- Continue tightening any remaining standard visualization interpretations that are still template-guided rather than figure-specific; Docker/Apptainer profile verification remains the final external runtime step.
+
 ## 2026-06-27 04:38 - Add figure-specific WGD plot close readings
 
 Context:

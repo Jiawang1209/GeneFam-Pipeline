@@ -221,6 +221,8 @@ The delivery manifest includes a `final_stage_blocker` row. For the current anal
 
 The WGD publication report audit now expects figure-specific close reading for the WGD plot family instead of one generic Ka/Ks paragraph. The `ks_distribution` interpretation must call out Ks bin boundaries, event labels, pair counts, and synteny/phylogeny support before naming gamma/beta/alpha/theta layers. The `duplicate_type_kaks` interpretation must call out duplicate class assignments, skipped pairs, and per-class sample sizes. The `pangenome_kaks` interpretation must call out pangenome class thresholds, skipped pairs, and class sample sizes.
 
+The standard publication report audit also expects figure-specific close reading for the family information plot family. The `family_counts` interpretation must focus on selected species and member totals before expansion/contraction interpretation. The `gene_family_info_summary` interpretation must focus on copy-number balance, species order, pangenome calls, and protein-property summaries so it is not collapsed into the simpler count overview.
+
 The Markdown summary reports `Required failed` and `Optional failed` separately. Container profile smoke checks are optional evidence; the required readiness audit remains the release-blocking signal while Docker/Apptainer are unavailable.
 
 ## Requirement Audit

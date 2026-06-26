@@ -32,6 +32,20 @@ TEMPLATES = {
         "Inspect the highest and lowest member counts and whether related species share similar copy-number patterns.",
         "Species with larger counts may indicate lineage-specific expansion or contraction relative to the sampled set.",
     ),
+    "family_counts": (
+        "Family member count overview",
+        "Family member count table grouped by species",
+        "Per-species family member totals and the selected species set used for downstream comparisons.",
+        "Inspect species with unusually high or low member totals, missing species, and whether the sampled taxa match the intended comparison.",
+        "Member-count shifts provide the first screen for lineage-specific expansion or contraction before domain, synteny, and expression evidence are interpreted.",
+    ),
+    "gene_family_info": (
+        "Gene family information and dosage-balance summary",
+        "Gene family copy-number, species-order, expansion, pangenome, and protein-property tables",
+        "copy-number balance, species ordering, pangenome breadth, expansion status, and protein-property summaries for the selected family.",
+        "Inspect copy-number dosage outliers, species-order/clade patterns, pangenome categories, and protein-property distributions.",
+        "Combined family-information panels help connect copy-number changes with dosage balance, conservation breadth, and candidate protein-level divergence.",
+    ),
     "mcscanx": (
         "MCScanX syntenic relationship overview",
         "MCScanX syntenic pair table and chromosome coordinates",
@@ -114,6 +128,8 @@ TEMPLATES = {
 
 QC_TABLES = {
     "family": "tables/gene_family_copy_number.tsv; tables/gene_family_copy_number_summary.tsv; tables/gene_family_copy_number_expansion.tsv; tables/gene_family_protein_properties.tsv",
+    "family_counts": "tables/gene_family_copy_number.tsv; tables/gene_family_copy_number_summary.tsv; tables/run_config_snapshot.tsv; tables/species_manifest.tsv",
+    "gene_family_info": "tables/gene_family_copy_number.tsv; tables/gene_family_copy_number_summary.tsv; tables/gene_family_species_order.tsv; tables/gene_family_copy_number_expansion.tsv; tables/gene_family_pangenome_summary.tsv; tables/gene_family_protein_properties.tsv",
     "mcscanx": "tables/circlize_link_density.tsv; tables/circlize_duplicate_type_tracks.tsv; tables/circlize_skipped_links.tsv; tables/mcscanx_summary.tsv",
     "kaks": "tables/kaks_wgd_annotations.tsv; WGD Event Evidence table; tables/pangenome_kaks_summary.tsv; tables/duplicate_type_kaks_summary.tsv",
     "ks_distribution": "tables/kaks_wgd_annotations.tsv; WGD Event Evidence table; tables/kaks_pairs.tsv; tables/family_wgd_event_membership.tsv",
@@ -130,6 +146,8 @@ QC_TABLES = {
 
 METHOD_AND_SOFTWARE = {
     "family": "build_gene_family_info.py; plot_gene_family_info.R; /usr/local/bin/R; GeneFamilyFlow",
+    "family_counts": "build_family_tables.py; build_gene_family_info.py; plot_family_counts.R/plot_gene_family_info.R; /usr/local/bin/R; GeneFamilyFlow",
+    "gene_family_info": "build_gene_family_info.py; plot_gene_family_info.R; /usr/local/bin/R; GeneFamilyFlow",
     "mcscanx": "MCScanX; build_circlize_inputs.py; plot_mcscanx_circlize.R; circlize; /usr/local/bin/R; GeneFamilyFlow",
     "kaks": "KaKs_Calculator/PAML-compatible Ka/Ks table; classify_wgd_layers.py; build_kaks_plot_annotations.py; plot_kaks.R; plot_pangenome_kaks.R; /usr/local/bin/R; GeneFamilyFlow",
     "ks_distribution": "KaKs_Calculator/PAML-compatible Ka/Ks table; classify_wgd_layers.py; build_kaks_plot_annotations.py; plot_kaks.R; /usr/local/bin/R; GeneFamilyFlow",
@@ -146,6 +164,8 @@ METHOD_AND_SOFTWARE = {
 
 REPRODUCIBILITY = {
     "family": "python bin/genefam/run_gene_family_info_smoke.py --r-bin /usr/local/bin/R --outdir results/gene_family_info_smoke",
+    "family_counts": "python bin/genefam/run_gene_family_info_smoke.py --r-bin /usr/local/bin/R --outdir results/gene_family_info_smoke",
+    "gene_family_info": "python bin/genefam/run_gene_family_info_smoke.py --r-bin /usr/local/bin/R --outdir results/gene_family_info_smoke",
     "mcscanx": "python bin/genefam/run_mcscanx_circlize_smoke.py --r-bin /usr/local/bin/R --outdir results/mcscanx_circlize_smoke",
     "kaks": "python bin/genefam/run_kaks_wgd_plot_smoke.py --r-bin /usr/local/bin/R --outdir results/kaks_wgd_plot_smoke",
     "ks_distribution": "python bin/genefam/run_kaks_wgd_plot_smoke.py --r-bin /usr/local/bin/R --outdir results/kaks_wgd_plot_smoke",
@@ -162,6 +182,8 @@ REPRODUCIBILITY = {
 
 READING_STATUS = {
     "family": "template-guided close reading; validate copy-number calls, selected species, and family-member evidence before manuscript use",
+    "family_counts": "figure-specific close reading; validate selected species, member totals, and family-member evidence before interpreting expansion or contraction",
+    "gene_family_info": "figure-specific close reading; validate species order, copy-number balance, pangenome class calls, and protein-property summaries before manuscript use",
     "mcscanx": "template-guided close reading; validate skipped links, chromosome coordinates, and MCScanX block evidence before manuscript use",
     "kaks": "template-guided close reading; validate Ks peak separation, pair counts, and configured WGD event metadata before naming gamma/beta/alpha/theta layers",
     "ks_distribution": "figure-specific close reading; validate Ks bin boundaries, event labels, pair counts, and synteny/phylogeny support before naming gamma/beta/alpha/theta layers",
@@ -178,6 +200,11 @@ READING_STATUS = {
 
 def _template_key(plot_key: str, path: str) -> str:
     value = f"{plot_key} {path}".lower()
+    normalized_plot_key = plot_key.lower()
+    if normalized_plot_key == "gene_family_info_summary":
+        return "gene_family_info"
+    if normalized_plot_key == "family_counts":
+        return "family_counts"
     for key in ["duplicate_type_kaks", "pangenome_kaks", "ks_distribution"]:
         if key in value:
             return key

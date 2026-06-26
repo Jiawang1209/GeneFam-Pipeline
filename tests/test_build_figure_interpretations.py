@@ -17,7 +17,8 @@ def test_build_figure_interpretations_creates_reading_notes_for_each_plot():
     rows = build_figure_interpretations(plots)
     by_key = {row["figure_key"]: row for row in rows}
 
-    assert by_key["family_counts"]["title"] == "Family copy number and member count overview"
+    assert by_key["family_counts"]["title"] == "Family member count overview"
+    assert "member totals" in by_key["family_counts"]["what_figure_shows"]
     assert "expansion or contraction" in by_key["family_counts"]["biological_interpretation"]
     assert "smoke/demo" in by_key["family_counts"]["qc_warnings"]
     assert by_key["tree_features"]["title"] == "Tree, motif, gene-structure, and domain composite"
@@ -88,3 +89,25 @@ def test_wgd_kaks_plots_have_figure_specific_close_reading_templates():
 
     titles = {row["title"] for row in rows}
     assert len(titles) == 3
+
+
+def test_standard_family_count_and_gene_family_info_have_distinct_close_readings():
+    plots = [
+        {"plot_key": "family_counts", "path": "plots/family_counts.pdf"},
+        {"plot_key": "gene_family_info_summary", "path": "plots/gene_family_info_summary.pdf"},
+    ]
+
+    rows = build_figure_interpretations(plots)
+    by_key = {row["figure_key"]: row for row in rows}
+
+    assert by_key["family_counts"]["title"] == "Family member count overview"
+    assert "member totals" in by_key["family_counts"]["what_figure_shows"]
+    assert "tables/gene_family_copy_number_summary.tsv" in by_key["family_counts"]["qc_tables"]
+
+    assert by_key["gene_family_info_summary"]["title"] == "Gene family information and dosage-balance summary"
+    assert "copy-number balance" in by_key["gene_family_info_summary"]["what_figure_shows"]
+    assert "protein-property" in by_key["gene_family_info_summary"]["key_observations"]
+    assert "tables/gene_family_species_order.tsv" in by_key["gene_family_info_summary"]["qc_tables"]
+    assert "plot_gene_family_info.R" in by_key["gene_family_info_summary"]["method_and_software"]
+
+    assert by_key["family_counts"]["title"] != by_key["gene_family_info_summary"]["title"]
