@@ -11,6 +11,7 @@ def test_build_nextflow_wgd_command_targets_duplication_retention_branch(tmp_pat
         duplicates=str(inputs_dir / "duplicates.tsv"),
         family_members=str(inputs_dir / "family_members.tsv"),
         kaks_pairs=str(inputs_dir / "kaks_pairs.tsv"),
+        pangenome_classes=str(inputs_dir / "pangenome_classes.tsv"),
         events_config="configs/wgd_events.brassicaceae.yaml",
         outdir="results/nextflow_wgd_smoke/wgd",
     )
@@ -31,6 +32,8 @@ def test_build_nextflow_wgd_command_targets_duplication_retention_branch(tmp_pat
         str(inputs_dir / "family_members.tsv"),
         "--kaks_pairs",
         str(inputs_dir / "kaks_pairs.tsv"),
+        "--pangenome_classes",
+        str(inputs_dir / "pangenome_classes.tsv"),
         "--events_config",
         "configs/wgd_events.brassicaceae.yaml",
         "--ks_bins",
@@ -75,6 +78,11 @@ def test_expected_published_outputs_cover_wgd_results(tmp_path):
         outdir / "tables/retention_enrichment.tsv",
         outdir / "plots/ks_distribution.pdf",
         outdir / "plots/ks_distribution.png",
+        outdir / "tables/pangenome_kaks.tsv",
+        outdir / "tables/pangenome_kaks_summary.tsv",
+        outdir / "tables/pangenome_kaks_skipped.tsv",
+        outdir / "plots/pangenome_kaks.pdf",
+        outdir / "plots/pangenome_kaks.png",
         outdir / "report/report_index.tsv",
         outdir / "report/final_report.md",
     ]

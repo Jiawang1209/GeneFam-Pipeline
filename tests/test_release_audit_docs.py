@@ -147,8 +147,13 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "run_duplicate_type_kaks_smoke.py" in text
     assert "build_duplicate_type_kaks.py" in text
     assert "plot_duplicate_type_kaks.R" in text
+    assert "run_pangenome_kaks_smoke.py" in text
+    assert "build_pangenome_kaks.py" in text
+    assert "plot_pangenome_kaks.R" in text
     assert "PLOT_DUPLICATE_TYPE_KAKS" in text
+    assert "PLOT_PANGENOME_KAKS" in text
     assert "results/duplicate_type_kaks_smoke/plots/duplicate_type_kaks.pdf" in text
+    assert "results/pangenome_kaks_smoke/plots/pangenome_kaks.pdf" in text
     assert "run_retention_enrichment_smoke.py" in text
     assert "run_wgd_smoke.py" in text
     assert "run_synteny_smoke.py" in text

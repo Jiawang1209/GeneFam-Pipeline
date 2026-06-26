@@ -44,6 +44,13 @@ def test_build_wgd_report_index_points_to_published_outputs():
         "description": "Duplicate-type grouped Ks and Ka/Ks PDF plot",
     }
     assert by_key["duplicate_type_kaks_summary"]["path"].endswith("tables/duplicate_type_kaks_summary.tsv")
+    assert by_key["pangenome_kaks_pdf"] == {
+        "key": "pangenome_kaks_pdf",
+        "path": "results/nextflow_wgd_smoke/wgd/plots/pangenome_kaks.pdf",
+        "status": "available",
+        "description": "Pangenome-class grouped Ks and Ka/Ks PDF plot",
+    }
+    assert by_key["pangenome_kaks_summary"]["path"].endswith("tables/pangenome_kaks_summary.tsv")
 
 
 def test_build_wgd_report_index_cli_writes_tsv(tmp_path):
@@ -71,3 +78,4 @@ def test_build_wgd_report_index_cli_writes_tsv(tmp_path):
     assert rows["wgd_event_evidence"]["status"] == "available"
     assert rows["ks_distribution_pdf"]["path"] == "results/demo_wgd/plots/ks_distribution.pdf"
     assert rows["duplicate_type_kaks_png"]["path"] == "results/demo_wgd/plots/duplicate_type_kaks.png"
+    assert rows["pangenome_kaks_png"]["path"] == "results/demo_wgd/plots/pangenome_kaks.png"

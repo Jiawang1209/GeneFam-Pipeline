@@ -7662,6 +7662,70 @@ Commit:
 Next:
 - Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
 
+## 2026-06-27 - Add pangenome-class Ka/Ks comparison plots
+
+Timestamp:
+- 2026-06-27 01:49:54 CST
+
+Context:
+- The WGD branch already supported Ks distributions, named WGD event labels, and duplicate-type grouped Ka/Ks plots.
+- The large-scale ASMT/COMT-style reference also compares gene retention and Ks patterns across core/dispensable pangenome classes, which needed a formal table and plot path.
+
+Decisions:
+- Add a gene-level `pangenome_classes` input for WGD/evolution runs, with at least `gene_id` and `pangenome_class` columns.
+- Build pairwise `pangenome_kaks` tables by joining both genes in each Ka/Ks pair to their pangenome class.
+- Treat same-class pairs as their class and mixed-class pairs as `mixed`; skipped pairs are recorded when either gene lacks pangenome-class evidence.
+- Wire the plot into the WGD branch and release checks while keeping `pangenome_classes` optional for user runs.
+
+Added:
+- `bin/genefam/build_pangenome_kaks.py`
+- `bin/genefam/run_pangenome_kaks_smoke.py`
+- `scripts/plot_pangenome_kaks.R`
+- `PLOT_PANGENOME_KAKS` and `EMPTY_PANGENOME_KAKS` Nextflow processes.
+- `params.pangenome_classes` in `workflows/nextflow.config`.
+- WGD report-index keys for `pangenome_kaks`, `pangenome_kaks_summary`, `pangenome_kaks_skipped`, `pangenome_kaks_pdf`, and `pangenome_kaks_png`.
+- Release-check smoke for pangenome-class Ka/Ks visualization.
+- Tests covering builder behavior, R smoke, Nextflow WGD command wiring, WGD report index, release checks, Reference reuse, and release audit docs.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_wgd_report_index.py`
+- `bin/genefam/run_nextflow_wgd_smoke.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/reference_plotting_reuse.md`
+- `docs/release_audit.md`
+- `tests/test_reference_plotting_reuse.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_nextflow_wgd_smoke.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_wgd_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/duplication_retention.nf`
+- `workflows/nextflow.config`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_pangenome_kaks.py tests/test_run_pangenome_kaks_smoke.py tests/test_workflow_modules.py::test_duplication_retention_module_exposes_wgd_helper_processes tests/test_workflow_modules.py::test_main_workflow_includes_duplication_retention_processes tests/test_wgd_report_index.py tests/test_run_release_checks.py::test_default_checks_include_pangenome_kaks_visualization_smoke tests/test_reference_plotting_reuse.py tests/test_release_audit_docs.py -q` first failed because the smoke runner, Nextflow process, WGD report keys, release check, and documentation were not implemented.
+- `python -m pytest tests/test_run_nextflow_wgd_smoke.py::test_build_nextflow_wgd_command_targets_duplication_retention_branch tests/test_run_nextflow_wgd_smoke.py::test_expected_published_outputs_cover_wgd_results -q` first failed because the Nextflow WGD smoke command did not yet accept `pangenome_classes` and expected outputs did not include pangenome Ka/Ks artifacts.
+- `python -m pytest tests/test_build_pangenome_kaks.py tests/test_run_pangenome_kaks_smoke.py tests/test_run_nextflow_wgd_smoke.py tests/test_workflow_modules.py::test_duplication_retention_module_exposes_wgd_helper_processes tests/test_workflow_modules.py::test_main_workflow_includes_duplication_retention_processes tests/test_wgd_report_index.py tests/test_run_release_checks.py::test_default_checks_include_pangenome_kaks_visualization_smoke tests/test_reference_plotting_reuse.py tests/test_release_audit_docs.py -q` passed with 15 tests after implementation.
+- `python bin/genefam/run_pangenome_kaks_smoke.py --r-bin /usr/local/bin/R --outdir results/pangenome_kaks_smoke` passed and produced `pangenome_kaks.tsv`, `pangenome_kaks_summary.tsv`, `pangenome_kaks_skipped.tsv`, `pangenome_kaks.pdf`, and `pangenome_kaks.png`.
+- `cat results/pangenome_kaks_smoke/tables/pangenome_kaks_summary.tsv` confirmed grouped core, dispensable, and mixed pair summaries with median Ks and mean Ka/Ks.
+- `python bin/genefam/run_nextflow_wgd_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_wgd_smoke` passed and produced real WGD-branch `pangenome_kaks` tables and plots.
+- `rg -n "pangenome_kaks" results/nextflow_wgd_smoke/wgd/report/report_index.tsv results/nextflow_wgd_smoke/wgd/report/final_report.md` confirmed the WGD report package indexes the pangenome-class Ka/Ks outputs.
+- `python -m pytest tests -q` passed with 348 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`: pangenome-class Ka/Ks visualization smoke and Nextflow WGD smoke passed; `readiness audit` and Docker/Apptainer profile smokes remained the known final-stage runtime/container blockers.
+
+Commit:
+- hash: pending
+- message: feat: add pangenome class kaks plots
+- files: pangenome Ka/Ks builder, smoke runner, R plotting script, Nextflow WGD wiring, WGD report index, release checks, Reference/release docs, tests, history
+
+Next:
+- Continue final MVP hardening around report interpretation depth, objective audit coverage, and eventual Docker/Apptainer packaging.
+
 ## 2026-06-27 - Add gene family pangenome presence summary
 
 Timestamp:

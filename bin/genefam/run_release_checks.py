@@ -370,6 +370,17 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "pangenome-class Ka/Ks visualization smoke",
+            [
+                python,
+                "bin/genefam/run_pangenome_kaks_smoke.py",
+                "--r-bin",
+                "/usr/local/bin/R",
+                "--outdir",
+                "results/pangenome_kaks_smoke",
+            ],
+        ),
+        CheckSpec(
             "retention enrichment smoke",
             [
                 python,

@@ -38,6 +38,11 @@ def expected_published_outputs(wgd_outdir: Path, raw_handoff: bool = False) -> l
         wgd_outdir / "tables/retention_enrichment.tsv",
         wgd_outdir / "plots/ks_distribution.pdf",
         wgd_outdir / "plots/ks_distribution.png",
+        wgd_outdir / "tables/pangenome_kaks.tsv",
+        wgd_outdir / "tables/pangenome_kaks_summary.tsv",
+        wgd_outdir / "tables/pangenome_kaks_skipped.tsv",
+        wgd_outdir / "plots/pangenome_kaks.pdf",
+        wgd_outdir / "plots/pangenome_kaks.png",
         wgd_outdir / "report/report_index.tsv",
         wgd_outdir / "report/final_report.md",
     ]
@@ -93,10 +98,25 @@ def write_smoke_inputs(inputs_dir: Path) -> dict[str, Path]:
         "family_members": inputs_dir / "family_members.tsv",
         "duplicates": inputs_dir / "duplicates.tsv",
         "kaks_pairs": inputs_dir / "kaks_pairs.tsv",
+        "pangenome_classes": inputs_dir / "pangenome_classes.tsv",
     }
     write_tsv(family_members, ["species_id", "gene_id"], paths["family_members"])
     write_tsv(duplicates, ["gene_id", "duplicate_type"], paths["duplicates"])
     write_tsv(kaks_pairs, ["gene_a", "gene_b", "ks"], paths["kaks_pairs"])
+    write_tsv(
+        [
+            {"gene_id": "AT_ALPHA1", "pangenome_class": "core"},
+            {"gene_id": "AT_ALPHA2", "pangenome_class": "core"},
+            {"gene_id": "BR_BETA1", "pangenome_class": "dispensable"},
+            {"gene_id": "BR_BETA2", "pangenome_class": "dispensable"},
+            {"gene_id": "VV_GAMMA1", "pangenome_class": "core"},
+            {"gene_id": "VV_GAMMA2", "pangenome_class": "core"},
+            {"gene_id": "BR_THETA1", "pangenome_class": "rare"},
+            {"gene_id": "BR_THETA2", "pangenome_class": "rare"},
+        ],
+        ["gene_id", "pangenome_class"],
+        paths["pangenome_classes"],
+    )
     return paths
 
 
@@ -121,6 +141,7 @@ def build_nextflow_command(
     kaks_pairs: str | None = None,
     mcscanx_collinearity: str | None = None,
     kaks_results: str | None = None,
+    pangenome_classes: str | None = None,
     mcscanx_cds_a: str | None = None,
     mcscanx_cds_b: str | None = None,
     profile: str | None = None,
@@ -168,6 +189,8 @@ def build_nextflow_command(
         )
     else:
         raise ValueError("Provide either duplicates/kaks_pairs or mcscanx_collinearity/kaks_results")
+    if pangenome_classes:
+        command.extend(["--pangenome_classes", pangenome_classes])
     command.extend(
         [
             "--events_config",
@@ -239,6 +262,7 @@ def run_nextflow_wgd_smoke(
             duplicates=str(inputs["duplicates"]),
             family_members=str(inputs["family_members"]),
             kaks_pairs=str(inputs["kaks_pairs"]),
+            pangenome_classes=str(inputs["pangenome_classes"]),
             events_config=events_config,
             outdir=str(outdir / "wgd"),
             profile=profile,

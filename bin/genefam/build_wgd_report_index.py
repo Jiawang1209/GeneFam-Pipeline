@@ -26,6 +26,11 @@ DESCRIPTIONS = {
     "duplicate_type_kaks_skipped": "Ka/Ks pairs skipped because duplicate type evidence was missing",
     "duplicate_type_kaks_pdf": "Duplicate-type grouped Ks and Ka/Ks PDF plot",
     "duplicate_type_kaks_png": "Duplicate-type grouped Ks and Ka/Ks PNG plot",
+    "pangenome_kaks": "Pairwise Ka/Ks values joined to pangenome presence classes",
+    "pangenome_kaks_summary": "Pangenome-class grouped Ka/Ks summary table",
+    "pangenome_kaks_skipped": "Ka/Ks pairs skipped because pangenome class evidence was missing",
+    "pangenome_kaks_pdf": "Pangenome-class grouped Ks and Ka/Ks PDF plot",
+    "pangenome_kaks_png": "Pangenome-class grouped Ks and Ka/Ks PNG plot",
 }
 
 
@@ -48,6 +53,11 @@ def build_report_index(published_outdir: str) -> list[dict[str, str]]:
         "duplicate_type_kaks_skipped": outdir / "tables/duplicate_type_kaks_skipped.tsv",
         "duplicate_type_kaks_pdf": outdir / "plots/duplicate_type_kaks.pdf",
         "duplicate_type_kaks_png": outdir / "plots/duplicate_type_kaks.png",
+        "pangenome_kaks": outdir / "tables/pangenome_kaks.tsv",
+        "pangenome_kaks_summary": outdir / "tables/pangenome_kaks_summary.tsv",
+        "pangenome_kaks_skipped": outdir / "tables/pangenome_kaks_skipped.tsv",
+        "pangenome_kaks_pdf": outdir / "plots/pangenome_kaks.pdf",
+        "pangenome_kaks_png": outdir / "plots/pangenome_kaks.png",
     }
     return [
         {

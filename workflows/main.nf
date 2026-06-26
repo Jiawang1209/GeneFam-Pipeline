@@ -50,6 +50,8 @@ include {
     SUMMARIZE_FAMILY_EVENT_RETENTION;
     RETENTION_ENRICHMENT;
     PLOT_DUPLICATE_TYPE_KAKS;
+    PLOT_PANGENOME_KAKS;
+    EMPTY_PANGENOME_KAKS;
     BUILD_WGD_REPORT_INDEX;
     ASSEMBLE_WGD_REPORT
 } from './modules/duplication_retention.nf'
@@ -82,6 +84,7 @@ workflow {
         events_config_ch = Channel.value(file(params.events_config))
         ks_bins_ch = Channel.value(params.ks_bins)
         event_args_ch = Channel.value(params.wgd_event_args ?: "")
+        pangenome_classes_ch = Channel.value(params.pangenome_classes ? file(params.pangenome_classes) : "")
         outdir_ch = Channel.value(params.outdir)
         project_name_ch = Channel.value(params.project_name)
         family_name_ch = Channel.value(params.gene_family)
@@ -117,6 +120,11 @@ workflow {
         SUMMARIZE_FAMILY_EVENT_RETENTION(ANNOTATE_FAMILY_WGD_EVENTS.out)
         RETENTION_ENRICHMENT(JOIN_FAMILY_DUPLICATES.out, NORMALIZE_DUPLICATE_TYPES.out)
         PLOT_DUPLICATE_TYPE_KAKS(NORMALIZE_DUPLICATE_TYPES.out, kaks_pairs_ch)
+        if (params.pangenome_classes) {
+            PLOT_PANGENOME_KAKS(pangenome_classes_ch, kaks_pairs_ch)
+        } else {
+            EMPTY_PANGENOME_KAKS()
+        }
         BUILD_WGD_REPORT_INDEX(outdir_ch)
         ASSEMBLE_WGD_REPORT(
             project_name_ch,

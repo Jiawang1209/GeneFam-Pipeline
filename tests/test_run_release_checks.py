@@ -241,6 +241,18 @@ def test_default_checks_include_duplicate_type_kaks_visualization_smoke():
     assert "--outdir results/duplicate_type_kaks_smoke" in command
 
 
+def test_default_checks_include_pangenome_kaks_visualization_smoke():
+    checks = default_checks()
+    names = [check.name for check in checks]
+
+    assert names.index("pangenome-class Ka/Ks visualization smoke") > names.index("duplicate-type Ka/Ks visualization smoke")
+    smoke = next(check for check in checks if check.name == "pangenome-class Ka/Ks visualization smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_pangenome_kaks_smoke.py" in command
+    assert "--r-bin /usr/local/bin/R" in command
+    assert "--outdir results/pangenome_kaks_smoke" in command
+
+
 def test_default_checks_include_kaks_wgd_annotation_plot_smoke():
     checks = default_checks()
     names = [check.name for check in checks]

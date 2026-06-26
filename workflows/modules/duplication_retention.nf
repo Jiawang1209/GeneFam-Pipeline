@@ -241,6 +241,54 @@ process PLOT_DUPLICATE_TYPE_KAKS {
     """
 }
 
+process PLOT_PANGENOME_KAKS {
+    tag "plot pangenome-class Ka/Ks"
+    publishDir "${params.outdir}", mode: "copy", overwrite: true
+
+    input:
+    path pangenome_classes
+    path kaks_pairs
+
+    output:
+    path "tables/pangenome_kaks.tsv"
+    path "tables/pangenome_kaks_summary.tsv"
+    path "tables/pangenome_kaks_skipped.tsv"
+    path "plots/pangenome_kaks.pdf"
+    path "plots/pangenome_kaks.png"
+
+    script:
+    """
+    mkdir -p tables plots
+    python ${projectDir}/../bin/genefam/build_pangenome_kaks.py \\
+      --pangenome-classes ${pangenome_classes} \\
+      --kaks-pairs ${kaks_pairs} \\
+      --outdir tables
+    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_pangenome_kaks.R --args tables/pangenome_kaks.tsv tables/pangenome_kaks_summary.tsv plots
+    """
+}
+
+process EMPTY_PANGENOME_KAKS {
+    tag "empty pangenome-class Ka/Ks"
+    publishDir "${params.outdir}", mode: "copy", overwrite: true
+
+    output:
+    path "tables/pangenome_kaks.tsv"
+    path "tables/pangenome_kaks_summary.tsv"
+    path "tables/pangenome_kaks_skipped.tsv"
+    path "plots/pangenome_kaks.pdf"
+    path "plots/pangenome_kaks.png"
+
+    script:
+    """
+    mkdir -p tables plots
+    printf 'gene_a\\tgene_b\\tpangenome_class_a\\tpangenome_class_b\\tpair_pangenome_class\\tks\\tka\\tka_ks\\tselection_category\\n' > tables/pangenome_kaks.tsv
+    printf 'pair_pangenome_class\\tpair_count\\tmedian_ks\\tmean_ka_ks\\tgene_pair_examples\\n' > tables/pangenome_kaks_summary.tsv
+    printf 'gene_a\\tgene_b\\treason\\tmissing_genes\\n' > tables/pangenome_kaks_skipped.tsv
+    printf 'pangenome_classes not provided; pangenome-class Ka/Ks plot not generated\\n' > plots/pangenome_kaks.pdf
+    printf 'pangenome_classes not provided; pangenome-class Ka/Ks plot not generated\\n' > plots/pangenome_kaks.png
+    """
+}
+
 process BUILD_WGD_REPORT_INDEX {
     tag "WGD report index"
     publishDir "${params.outdir}/report", mode: "copy", overwrite: true
