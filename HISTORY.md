@@ -87,12 +87,11 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` because Docker/Apptainer remain unavailable, but improved the release matrix to `Passed: 36`, `Required failed: 1`, `Optional failed: 2`; both `PPI ggNetView smoke` and `PPI ggNetView plot smoke` passed.
 
 Commit:
-- hash: not created yet
+- hash: 92e4a2e
 - message: feat: add ggnetview ppi plotting module
 - files: PPI table builder, ggNetView plot script, PPI smoke runner, fixtures, Nextflow standard PPI wiring, report index/docs/tests/history
 
 Next:
-- Backfill this commit hash after committing.
 - Continue paper-level visualization refinement with promoter cis-element category plots, copy-number/gene-family information summaries, and richer MCScanX/KaKs panels.
 
 ## 2026-06-26 23:06 - Add tree motif gene-structure domain composite plot
