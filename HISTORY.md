@@ -7707,7 +7707,7 @@ Verification:
 - `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1`: required workflow and visualization checks passed through PPI and Nextflow standard branches, while `readiness audit` remained failed and Docker/Apptainer profile smokes remained failed as the known final-stage container/runtime blocker.
 
 Commit:
-- hash: pending
+- hash: ff7595b6df554f8f6a1a568cc59d47922d71349f
 - message: feat: add ppi evidence and qc outputs
 - files: PPI table builder, PPI ggNetView smoke, Nextflow PPI wiring, standard report index, Reference plotting reuse matrix, tests, history
 
