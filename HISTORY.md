@@ -80,7 +80,7 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and produced `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
 
 Commit:
-- hash: pending
+- hash: cd8f69b22a34b7361ade9279321b20946af509fc
 - message: test: validate publication plot formats
 - files: publication audit, delivery bundle, docs/tests, history
 
