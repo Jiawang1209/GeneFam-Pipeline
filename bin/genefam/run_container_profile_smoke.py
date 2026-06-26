@@ -51,6 +51,16 @@ def _note(output: str) -> str:
     return " | ".join(line.strip() for line in output.splitlines() if line.strip())[:500]
 
 
+def _missing_runtime_note(profile: str, runtime_command: str) -> str:
+    return (
+        f"{runtime_command} was not found; install or expose {runtime_command} before verifying the {profile} Nextflow "
+        "profile. Next step: run `bash results/readiness/runtime_bootstrap.sh`, then rerun "
+        f"`python bin/genefam/run_container_profile_smoke.py --profile {profile} --conda-env GeneFamilyFlow "
+        f"--outdir results/container_profile_smoke/{profile}`. Expected diagnostic output: "
+        f"`results/container_profile_smoke/{profile}/container_profile_smoke.md`."
+    )
+
+
 def run_container_profile_smoke(
     profile: str,
     nextflow_bin: str,
@@ -79,7 +89,7 @@ def run_container_profile_smoke(
             "status": "missing_runtime",
             "exit_code": "127",
             "command": " ".join(command),
-            "note": f"{runtime_command} was not found; install or expose {runtime_command} before verifying the {profile} Nextflow profile.",
+            "note": _missing_runtime_note(profile, runtime_command),
         }
 
     resolved_nextflow = resolve_nextflow_binary(

@@ -52,6 +52,9 @@ def test_run_container_profile_smoke_reports_missing_runtime_before_nextflow():
     assert row["status"] == "missing_runtime"
     assert row["exit_code"] == "127"
     assert "docker was not found" in row["note"]
+    assert "bash results/readiness/runtime_bootstrap.sh" in row["note"]
+    assert "run_container_profile_smoke.py --profile docker" in row["note"]
+    assert "results/container_profile_smoke/docker/container_profile_smoke.md" in row["note"]
     assert "--outdir results/container_profile_smoke/mock_mvp" in row["command"]
     assert "docker/docker/mock_mvp" not in row["command"]
 

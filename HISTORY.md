@@ -6945,6 +6945,45 @@ Commit:
 Next:
 - Continue final-stage container hardening while preserving the current analysis-flow release readiness.
 
+## 2026-06-27 - Add actionable missing-runtime notes to container profile smoke
+
+Timestamp:
+- 2026-06-27 02:26:53 CST
+
+Context:
+- Docker and Apptainer are still not installed on this machine, so container profile smokes remain optional failures.
+- The existing `missing_runtime` note only said the runtime was absent; it did not point directly to the generated bootstrap script, rerun command, or diagnostic output path.
+
+Decisions:
+- Keep Docker/Apptainer profile smokes optional until the final packaging environment exists.
+- Make each missing-runtime profile smoke report actionable by naming the bootstrap command, rerun command, and expected Markdown diagnostic artifact.
+
+Added:
+- A regression test requiring `missing_runtime` notes to include `bash results/readiness/runtime_bootstrap.sh`, the profile smoke rerun command, and the profile diagnostic Markdown path.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_container_profile_smoke.py`
+- `tests/test_run_container_profile_smoke.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_container_profile_smoke.py -q` first failed because `missing_runtime` notes did not include the bootstrap next step.
+- `python -m pytest tests/test_run_container_profile_smoke.py -q` passed with 6 tests after implementation.
+- `python bin/genefam/run_container_profile_smoke.py --profile docker --conda-env GeneFamilyFlow --outdir results/container_profile_smoke/docker` exited `1` as expected without Docker and refreshed the Docker diagnostic Markdown.
+- `python bin/genefam/run_container_profile_smoke.py --profile apptainer --conda-env GeneFamilyFlow --outdir results/container_profile_smoke/apptainer` exited `1` as expected without Apptainer and refreshed the Apptainer diagnostic Markdown.
+- `rg -n "Next step: run|runtime_bootstrap.sh|Expected diagnostic output" results/container_profile_smoke/docker/container_profile_smoke.md results/container_profile_smoke/apptainer/container_profile_smoke.md results/release_checks/release_checks.md` confirmed both profile diagnostics now include the actionable next step.
+- `python -m pytest tests -q` passed with 351 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `0`; release checks reported `Passed: 43`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+
+Commit:
+- pending
+
+Next:
+- Continue final-stage container hardening; full Docker/Apptainer execution still requires installing or exposing those runtimes on the machine.
+
 ## 2026-06-27 - Add density and duplicate-type tracks to MCScanX circlize plots
 
 Timestamp:
