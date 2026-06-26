@@ -6773,6 +6773,61 @@ Commit:
 Next:
 - Continue the final delivery polish while Docker/Apptainer remains the external runtime blocker.
 
+## 2026-06-27 - Add density and duplicate-type tracks to MCScanX circlize plots
+
+Timestamp:
+- 2026-06-27 00:55:00 CST
+
+Context:
+- The MCScanX/circlize path already generated chromosome sectors and syntenic links.
+- The reference plotting matrix still marked MCScanX/circlize synteny as partial because it lacked density tracks and duplicate-type style tracks.
+
+Decisions:
+- Extend `build_circlize_inputs.py` to generate linked-gene density windows and duplicate-type track rows.
+- Preserve the previous three-output Python API by requiring `include_tracks=True` for the five-output enhanced mode.
+- Preserve the old `plot_mcscanx_circlize.R <chromosomes.tsv> <links.tsv> <outdir>` interface while adding the enhanced five-argument mode.
+- Label linked genes as `syntenic` when no explicit duplicate-type table is supplied, so the standard branch can still render a complete track.
+- Add the new support tables to the standard report index and wire the changed Nextflow output positions explicitly.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_circlize_inputs.py`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_mcscanx_circlize_smoke.py`
+- `docs/reference_plotting_reuse.md`
+- `scripts/plot_mcscanx_circlize.R`
+- `tests/test_build_circlize_inputs.py`
+- `tests/test_reference_plotting_reuse.py`
+- `tests/test_run_mcscanx_circlize_smoke.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_workflow_modules.py`
+- `workflows/main.nf`
+- `workflows/modules/plots.nf`
+- `workflows/modules/standard_postprocess.nf`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_circlize_inputs.py tests/test_run_mcscanx_circlize_smoke.py tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_reference_plotting_reuse.py -q` first failed because density and duplicate-type track generation was not implemented.
+- `python -m pytest tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_standard_branch_report_index.py -q` first failed because the standard report index and main workflow did not know the new circlize support-table outputs.
+- `python -m pytest tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_standard_branch_report_index.py tests/test_build_circlize_inputs.py tests/test_run_mcscanx_circlize_smoke.py tests/test_reference_plotting_reuse.py -q` passed with 10 tests.
+- `python bin/genefam/run_mcscanx_circlize_smoke.py --r-bin /usr/local/bin/R --outdir results/mcscanx_circlize_smoke` passed and wrote `tables/circlize_link_density.tsv`, `tables/circlize_duplicate_type_tracks.tsv`, and `plots/mcscanx_circlize.pdf/png`.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --run-feature-summary --run-mcscanx-circlize --syntenic-pairs tests/fixtures/mcscanx/syntenic_pairs.tsv --outdir results/nextflow_standard_feature_smoke` passed and the standard report index marked the new circlize support tables as available.
+- `python -m pytest tests -q` passed with 343 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited `1` with `41 passed / 3 failed`; `MCScanX circlize visualization smoke` passed and included the two new support tables, while `readiness audit` failed and Docker/Apptainer profile smokes remained optional failures.
+
+Commit:
+- hash: pending
+- message: feat: add circlize density tracks
+- files: circlize input builder, circlize R plot, MCScanX circlize smoke, standard report index, Nextflow wiring, reference plotting docs, tests, history
+
+Next:
+- Continue remaining paper-level visualization polish, especially promoter/copy-number/pangenome interpretation gaps, while container packaging remains final-stage work.
+
 ## 2026-06-27 - Add WGD event annotations to Ks distribution plots
 
 Timestamp:

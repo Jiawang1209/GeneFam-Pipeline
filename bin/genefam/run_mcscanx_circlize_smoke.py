@@ -14,6 +14,8 @@ if str(REPO_ROOT) not in sys.path:
 
 from bin.genefam.build_circlize_inputs import (
     CHROMOSOME_FIELDNAMES,
+    DENSITY_FIELDNAMES,
+    DUPLICATE_TRACK_FIELDNAMES,
     LINK_FIELDNAMES,
     SKIPPED_FIELDNAMES,
     build_circlize_inputs,
@@ -65,13 +67,22 @@ def run_mcscanx_circlize_smoke(
 
     table_dir = outdir / "tables"
     plot_dir = outdir / "plots"
-    chromosomes, links, skipped = build_circlize_inputs(read_tsv(chromosome_locations), read_tsv(syntenic_pairs))
+    chromosomes, links, skipped, density, duplicate_tracks = build_circlize_inputs(
+        read_tsv(chromosome_locations),
+        read_tsv(syntenic_pairs),
+        density_window_size=1_000_000,
+        include_tracks=True,
+    )
     chromosome_tsv = table_dir / "circlize_chromosomes.tsv"
     link_tsv = table_dir / "circlize_links.tsv"
     skipped_tsv = table_dir / "circlize_skipped_links.tsv"
+    density_tsv = table_dir / "circlize_link_density.tsv"
+    duplicate_tracks_tsv = table_dir / "circlize_duplicate_type_tracks.tsv"
     write_tsv(chromosomes, chromosome_tsv, CHROMOSOME_FIELDNAMES)
     write_tsv(links, link_tsv, LINK_FIELDNAMES)
     write_tsv(skipped, skipped_tsv, SKIPPED_FIELDNAMES)
+    write_tsv(density, density_tsv, DENSITY_FIELDNAMES)
+    write_tsv(duplicate_tracks, duplicate_tracks_tsv, DUPLICATE_TRACK_FIELDNAMES)
 
     subprocess.run(
         [
@@ -83,6 +94,8 @@ def run_mcscanx_circlize_smoke(
             "--args",
             str(chromosome_tsv),
             str(link_tsv),
+            str(density_tsv),
+            str(duplicate_tracks_tsv),
             str(plot_dir),
         ],
         check=True,
@@ -96,9 +109,13 @@ def run_mcscanx_circlize_smoke(
                 "",
                 f"Chromosomes: {len(chromosomes)}",
                 f"Links: {len(links)}",
+                f"Density windows: {len(density)}",
+                f"Duplicate-type track rows: {len(duplicate_tracks)}",
                 f"Skipped links: {len(skipped)}",
                 f"Chromosome table: `{chromosome_tsv}`",
                 f"Link table: `{link_tsv}`",
+                f"Density table: `{density_tsv}`",
+                f"Duplicate-type track table: `{duplicate_tracks_tsv}`",
                 f"Skipped table: `{skipped_tsv}`",
                 f"PDF plot: `{plot_dir / 'mcscanx_circlize.pdf'}`",
                 f"PNG plot: `{plot_dir / 'mcscanx_circlize.png'}`",
@@ -110,6 +127,8 @@ def run_mcscanx_circlize_smoke(
     return {
         "circlize_chromosomes": chromosome_tsv,
         "circlize_links": link_tsv,
+        "circlize_link_density": density_tsv,
+        "circlize_duplicate_type_tracks": duplicate_tracks_tsv,
         "circlize_skipped_links": skipped_tsv,
         "circlize_pdf": plot_dir / "mcscanx_circlize.pdf",
         "circlize_png": plot_dir / "mcscanx_circlize.png",

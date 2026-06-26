@@ -39,6 +39,8 @@ def test_build_standard_report_index_marks_core_outputs_available():
             "feature_summary_png": "",
             "mcscanx_circlize_pdf": "",
             "mcscanx_circlize_png": "",
+            "circlize_link_density": "",
+            "circlize_duplicate_type_tracks": "",
             "ppi_edges": "",
             "ppi_nodes": "",
             "ppi_hubs": "",
@@ -94,6 +96,8 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "feature_summary_png",
         "mcscanx_circlize_pdf",
         "mcscanx_circlize_png",
+        "circlize_link_density",
+        "circlize_duplicate_type_tracks",
         "ppi_edges",
         "ppi_nodes",
         "ppi_hubs",
@@ -116,6 +120,7 @@ def test_build_standard_report_index_marks_core_outputs_available():
     assert next(row for row in rows if row["key"] == "promoter_cis_pdf")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "feature_summary_pdf")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "mcscanx_circlize_pdf")["status"] == "missing"
+    assert next(row for row in rows if row["key"] == "circlize_link_density")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "ppi_ggnetview_pdf")["status"] == "missing"
 
 
@@ -155,6 +160,8 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
         "feature_summary_png": "",
         "mcscanx_circlize_pdf": "",
         "mcscanx_circlize_png": "",
+        "circlize_link_density": "",
+        "circlize_duplicate_type_tracks": "",
         "ppi_edges": "",
         "ppi_nodes": "",
         "ppi_hubs": "",

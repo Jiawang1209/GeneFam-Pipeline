@@ -94,6 +94,8 @@ process BUILD_STANDARD_REPORT_INDEX {
     val feature_summary
     val feature_summary_pdf
     val feature_summary_png
+    val circlize_link_density
+    val circlize_duplicate_type_tracks
     val mcscanx_circlize_pdf
     val mcscanx_circlize_png
     val ppi_edges
@@ -149,6 +151,8 @@ process BUILD_STANDARD_REPORT_INDEX {
       --feature-summary "${feature_summary}" \\
       --feature-summary-pdf "${feature_summary_pdf}" \\
       --feature-summary-png "${feature_summary_png}" \\
+      --circlize-link-density "${circlize_link_density}" \\
+      --circlize-duplicate-type-tracks "${circlize_duplicate_type_tracks}" \\
       --mcscanx-circlize-pdf "${mcscanx_circlize_pdf}" \\
       --mcscanx-circlize-png "${mcscanx_circlize_png}" \\
       --ppi-edges "${ppi_edges}" \\

@@ -185,6 +185,8 @@ process PLOT_MCSCANX_CIRCLIZE {
     output:
     path "tables/circlize_chromosomes.tsv"
     path "tables/circlize_links.tsv"
+    path "tables/circlize_link_density.tsv"
+    path "tables/circlize_duplicate_type_tracks.tsv"
     path "tables/circlize_skipped_links.tsv"
     path "plots/mcscanx_circlize.pdf"
     path "plots/mcscanx_circlize.png"
@@ -197,8 +199,10 @@ process PLOT_MCSCANX_CIRCLIZE {
       --syntenic-pairs ${syntenic_pairs} \\
       --out-chromosomes tables/circlize_chromosomes.tsv \\
       --out-links tables/circlize_links.tsv \\
-      --out-skipped tables/circlize_skipped_links.tsv
-    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_mcscanx_circlize.R --args tables/circlize_chromosomes.tsv tables/circlize_links.tsv plots
+      --out-skipped tables/circlize_skipped_links.tsv \\
+      --out-density tables/circlize_link_density.tsv \\
+      --out-duplicate-tracks tables/circlize_duplicate_type_tracks.tsv
+    ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_mcscanx_circlize.R --args tables/circlize_chromosomes.tsv tables/circlize_links.tsv tables/circlize_link_density.tsv tables/circlize_duplicate_type_tracks.tsv plots
     """
 }
 

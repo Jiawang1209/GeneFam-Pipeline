@@ -257,6 +257,8 @@ workflow {
                 promoter_cis_pdf_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[3]
                 promoter_cis_png_ch = PLOT_PROMOTER_CIS_ELEMENTS.out[4]
             }
+            circlize_link_density_ch = Channel.value("")
+            circlize_duplicate_type_tracks_ch = Channel.value("")
             mcscanx_circlize_pdf_ch = Channel.value("")
             mcscanx_circlize_png_ch = Channel.value("")
             if (asBooleanParam(params.run_mcscanx_circlize)) {
@@ -265,8 +267,10 @@ workflow {
                 }
                 syntenic_pairs_ch = Channel.value(file(params.syntenic_pairs))
                 PLOT_MCSCANX_CIRCLIZE(EXTRACT_CHROMOSOME_LOCATIONS.out, syntenic_pairs_ch)
-                mcscanx_circlize_pdf_ch = PLOT_MCSCANX_CIRCLIZE.out[3]
-                mcscanx_circlize_png_ch = PLOT_MCSCANX_CIRCLIZE.out[4]
+                circlize_link_density_ch = PLOT_MCSCANX_CIRCLIZE.out[2]
+                circlize_duplicate_type_tracks_ch = PLOT_MCSCANX_CIRCLIZE.out[3]
+                mcscanx_circlize_pdf_ch = PLOT_MCSCANX_CIRCLIZE.out[5]
+                mcscanx_circlize_png_ch = PLOT_MCSCANX_CIRCLIZE.out[6]
             }
             ppi_edges_ch = Channel.value("")
             ppi_nodes_ch = Channel.value("")
@@ -342,6 +346,8 @@ workflow {
                 feature_summary_ch,
                 feature_summary_pdf_ch,
                 feature_summary_png_ch,
+                circlize_link_density_ch,
+                circlize_duplicate_type_tracks_ch,
                 mcscanx_circlize_pdf_ch,
                 mcscanx_circlize_png_ch,
                 ppi_edges_ch,

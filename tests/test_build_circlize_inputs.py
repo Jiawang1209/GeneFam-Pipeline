@@ -85,3 +85,91 @@ def test_build_circlize_inputs_joins_mcscanx_pairs_to_gene_coordinates():
             "reason": "missing_gene_b_coordinate",
         }
     ]
+
+
+def test_build_circlize_inputs_can_build_density_and_duplicate_type_tracks():
+    locations = [
+        {"species_id": "Arabidopsis_thaliana", "gene_id": "AT1", "seqid": "Chr1", "start": "100", "end": "200", "strand": "+"},
+        {"species_id": "Arabidopsis_thaliana", "gene_id": "AT2", "seqid": "Chr1", "start": "900", "end": "1000", "strand": "+"},
+        {"species_id": "Brassica_rapa", "gene_id": "BR1", "seqid": "A01", "start": "150", "end": "250", "strand": "-"},
+        {"species_id": "Brassica_rapa", "gene_id": "BR2", "seqid": "A01", "start": "1200", "end": "1400", "strand": "+"},
+    ]
+    syntenic_pairs = [
+        {"block_id": "blockA", "gene_a": "AT1", "gene_b": "BR1", "pair_evalue": "1e-20"},
+        {"block_id": "blockB", "gene_a": "AT2", "gene_b": "BR2", "pair_evalue": "1e-30"},
+    ]
+    duplicate_types = [
+        {"gene_id": "AT1", "duplicate_type": "WGD"},
+        {"gene_id": "AT2", "duplicate_type": "tandem"},
+        {"gene_id": "BR1", "duplicate_type": "WGD"},
+        {"gene_id": "BR2", "duplicate_type": "dispersed"},
+    ]
+
+    chromosomes, links, skipped, density, duplicate_tracks = build_circlize_inputs(
+        locations,
+        syntenic_pairs,
+        duplicate_types=duplicate_types,
+        density_window_size=1000,
+        include_tracks=True,
+    )
+
+    assert skipped == []
+    assert len(chromosomes) == 2
+    assert len(links) == 2
+    assert density == [
+        {
+            "chr_id": "Arabidopsis_thaliana|Chr1",
+            "window_start": "1",
+            "window_end": "1000",
+            "linked_gene_count": "2",
+            "link_count": "2",
+        },
+        {
+            "chr_id": "Brassica_rapa|A01",
+            "window_start": "1",
+            "window_end": "1000",
+            "linked_gene_count": "1",
+            "link_count": "1",
+        },
+        {
+            "chr_id": "Brassica_rapa|A01",
+            "window_start": "1001",
+            "window_end": "1400",
+            "linked_gene_count": "1",
+            "link_count": "1",
+        },
+    ]
+    assert duplicate_tracks == [
+        {
+            "chr_id": "Arabidopsis_thaliana|Chr1",
+            "gene_id": "AT1",
+            "start": "100",
+            "end": "200",
+            "duplicate_type": "WGD",
+            "link_count": "1",
+        },
+        {
+            "chr_id": "Arabidopsis_thaliana|Chr1",
+            "gene_id": "AT2",
+            "start": "900",
+            "end": "1000",
+            "duplicate_type": "tandem",
+            "link_count": "1",
+        },
+        {
+            "chr_id": "Brassica_rapa|A01",
+            "gene_id": "BR1",
+            "start": "150",
+            "end": "250",
+            "duplicate_type": "WGD",
+            "link_count": "1",
+        },
+        {
+            "chr_id": "Brassica_rapa|A01",
+            "gene_id": "BR2",
+            "start": "1200",
+            "end": "1400",
+            "duplicate_type": "dispersed",
+            "link_count": "1",
+        },
+    ]

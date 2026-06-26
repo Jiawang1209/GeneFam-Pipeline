@@ -101,6 +101,8 @@ def test_standard_postprocess_module_extracts_family_sequences_and_report_index(
     assert '--feature-summary-png "${feature_summary_png}"' in module
     assert '--mcscanx-circlize-pdf "${mcscanx_circlize_pdf}"' in module
     assert '--mcscanx-circlize-png "${mcscanx_circlize_png}"' in module
+    assert '--circlize-link-density "${circlize_link_density}"' in module
+    assert '--circlize-duplicate-type-tracks "${circlize_duplicate_type_tracks}"' in module
     assert '--ppi-edges "${ppi_edges}"' in module
     assert '--ppi-nodes "${ppi_nodes}"' in module
     assert '--ppi-hubs "${ppi_hubs}"' in module
@@ -195,6 +197,10 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "PLOT_FEATURE_SUMMARY(" in workflow
     assert "if (asBooleanParam(params.run_mcscanx_circlize))" in workflow
     assert "PLOT_MCSCANX_CIRCLIZE(" in workflow
+    assert "circlize_link_density_ch = PLOT_MCSCANX_CIRCLIZE.out[2]" in workflow
+    assert "circlize_duplicate_type_tracks_ch = PLOT_MCSCANX_CIRCLIZE.out[3]" in workflow
+    assert "mcscanx_circlize_pdf_ch = PLOT_MCSCANX_CIRCLIZE.out[5]" in workflow
+    assert "mcscanx_circlize_png_ch = PLOT_MCSCANX_CIRCLIZE.out[6]" in workflow
     assert "if (asBooleanParam(params.run_ppi))" in workflow
     assert 'error "Missing required parameter for --run_ppi true: --ppi_edges"' in workflow
     assert "PLOT_PPI_GGNETVIEW(ppi_edges_input_ch, ppi_nodes_input_ch)" in workflow
@@ -420,6 +426,11 @@ def test_plot_module_runs_r_scripts_through_configured_r_bin():
     assert "--chromosome-locations ${chromosome_locations}" in module
     assert "--syntenic-pairs ${syntenic_pairs}" in module
     assert 'path "tables/circlize_chromosomes.tsv"' in module
+    assert 'path "tables/circlize_link_density.tsv"' in module
+    assert 'path "tables/circlize_duplicate_type_tracks.tsv"' in module
+    assert "--out-density tables/circlize_link_density.tsv" in module
+    assert "--out-duplicate-tracks tables/circlize_duplicate_type_tracks.tsv" in module
+    assert "--args tables/circlize_chromosomes.tsv tables/circlize_links.tsv tables/circlize_link_density.tsv tables/circlize_duplicate_type_tracks.tsv plots" in module
     assert 'path "plots/mcscanx_circlize.pdf"' in module
 
     assert "process PLOT_PPI_GGNETVIEW" in module
