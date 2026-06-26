@@ -136,14 +136,14 @@ def build_delivery_manifest(
             "item": "publication_report_audit",
             "status": _status_from_check(release_rows, "publication report audit"),
             "path": "results/publication_report_audit/publication_report_audit.md",
-            "note": "paper-style report closure: complete per-figure close-reading text, QC tables and warnings, software/R package versions, and reproducibility commands",
+            "note": "paper-style report closure: complete per-figure close-reading text, QC tables and warnings, software/R package versions, per-figure method/software version coverage, and reproducibility commands",
         },
         {
             "section": "status",
             "item": "wgd_publication_report_audit",
             "status": _status_from_check(release_rows, "WGD publication report audit"),
             "path": "results/publication_report_audit/wgd_publication_report_audit.md",
-            "note": "WGD report closure: complete Ka/Ks/WGD figure close-reading text, gamma beta alpha theta interpretation, QC tables and warnings, software/R package versions, and reproducibility commands",
+            "note": "WGD report closure: complete Ka/Ks/WGD figure close-reading text, gamma beta alpha theta interpretation, QC tables and warnings, software/R package versions, per-figure method/software version coverage, and reproducibility commands",
         },
         {
             "section": "input",

@@ -101,6 +101,7 @@ def test_readiness_checklist_documents_command_audit():
     assert "complete per-figure close-reading text" in text
     assert "QC tables and warnings" in text
     assert "software/R package versions" in text
+    assert "per-figure method/software version coverage" in text
     assert "reproducibility commands" in text
     assert "results/delivery_bundle/delivery_manifest.tsv" in text
     assert "results/delivery_bundle/delivery_bundle.md" in text
@@ -194,6 +195,7 @@ def test_readme_points_to_final_handoff_report():
     assert "complete per-figure close-reading text" in readme
     assert "QC tables and warnings" in readme
     assert "software/R package versions" in readme
+    assert "per-figure method/software version coverage" in readme
     assert "reproducibility commands" in readme
     assert "final_stage_blocker" in readme
     assert "container_default_smoke" in readme

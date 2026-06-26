@@ -33,6 +33,7 @@ def test_quickstart_documents_minimum_verified_run_path():
         "complete per-figure close-reading text",
         "QC tables and warnings",
         "software/R package versions",
+        "per-figure method/software version coverage",
         "reproducibility commands",
         "results/delivery_bundle/delivery_manifest.tsv",
         "results/delivery_bundle/delivery_bundle.md",

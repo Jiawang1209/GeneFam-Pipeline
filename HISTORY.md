@@ -34,6 +34,53 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 05:59 - Surface per-figure method software coverage in delivery bundle
+
+Context:
+- The publication report audit now verifies `figure_method_software_versions`, proving that software and R packages named by each figure interpretation have corresponding `software_versions.tsv` rows.
+- The final delivery bundle and user-facing docs still summarized publication closure as generic software/R package version evidence, without naming the new per-figure method/software version coverage gate.
+
+Decisions:
+- Keep the publication audit as the authoritative machine check.
+- Surface the same gate in `results/delivery_bundle/delivery_manifest.tsv`, `results/delivery_bundle/delivery_bundle.md`, README, quickstart, readiness checklist, and release audit docs so the handoff package is readable without opening every audit TSV first.
+- Keep Docker/Apptainer wording unchanged because packaging remains the final external runtime stage.
+
+Added:
+- Regression expectations requiring delivery bundle and docs to mention `per-figure method/software version coverage`.
+
+Modified:
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `README.md`
+- `README.zh-CN.md`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index -q` first failed because the delivery manifest did not mention `per-figure method/software version coverage`; it passed after updating `run_delivery_bundle.py`.
+- `python -m pytest tests/test_quickstart_docs.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py -q` first failed for README, quickstart, readiness checklist, and release audit wording; it passed after the docs were updated.
+- `python -m pytest tests/test_quickstart_docs.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py tests/test_run_delivery_bundle.py -q` passed with 18 tests.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` exited 0 and refreshed `results/delivery_bundle/delivery_manifest.tsv` plus `results/delivery_bundle/delivery_bundle.md`.
+- `python -m pytest tests -q` passed with 378 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and produced `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+
+Commit:
+- hash: pending
+- message: docs: expose method software coverage gate
+- files: delivery bundle generator, delivery/docs tests, README/docs, history
+
+Next:
+- Continue toward the active `/goal` by auditing the remaining result-package surfaces for any broad claim that is not yet directly visible in the delivery bundle.
+
 ## 2026-06-27 05:51 - Require figure method software version coverage
 
 Context:
