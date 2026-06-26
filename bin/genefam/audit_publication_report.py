@@ -91,6 +91,39 @@ def _plot_file_issues(plot_manifest: Path, rows: list[dict[str, str]]) -> list[s
     return issues
 
 
+def _plot_format_issue(plot_key: str, plot_path: str, resolved: Path) -> str | None:
+    suffix = resolved.suffix.lower()
+    try:
+        header = resolved.read_bytes()[:256]
+    except OSError:
+        return f"{plot_key}:unreadable:{plot_path}"
+    if suffix == ".pdf" and not header.startswith(b"%PDF"):
+        return f"{plot_key}:invalid_pdf:{plot_path}"
+    if suffix == ".png" and not header.startswith(b"\x89PNG\r\n\x1a\n"):
+        return f"{plot_key}:invalid_png:{plot_path}"
+    if suffix == ".svg":
+        stripped = header.lstrip()
+        if not (stripped.startswith(b"<svg") or stripped.startswith(b"<?xml")):
+            return f"{plot_key}:invalid_svg:{plot_path}"
+    return None
+
+
+def _plot_format_issues(plot_manifest: Path, rows: list[dict[str, str]]) -> list[str]:
+    issues: list[str] = []
+    for row in rows:
+        plot_key = row.get("plot_key", "").strip() or "unknown"
+        plot_path = row.get("path", "").strip()
+        if not plot_path:
+            continue
+        resolved = _resolve_plot_path(plot_manifest, plot_path)
+        if not resolved.exists() or resolved.stat().st_size <= 0:
+            continue
+        issue = _plot_format_issue(plot_key, plot_path, resolved)
+        if issue:
+            issues.append(issue)
+    return issues
+
+
 def _interpretation_by_key(rows: list[dict[str, str]]) -> dict[str, dict[str, str]]:
     return {row.get("figure_key", "").strip(): row for row in rows if row.get("figure_key", "").strip()}
 
@@ -179,6 +212,7 @@ def audit_publication_report(
 
     plot_keys = _plot_keys(plots)
     plot_file_issues = _plot_file_issues(plot_manifest, plots)
+    plot_format_issues = _plot_format_issues(plot_manifest, plots)
     interpretation_rows = _interpretation_by_key(interpretations)
     missing_interpretations = [key for key in plot_keys if key not in interpretation_rows]
 
@@ -216,6 +250,14 @@ def audit_publication_report(
             "all plot_manifest paths exist and are non-empty"
             if not plot_file_issues and plot_keys
             else "missing or empty plot files: " + ", ".join(plot_file_issues or ["no plots registered"]),
+        ),
+        _row(
+            "plot_file_format_valid",
+            not plot_format_issues and bool(plot_keys),
+            str(plot_manifest),
+            "all plot_manifest PDF, PNG, and SVG files have valid file signatures"
+            if not plot_format_issues and plot_keys
+            else "invalid plot file formats: " + ", ".join(plot_format_issues or ["no plots registered"]),
         ),
         _row(
             "figure_interpretation_coverage",

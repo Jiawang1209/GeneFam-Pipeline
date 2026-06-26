@@ -30,6 +30,7 @@ def test_quickstart_documents_minimum_verified_run_path():
         "wgd_publication_report_audit",
         "paper-style report closure",
         "WGD report closure",
+        "valid plot file signatures",
         "complete per-figure close-reading text",
         "QC tables and warnings",
         "software/R package versions",

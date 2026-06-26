@@ -34,6 +34,59 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 06:08 - Validate publication plot file signatures
+
+Context:
+- The active `/goal` asks for paper-level visualization and a final report package that can be trusted as an MVP result bundle.
+- The publication report audit checked that plot files existed and were non-empty, but a non-empty error log or text file with a `.pdf` suffix could still satisfy that weaker condition.
+
+Decisions:
+- Add a `plot_file_format_valid` publication-audit row that checks basic PDF, PNG, and SVG file signatures for every plot registered in `plot_manifest.tsv`.
+- Keep the check lightweight and dependency-free: PDF must start with `%PDF`, PNG must use the PNG magic header, and SVG must start with `<svg` or an XML header after whitespace.
+- Surface this gate in the delivery bundle and user-facing docs as `valid plot file signatures`.
+
+Added:
+- Regression test proving a non-empty invalid `.pdf` plot passes `plot_files_exist` but fails `plot_file_format_valid`.
+- Publication audit logic for PDF/PNG/SVG signature validation.
+- Delivery bundle and documentation wording for valid plot file signatures.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_audit_publication_report.py`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `README.md`
+- `README.zh-CN.md`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_rejects_nonempty_invalid_plot_format -q` first failed with `KeyError: 'plot_file_format_valid'`; it passed after adding the audit row.
+- `python -m pytest tests/test_audit_publication_report.py -q` passed with 10 tests.
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index tests/test_quickstart_docs.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py -q` first failed until delivery bundle and docs mentioned `valid plot file signatures`; it passed after the wording updates.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` exited 0 and reported `Passed: 7`, including `plot_file_format_valid`.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv --software-versions results/nextflow_wgd_smoke/wgd/report/software_versions.tsv --final-report results/nextflow_wgd_smoke/wgd/report/final_report.md --out-tsv results/publication_report_audit/wgd_publication_report_audit.tsv --out-md results/publication_report_audit/wgd_publication_report_audit.md` exited 0 and reported `Passed: 7`, including `plot_file_format_valid`.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` exited 0 and refreshed the delivery bundle with `valid plot file signatures`.
+- `python -m pytest tests -q` passed with 379 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and produced `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+
+Commit:
+- hash: pending
+- message: test: validate publication plot formats
+- files: publication audit, delivery bundle, docs/tests, history
+
+Next:
+- Continue toward the active `/goal` by auditing remaining MVP evidence surfaces; Docker/Apptainer packaging still remains the final external runtime stage.
+
 ## 2026-06-27 05:59 - Surface per-figure method software coverage in delivery bundle
 
 Context:
