@@ -34,6 +34,52 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 12:26 - Add release smoke for delivery figure gallery
+
+Context:
+- The active `/goal` requires all paper-level figures to be connected to release checks, report indexes, final reports, and local acceptance.
+- The delivery bundle now generates a global `figure_gallery.tsv` and `figure_gallery.md`, but release checks did not have a dedicated smoke check proving the gallery generator and key rows remain intact.
+- Without a release-level smoke, future changes could break the global plot index while still leaving other analysis checks green.
+
+Decisions:
+- Add a dedicated `delivery bundle figure gallery smoke` to the release check list after `quickstart handoff` and before `readiness audit`.
+- Implement the smoke with small generated input TSVs so it tests the delivery bundle and gallery writer without depending on stale external result files.
+- Check representative standard and WGD rows: `tree_features`, `ppi_ggnetview`, `ks_distribution`, `duplicate_type_kaks`, and software version links.
+
+Added:
+- `bin/genefam/run_delivery_bundle_smoke.py`
+- Release check entry `delivery bundle figure gallery smoke`.
+- Test coverage for the new release check ordering and command.
+
+Modified:
+- `bin/genefam/run_release_checks.py`
+- `tests/test_run_release_checks.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_delivery_bundle_gallery_smoke_after_quickstart -q` first failed because the new release check was not present.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_delivery_bundle_gallery_smoke_after_quickstart -q` passed after adding the release check.
+- `python bin/genefam/run_delivery_bundle_smoke.py --outdir results/delivery_bundle_smoke` initially failed with `ModuleNotFoundError: No module named 'bin'`; adding the repo root to `sys.path` fixed direct script execution.
+- `python bin/genefam/run_delivery_bundle_smoke.py --outdir results/delivery_bundle_smoke` exited 0 and wrote `delivery_bundle_smoke.md`, `delivery_manifest.tsv`, `figure_gallery.tsv`, and `figure_gallery.md`.
+- `python -m pytest tests/test_run_release_checks.py tests/test_run_delivery_bundle.py -q` passed with 55 tests.
+- `python -m pytest tests -q` passed with 432 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 48`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `rg -n "delivery bundle figure gallery smoke|figure_gallery|432 pass" results/release_checks/release_checks.md results/release_checks/release_checks.tsv results/delivery_bundle_smoke/delivery_bundle_smoke.md` confirmed the new smoke is recorded in release evidence.
+- `bash scripts/run_local_acceptance.sh` exited 0 and still printed `Final-stage blocker: Docker/Apptainer reproducibility.`
+- `sed -n '1,16p' results/local_acceptance/local_acceptance_summary.md` confirmed local acceptance keeps `Overall status: blocked` only for `final_stage_blocker`.
+- `sed -n '1,10p' results/objective_audit/objective_audit.md` confirmed objective audit remains `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
+- hash: pending
+- message: `test: add delivery figure gallery release smoke`
+- files: delivery bundle smoke script, release checks, release check tests, and history entry.
+
+Next:
+- Continue final MVP hardening while Docker/Apptainer remain the final-stage runtime blocker.
+
 ## 2026-06-27 12:15 - List figure gallery in local acceptance handoff output
 
 Context:

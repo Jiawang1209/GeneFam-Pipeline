@@ -768,6 +768,17 @@ def test_default_checks_include_quickstart_handoff_before_readiness():
     assert "--outdir results/quickstart" in command
 
 
+def test_default_checks_include_delivery_bundle_gallery_smoke_after_quickstart():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("delivery bundle figure gallery smoke") > names.index("quickstart handoff")
+    assert names.index("delivery bundle figure gallery smoke") < names.index("readiness audit")
+    smoke = next(check for check in default_checks() if check.name == "delivery bundle figure gallery smoke")
+    command = " ".join(smoke.command)
+    assert "bin/genefam/run_delivery_bundle_smoke.py" in command
+    assert "--outdir results/delivery_bundle_smoke" in command
+
+
 def test_write_delivery_bundle_uses_latest_release_outputs(tmp_path):
     release_tsv = tmp_path / "release_checks.tsv"
     objective_tsv = tmp_path / "objective_audit.tsv"

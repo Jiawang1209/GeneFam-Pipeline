@@ -606,6 +606,15 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "delivery bundle figure gallery smoke",
+            [
+                python,
+                "bin/genefam/run_delivery_bundle_smoke.py",
+                "--outdir",
+                "results/delivery_bundle_smoke",
+            ],
+        ),
+        CheckSpec(
             "readiness audit",
             [
                 python,
