@@ -155,7 +155,7 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         in manifest_text
     )
     assert (
-        "status\tlocal_acceptance_summary\tavailable\tresults/local_acceptance/local_acceptance_summary.md\tcompact local acceptance pass/fail index"
+        "status\tlocal_acceptance_summary\tblocked\tresults/local_acceptance/local_acceptance_summary.md\tcompact local acceptance pass/fail index; overall=blocked; final_stage_blocker=Docker/Apptainer reproducibility"
         in manifest_text
     )
     assert (
@@ -204,6 +204,7 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "runtime recovery" in summary_text
     assert "results/container_default_smoke" in summary_text
     assert "compact local acceptance pass/fail index" in summary_text
+    assert "overall=blocked; final_stage_blocker=Docker/Apptainer reproducibility" in summary_text
     assert "complete per-figure close-reading text" in summary_text
     assert "valid plot file signatures" in summary_text
     assert "registered-only figure interpretation scope" in summary_text

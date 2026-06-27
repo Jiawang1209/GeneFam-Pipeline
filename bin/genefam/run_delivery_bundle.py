@@ -94,6 +94,12 @@ def build_delivery_manifest(
     release_ready = release_required_failed == 0
     optional_failed = _optional_failed(release_rows)
     blockers = _objective_blockers(objective_rows)
+    local_acceptance_status = _objective_blocker_status(objective_rows)
+    local_acceptance_note = (
+        "compact local acceptance pass/fail index; overall=blocked; final_stage_blocker=" + blockers
+        if local_acceptance_status in {"blocked", "missing"}
+        else "compact local acceptance pass/fail index; overall=passed; final_stage_blocker=none"
+    )
 
     rows = [
         {
@@ -127,9 +133,9 @@ def build_delivery_manifest(
         {
             "section": "status",
             "item": "local_acceptance_summary",
-            "status": "available",
+            "status": local_acceptance_status,
             "path": "results/local_acceptance/local_acceptance_summary.md",
-            "note": "compact local acceptance pass/fail index",
+            "note": local_acceptance_note,
         },
         {
             "section": "status",

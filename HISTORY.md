@@ -34,6 +34,48 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 11:23 - Propagate local acceptance blocker into delivery bundle
+
+Context:
+- The active `/goal` requires final handoff surfaces to agree on whether the analysis package is release-ready or still blocked by the final Docker/Apptainer packaging stage.
+- `results/local_acceptance/local_acceptance_summary.md` now reports `Overall status: blocked`, but `results/delivery_bundle/delivery_manifest.tsv` still marked `local_acceptance_summary` as `available`.
+- The delivery bundle is the final user-facing index, so it should preserve the blocked local-acceptance state instead of flattening it to availability.
+
+Decisions:
+- Derive the delivery-bundle `local_acceptance_summary` status from objective-audit blockers.
+- Keep the row path pointed at `results/local_acceptance/local_acceptance_summary.md`.
+- Expand the row note to include `overall=blocked` and the `final_stage_blocker` value when blockers remain.
+
+Added:
+- Delivery-bundle note text carrying `overall=blocked; final_stage_blocker=...` for local acceptance summaries.
+
+Modified:
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_run_delivery_bundle.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py -q` first failed because `local_acceptance_summary` was still emitted as `available`.
+- `python -m pytest tests/test_run_delivery_bundle.py -q` passed after propagating objective blocker state into the local acceptance row.
+- `python -m pytest tests/test_run_delivery_bundle.py tests/test_runtime_environment_files.py tests/test_quickstart_docs.py tests/test_release_audit_docs.py -q` passed with 18 tests.
+- `python -m pytest tests -q` passed with 431 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 47`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `bash scripts/run_local_acceptance.sh` exited 0 and printed `Final-stage blocker: Docker/Apptainer reproducibility.`
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` exited 0.
+- `rg -n "local_acceptance_summary|final_stage_blocker|overall=blocked" results/delivery_bundle/delivery_manifest.tsv results/delivery_bundle/delivery_bundle.md results/local_acceptance/local_acceptance_summary.md` confirmed delivery bundle and local acceptance agree on the Docker/Apptainer final-stage blocker.
+- `sed -n '1,8p' results/release_checks/release_checks.md && sed -n '1,8p' results/objective_audit/objective_audit.md` confirmed objective audit remains `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
+- hash: pending
+- message: `fix: propagate local acceptance blocker to delivery bundle`
+- files: delivery bundle builder, delivery bundle test, and history entry.
+
+Next:
+- Continue final MVP hardening while Docker/Apptainer remain the final-stage runtime blocker.
+
 ## 2026-06-27 11:13 - Surface final-stage blocker in local acceptance
 
 Context:
