@@ -34,6 +34,47 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 12:15 - List figure gallery in local acceptance handoff output
+
+Context:
+- The active `/goal` now has a global paper-level figure gallery in the delivery bundle.
+- `scripts/run_local_acceptance.sh` refreshed and generated the gallery, but the final `Primary handoff files` list did not print `figure_gallery.tsv` or `figure_gallery.md`.
+- A user running the local acceptance command could miss the new global plot index even though it existed on disk.
+
+Decisions:
+- Add the TSV and Markdown figure gallery paths to the local acceptance primary handoff list.
+- Keep the local acceptance summary itself unchanged because it remains a compact pass/fail/blocked status table.
+
+Added:
+- Primary handoff terminal lines for `${DELIVERY_OUTDIR}/figure_gallery.tsv`.
+- Primary handoff terminal lines for `${DELIVERY_OUTDIR}/figure_gallery.md`.
+- Test assertions that the local acceptance script lists both gallery files.
+
+Modified:
+- `scripts/run_local_acceptance.sh`
+- `tests/test_local_acceptance_script.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_local_acceptance_script.py -q` first failed because `${DELIVERY_OUTDIR}/figure_gallery.tsv` was absent from the script.
+- `python -m pytest tests/test_local_acceptance_script.py -q` passed with 2 tests after updating the primary handoff list.
+- `python -m pytest tests -q` passed with 431 tests.
+- `bash scripts/run_local_acceptance.sh` exited 0 and printed both `results/delivery_bundle/figure_gallery.tsv` and `results/delivery_bundle/figure_gallery.md` under `Primary handoff files`.
+- `sed -n '1,10p' results/release_checks/release_checks.md` confirmed `Passed: 47`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `sed -n '1,16p' results/local_acceptance/local_acceptance_summary.md` confirmed local acceptance keeps `Overall status: blocked` only for `final_stage_blocker`.
+- `sed -n '1,10p' results/objective_audit/objective_audit.md` confirmed objective audit remains `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
+- hash: pending
+- message: `docs: list figure gallery in acceptance handoff`
+- files: local acceptance script, local acceptance script test, and history entry.
+
+Next:
+- Continue final MVP hardening while Docker/Apptainer remain the final-stage runtime blocker.
+
 ## 2026-06-27 12:09 - Add global paper-level figure gallery to delivery bundle
 
 Context:

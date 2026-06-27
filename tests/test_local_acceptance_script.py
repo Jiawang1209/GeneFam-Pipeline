@@ -55,6 +55,8 @@ def test_local_acceptance_script_runs_release_gate_and_quickstart():
     assert "results/handoff/handoff_report.md" in text
     assert "${DELIVERY_OUTDIR}/delivery_manifest.tsv" in text
     assert "${DELIVERY_OUTDIR}/delivery_bundle.md" in text
+    assert "${DELIVERY_OUTDIR}/figure_gallery.tsv" in text
+    assert "${DELIVERY_OUTDIR}/figure_gallery.md" in text
     assert "${PUBLICATION_OUTDIR}/publication_report_audit.md" in text
     assert "${PUBLICATION_OUTDIR}/wgd_publication_report_audit.md" in text
     assert "${REPORT_INDEX_OUTDIR}/standard_report_index_audit.md" in text
