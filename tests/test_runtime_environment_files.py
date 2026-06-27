@@ -207,10 +207,12 @@ def test_readme_points_to_final_handoff_report():
     assert "results/delivery_bundle/figure_gallery.md" in readme
     assert "figure_gallery_audit" in readme
     assert "delivery_manifest_audit" in readme
+    assert "local acceptance summary" in readme
     assert "plot_manifest coverage" in readme
     assert "figure_traceability_matrix" in readme
     assert "global paper-level figure gallery" in readme
-    assert "release, quickstart, publication-report audit, and delivery-bundle steps" in readme
+    assert "release, quickstart, publication-report audit, report-index audit" in readme
+    assert "and delivery-bundle steps" in readme
     assert "paper-style report closure" in readme
     assert "report-index closure" in readme
     assert "figure_interpretations.md" in readme

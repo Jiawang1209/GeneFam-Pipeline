@@ -135,6 +135,7 @@ The global paper-level figure gallery is the fastest way to inspect plots across
 
 Each gallery row links a plot PDF to its `figure_interpretations.md`, `software_versions.tsv`, `final_report.md`, and `figure_traceability_matrix` anchor.
 The delivery manifest audit verifies that available and blocked handoff index paths resolve to real files or accepted runtime locators.
+The local acceptance summary records both `figure_gallery_audit` and `delivery_manifest_audit` as separate pass/fail rows so the final handoff index and global plot gallery can be checked without opening the full release table.
 
 ```bash
 python bin/genefam/run_delivery_bundle.py \

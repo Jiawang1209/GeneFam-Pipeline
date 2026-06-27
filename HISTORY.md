@@ -12055,6 +12055,58 @@ Commit:
 Next:
 - Continue final MVP hardening with container/runtime packaging still intentionally deferred until the analysis flow and report gates are fully stable.
 
+## 2026-06-27 - Surface delivery audits in local acceptance
+
+Timestamp:
+- 2026-06-27 15:03 CST
+
+Context:
+- The release gate already ran `delivery bundle figure gallery audit` and `delivery bundle manifest audit`.
+- The local acceptance summary did not list those two delivery audits as separate pass/fail rows, so a user opening only `results/local_acceptance/local_acceptance_summary.md` could miss whether the global plot gallery and final handoff manifest had been checked.
+
+Decisions:
+- Add `figure_gallery_audit` and `delivery_manifest_audit` rows to the local acceptance summary.
+- Extract both statuses from `results/release_checks/release_checks.tsv` inside `scripts/run_local_acceptance.sh`.
+- Print both delivery-audit Markdown files in the primary handoff file list and fail the wrapper if either required audit fails.
+- Update README and quickstart docs so the local acceptance summary is documented as covering the two delivery audits.
+
+Added:
+- Local acceptance row for `figure_gallery_audit`.
+- Local acceptance row for `delivery_manifest_audit`.
+- Script assertions and docs assertions for the new local acceptance rows.
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/write_local_acceptance_summary.py`
+- `docs/quickstart.md`
+- `scripts/run_local_acceptance.sh`
+- `tests/test_local_acceptance_script.py`
+- `tests/test_quickstart_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_write_local_acceptance_summary.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_write_local_acceptance_summary.py tests/test_local_acceptance_script.py -q` first failed because `write_acceptance_summary()` and `build_acceptance_rows()` did not accept `figure_gallery_status`/`delivery_manifest_status`, and the wrapper did not extract those statuses.
+- `python -m pytest tests/test_write_local_acceptance_summary.py tests/test_local_acceptance_script.py -q` passed with 5 tests after implementation.
+- `python -m pytest tests/test_write_local_acceptance_summary.py tests/test_local_acceptance_script.py tests/test_quickstart_docs.py tests/test_runtime_environment_files.py -q` first failed because a README test still expected the older shorter local acceptance description.
+- `python -m pytest tests/test_write_local_acceptance_summary.py tests/test_local_acceptance_script.py tests/test_quickstart_docs.py tests/test_runtime_environment_files.py -q` passed with 21 tests after updating the docs contract.
+- `python -m pytest tests -q` passed with 444 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0.
+- `bash scripts/run_local_acceptance.sh` exited 0 and printed both `results/delivery_bundle_smoke/figure_gallery_audit.md` and `results/delivery_bundle_smoke/delivery_manifest_audit.md` in the primary handoff file list; it reported the expected final-stage blocker: Docker/Apptainer reproducibility.
+- `cat results/local_acceptance/local_acceptance_summary.tsv` confirmed `figure_gallery_audit` and `delivery_manifest_audit` rows both passed.
+- `rg -n "figure_gallery_audit|delivery_manifest_audit|Overall status|Passed: 50|Required failed: 0|Optional failed: 2" results/local_acceptance/local_acceptance_summary.md results/release_checks/release_checks.md` confirmed local acceptance exposes the delivery audits and release checks remain `Passed: 50`, `Required failed: 0`, `Optional failed: 2`.
+- `python -m pytest tests -q` passed again with 444 tests after local acceptance refreshed generated outputs.
+
+Commit:
+- pending
+
+Next:
+- Continue final MVP hardening by making the final handoff/report surfaces easier to audit end to end; Docker/Apptainer remains the final packaging-stage runtime blocker.
+
 ## 2026-06-27 - Audit delivery manifest handoff paths
 
 Timestamp:

@@ -16,6 +16,8 @@ def test_write_local_acceptance_summary_records_step_statuses(tmp_path):
         standard_report_index_status=0,
         wgd_publication_status=0,
         wgd_report_index_status=0,
+        figure_gallery_status=0,
+        delivery_manifest_status=0,
         quickstart_status=0,
         delivery_status=0,
         final_stage_blocker_status="blocked",
@@ -68,6 +70,20 @@ def test_write_local_acceptance_summary_records_step_statuses(tmp_path):
             "note": "WGD report-index closure evidence",
         },
         {
+            "step": "figure_gallery_audit",
+            "status": "passed",
+            "exit_code": "0",
+            "path": "results/delivery_bundle_smoke/figure_gallery_audit.md",
+            "note": "global figure gallery coverage and link evidence",
+        },
+        {
+            "step": "delivery_manifest_audit",
+            "status": "passed",
+            "exit_code": "0",
+            "path": "results/delivery_bundle_smoke/delivery_manifest_audit.md",
+            "note": "delivery manifest handoff path evidence",
+        },
+        {
             "step": "quickstart_handoff",
             "status": "passed",
             "exit_code": "0",
@@ -99,6 +115,8 @@ def test_write_local_acceptance_summary_records_step_statuses(tmp_path):
     assert "results/publication_report_audit/wgd_publication_report_audit.md" in markdown
     assert "results/report_index_audit/wgd_report_index_audit.md" in markdown
     assert "WGD report-index closure evidence" in markdown
+    assert "results/delivery_bundle_smoke/figure_gallery_audit.md" in markdown
+    assert "results/delivery_bundle_smoke/delivery_manifest_audit.md" in markdown
     assert "results/delivery_bundle/delivery_bundle.md" in markdown
     assert "final_stage_blocker" in markdown
     assert "Docker/Apptainer reproducibility" in markdown
@@ -113,6 +131,8 @@ def test_write_local_acceptance_summary_marks_overall_blocked_when_only_final_st
         standard_report_index_status=0,
         wgd_publication_status=0,
         wgd_report_index_status=0,
+        figure_gallery_status=0,
+        delivery_manifest_status=0,
         quickstart_status=0,
         delivery_status=0,
         final_stage_blocker_status="blocked",
@@ -137,6 +157,8 @@ def test_build_acceptance_rows_reports_all_passed_status():
         standard_report_index_status=0,
         wgd_publication_status=0,
         wgd_report_index_status=0,
+        figure_gallery_status=0,
+        delivery_manifest_status=0,
         quickstart_status=0,
         delivery_status=0,
         final_stage_blocker_status="passed",
@@ -155,6 +177,8 @@ def test_build_acceptance_rows_reports_all_passed_status():
         Path("report_index/standard_report_index_audit.md"),
         Path("publication/wgd_publication_report_audit.md"),
         Path("report_index/wgd_report_index_audit.md"),
+        Path("results/delivery_bundle_smoke/figure_gallery_audit.md"),
+        Path("results/delivery_bundle_smoke/delivery_manifest_audit.md"),
         Path("quickstart/quickstart_summary.md"),
         Path("delivery/delivery_bundle.md"),
         Path("results/objective_audit/objective_audit.md"),

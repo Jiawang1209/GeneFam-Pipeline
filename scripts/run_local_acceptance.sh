@@ -78,6 +78,38 @@ raise SystemExit(1)
 PY
 )
 wgd_report_index_status=$?
+figure_gallery_status=$("$PYTHON_BIN" - "$RELEASE_OUTDIR/release_checks.tsv" <<'PY'
+import csv
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+if not path.exists():
+    raise SystemExit(1)
+with path.open("r", encoding="utf-8", newline="") as handle:
+    for row in csv.DictReader(handle, delimiter="\t"):
+        if row.get("check") == "delivery bundle figure gallery audit":
+            raise SystemExit(int(row.get("exit_code") or 1))
+raise SystemExit(1)
+PY
+)
+figure_gallery_status=$?
+delivery_manifest_status=$("$PYTHON_BIN" - "$RELEASE_OUTDIR/release_checks.tsv" <<'PY'
+import csv
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+if not path.exists():
+    raise SystemExit(1)
+with path.open("r", encoding="utf-8", newline="") as handle:
+    for row in csv.DictReader(handle, delimiter="\t"):
+        if row.get("check") == "delivery bundle manifest audit":
+            raise SystemExit(int(row.get("exit_code") or 1))
+raise SystemExit(1)
+PY
+)
+delivery_manifest_status=$?
 final_stage_blocker_note=$("$PYTHON_BIN" - "results/objective_audit/objective_audit.tsv" <<'PY'
 import csv
 import sys
@@ -123,6 +155,8 @@ echo "[GeneFam] Writing local acceptance summary into ${ACCEPTANCE_OUTDIR}"
   --standard-report-index-status "$standard_report_index_status" \
   --wgd-publication-status "$wgd_publication_status" \
   --wgd-report-index-status "$wgd_report_index_status" \
+  --figure-gallery-status "$figure_gallery_status" \
+  --delivery-manifest-status "$delivery_manifest_status" \
   --quickstart-status "$quickstart_status" \
   --delivery-status "$delivery_status" \
   --final-stage-blocker-status "$final_stage_blocker_status" \
@@ -156,6 +190,8 @@ echo "- ${PUBLICATION_OUTDIR}/publication_report_audit.md"
 echo "- ${PUBLICATION_OUTDIR}/wgd_publication_report_audit.md"
 echo "- ${REPORT_INDEX_OUTDIR}/standard_report_index_audit.md"
 echo "- ${REPORT_INDEX_OUTDIR}/wgd_report_index_audit.md"
+echo "- results/delivery_bundle_smoke/figure_gallery_audit.md"
+echo "- results/delivery_bundle_smoke/delivery_manifest_audit.md"
 echo "- ${QUICKSTART_OUTDIR}/quickstart_summary.md"
 echo "- ${ACCEPTANCE_OUTDIR}/local_acceptance_summary.tsv"
 echo "- ${ACCEPTANCE_OUTDIR}/local_acceptance_summary.md"
@@ -176,6 +212,12 @@ if [ "$wgd_publication_status" -ne 0 ]; then
 fi
 if [ "$wgd_report_index_status" -ne 0 ]; then
   echo "[GeneFam] WGD report index audit exited with status ${wgd_report_index_status}."
+fi
+if [ "$figure_gallery_status" -ne 0 ]; then
+  echo "[GeneFam] Figure gallery audit exited with status ${figure_gallery_status}."
+fi
+if [ "$delivery_manifest_status" -ne 0 ]; then
+  echo "[GeneFam] Delivery manifest audit exited with status ${delivery_manifest_status}."
 fi
 if [ "$final_stage_blocker_status" != "passed" ]; then
   echo "[GeneFam] Final-stage blocker: ${final_stage_blocker_note}."
@@ -212,6 +254,12 @@ if [ "$wgd_publication_status" -ne 0 ]; then
 fi
 if [ "$wgd_report_index_status" -ne 0 ]; then
   exit "$wgd_report_index_status"
+fi
+if [ "$figure_gallery_status" -ne 0 ]; then
+  exit "$figure_gallery_status"
+fi
+if [ "$delivery_manifest_status" -ne 0 ]; then
+  exit "$delivery_manifest_status"
 fi
 
 if [ "$quickstart_status" -ne 0 ]; then
