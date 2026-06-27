@@ -70,7 +70,7 @@ Verification:
 - `rg -n "YAML-driven species selection|validate manifest config|species manifest" results/objective_audit/objective_audit.md results/release_checks/release_checks.md` confirmed the objective audit still uses the now-deeper manifest config validation as YAML-driven species-selection evidence.
 
 Commit:
-- hash: pending
+- hash: 8da8d7c4aba0b029da43cf6007122306505e5fea
 - message: `test: validate species manifest contents`
 - files: manifest-mode config validation, regression tests, and history entry.
 
