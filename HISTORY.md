@@ -67,12 +67,11 @@ Verification:
 - `results/release_checks/release_checks.tsv` includes `runtime bootstrap shell syntax	true	passed	0	bash -n results/readiness/runtime_bootstrap.sh`.
 
 Commit:
-- hash: pending
-- message: pending
+- hash: 17d05de
+- message: feat: gate runtime bootstrap shell syntax
 - files: release check runner, release check tests, and history
 
 Next:
-- Backfill this entry with the commit hash after committing.
 - When Docker/Apptainer runtimes are available, run `bash results/readiness/runtime_bootstrap.sh` and then `bash scripts/run_local_acceptance.sh` to clear the remaining final-stage blocker.
 
 ## 2026-06-27 22:33 - Make container bootstrap runtime-aware
