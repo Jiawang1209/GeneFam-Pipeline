@@ -267,6 +267,17 @@ def test_load_standard_params_resolves_yaml_species_order_relative_to_repo_root(
     )
 
 
+def test_publication_modules_example_enables_full_standard_visualization_set():
+    params = load_standard_params(Path("configs/publication_modules.example.yaml"))
+
+    assert params["run_feature_summary"] == "true"
+    assert params["run_mcscanx_circlize"] == "true"
+    assert params["run_promoter"] == "true"
+    assert params["run_promoter_cis"] == "true"
+    assert params["run_ppi"] == "true"
+    assert params["expression_matrix"].endswith("tests/fixtures/expression/family_expression.tsv")
+
+
 def test_load_standard_params_reads_yaml_publication_module_inputs(tmp_path):
     config = tmp_path / "publication_modules.yaml"
     config.write_text(

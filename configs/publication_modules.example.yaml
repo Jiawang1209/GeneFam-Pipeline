@@ -1,0 +1,109 @@
+project:
+  name: GDSL_publication_modules_demo
+  outdir: results/GDSL_publication_modules_demo
+
+runtime:
+  environment: GeneFamilyFlow
+  r_bin: /usr/local/bin/R
+
+input:
+  mode: auto
+  root: tests/fixtures/species_bank
+  required:
+    pep: true
+    gff3: true
+    cds: false
+    genome: true
+  patterns:
+    pep:
+      - "*.pep.fa"
+      - "*.pep.fasta"
+      - "*.protein.fa"
+      - "*.faa"
+    cds:
+      - "*.cds.fa"
+      - "*.cds.fasta"
+    genome:
+      - "*.genome.fa"
+      - "*.genome.fasta"
+      - "*.dna.fa"
+      - "*.dna.fasta"
+      - "*.fna"
+    gff3:
+      - "*.gff3"
+      - "*.gff"
+
+species:
+  include:
+    - Arabidopsis_thaliana
+    - Brassica_rapa
+  exclude: []
+
+run:
+  species_group: null
+
+gene_family:
+  name: GDSL
+  hmm_profiles:
+    - id: PF00657
+      path: tests/fixtures/hmmer_profiles/PF00657.demo.hmm
+  reference_peptides: tests/fixtures/reference/GDSL_reference.pep.fa
+  min_length: null
+  max_length: null
+
+identification:
+  use_hmmer: true
+  use_diamond: true
+  hmm_evalue: 1.0e-10
+  diamond_evalue: 1.0e-10
+  final_rule: intersection
+
+domain_filtering:
+  hmmer_max_evalue: 1.0e-10
+  hmmer_min_bitscore: 50.0
+  hmmer_min_domain_coverage: 0.35
+
+expression:
+  matrix: tests/fixtures/expression/family_expression.tsv
+  metadata: tests/fixtures/expression/sample_metadata.tsv
+
+wgd_events:
+  named_event_annotation: false
+  event_map: null
+
+plotting:
+  reuse_reference_scripts: true
+  gene_family_species_order: tests/fixtures/species_order/species_tree_order.tsv
+  syntenic_pairs: tests/fixtures/mcscanx/syntenic_pairs.tsv
+  reference_script_roots:
+    - Reference/Long_Weixiong_20240323_1_GDSL/R
+    - Reference/Large-Scale Plant Genomic Identification and Analysis Uncover ASMT:COMT Copy Number Variation Driving Melatonin Dosage Balance./source_code
+  reuse_policy: adapt_not_modify
+
+promoter:
+  cis_elements: tests/fixtures/promoter_cis/plantcare.tsv
+
+ppi:
+  edges: tests/fixtures/ppi/ppi_edges.tsv
+  nodes: tests/fixtures/ppi/ppi_nodes.tsv
+
+dev:
+  mock_external_tools: true
+  mock_evidence_dir: tests/fixtures/mock_evidence
+
+modules:
+  identification: true
+  domain_filtering: true
+  family_summary: true
+  feature_summary: true
+  phylogeny: false
+  motif: false
+  synteny: true
+  promoter: true
+  promoter_cis: true
+  ppi: true
+  duplication_retention: false
+  kaks: false
+  chromosome_location: true
+  expression: true
+  report: true

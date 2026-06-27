@@ -110,6 +110,7 @@ On the current development machine, Docker/Apptainer reproducibility is expected
 ## 4. Primary YAML Entrypoints
 
 - `configs/example.config.yaml`: primary species-bank YAML entrypoint for choosing target species, HMM profiles, DIAMOND references, optional expression matrix input, and enabled modules.
+- `configs/publication_modules.example.yaml`: YAML-only standard visualization entrypoint for report-scale feature summary, MCScanX/circlize, promoter cis-element, PPI ggNetView, and expression heatmap smoke evidence.
 - `configs/wgd_events.brassicaceae.yaml`: primary WGD event YAML entrypoint for mapping anonymous Ks-supported WGD layers to named gamma, beta, alpha, theta, or custom events.
 - `configs/manifest.example.yaml`: manifest-mode YAML entrypoint when species files are listed in a TSV instead of discovered from one folder per species.
 

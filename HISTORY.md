@@ -12460,6 +12460,61 @@ Commit:
 Next:
 - Keep Docker/Apptainer runtime verification as the remaining final-stage external blocker; continue polishing Reference-level figure fidelity where useful.
 
+## 2026-06-27 - Add YAML-only publication visualization release smoke
+
+Timestamp:
+- 2026-06-27 20:20 CST
+
+Context:
+- The standard report-scale visualization smoke could already generate promoter cis-element, MCScanX/circlize, PPI ggNetView, expression heatmap, and feature-summary outputs.
+- The release gate still enabled those modules with a long list of CLI switches, which was weaker evidence than the project goal of YAML-driven publication modules.
+
+Decisions:
+- Add `configs/publication_modules.example.yaml` as the release-gate YAML-only entrypoint for standard-branch report-scale visualization.
+- Add a strict release check for `configs/publication_modules.example.yaml --check-paths`.
+- Change `Nextflow standard visualization smoke` to use `--config configs/publication_modules.example.yaml` and keep the same `results/nextflow_standard_feature_smoke` output path for downstream publication/report-index/gallery audits.
+- Keep module-specific CLI switches available for debugging, but do not use them as the release-gate proof of the publication visualization branch.
+
+Added:
+- `configs/publication_modules.example.yaml`.
+- Release-check coverage for `validate publication modules config`.
+- Regression test requiring the publication YAML to enable the full standard visualization set.
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `README.zh-CN.md`
+- `bin/genefam/run_release_checks.py`
+- `docs/quickstart.md`
+- `docs/release_audit.md`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_nextflow_standard_smoke.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_nextflow_standard_visualization_smoke_before_wgd -q` first failed because the release gate still used CLI switches instead of `configs/publication_modules.example.yaml`.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_validate_publication_modules_config_before_visualization_smoke -q` first failed because no release check validated the publication module YAML.
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py::test_publication_modules_example_enables_full_standard_visualization_set -q` first failed because `configs/publication_modules.example.yaml` omitted `modules.feature_summary: true`, causing the YAML-only smoke to run with `--run_feature_summary false`.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_validate_publication_modules_config_before_visualization_smoke tests/test_run_release_checks.py::test_default_checks_include_nextflow_standard_visualization_smoke_before_wgd -q` passed after wiring release checks to the new YAML.
+- `python bin/genefam/validate_config.py configs/publication_modules.example.yaml --check-paths` reported `Configuration OK`.
+- `python -m pytest tests/test_release_audit_docs.py tests/test_quickstart_docs.py tests/test_run_release_checks.py -q` passed with 61 tests after documentation updates.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --config configs/publication_modules.example.yaml --outdir results/nextflow_standard_feature_smoke` exited 0.
+- `rg -n "feature_summary|run_feature_summary" results/nextflow_standard_feature_smoke/nextflow_standard_smoke.tsv results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md` confirmed `--run_feature_summary true`, a `feature_summary` plot-manifest row, and the `#feature_summary` interpretation anchor.
+- `python bin/genefam/run_delivery_bundle_smoke.py --outdir results/delivery_bundle_smoke && python bin/genefam/audit_figure_gallery.py --figure-gallery results/delivery_bundle_smoke/delivery_bundle/figure_gallery.tsv --plot-manifest standard=results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --plot-manifest wgd=results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --out-tsv results/delivery_bundle_smoke/figure_gallery_audit.tsv --out-md results/delivery_bundle_smoke/figure_gallery_audit.md` exited 0 after the feature-summary anchor was restored.
+- `python -m pytest tests -q` passed with 466 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and wrote `Passed: 52`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`.
+- `rg -n "validate publication modules config|Nextflow standard visualization smoke|Release ready|Required failed|Optional failed" results/release_checks/release_checks.md results/release_checks/release_checks.tsv` confirmed the release gate validates the publication YAML and runs the standard visualization smoke with `--config configs/publication_modules.example.yaml`.
+- `bash scripts/run_local_acceptance.sh` exited 0, refreshed the delivery bundle, and reported the expected `final_stage_blocker`: Docker/Apptainer reproducibility.
+
+Commit:
+- pending
+
+Next:
+- Commit this YAML-only release-gate hardening and backfill the commit hash in this history entry.
+
 ## 2026-06-27 - Drive publication visualization modules from YAML
 
 Timestamp:

@@ -182,6 +182,16 @@ def test_default_checks_include_reference_governance_before_readiness():
     assert "--outdir results/reference_governance" in command
 
 
+def test_default_checks_validate_publication_modules_config_before_visualization_smoke():
+    checks = default_checks()
+    names = [check.name for check in checks]
+
+    assert names.index("validate publication modules config") < names.index("Nextflow standard visualization smoke")
+    validate = next(check for check in checks if check.name == "validate publication modules config")
+    command = " ".join(validate.command)
+    assert "bin/genefam/validate_config.py configs/publication_modules.example.yaml --check-paths" in command
+
+
 def test_default_checks_include_r_runtime_health_before_r_plotting_smokes():
     checks = default_checks()
     names = [check.name for check in checks]
@@ -706,17 +716,18 @@ def test_default_checks_include_nextflow_standard_visualization_smoke_before_wgd
     smoke = next(check for check in default_checks() if check.name == "Nextflow standard visualization smoke")
     command = " ".join(smoke.command)
     assert "bin/genefam/run_nextflow_standard_smoke.py" in command
-    assert "--run-feature-summary" in command
-    assert "--run-mcscanx-circlize" in command
-    assert "--syntenic-pairs tests/fixtures/mcscanx/syntenic_pairs.tsv" in command
-    assert "--run-promoter" in smoke.command
-    assert "--run-promoter-cis" in command
-    assert "--promoter-cis-elements tests/fixtures/promoter_cis/plantcare.tsv" in command
-    assert "--run-ppi" in command
-    assert "--ppi-edges tests/fixtures/ppi/ppi_edges.tsv" in command
-    assert "--ppi-nodes tests/fixtures/ppi/ppi_nodes.tsv" in command
-    assert "--expression-matrix tests/fixtures/expression/family_expression.tsv" in command
-    assert "--expression-metadata tests/fixtures/expression/sample_metadata.tsv" in command
+    assert "--config configs/publication_modules.example.yaml" in command
+    assert "--run-feature-summary" not in command
+    assert "--run-mcscanx-circlize" not in command
+    assert "--syntenic-pairs" not in command
+    assert "--run-promoter" not in smoke.command
+    assert "--run-promoter-cis" not in command
+    assert "--promoter-cis-elements" not in command
+    assert "--run-ppi" not in command
+    assert "--ppi-edges" not in command
+    assert "--ppi-nodes" not in command
+    assert "--expression-matrix" not in command
+    assert "--expression-metadata" not in command
     assert "--outdir results/nextflow_standard_feature_smoke" in command
 
 

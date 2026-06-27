@@ -48,6 +48,7 @@ The species ID defaults to the folder name. A run can analyze all species, a man
 - `HISTORY.md`: single-file development diary.
 - `configs/example.config.yaml`: example analysis configuration.
 - `configs/advanced_modules.example.yaml`: advanced module configuration example.
+- `configs/publication_modules.example.yaml`: YAML-only standard visualization smoke configuration for report-scale figures.
 - `docs/input_contract.md`: input format contract.
 - `docs/quickstart.md`: shortest verified local run path.
 - `docs/advanced_module_examples.md`: safe examples for enabling advanced modules.

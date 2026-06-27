@@ -448,6 +448,7 @@ results/local_acceptance/local_acceptance_summary.md
 
 - `configs/example.config.yaml`：最基础配置示例
 - `configs/advanced_modules.example.yaml`：高级模块配置示例
+- `configs/publication_modules.example.yaml`：论文级标准分支可视化 smoke 的 YAML-only 配置示例
 - `docs/input_contract.md`：输入文件规范
 - `docs/quickstart.md`：快速运行说明
 - `docs/release_audit.md`：开发目标和证据对照表
