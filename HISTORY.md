@@ -243,12 +243,12 @@ Verification:
 - `python -m pytest tests/test_audit_delivery_manifest.py tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` passed with 4 tests after updating the release audit documentation.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: a8b16b569ad587f8049083457191a53bb947a2f6
+- message: test: require delivery manifest handoff items
 - files: delivery manifest audit, delivery manifest audit tests, release audit docs, and history entry.
 
 Next:
-- Run full tests and release/local acceptance checks, then commit and backfill this history entry.
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
 
 ## 2026-06-27 15:51 - Surface Reference gitignore evidence in delivery bundle
 
