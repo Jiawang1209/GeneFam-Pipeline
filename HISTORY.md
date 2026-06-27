@@ -12553,7 +12553,9 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` exited 0, refreshed the delivery bundle, and reported the expected `final_stage_blocker`: Docker/Apptainer reproducibility.
 
 Commit:
-- pending
+- hash: 32255949bb25e6a23bb76fb1c0896a46dfbdbc49
+- message: test: require publication yaml objective evidence
+- files: objective audit rule, objective audit tests, history
 
 Next:
 - Commit this objective-audit hardening and backfill the commit hash in this history entry.
