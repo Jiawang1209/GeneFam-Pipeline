@@ -283,10 +283,10 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
 
     gallery_text = gallery.read_text(encoding="utf-8")
     assert gallery_text.startswith(
-        "branch\tplot_key\tplot_path\tplot_description\tfigure_interpretations\tsoftware_versions\tfinal_report\n"
+        "branch\tplot_key\tplot_path\tplot_description\tfigure_interpretations\tsoftware_versions\tfinal_report\ttraceability_matrix\n"
     )
     assert (
-        "standard\ttree_features\tresults/nextflow_standard_feature_smoke/standard/plots/tree_features.pdf\tTree, motif, gene-structure, and domain composite plot\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md"
+        "standard\ttree_features\tresults/nextflow_standard_feature_smoke/standard/plots/tree_features.pdf\tTree, motif, gene-structure, and domain composite plot\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md#figure-traceability-matrix"
         in gallery_text
     )
     assert (
@@ -311,3 +311,5 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "tree_features" in gallery_md_text
     assert "ks_distribution" in gallery_md_text
     assert "software_versions.tsv" in gallery_md_text
+    assert "traceability_matrix" in gallery_md_text
+    assert "final_report.md#figure-traceability-matrix" in gallery_md_text

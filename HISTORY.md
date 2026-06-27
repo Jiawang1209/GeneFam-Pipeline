@@ -11456,6 +11456,46 @@ Commit:
 Next:
 - Keep Docker/Apptainer runtime verification as the remaining final-stage external blocker; continue polishing Reference-level figure fidelity where useful.
 
+## 2026-06-27 - Expose figure traceability links in delivery gallery
+
+Timestamp:
+- 2026-06-27 13:28 CST
+
+Context:
+- Final reports now contain a `Figure Traceability Matrix`, but the top-level delivery bundle figure gallery only linked plot files, close-reading reports, software versions, and final reports.
+- For a paper-style handoff, each gallery row should directly expose the exact final-report traceability anchor so users can audit every figure from the global index.
+
+Decisions:
+- Add a machine-readable `traceability_matrix` column to `figure_gallery.tsv`.
+- Add the same `traceability_matrix` field to `figure_gallery.md`.
+- Derive the traceability link automatically from each row's `final_report` path using `#figure-traceability-matrix`, so future standard/WGD plots inherit the link without repeating constants.
+
+Added:
+- `traceability_matrix` column in the delivery bundle figure gallery TSV/Markdown outputs.
+- Regression assertions that the gallery header and `tree_features` row include the traceability anchor.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_run_delivery_bundle.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py -q` first failed because `figure_gallery.tsv` did not include `traceability_matrix`.
+- After implementation, `python -m pytest tests/test_run_delivery_bundle.py -q` passed with 1 test.
+- `python -m pytest tests -q` passed with 434 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0; the generated TSV reported 50 total checks, 0 required failures, and 2 optional failures for missing Docker and Apptainer runtimes.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed `results/delivery_bundle/figure_gallery.tsv` plus `results/delivery_bundle/figure_gallery.md`; final-stage blocker remains Docker/Apptainer reproducibility.
+- `head -n 3 results/delivery_bundle/figure_gallery.tsv` and `rg -n "traceability_matrix|figure-traceability-matrix" results/delivery_bundle/figure_gallery.md results/delivery_bundle/figure_gallery.tsv` confirmed every standard/WGD figure row exposes the traceability anchor.
+
+Commit:
+- pending; hash will be backfilled after the code commit.
+
+Next:
+- Continue final MVP hardening with Docker/Apptainer packaging intentionally deferred until the analysis/report flow remains stable.
+
 ## 2026-06-27 - Require raw MCScanX KaKs Nextflow evidence for WGD audits
 
 Timestamp:

@@ -17,6 +17,7 @@ FIGURE_GALLERY_FIELDNAMES = [
     "figure_interpretations",
     "software_versions",
     "final_report",
+    "traceability_matrix",
 ]
 
 
@@ -590,7 +591,16 @@ def write_figure_gallery_tsv(out_path: Path) -> None:
     with out_path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=FIGURE_GALLERY_FIELDNAMES, delimiter="\t")
         writer.writeheader()
-        writer.writerows(FIGURE_GALLERY_ROWS)
+        writer.writerows(_figure_gallery_rows_with_traceability())
+
+
+def _figure_gallery_rows_with_traceability() -> list[dict[str, str]]:
+    rows = []
+    for row in FIGURE_GALLERY_ROWS:
+        enriched = dict(row)
+        enriched["traceability_matrix"] = f"{row['final_report']}#figure-traceability-matrix"
+        rows.append(enriched)
+    return rows
 
 
 def write_figure_gallery_markdown(out_path: Path) -> None:
@@ -599,12 +609,12 @@ def write_figure_gallery_markdown(out_path: Path) -> None:
         "",
         "This gallery is the global plot index for the paper-level standard and WGD result packages.",
         "",
-        "| branch | plot_key | plot_path | description | close-reading report | software versions | final report |",
-        "|---|---|---|---|---|---|---|",
+        "| branch | plot_key | plot_path | description | close-reading report | software versions | final report | traceability_matrix |",
+        "|---|---|---|---|---|---|---|---|",
     ]
-    for row in FIGURE_GALLERY_ROWS:
+    for row in _figure_gallery_rows_with_traceability():
         lines.append(
-            "| {branch} | {plot_key} | `{plot_path}` | {plot_description} | `{figure_interpretations}` | `{software_versions}` | `{final_report}` |".format(
+            "| {branch} | {plot_key} | `{plot_path}` | {plot_description} | `{figure_interpretations}` | `{software_versions}` | `{final_report}` | `{traceability_matrix}` |".format(
                 **row
             )
         )
