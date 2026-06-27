@@ -171,6 +171,17 @@ def test_default_checks_generate_runtime_bootstrap_after_readiness_audit():
     assert "--readiness results/readiness/command_readiness.tsv" in " ".join(bootstrap.command)
 
 
+def test_default_checks_validate_runtime_bootstrap_shell_after_plan():
+    checks = default_checks()
+    names = [check.name for check in checks]
+
+    assert names.index("runtime bootstrap shell syntax") > names.index("runtime bootstrap plan")
+    assert names.index("container materials audit") > names.index("runtime bootstrap shell syntax")
+    syntax = next(check for check in checks if check.name == "runtime bootstrap shell syntax")
+    assert syntax.required is True
+    assert syntax.command == ["bash", "-n", "results/readiness/runtime_bootstrap.sh"]
+
+
 def test_default_checks_include_reference_governance_before_readiness():
     checks = default_checks()
     names = [check.name for check in checks]

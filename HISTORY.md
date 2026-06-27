@@ -34,6 +34,47 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 22:40 - Gate runtime bootstrap shell syntax in release checks
+
+Context:
+- `runtime_bootstrap.sh` is now the main final-stage recovery entrypoint for Docker/Apptainer packaging.
+- The release gate generated the bootstrap shell but did not run a syntax check on the generated file.
+- A malformed bootstrap shell could remain invisible until the final container runtime stage.
+
+Decisions:
+- Add a required `runtime bootstrap shell syntax` release check.
+- Run `bash -n results/readiness/runtime_bootstrap.sh` immediately after generating the runtime bootstrap plan and before the container-materials audit.
+- Keep Docker/Apptainer profile smokes optional; this new check verifies shell syntax only and does not require either container runtime to be installed.
+
+Added:
+- Release-gate check `runtime bootstrap shell syntax`.
+- Regression test proving the syntax check is ordered after `runtime bootstrap plan` and before `container materials audit`.
+
+Modified:
+- `bin/genefam/run_release_checks.py`
+- `tests/test_run_release_checks.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_validate_runtime_bootstrap_shell_after_plan -q` first failed because the release gate did not include `runtime bootstrap shell syntax`.
+- `python -m pytest tests/test_run_release_checks.py -q` passed with 59 tests.
+- `python -m pytest tests -q` passed with 481 tests.
+- `bash scripts/run_local_acceptance.sh` completed.
+- `results/release_checks/release_checks.md` reports `Passed: 53`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`.
+- `results/release_checks/release_checks.tsv` includes `runtime bootstrap shell syntax	true	passed	0	bash -n results/readiness/runtime_bootstrap.sh`.
+
+Commit:
+- hash: pending
+- message: pending
+- files: release check runner, release check tests, and history
+
+Next:
+- Backfill this entry with the commit hash after committing.
+- When Docker/Apptainer runtimes are available, run `bash results/readiness/runtime_bootstrap.sh` and then `bash scripts/run_local_acceptance.sh` to clear the remaining final-stage blocker.
+
 ## 2026-06-27 22:33 - Make container bootstrap runtime-aware
 
 Context:

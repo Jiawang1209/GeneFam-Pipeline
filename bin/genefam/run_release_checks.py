@@ -676,6 +676,14 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "runtime bootstrap shell syntax",
+            [
+                "bash",
+                "-n",
+                "results/readiness/runtime_bootstrap.sh",
+            ],
+        ),
+        CheckSpec(
             "container materials audit",
             [
                 python,
