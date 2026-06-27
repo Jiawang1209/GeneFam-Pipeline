@@ -73,8 +73,8 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` completed; local acceptance remains `blocked` only by the final-stage Docker/Apptainer reproducibility item.
 
 Commit:
-- hash: pending
-- message: pending
+- hash: c947031
+- message: feat: make delivery bundle links audited
 - files: delivery bundle generator, delivery manifest audit, tests, and history
 
 Next:
