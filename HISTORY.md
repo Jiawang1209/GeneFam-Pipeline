@@ -71,12 +71,12 @@ Verification:
 - `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv --software-versions results/nextflow_wgd_smoke/wgd/report/software_versions.tsv --final-report results/nextflow_wgd_smoke/wgd/report/final_report.md --out-tsv results/publication_report_audit/wgd_publication_report_audit.tsv --out-md results/publication_report_audit/wgd_publication_report_audit.md` exited 0 and reported `Passed: 12`, `Failed: 0`, `Complete: true`.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: 2dfd8b7a4eebc614c371cac761259649eed2c2a1
+- message: test: expose non-detected software versions
 - files: publication report audit, publication audit tests, release/quickstart/readiness docs, README, and history entry.
 
 Next:
-- Run full tests and release/local acceptance checks, then commit and backfill this history entry.
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
 
 ## 2026-06-27 17:36 - Require delivery gallery traceability targets
 
