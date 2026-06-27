@@ -34,6 +34,48 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 09:06 - Require genome and GFF3 inputs for promoter cis-element module
+
+Context:
+- The active `/goal` requires promoter cis-element analysis and visualization.
+- `modules.promoter_cis` already required a cis-element annotation table, but did not require the genome FASTA and GFF3 evidence needed to extract promoter sequences.
+- Without these input flags, a YAML config could enable promoter cis-element analysis while declaring the required species input files unavailable.
+
+Decisions:
+- Require `input.required.gff3: true` when `modules.promoter_cis` is enabled.
+- Require `input.required.genome: true` when `modules.promoter_cis` is enabled.
+- Keep the existing `promoter.cis_elements` path requirement.
+
+Added:
+- Regression test that promoter cis-element config validation fails when GFF3 and genome input requirements are not enabled.
+
+Modified:
+- `bin/genefam/validate_config.py`
+- `tests/test_validate_config.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_validate_config.py::test_validate_config_reports_promoter_cis_requires_genome_and_gff3_inputs -q` first failed because the promoter cis-element module did not report missing GFF3/genome requirements.
+- `python -m pytest tests/test_validate_config.py::test_validate_config_reports_promoter_cis_requires_genome_and_gff3_inputs -q` passed after adding the dependency checks.
+- `python -m pytest tests/test_validate_config.py -q` passed with 35 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/manifest.example.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python -m pytest tests -q` passed with 409 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 after the fresh release check run.
+- `rg -n "promoter cis-element visualization|promoter smoke|validate example config" results/objective_audit/objective_audit.md results/release_checks/release_checks.md` confirmed promoter smoke and promoter cis-element visualization evidence remain in the release/objective gates.
+
+Commit:
+- hash: pending
+- message: `test: require promoter genome inputs`
+- files: promoter cis-element config validation, regression tests, and history entry.
+
+Next:
+- Continue tightening module input dependencies so YAML preflight catches missing evidence before downstream workflow execution.
+
 ## 2026-06-27 08:59 - Limit manifest validation to selected species
 
 Context:

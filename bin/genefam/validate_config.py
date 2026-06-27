@@ -273,6 +273,11 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
         errors.append(f"expression.metadata path does not exist: {expression['metadata']}")
     if modules.get("promoter_cis") is True and not promoter.get("cis_elements"):
         errors.append("modules.promoter_cis requires promoter.cis_elements")
+    if modules.get("promoter_cis") is True:
+        if input_required.get("gff3") is not True:
+            errors.append("modules.promoter_cis requires input.required.gff3: true")
+        if input_required.get("genome") is not True:
+            errors.append("modules.promoter_cis requires input.required.genome: true")
     if check_paths and promoter.get("cis_elements") and not _path_exists(str(promoter["cis_elements"]), base_dir):
         errors.append(f"promoter.cis_elements path does not exist: {promoter['cis_elements']}")
     if modules.get("ppi") is True and not ppi.get("edges"):

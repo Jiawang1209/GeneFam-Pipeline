@@ -326,6 +326,19 @@ def test_validate_config_reports_promoter_cis_requires_annotation_table_and_miss
     assert "promoter.cis_elements path does not exist: data/promoter/plantcare.tsv" in errors
 
 
+def test_validate_config_reports_promoter_cis_requires_genome_and_gff3_inputs():
+    config = _valid_base_config()
+    config["modules"]["promoter_cis"] = True
+    config["promoter"] = {"cis_elements": "tests/fixtures/promoter_cis/promoter_cis_elements.tsv"}
+    config["input"]["required"]["gff3"] = False
+    config["input"]["required"]["genome"] = False
+
+    errors = validate_config(config)
+
+    assert "modules.promoter_cis requires input.required.gff3: true" in errors
+    assert "modules.promoter_cis requires input.required.genome: true" in errors
+
+
 def test_validate_config_cli_check_paths_accepts_fixture_configs():
     completed = subprocess.run(
         [
