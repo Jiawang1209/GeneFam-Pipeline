@@ -25,6 +25,7 @@ def test_local_acceptance_script_runs_release_gate_and_quickstart():
     assert "wgd_report_index_status=" in text
     assert "figure_gallery_status=" in text
     assert "delivery_manifest_status=" in text
+    assert "final_delivery_manifest_status=" in text
     assert "final_stage_blocker_status=" in text
     assert "final_stage_blocker_note=" in text
     assert "publication report audit" in text
@@ -39,6 +40,7 @@ def test_local_acceptance_script_runs_release_gate_and_quickstart():
     assert "--wgd-report-index-status \"$wgd_report_index_status\"" in text
     assert "--figure-gallery-status \"$figure_gallery_status\"" in text
     assert "--delivery-manifest-status \"$delivery_manifest_status\"" in text
+    assert "--final-delivery-manifest-status \"$final_delivery_manifest_status\"" in text
     assert "--final-stage-blocker-status \"$final_stage_blocker_status\"" in text
     assert "--final-stage-blocker-note \"$final_stage_blocker_note\"" in text
     assert "--publication-outdir \"$PUBLICATION_OUTDIR\"" in text
@@ -49,6 +51,7 @@ def test_local_acceptance_script_runs_release_gate_and_quickstart():
     assert "WGD report index audit exited with status ${wgd_report_index_status}." in text
     assert "Figure gallery audit exited with status ${figure_gallery_status}." in text
     assert "Delivery manifest audit exited with status ${delivery_manifest_status}." in text
+    assert "Final delivery manifest audit exited with status ${final_delivery_manifest_status}." in text
     assert "Final-stage blocker: ${final_stage_blocker_note}." in text
     assert "--conda-env \"$CONDA_ENV\"" in text
     assert "--quickstart \"$QUICKSTART_OUTDIR/quickstart_summary.tsv\"" in text
@@ -71,6 +74,7 @@ def test_local_acceptance_script_runs_release_gate_and_quickstart():
     assert "${REPORT_INDEX_OUTDIR}/wgd_report_index_audit.md" in text
     assert "results/delivery_bundle_smoke/figure_gallery_audit.md" in text
     assert "results/delivery_bundle_smoke/delivery_manifest_audit.md" in text
+    assert "${DELIVERY_OUTDIR}/final_delivery_manifest_audit.md" in text
     assert "${ACCEPTANCE_OUTDIR}/local_acceptance_summary.tsv" in text
     assert "${ACCEPTANCE_OUTDIR}/local_acceptance_summary.md" in text
     assert 'if [ "$publication_status" -ne 0 ]; then' in text
@@ -79,6 +83,7 @@ def test_local_acceptance_script_runs_release_gate_and_quickstart():
     assert 'if [ "$wgd_report_index_status" -ne 0 ]; then' in text
     assert 'if [ "$figure_gallery_status" -ne 0 ]; then' in text
     assert 'if [ "$delivery_manifest_status" -ne 0 ]; then' in text
+    assert 'if [ "$final_delivery_manifest_status" -ne 0 ]; then' in text
 
 
 def test_quickstart_mentions_local_acceptance_script():

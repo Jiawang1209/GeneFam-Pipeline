@@ -245,11 +245,13 @@ def test_chinese_readme_points_to_publication_audit_acceptance():
     assert "results/delivery_bundle/figure_gallery.md" in readme
     assert "results/delivery_bundle_smoke/figure_gallery_audit.md" in readme
     assert "results/delivery_bundle_smoke/delivery_manifest_audit.md" in readme
+    assert "results/delivery_bundle/final_delivery_manifest_audit.md" in readme
     assert "全局论文图件目录" in readme
     assert "report-index" in readme
     assert "所有 available 索引路径都真实存在" in readme
     assert "figure_gallery_audit" in readme
     assert "delivery_manifest_audit" in readme
+    assert "final_delivery_manifest_audit" in readme
     assert "final_stage_blocker" in readme
     assert "Overall status: blocked" in readme
     assert "Docker / Apptainer" in readme

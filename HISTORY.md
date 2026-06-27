@@ -34,6 +34,60 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 16:13 - Audit final delivery manifest in local acceptance
+
+Context:
+- The release gate already audited a smoke delivery manifest, but the local acceptance summary did not separately audit the final user-facing `results/delivery_bundle/delivery_manifest.tsv`.
+- The active `/goal` requires final handoff artifacts to be verified from the user-facing delivery bundle, not only from smoke outputs.
+
+Decisions:
+- Add `final_delivery_manifest_audit` as a separate local acceptance step.
+- Keep the existing release-gate `delivery_manifest_audit` for smoke bundle coverage.
+- Write final audit outputs next to the final delivery bundle at `results/delivery_bundle/final_delivery_manifest_audit.tsv` and `.md`.
+- Document the distinction between release-gate smoke manifest audit and final user-facing delivery manifest audit in README and quickstart docs.
+
+Added:
+- `final_delivery_manifest_status` plumbing in the local acceptance summary builder.
+- `final_delivery_manifest_audit` row in `results/local_acceptance/local_acceptance_summary.*`.
+- Local acceptance script step that runs `bin/genefam/audit_delivery_manifest.py` against `results/delivery_bundle/delivery_manifest.tsv`.
+- Tests covering the new summary row, script wiring, and documentation references.
+
+Modified:
+- `scripts/run_local_acceptance.sh`
+- `bin/genefam/write_local_acceptance_summary.py`
+- `README.md`
+- `README.zh-CN.md`
+- `docs/quickstart.md`
+- `docs/release_audit.md`
+- `tests/test_local_acceptance_script.py`
+- `tests/test_write_local_acceptance_summary.py`
+- `tests/test_quickstart_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_release_audit_docs.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_write_local_acceptance_summary.py tests/test_local_acceptance_script.py -q` first failed because `final_delivery_manifest_status` was not supported and the script did not run a final delivery manifest audit.
+- `python -m pytest tests/test_write_local_acceptance_summary.py tests/test_local_acceptance_script.py -q` passed after adding the summary row and script wiring.
+- `python -m pytest tests/test_quickstart_docs.py tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report tests/test_runtime_environment_files.py::test_chinese_readme_points_to_publication_audit_acceptance -q` first failed because quickstart and Chinese README did not mention final delivery manifest audit outputs.
+- `python -m pytest tests/test_write_local_acceptance_summary.py tests/test_local_acceptance_script.py tests/test_quickstart_docs.py tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report tests/test_runtime_environment_files.py::test_chinese_readme_points_to_publication_audit_acceptance tests/test_release_audit_docs.py -q` passed with 10 tests after updating README, quickstart, and release-audit docs.
+- `python -m pytest tests -q` passed with 447 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and wrote `Passed: 50`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `bash scripts/run_local_acceptance.sh` exited 0 and printed `results/delivery_bundle/final_delivery_manifest_audit.md` in the primary handoff files.
+- `sed -n '1,80p' results/local_acceptance/local_acceptance_summary.md` confirmed `final_delivery_manifest_audit` passed and only `final_stage_blocker` remained blocked by Docker/Apptainer reproducibility.
+- `sed -n '1,30p' results/delivery_bundle/final_delivery_manifest_audit.md` confirmed `Failed: 0` and `Complete: true`.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: local acceptance script, acceptance summary builder, README/quickstart/release docs, tests, and history entry.
+
+Next:
+- Commit this final delivery manifest audit wiring, then backfill the commit hash in a follow-up history entry.
+
 ## 2026-06-27 15:51 - Surface Reference gitignore evidence in delivery bundle
 
 Context:

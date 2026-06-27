@@ -95,6 +95,9 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "audit_delivery_manifest.py" in text
     assert "results/delivery_bundle_smoke/delivery_manifest_audit.tsv" in text
     assert "results/delivery_bundle_smoke/delivery_manifest_audit.md" in text
+    assert "results/delivery_bundle/final_delivery_manifest_audit.tsv" in text
+    assert "results/delivery_bundle/final_delivery_manifest_audit.md" in text
+    assert "final_delivery_manifest_audit" in text
     assert "final_stage_blocker" in text
     assert "audit_publication_report.py" in text
     assert "audit_report_index.py" in text

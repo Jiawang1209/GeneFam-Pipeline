@@ -148,6 +148,13 @@ echo "[GeneFam] Refreshing delivery bundle into ${DELIVERY_OUTDIR}"
   --outdir "$DELIVERY_OUTDIR"
 delivery_status=$?
 
+echo "[GeneFam] Auditing final delivery manifest in ${DELIVERY_OUTDIR}"
+"$PYTHON_BIN" bin/genefam/audit_delivery_manifest.py \
+  --delivery-manifest "$DELIVERY_OUTDIR/delivery_manifest.tsv" \
+  --out-tsv "$DELIVERY_OUTDIR/final_delivery_manifest_audit.tsv" \
+  --out-md "$DELIVERY_OUTDIR/final_delivery_manifest_audit.md"
+final_delivery_manifest_status=$?
+
 echo "[GeneFam] Writing local acceptance summary into ${ACCEPTANCE_OUTDIR}"
 "$PYTHON_BIN" bin/genefam/write_local_acceptance_summary.py \
   --release-status "$release_status" \
@@ -157,6 +164,7 @@ echo "[GeneFam] Writing local acceptance summary into ${ACCEPTANCE_OUTDIR}"
   --wgd-report-index-status "$wgd_report_index_status" \
   --figure-gallery-status "$figure_gallery_status" \
   --delivery-manifest-status "$delivery_manifest_status" \
+  --final-delivery-manifest-status "$final_delivery_manifest_status" \
   --quickstart-status "$quickstart_status" \
   --delivery-status "$delivery_status" \
   --final-stage-blocker-status "$final_stage_blocker_status" \
@@ -192,6 +200,7 @@ echo "- ${REPORT_INDEX_OUTDIR}/standard_report_index_audit.md"
 echo "- ${REPORT_INDEX_OUTDIR}/wgd_report_index_audit.md"
 echo "- results/delivery_bundle_smoke/figure_gallery_audit.md"
 echo "- results/delivery_bundle_smoke/delivery_manifest_audit.md"
+echo "- ${DELIVERY_OUTDIR}/final_delivery_manifest_audit.md"
 echo "- ${QUICKSTART_OUTDIR}/quickstart_summary.md"
 echo "- ${ACCEPTANCE_OUTDIR}/local_acceptance_summary.tsv"
 echo "- ${ACCEPTANCE_OUTDIR}/local_acceptance_summary.md"
@@ -218,6 +227,9 @@ if [ "$figure_gallery_status" -ne 0 ]; then
 fi
 if [ "$delivery_manifest_status" -ne 0 ]; then
   echo "[GeneFam] Delivery manifest audit exited with status ${delivery_manifest_status}."
+fi
+if [ "$final_delivery_manifest_status" -ne 0 ]; then
+  echo "[GeneFam] Final delivery manifest audit exited with status ${final_delivery_manifest_status}."
 fi
 if [ "$final_stage_blocker_status" != "passed" ]; then
   echo "[GeneFam] Final-stage blocker: ${final_stage_blocker_note}."
@@ -260,6 +272,9 @@ if [ "$figure_gallery_status" -ne 0 ]; then
 fi
 if [ "$delivery_manifest_status" -ne 0 ]; then
   exit "$delivery_manifest_status"
+fi
+if [ "$final_delivery_manifest_status" -ne 0 ]; then
+  exit "$final_delivery_manifest_status"
 fi
 
 if [ "$quickstart_status" -ne 0 ]; then

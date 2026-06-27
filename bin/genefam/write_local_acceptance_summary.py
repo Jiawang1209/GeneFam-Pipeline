@@ -31,6 +31,7 @@ def build_acceptance_rows(
     wgd_report_index_status: int,
     figure_gallery_status: int,
     delivery_manifest_status: int,
+    final_delivery_manifest_status: int,
     quickstart_status: int,
     delivery_status: int,
     final_stage_blocker_status: str,
@@ -92,6 +93,13 @@ def build_acceptance_rows(
             note="delivery manifest handoff path evidence",
         ),
         AcceptanceRow(
+            step="final_delivery_manifest_audit",
+            status=_status_label(final_delivery_manifest_status),
+            exit_code=final_delivery_manifest_status,
+            path=delivery_outdir / "final_delivery_manifest_audit.md",
+            note="final delivery bundle manifest path evidence",
+        ),
+        AcceptanceRow(
             step="quickstart_handoff",
             status=_status_label(quickstart_status),
             exit_code=quickstart_status,
@@ -132,6 +140,7 @@ def write_acceptance_summary(
     wgd_report_index_status: int,
     figure_gallery_status: int,
     delivery_manifest_status: int,
+    final_delivery_manifest_status: int,
     quickstart_status: int,
     delivery_status: int,
     final_stage_blocker_status: str,
@@ -152,6 +161,7 @@ def write_acceptance_summary(
         wgd_report_index_status=wgd_report_index_status,
         figure_gallery_status=figure_gallery_status,
         delivery_manifest_status=delivery_manifest_status,
+        final_delivery_manifest_status=final_delivery_manifest_status,
         quickstart_status=quickstart_status,
         delivery_status=delivery_status,
         final_stage_blocker_status=final_stage_blocker_status,
@@ -211,6 +221,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--wgd-report-index-status", type=int, required=True)
     parser.add_argument("--figure-gallery-status", type=int, required=True)
     parser.add_argument("--delivery-manifest-status", type=int, required=True)
+    parser.add_argument("--final-delivery-manifest-status", type=int, required=True)
     parser.add_argument("--quickstart-status", type=int, required=True)
     parser.add_argument("--delivery-status", type=int, required=True)
     parser.add_argument("--final-stage-blocker-status", choices=["passed", "blocked", "missing"], required=True)
@@ -234,6 +245,7 @@ def main() -> int:
         wgd_report_index_status=args.wgd_report_index_status,
         figure_gallery_status=args.figure_gallery_status,
         delivery_manifest_status=args.delivery_manifest_status,
+        final_delivery_manifest_status=args.final_delivery_manifest_status,
         quickstart_status=args.quickstart_status,
         delivery_status=args.delivery_status,
         final_stage_blocker_status=args.final_stage_blocker_status,
