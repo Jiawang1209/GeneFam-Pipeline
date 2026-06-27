@@ -78,7 +78,7 @@ Verification:
 - `rg -n "final reports|Report index audits|standard report index audit|WGD report index audit" results/objective_audit/objective_audit.md` confirmed the high-level final-report objective now requires both report-index audits.
 
 Commit:
-- hash: pending
+- hash: 65d3b07c4ab08f4c5fd314503e74c8e789b724c4
 - message: `test: audit report index artifacts`
 - files: report-index audit tool, release/objective audit integration, tests, and history entry.
 
