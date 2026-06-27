@@ -79,6 +79,9 @@ def test_delivery_manifest_audit_requires_core_handoff_items(tmp_path):
     assert "nextflow:nextflow_single_tool_smoke:missing_item" in by_check[
         "delivery_manifest_required_items"
     ]["note"]
+    assert "status:standard_report_index_audit:missing_item" in by_check[
+        "delivery_manifest_required_items"
+    ]["note"]
     assert summarize_audit(rows) == {"passed": 2, "failed": 1, "complete": False}
 
 
@@ -97,7 +100,9 @@ def test_delivery_manifest_audit_cli_writes_outputs_for_complete_manifest(tmp_pa
             ["status", "figure_gallery", "available", str(existing), "ok"],
             ["status", "delivery_bundle_figure_gallery_smoke", "available", str(existing), "ok"],
             ["status", "publication_report_audit", "available", str(existing), "ok"],
+            ["status", "standard_report_index_audit", "available", str(existing), "ok"],
             ["status", "wgd_publication_report_audit", "available", str(existing), "ok"],
+            ["status", "wgd_report_index_audit", "available", str(existing), "ok"],
             ["standard", "mock_mvp", "available", str(existing), "ok"],
             ["nextflow", "nextflow_mock_mvp_smoke", "available", str(existing), "ok"],
             ["nextflow", "nextflow_single_tool_smoke", "available", str(existing), "ok"],

@@ -250,6 +250,43 @@ Commit:
 Next:
 - Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
 
+## 2026-06-27 17:12 - Require report-index audit rows in delivery manifest audit
+
+Context:
+- The delivery manifest required-item audit protected baseline smoke, final blocker, figure gallery, WGD evidence, Reference governance, local acceptance, and history rows.
+- The active `/goal` also requires all paper-level figures to be connected through report indexes, so `standard_report_index_audit` and `wgd_report_index_audit` should be hard-required by the final delivery manifest audit.
+
+Decisions:
+- Add both report-index audit rows to the delivery manifest required-item list.
+- Keep the delivery manifest builder unchanged because it already writes these rows.
+- Update the release-audit documentation to state that required handoff items include standard and WGD report-index closure rows.
+
+Added:
+- Red test expectation requiring `status:standard_report_index_audit:missing_item` when the manifest omits report-index closure rows.
+
+Modified:
+- `bin/genefam/audit_delivery_manifest.py`
+- `tests/test_audit_delivery_manifest.py`
+- `tests/test_release_audit_docs.py`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_delivery_manifest.py -q` first failed because `standard_report_index_audit` was not part of `REQUIRED_ITEMS`.
+- `python -m pytest tests/test_audit_delivery_manifest.py -q` passed with 3 tests after adding standard and WGD report-index audit rows to `REQUIRED_ITEMS`.
+- `python -m pytest tests/test_audit_delivery_manifest.py tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` passed with 4 tests after updating release-audit documentation.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: delivery manifest audit, audit tests, release audit docs, and history entry.
+
+Next:
+- Run full tests and release/local acceptance checks, then commit and backfill this history entry.
+
 ## 2026-06-27 15:51 - Surface Reference gitignore evidence in delivery bundle
 
 Context:
