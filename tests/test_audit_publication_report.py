@@ -98,6 +98,11 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
                 "| MAFFT | command | 7.520 | detected | mafft --version |",
                 "| ggNetView | R_package | 0.1.0 | detected | R packageVersion |",
                 "| R | command | 4.4.0 | detected | /usr/local/bin/R --version |",
+                "## Figure Traceability Matrix",
+                "| figure_key | plot_path | interpretation_status | qc_tables | method_and_software | reproducibility |",
+                "| --- | --- | --- | --- | --- | --- |",
+                "| tree_features | plots/tree_features.pdf | figure-specific close reading | tables/tree_feature_matrix.tsv | FastTree; MAFFT; plot_tree_features.R; /usr/local/bin/R | python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke |",
+                "| ppi_ggnetview | plots/ppi_ggnetview.pdf | figure-specific close reading | tables/ppi_network_qc.tsv | ggNetView; plot_ppi_ggnetview.R; /usr/local/bin/R | python bin/genefam/run_ppi_ggnetview_plot_smoke.py --r-bin /usr/local/bin/R --outdir results/ppi_ggnetview_plot_smoke |",
                 "## Figure Result Interpretations",
                 "### tree_features: Tree, motif, gene-structure, and domain composite",
                 "- Input data: tree and feature tables",
@@ -134,7 +139,7 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
     )
     summary = summarize_audit(rows)
 
-    assert summary == {"passed": 10, "failed": 0, "complete": True}
+    assert summary == {"passed": 11, "failed": 0, "complete": True}
     assert {row["check"] for row in rows} == {
         "plot_files_exist",
         "plot_file_format_valid",
@@ -145,6 +150,7 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
         "software_versions_present",
         "figure_method_software_versions",
         "final_report_embeds_publication_sections",
+        "final_report_figure_traceability",
         "final_report_placeholder_text",
     }
 
@@ -174,6 +180,91 @@ def test_publication_report_audit_flags_missing_figure_interpretation(tmp_path):
 
     assert by_check["figure_interpretation_coverage"]["status"] == "failed"
     assert "tree_features" in by_check["figure_interpretation_coverage"]["note"]
+
+
+def test_publication_report_audit_requires_figure_traceability_matrix(tmp_path):
+    plot_manifest = tmp_path / "plot_manifest.tsv"
+    figure_interpretations = tmp_path / "figure_interpretations.tsv"
+    software_versions = tmp_path / "software_versions.tsv"
+    final_report = tmp_path / "final_report.md"
+    (tmp_path / "plots").mkdir()
+    (tmp_path / "plots/tree_features.pdf").write_bytes(b"%PDF tree")
+
+    _write_tsv(plot_manifest, ["plot_key", "path", "description"], [["tree_features", "plots/tree_features.pdf", "Tree features"]])
+    _write_tsv(
+        figure_interpretations,
+        [
+            "figure_key",
+            "input_data",
+            "what_figure_shows",
+            "key_observations",
+            "biological_interpretation",
+            "qc_warnings",
+            "qc_tables",
+            "method_and_software",
+            "reproducibility",
+            "result_reading_status",
+            "output_path",
+        ],
+        [[
+            "tree_features",
+            "tree and feature tables",
+            "tree-ordered feature tracks",
+            "clades share feature architecture",
+            "conserved clade features support structural conservation",
+            "review missing feature rows",
+            "tables/tree_feature_matrix.tsv",
+            "FastTree; MAFFT; plot_tree_features.R; /usr/local/bin/R",
+            "python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
+            "figure-specific close reading",
+            "plots/tree_features.pdf",
+        ]],
+    )
+    _write_tsv(
+        software_versions,
+        ["component", "kind", "version", "status", "source"],
+        [
+            ["FastTree", "command", "2.1.11", "detected", "fasttree -help"],
+            ["MAFFT", "command", "7.520", "detected", "mafft --version"],
+            ["R", "command", "4.4.0", "detected", "/usr/local/bin/R --version"],
+            ["ggplot2", "R_package", "4.0.3", "detected", "packageVersion(\"ggplot2\")"],
+        ],
+    )
+    final_report.write_text(
+        "\n".join(
+            [
+                "### Software Versions",
+                "| FastTree | command | 2.1.11 | detected | fasttree -help |",
+                "| MAFFT | command | 7.520 | detected | mafft --version |",
+                "| R | command | 4.4.0 | detected | /usr/local/bin/R --version |",
+                "| ggplot2 | R_package | 4.0.3 | detected | packageVersion(\"ggplot2\") |",
+                "## Figure Result Interpretations",
+                "### tree_features: Tree features",
+                "- Input data: tree and feature tables",
+                "- What the figure shows: tree-ordered feature tracks",
+                "- Key observations: clades share feature architecture",
+                "- Biological interpretation: conserved clade features support structural conservation",
+                "- QC warnings / limitations: review missing feature rows",
+                "- QC tables: tables/tree_feature_matrix.tsv",
+                "- Method/software: FastTree; MAFFT; plot_tree_features.R; /usr/local/bin/R",
+                "- Reproducibility: python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
+                "- Result reading status: figure-specific close reading",
+                "- Output path: `plots/tree_features.pdf`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    rows = audit_publication_report(
+        plot_manifest=plot_manifest,
+        figure_interpretations=figure_interpretations,
+        software_versions=software_versions,
+        final_report=final_report,
+    )
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["final_report_figure_traceability"]["status"] == "failed"
+    assert "missing_section:Figure Traceability Matrix" in by_check["final_report_figure_traceability"]["note"]
 
 
 def test_publication_report_audit_flags_missing_or_empty_plot_files(tmp_path):
@@ -302,6 +393,10 @@ def test_publication_report_audit_cli_writes_markdown_and_tsv(tmp_path):
                 "| --- | --- | --- | --- | --- |",
                 "| R | command | 4.4.0 | detected | /usr/local/bin/R --version |",
                 "| ggplot2 | R_package | 4.0.3 | detected | packageVersion(\"ggplot2\") |",
+                "## Figure Traceability Matrix",
+                "| figure_key | plot_path | interpretation_status | qc_tables | method_and_software | reproducibility |",
+                "| --- | --- | --- | --- | --- | --- |",
+                "| family_counts | plots/family_counts.pdf | figure-specific close reading | tables/family_counts.tsv | plot_family_counts.R; /usr/local/bin/R | python bin/genefam/run_standard_smoke.py --outdir results/standard_smoke |",
                 "## Figure Result Interpretations",
                 "### family_counts: Family copy number",
                 "- Input data: Family member count table",
@@ -344,6 +439,7 @@ def test_publication_report_audit_cli_writes_markdown_and_tsv(tmp_path):
     assert completed.returncode == 0, completed.stderr
     assert "plot_files_exist\tpassed" in out_tsv.read_text(encoding="utf-8")
     assert "figure_interpretation_coverage\tpassed" in out_tsv.read_text(encoding="utf-8")
+    assert "final_report_figure_traceability\tpassed" in out_tsv.read_text(encoding="utf-8")
     assert "Complete: true" in out_md.read_text(encoding="utf-8")
 
 

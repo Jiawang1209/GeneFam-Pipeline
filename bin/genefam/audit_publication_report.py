@@ -235,6 +235,27 @@ def _missing_method_component_versions(
     return missing
 
 
+def _traceability_matrix_issues(report_text: str, detail_rows: list[dict[str, str]]) -> list[str]:
+    issues: list[str] = []
+    if "## Figure Traceability Matrix" not in report_text:
+        issues.append("missing_section:Figure Traceability Matrix")
+    header = "| figure_key | plot_path | interpretation_status | qc_tables | method_and_software | reproducibility |"
+    if header not in report_text:
+        issues.append("missing_header:figure_traceability")
+    for row in detail_rows:
+        figure_key = row.get("figure_key", "").strip() or "unknown"
+        expected = (
+            f"| {figure_key} | {row.get('output_path', '').strip()} | "
+            f"{row.get('result_reading_status', '').strip()} | "
+            f"{row.get('qc_tables', '').strip()} | "
+            f"{row.get('method_and_software', '').strip()} | "
+            f"{row.get('reproducibility', '').strip()} |"
+        )
+        if expected not in report_text:
+            issues.append(f"{figure_key}:traceability_row")
+    return issues
+
+
 def audit_publication_report(
     plot_manifest: Path,
     figure_interpretations: Path,
@@ -257,6 +278,7 @@ def audit_publication_report(
     detail_rows = [interpretation_rows[key] for key in plot_keys if key in interpretation_rows]
     missing_details = _missing_detail_fields(detail_rows)
     missing_method_component_versions = _missing_method_component_versions(detail_rows, software)
+    traceability_matrix_issues = _traceability_matrix_issues(report_text, detail_rows)
     final_report_placeholder_issues = _placeholder_text_issues(report_text, "final_report")
 
     version_rows = [
@@ -359,6 +381,15 @@ def audit_publication_report(
             "final report includes software versions and complete per-figure interpretation sections"
             if not missing_report_sections
             else "missing report sections/details: " + ", ".join(missing_report_sections),
+        ),
+        _row(
+            "final_report_figure_traceability",
+            not traceability_matrix_issues and bool(detail_rows),
+            str(final_report),
+            "final report Figure Traceability Matrix links every interpreted plot to status, QC tables, method/software, and reproducibility"
+            if not traceability_matrix_issues and detail_rows
+            else "missing figure traceability matrix evidence: "
+            + ", ".join(traceability_matrix_issues or ["no interpretation rows"]),
         ),
         _row(
             "final_report_placeholder_text",

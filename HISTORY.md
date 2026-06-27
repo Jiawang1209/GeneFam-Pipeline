@@ -34,6 +34,50 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 13:07 - Require figure traceability in publication audit
+
+Context:
+- The final report now renders a `Figure Traceability Matrix`, but the publication audit still accepted reports that contained per-figure interpretation sections without that matrix.
+- The active `/goal` requires the paper-level report package to prove every figure has close-reading status, QC evidence, method/software, and reproducibility context.
+
+Decisions:
+- Add a dedicated `final_report_figure_traceability` audit row instead of folding the check into the broader final-report section audit.
+- Require the final report to contain the matrix section, canonical matrix header, and one matrix row per interpreted figure.
+- Keep diagnostics precise with missing-section, missing-header, and per-figure missing-row notes.
+
+Added:
+- `final_report_figure_traceability` publication audit check.
+- Test coverage for missing `Figure Traceability Matrix`.
+- Updated positive audit fixtures showing matrix rows for standard and PPI figures.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `tests/test_audit_publication_report.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_requires_figure_traceability_matrix -q` first failed with `KeyError: 'final_report_figure_traceability'` because the audit check did not exist.
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_requires_figure_traceability_matrix -q` passed after adding the check.
+- `python -m pytest tests/test_audit_publication_report.py -q` first failed in two positive fixtures because they lacked the newly required matrix rows.
+- `python -m pytest tests/test_audit_publication_report.py -q` passed with 16 tests after updating the positive fixtures.
+- `python -m pytest tests/test_release_audit_docs.py tests/test_audit_publication_report.py -q` passed with 17 tests.
+- `python -m pytest tests -q` passed with 433 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 48`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `rg -n "final_report_figure_traceability|Passed:|Failed:|Complete:" results/publication_report_audit/publication_report_audit.md results/publication_report_audit/wgd_publication_report_audit.md` confirmed both standard and WGD publication audits report `final_report_figure_traceability` as `passed` and `Complete: true`.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed final handoff outputs.
+- `sed -n '1,28p' results/local_acceptance/local_acceptance_summary.md` confirmed local acceptance steps passed except the final-stage Docker/Apptainer blocker.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: publication report audit, audit tests, and history entry.
+
+Next:
+- Backfill this entry with the commit hash after the commit is created.
+
 ## 2026-06-27 12:58 - Add final report figure traceability matrix
 
 Context:
