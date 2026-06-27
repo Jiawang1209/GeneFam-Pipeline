@@ -73,7 +73,7 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` exited 0 and refreshed the delivery bundle; it still reports the expected final-stage blocker: Docker/Apptainer reproducibility.
 
 Commit:
-- hash: not created in this session
+- hash: eb9d06d
 - message: fix: align report identity with yaml config
 - files: standard smoke YAML identity params, publication report identity audit, tests, history
 
