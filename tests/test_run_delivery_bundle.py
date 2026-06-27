@@ -81,11 +81,21 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert completed.returncode == 0, completed.stderr
     manifest = outdir / "delivery_manifest.tsv"
     summary = outdir / "delivery_bundle.md"
+    gallery = outdir / "figure_gallery.tsv"
+    gallery_md = outdir / "figure_gallery.md"
     assert manifest.exists()
     assert summary.exists()
+    assert gallery.exists()
+    assert gallery_md.exists()
 
     manifest_text = manifest.read_text(encoding="utf-8")
     assert manifest_text.startswith("section\titem\tstatus\tpath\tnote\n")
+    assert (
+        "status\tfigure_gallery\tavailable\t"
+        + str(gallery)
+        + "\tglobal figure gallery linking paper-level plots to their close-reading reports and software versions"
+        in manifest_text
+    )
     assert "standard\tfinal_report\tavailable\tresults/quickstart/standard_smoke/report/final_report.md" in manifest_text
     assert (
         "standard\trun_config_snapshot\tavailable\tresults/quickstart/standard_smoke/tables/run_config_snapshot.tsv\tstandard branch run configuration"
@@ -225,6 +235,8 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
 
     summary_text = summary.read_text(encoding="utf-8")
     assert "# GeneFam-Pipeline Delivery Bundle" in summary_text
+    assert "figure_gallery" in summary_text
+    assert str(gallery) in summary_text
     assert "standard report" in summary_text
     assert "paper_level_visual_report" in summary_text
     assert "results/nextflow_standard_feature_smoke/standard/report/final_report.md" in summary_text
@@ -268,3 +280,34 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "release_ready=true" in summary_text
     assert "results/container_profile_smoke/docker/container_profile_smoke.md" in summary_text
     assert "results/container_profile_smoke/apptainer/container_profile_smoke.md" in summary_text
+
+    gallery_text = gallery.read_text(encoding="utf-8")
+    assert gallery_text.startswith(
+        "branch\tplot_key\tplot_path\tplot_description\tfigure_interpretations\tsoftware_versions\tfinal_report\n"
+    )
+    assert (
+        "standard\ttree_features\tresults/nextflow_standard_feature_smoke/standard/plots/tree_features.pdf\tTree, motif, gene-structure, and domain composite plot\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md"
+        in gallery_text
+    )
+    assert (
+        "standard\tmcscanx_circlize\tresults/nextflow_standard_feature_smoke/standard/plots/mcscanx_circlize.pdf\tMCScanX synteny and chromosome-scale circlize plot\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md"
+        in gallery_text
+    )
+    assert (
+        "standard\tppi_ggnetview\tresults/nextflow_standard_feature_smoke/standard/plots/ppi_ggnetview.pdf\tPPI network generated with ggNetView\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md"
+        in gallery_text
+    )
+    assert (
+        "wgd\tks_distribution\tresults/nextflow_wgd_smoke/wgd/plots/ks_distribution.pdf\tKs distribution for duplicated pairs and WGD layer interpretation\tresults/nextflow_wgd_smoke/wgd/report/figure_interpretations.md\tresults/nextflow_wgd_smoke/wgd/report/software_versions.tsv\tresults/nextflow_wgd_smoke/wgd/report/final_report.md"
+        in gallery_text
+    )
+    assert (
+        "wgd\tduplicate_type_kaks\tresults/nextflow_wgd_smoke/wgd/plots/duplicate_type_kaks.pdf\tDuplicate-type grouped Ks and Ka/Ks selection overview\tresults/nextflow_wgd_smoke/wgd/report/figure_interpretations.md\tresults/nextflow_wgd_smoke/wgd/report/software_versions.tsv\tresults/nextflow_wgd_smoke/wgd/report/final_report.md"
+        in gallery_text
+    )
+
+    gallery_md_text = gallery_md.read_text(encoding="utf-8")
+    assert "# GeneFam-Pipeline Figure Gallery" in gallery_md_text
+    assert "tree_features" in gallery_md_text
+    assert "ks_distribution" in gallery_md_text
+    assert "software_versions.tsv" in gallery_md_text

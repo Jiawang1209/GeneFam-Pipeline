@@ -9,6 +9,118 @@ from pathlib import Path
 
 
 FIELDNAMES = ["section", "item", "status", "path", "note"]
+FIGURE_GALLERY_FIELDNAMES = [
+    "branch",
+    "plot_key",
+    "plot_path",
+    "plot_description",
+    "figure_interpretations",
+    "software_versions",
+    "final_report",
+]
+
+
+FIGURE_GALLERY_ROWS = [
+    {
+        "branch": "standard",
+        "plot_key": "family_counts",
+        "plot_path": "results/nextflow_standard_feature_smoke/standard/plots/family_counts.pdf",
+        "plot_description": "Family member counts by species",
+        "figure_interpretations": "results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md",
+        "software_versions": "results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv",
+        "final_report": "results/nextflow_standard_feature_smoke/standard/report/final_report.md",
+    },
+    {
+        "branch": "standard",
+        "plot_key": "gene_family_info_summary",
+        "plot_path": "results/nextflow_standard_feature_smoke/standard/plots/gene_family_info_summary.pdf",
+        "plot_description": "Gene family copy-number and protein-property summary",
+        "figure_interpretations": "results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md",
+        "software_versions": "results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv",
+        "final_report": "results/nextflow_standard_feature_smoke/standard/report/final_report.md",
+    },
+    {
+        "branch": "standard",
+        "plot_key": "tree_features",
+        "plot_path": "results/nextflow_standard_feature_smoke/standard/plots/tree_features.pdf",
+        "plot_description": "Tree, motif, gene-structure, and domain composite plot",
+        "figure_interpretations": "results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md",
+        "software_versions": "results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv",
+        "final_report": "results/nextflow_standard_feature_smoke/standard/report/final_report.md",
+    },
+    {
+        "branch": "standard",
+        "plot_key": "feature_summary",
+        "plot_path": "results/nextflow_standard_feature_smoke/standard/plots/feature_summary.pdf",
+        "plot_description": "Integrated domain, motif, gene-structure, synteny, promoter, and expression feature summary",
+        "figure_interpretations": "results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md",
+        "software_versions": "results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv",
+        "final_report": "results/nextflow_standard_feature_smoke/standard/report/final_report.md",
+    },
+    {
+        "branch": "standard",
+        "plot_key": "mcscanx_circlize",
+        "plot_path": "results/nextflow_standard_feature_smoke/standard/plots/mcscanx_circlize.pdf",
+        "plot_description": "MCScanX synteny and chromosome-scale circlize plot",
+        "figure_interpretations": "results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md",
+        "software_versions": "results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv",
+        "final_report": "results/nextflow_standard_feature_smoke/standard/report/final_report.md",
+    },
+    {
+        "branch": "standard",
+        "plot_key": "promoter_cis_elements",
+        "plot_path": "results/nextflow_standard_feature_smoke/standard/plots/promoter_cis_elements.pdf",
+        "plot_description": "Promoter cis-element category matrix and top element summary",
+        "figure_interpretations": "results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md",
+        "software_versions": "results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv",
+        "final_report": "results/nextflow_standard_feature_smoke/standard/report/final_report.md",
+    },
+    {
+        "branch": "standard",
+        "plot_key": "ppi_ggnetview",
+        "plot_path": "results/nextflow_standard_feature_smoke/standard/plots/ppi_ggnetview.pdf",
+        "plot_description": "PPI network generated with ggNetView",
+        "figure_interpretations": "results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md",
+        "software_versions": "results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv",
+        "final_report": "results/nextflow_standard_feature_smoke/standard/report/final_report.md",
+    },
+    {
+        "branch": "standard",
+        "plot_key": "expression_heatmap",
+        "plot_path": "results/nextflow_standard_feature_smoke/standard/plots/expression_heatmap.pdf",
+        "plot_description": "Family member expression heatmap",
+        "figure_interpretations": "results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md",
+        "software_versions": "results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv",
+        "final_report": "results/nextflow_standard_feature_smoke/standard/report/final_report.md",
+    },
+    {
+        "branch": "wgd",
+        "plot_key": "ks_distribution",
+        "plot_path": "results/nextflow_wgd_smoke/wgd/plots/ks_distribution.pdf",
+        "plot_description": "Ks distribution for duplicated pairs and WGD layer interpretation",
+        "figure_interpretations": "results/nextflow_wgd_smoke/wgd/report/figure_interpretations.md",
+        "software_versions": "results/nextflow_wgd_smoke/wgd/report/software_versions.tsv",
+        "final_report": "results/nextflow_wgd_smoke/wgd/report/final_report.md",
+    },
+    {
+        "branch": "wgd",
+        "plot_key": "duplicate_type_kaks",
+        "plot_path": "results/nextflow_wgd_smoke/wgd/plots/duplicate_type_kaks.pdf",
+        "plot_description": "Duplicate-type grouped Ks and Ka/Ks selection overview",
+        "figure_interpretations": "results/nextflow_wgd_smoke/wgd/report/figure_interpretations.md",
+        "software_versions": "results/nextflow_wgd_smoke/wgd/report/software_versions.tsv",
+        "final_report": "results/nextflow_wgd_smoke/wgd/report/final_report.md",
+    },
+    {
+        "branch": "wgd",
+        "plot_key": "pangenome_kaks",
+        "plot_path": "results/nextflow_wgd_smoke/wgd/plots/pangenome_kaks.pdf",
+        "plot_description": "Pangenome-class grouped Ks and Ka/Ks selection overview",
+        "figure_interpretations": "results/nextflow_wgd_smoke/wgd/report/figure_interpretations.md",
+        "software_versions": "results/nextflow_wgd_smoke/wgd/report/software_versions.tsv",
+        "final_report": "results/nextflow_wgd_smoke/wgd/report/final_report.md",
+    },
+]
 
 
 def read_tsv(path: Path) -> list[dict[str, str]]:
@@ -473,6 +585,33 @@ def write_markdown(rows: list[dict[str, str]], out_path: Path) -> None:
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def write_figure_gallery_tsv(out_path: Path) -> None:
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with out_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=FIGURE_GALLERY_FIELDNAMES, delimiter="\t")
+        writer.writeheader()
+        writer.writerows(FIGURE_GALLERY_ROWS)
+
+
+def write_figure_gallery_markdown(out_path: Path) -> None:
+    lines = [
+        "# GeneFam-Pipeline Figure Gallery",
+        "",
+        "This gallery is the global plot index for the paper-level standard and WGD result packages.",
+        "",
+        "| branch | plot_key | plot_path | description | close-reading report | software versions | final report |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for row in FIGURE_GALLERY_ROWS:
+        lines.append(
+            "| {branch} | {plot_key} | `{plot_path}` | {plot_description} | `{figure_interpretations}` | `{software_versions}` | `{final_report}` |".format(
+                **row
+            )
+        )
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def run_delivery_bundle(
     release_checks: Path,
     objective_audit: Path,
@@ -488,9 +627,28 @@ def run_delivery_bundle(
     )
     manifest = outdir / "delivery_manifest.tsv"
     summary = outdir / "delivery_bundle.md"
+    figure_gallery = outdir / "figure_gallery.tsv"
+    figure_gallery_md = outdir / "figure_gallery.md"
+    rows.insert(
+        5,
+        {
+            "section": "status",
+            "item": "figure_gallery",
+            "status": "available",
+            "path": str(figure_gallery),
+            "note": "global figure gallery linking paper-level plots to their close-reading reports and software versions",
+        },
+    )
+    write_figure_gallery_tsv(figure_gallery)
+    write_figure_gallery_markdown(figure_gallery_md)
     write_tsv(rows, manifest)
     write_markdown(rows, summary)
-    return {"delivery_manifest": manifest, "delivery_bundle": summary}
+    return {
+        "delivery_manifest": manifest,
+        "delivery_bundle": summary,
+        "figure_gallery": figure_gallery,
+        "figure_gallery_md": figure_gallery_md,
+    }
 
 
 def main() -> None:

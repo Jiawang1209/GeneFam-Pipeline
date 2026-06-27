@@ -34,6 +34,52 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 12:09 - Add global paper-level figure gallery to delivery bundle
+
+Context:
+- The active `/goal` requires the final MVP handoff to make every paper-level figure easy to find with its close-reading interpretation, software/R package versions, QC context, and final report.
+- Standard and WGD report packages already had their own plot manifests, but the delivery bundle did not provide one global figure inventory.
+- A user opening only the delivery bundle would still need to jump between standard and WGD report folders to locate all plots.
+
+Decisions:
+- Generate a global `figure_gallery.tsv` and `figure_gallery.md` in `results/delivery_bundle`.
+- Include paper-level standard figures and formal WGD figures in one table.
+- Link every gallery row to the plot PDF, figure interpretation Markdown, software version table, and final report.
+- Register the gallery in `delivery_manifest.tsv` and `delivery_bundle.md` as a first-class handoff item.
+
+Added:
+- Global delivery figure gallery TSV output.
+- Global delivery figure gallery Markdown output.
+- Delivery manifest row `status/figure_gallery`.
+- Test assertions for standard tree/domain, MCScanX/circlize, ggNetView PPI, WGD Ks distribution, and duplicate-type Ka/Ks gallery rows.
+
+Modified:
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_run_delivery_bundle.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py -q` first failed because `figure_gallery.tsv` was not generated.
+- `python -m pytest tests/test_run_delivery_bundle.py -q` passed after adding gallery generation and manifest registration.
+- `python bin/genefam/run_delivery_bundle.py --outdir results/delivery_bundle` exited 0 and reported `figure_gallery` plus `figure_gallery_md` outputs.
+- `rg -n "figure_gallery|tree_features|ks_distribution|software_versions.tsv" results/delivery_bundle/delivery_bundle.md results/delivery_bundle/delivery_manifest.tsv results/delivery_bundle/figure_gallery.tsv results/delivery_bundle/figure_gallery.md` confirmed the delivery manifest, Markdown bundle, TSV gallery, and Markdown gallery all expose the global plot index.
+- `python -m pytest tests -q` passed with 431 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 47`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `bash scripts/run_local_acceptance.sh` exited 0, listed `figure_gallery` and `figure_gallery_md`, and printed `Final-stage blocker: Docker/Apptainer reproducibility.`
+- `sed -n '1,16p' results/local_acceptance/local_acceptance_summary.md` confirmed local acceptance keeps `Overall status: blocked` only for `final_stage_blocker`.
+- `sed -n '1,10p' results/objective_audit/objective_audit.md` confirmed objective audit remains `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
+- hash: pending
+- message: `feat: add delivery figure gallery`
+- files: delivery bundle builder, delivery bundle test, and history entry.
+
+Next:
+- Continue final MVP hardening while Docker/Apptainer remain the final-stage runtime blocker.
+
 ## 2026-06-27 11:59 - Expose paper-level WGD handoff in delivery bundle
 
 Context:
