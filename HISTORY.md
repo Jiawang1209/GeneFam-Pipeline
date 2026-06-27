@@ -67,8 +67,8 @@ Verification:
 - `git status --short --untracked-files=all` no longer lists files under `data/species_bank/` after adding the ignore rule.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: b0971c0
+- message: docs: add real three species test guide
 - files: real 3-species template, Chinese README guide, git ignore rule, documentation tests, and history
 
 Next:
