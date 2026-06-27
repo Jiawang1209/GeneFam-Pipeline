@@ -34,6 +34,46 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 09:13 - Require peptide inputs for family summary module
+
+Context:
+- The active `/goal` requires gene family information summary, copy-number statistics, pangenome-style summaries, and protein-property tables.
+- The standard branch builds `sequences/family_members.faa` and `tables/gene_family_protein_properties.tsv` for family summary outputs.
+- `modules.family_summary` could be enabled while `input.required.pep` was disabled, which would let an incomplete YAML pass early validation and fail later in summary/report generation.
+
+Decisions:
+- Treat `modules.family_summary` as a peptide-dependent module.
+- Keep the rule narrowly scoped to YAML preflight validation without changing downstream workflow behavior.
+
+Added:
+- Regression test that `modules.family_summary: true` requires `input.required.pep: true`.
+
+Modified:
+- `bin/genefam/validate_config.py`
+- `tests/test_validate_config.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_validate_config.py::test_validate_config_reports_family_summary_requires_pep_inputs -q` first failed because family summary did not report the missing peptide input requirement.
+- `python -m pytest tests/test_validate_config.py::test_validate_config_reports_family_summary_requires_pep_inputs tests/test_validate_config.py::test_validate_config_reports_identification_modules_require_pep_inputs -q` passed.
+- `python -m pytest tests/test_validate_config.py -q` passed with 36 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/manifest.example.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python -m pytest tests -q` passed with 410 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
+- hash: pending
+- message: `test: require family summary peptide inputs`
+- files: family summary config validation, regression tests, and history entry.
+
+Next:
+- Continue auditing enabled modules for missing YAML preflight dependencies before final MVP packaging.
+
 ## 2026-06-27 09:06 - Require genome and GFF3 inputs for promoter cis-element module
 
 Context:

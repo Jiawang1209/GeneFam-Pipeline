@@ -252,7 +252,7 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
     promoter = config.get("promoter", {}) or {}
     ppi = config.get("ppi", {}) or {}
 
-    pep_dependent_modules = ("identification", "domain_filtering", "phylogeny", "motif")
+    pep_dependent_modules = ("identification", "domain_filtering", "family_summary", "phylogeny", "motif")
     for module_name in pep_dependent_modules:
         if modules.get(module_name) is True and input_required.get("pep") is not True:
             errors.append(f"modules.{module_name} requires input.required.pep: true")

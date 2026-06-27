@@ -463,6 +463,16 @@ def test_validate_config_reports_identification_modules_require_pep_inputs():
     assert "modules.motif requires input.required.pep: true" in errors
 
 
+def test_validate_config_reports_family_summary_requires_pep_inputs():
+    config = _valid_base_config()
+    config["input"]["required"]["pep"] = False
+    config["modules"]["family_summary"] = True
+
+    errors = validate_config(config)
+
+    assert "modules.family_summary requires input.required.pep: true" in errors
+
+
 def test_validate_config_reports_synteny_requires_pep_and_gff3_inputs():
     config = _valid_base_config()
     config["input"]["required"]["pep"] = False
