@@ -66,12 +66,12 @@ Verification:
 - `sed -n '1,80p' results/local_acceptance/local_acceptance_summary.md` confirmed release, publication report, report-index, figure-gallery, delivery-manifest, quickstart, and delivery-bundle steps passed, with only `final_stage_blocker` blocked by Docker/Apptainer reproducibility.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: 0bcf10efea0d323f305b73217706d60a36d0def9
+- message: `docs: sync chinese acceptance entrypoints`
 - files: Chinese README acceptance documentation, runtime-environment doc test, and history entry.
 
 Next:
-- Commit this documentation hardening, then backfill the commit hash in a follow-up history entry.
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage blocker.
 
 ## 2026-06-27 13:17 - Require traceability evidence in objective audit
 
