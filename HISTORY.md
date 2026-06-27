@@ -79,9 +79,9 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` exited 0; `results/local_acceptance/local_acceptance_summary.md` reported all analysis, report, index, gallery, quickstart, and delivery-bundle steps passed, with only `final_stage_blocker` blocked for Docker/Apptainer reproducibility.
 
 Commit:
-- hash: pending
-- message: pending
-- files: pending
+- hash: f4e5dc8de36655a29f2fc5386314c3f362626c68
+- message: test: add R runtime health gate
+- files: R runtime health check script, release-check gate, tests, release/quickstart/readiness docs, README, and history entry.
 
 Next:
 - Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
