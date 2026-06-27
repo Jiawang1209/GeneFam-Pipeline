@@ -22,6 +22,7 @@ REQUIRED_INTERPRETATION_FIELDS = [
     "output_path",
 ]
 REPORT_EMBEDDED_INTERPRETATION_FIELDS = REQUIRED_INTERPRETATION_FIELDS
+PLACEHOLDER_TOKENS = ("todo", "tbd", "placeholder")
 VERSIONED_METHOD_COMPONENTS = [
     "Nextflow",
     "HMMER",
@@ -160,6 +161,8 @@ def _missing_detail_fields(rows: list[dict[str, str]]) -> list[str]:
             value = row.get(field, "").strip()
             if not value:
                 missing.append(f"{figure_key}:{field}")
+            elif any(token in value.lower() for token in PLACEHOLDER_TOKENS):
+                missing.append(f"{figure_key}:{field}:placeholder_text")
             elif field == "result_reading_status" and not value.startswith("figure-specific close reading"):
                 missing.append(f"{figure_key}:{field}:not_figure_specific")
     return missing

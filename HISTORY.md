@@ -34,6 +34,45 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 10:01 - Reject placeholder text in figure close readings
+
+Context:
+- The active `/goal` requires the final report to include close reading for every figure.
+- `audit_publication_report.py` checked that interpretation fields were non-empty and figure-specific, but did not reject placeholder text such as `TODO`, `TBD`, or `placeholder`.
+- Placeholder text could therefore pass the publication-style report closure gate even though it was not a real figure interpretation.
+
+Decisions:
+- Treat `TODO`, `TBD`, and `placeholder` as invalid placeholder tokens in required figure interpretation fields.
+- Report placeholder failures as `figure_key:field:placeholder_text` under `figure_interpretation_detail`.
+- Keep the existing missing-field and `result_reading_status` checks unchanged.
+
+Added:
+- Regression test that a `TODO` key-observation field fails the publication report audit.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `tests/test_audit_publication_report.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_flags_placeholder_interpretation_text -q` first failed because `figure_interpretation_detail` still passed with `TODO` text.
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_flags_placeholder_interpretation_text tests/test_audit_publication_report.py::test_publication_report_audit_flags_template_guided_reading_status tests/test_audit_publication_report.py::test_publication_report_audit_requires_reading_status_embedded_in_final_report -q` passed.
+- `python -m pytest tests/test_audit_publication_report.py -q` passed with 14 tests.
+- `python -m pytest tests -q` passed with 422 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
+- hash: pending
+- message: `test: reject placeholder figure readings`
+- files: publication report audit detail checks, regression tests, and history entry.
+
+Next:
+- Continue hardening report closure and handoff evidence before final Docker/Apptainer packaging.
+
 ## 2026-06-27 09:54 - Report non-mapping WGD event config files clearly
 
 Context:

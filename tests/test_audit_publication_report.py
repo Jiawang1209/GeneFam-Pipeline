@@ -573,6 +573,91 @@ def test_publication_report_audit_flags_template_guided_reading_status(tmp_path)
     assert "tree_features:result_reading_status:not_figure_specific" in by_check["figure_interpretation_detail"]["note"]
 
 
+def test_publication_report_audit_flags_placeholder_interpretation_text(tmp_path):
+    plot_manifest = tmp_path / "plot_manifest.tsv"
+    figure_interpretations = tmp_path / "figure_interpretations.tsv"
+    software_versions = tmp_path / "software_versions.tsv"
+    final_report = tmp_path / "final_report.md"
+    (tmp_path / "plots").mkdir()
+    (tmp_path / "plots/tree_features.pdf").write_bytes(b"%PDF tree")
+
+    _write_tsv(plot_manifest, ["plot_key", "path", "description"], [["tree_features", "plots/tree_features.pdf", "Tree features"]])
+    _write_tsv(
+        figure_interpretations,
+        [
+            "figure_key",
+            "input_data",
+            "what_figure_shows",
+            "key_observations",
+            "biological_interpretation",
+            "qc_warnings",
+            "qc_tables",
+            "method_and_software",
+            "reproducibility",
+            "result_reading_status",
+            "output_path",
+        ],
+        [[
+            "tree_features",
+            "tree and feature tables",
+            "tree-ordered feature tracks",
+            "TODO: describe clade-level feature pattern",
+            "conserved clade features support structural conservation",
+            "review missing feature rows",
+            "tables/tree_feature_matrix.tsv",
+            "FastTree; ggplot2; /usr/local/bin/R",
+            "python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
+            "figure-specific close reading",
+            "plots/tree_features.pdf",
+        ]],
+    )
+    _write_tsv(
+        software_versions,
+        ["component", "kind", "version", "status", "source"],
+        [
+            ["FastTree", "command", "2.1.11", "detected", "fasttree -help"],
+            ["ggplot2", "R_package", "3.5.1", "detected", "R packageVersion"],
+            ["R", "command", "4.4.0", "detected", "/usr/local/bin/R --version"],
+        ],
+    )
+    final_report.write_text(
+        "\n".join(
+            [
+                "### Software Versions",
+                "| component | kind | version | status | source |",
+                "| --- | --- | --- | --- | --- |",
+                "| FastTree | command | 2.1.11 | detected | fasttree -help |",
+                "| ggplot2 | R_package | 3.5.1 | detected | R packageVersion |",
+                "| R | command | 4.4.0 | detected | /usr/local/bin/R --version |",
+                "## Figure Result Interpretations",
+                "### tree_features: Tree features",
+                "- Input data: tree and feature tables",
+                "- What the figure shows: tree-ordered feature tracks",
+                "- Key observations: TODO: describe clade-level feature pattern",
+                "- Biological interpretation: conserved clade features support structural conservation",
+                "- QC warnings / limitations: review missing feature rows",
+                "- QC tables: tables/tree_feature_matrix.tsv",
+                "- Method/software: FastTree; ggplot2; /usr/local/bin/R",
+                "- Reproducibility: python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
+                "- Result reading status: figure-specific close reading",
+                "- Output path: `plots/tree_features.pdf`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    rows = audit_publication_report(
+        plot_manifest=plot_manifest,
+        figure_interpretations=figure_interpretations,
+        software_versions=software_versions,
+        final_report=final_report,
+    )
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["figure_interpretation_detail"]["status"] == "failed"
+    assert "tree_features:key_observations:placeholder_text" in by_check["figure_interpretation_detail"]["note"]
+
+
 def test_publication_report_audit_requires_reading_status_embedded_in_final_report(tmp_path):
     plot_manifest = tmp_path / "plot_manifest.tsv"
     figure_interpretations = tmp_path / "figure_interpretations.tsv"
