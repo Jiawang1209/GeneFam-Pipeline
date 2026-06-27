@@ -34,6 +34,58 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 18:22 - Add R runtime health release gate
+
+Context:
+- The active `/goal` requires paper-level R visualizations and `/usr/local/bin/R` reproducibility.
+- A previous full test/release run showed many R-dependent visualization smoke failures because `/usr/local/bin/R` was temporarily exiting 137 before plotting scripts could run.
+- The release gate did not have a dedicated early diagnostic for whether R itself could start, so one R runtime problem appeared as many downstream plotting failures.
+
+Decisions:
+- Add a required `R runtime health` release-check row before all R plotting smokes.
+- Keep the diagnostic narrow: run `/usr/local/bin/R --vanilla --slave -e ...`, write TSV/Markdown health evidence, and fail early if R cannot start.
+- Keep Docker/Apptainer as optional final-stage blockers; this change only clarifies the required local R plotting runtime.
+
+Added:
+- `bin/genefam/check_r_runtime.py`
+- `tests/test_check_r_runtime.py`
+- Release-check entry `R runtime health`.
+- `results/r_runtime_health/r_runtime_health.tsv` and `results/r_runtime_health/r_runtime_health.md` as generated runtime evidence.
+
+Modified:
+- `bin/genefam/run_release_checks.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_release_audit_docs.py`
+- `docs/release_audit.md`
+- `README.md`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_r_runtime_health_before_r_plotting_smokes -q` first failed because `R runtime health` was not in the default release-check list.
+- `python -m pytest tests/test_check_r_runtime.py -q` first failed because `bin/genefam/check_r_runtime.py` did not exist.
+- `python -m pytest tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` first failed because `R runtime health` was not documented in `docs/release_audit.md`.
+- `python -m pytest tests/test_check_r_runtime.py tests/test_run_release_checks.py::test_default_checks_include_r_runtime_health_before_r_plotting_smokes -q` passed with 3 tests.
+- `python bin/genefam/check_r_runtime.py --r-bin /usr/local/bin/R --outdir results/r_runtime_health` exited 0 and wrote `Status: passed`, `Exit code: 0`, and `R version 4.5.1 (2025-06-13)` to `results/r_runtime_health/r_runtime_health.md`.
+- `python -m pytest tests/test_check_r_runtime.py tests/test_run_duplicate_type_kaks_smoke.py tests/test_run_expression_heatmap_smoke.py tests/test_run_feature_summary_smoke.py tests/test_run_gene_family_info_smoke.py tests/test_run_kaks_wgd_plot_smoke.py tests/test_run_mcscanx_circlize_smoke.py tests/test_run_pangenome_kaks_smoke.py tests/test_run_ppi_ggnetview_plot_smoke.py tests/test_run_promoter_cis_smoke.py tests/test_run_promoter_smoke.py tests/test_run_standard_smoke.py tests/test_run_tree_feature_smoke.py -q` passed with 17 tests.
+- `python -m pytest tests/test_release_audit_docs.py tests/test_quickstart_docs.py tests/test_runtime_environment_files.py -q` passed with 17 tests.
+- `python -m pytest tests/test_check_r_runtime.py tests/test_run_release_checks.py tests/test_release_audit_docs.py tests/test_quickstart_docs.py tests/test_runtime_environment_files.py -q` passed with 76 tests.
+- `python -m pytest tests -q` passed with 456 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 51`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; the optional failures remain Docker and Apptainer profile smokes.
+- `bash scripts/run_local_acceptance.sh` exited 0; `results/local_acceptance/local_acceptance_summary.md` reported all analysis, report, index, gallery, quickstart, and delivery-bundle steps passed, with only `final_stage_blocker` blocked for Docker/Apptainer reproducibility.
+
+Commit:
+- hash: pending
+- message: pending
+- files: pending
+
+Next:
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
+
 ## 2026-06-27 18:04 - Require final report methods summary in publication audits
 
 Context:

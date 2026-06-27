@@ -182,6 +182,17 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "R runtime health",
+            [
+                python,
+                "bin/genefam/check_r_runtime.py",
+                "--r-bin",
+                "/usr/local/bin/R",
+                "--outdir",
+                "results/r_runtime_health",
+            ],
+        ),
+        CheckSpec(
             "promoter smoke",
             [
                 python,

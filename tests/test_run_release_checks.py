@@ -182,6 +182,23 @@ def test_default_checks_include_reference_governance_before_readiness():
     assert "--outdir results/reference_governance" in command
 
 
+def test_default_checks_include_r_runtime_health_before_r_plotting_smokes():
+    checks = default_checks()
+    names = [check.name for check in checks]
+
+    assert "R runtime health" in names
+    assert names.index("R runtime health") < names.index("promoter smoke")
+    assert names.index("R runtime health") < names.index("expression heatmap visualization smoke")
+    assert names.index("R runtime health") < names.index("MCScanX circlize visualization smoke")
+
+    health = next(check for check in checks if check.name == "R runtime health")
+    command = " ".join(health.command)
+    assert health.required is True
+    assert "bin/genefam/check_r_runtime.py" in command
+    assert "--r-bin /usr/local/bin/R" in command
+    assert "--outdir results/r_runtime_health" in command
+
+
 def test_default_checks_include_optional_container_profile_smokes_after_bootstrap():
     checks = default_checks()
     names = [check.name for check in checks]

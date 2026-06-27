@@ -31,6 +31,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
         "PPI ggNetView",
         "feature statistics",
         "final report",
+        "R runtime health",
         "HISTORY.md",
         "Reference/",
     ]
@@ -67,6 +68,9 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/container_profile_smoke/apptainer/container_profile_smoke.md" in text
     assert "results/container_materials/container_materials.tsv" in text
     assert "results/container_materials/container_materials.md" in text
+    assert "bin/genefam/check_r_runtime.py" in text
+    assert "results/r_runtime_health/r_runtime_health.tsv" in text
+    assert "results/r_runtime_health/r_runtime_health.md" in text
     assert "results/container_default_smoke" in text
     assert 'docker run --rm -v "$PWD/results:/opt/GeneFam-Pipeline/results" genefam-pipeline:latest' in text
     assert "run_standard_smoke.py" in text
