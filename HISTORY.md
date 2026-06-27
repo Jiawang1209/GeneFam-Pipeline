@@ -81,12 +81,12 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` exited 0; `results/local_acceptance/local_acceptance_summary.md` still reports `Overall status: blocked` only because `final_stage_blocker` remains `Docker/Apptainer reproducibility`.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: e5a850b
+- message: test: require result narrative close readings
 - files: publication audit, figure interpretation templates, docs, tests, history
 
 Next:
-- Run full tests, refresh release/local acceptance reports, commit this change, then backfill this history entry with the commit hash.
+- Continue closing remaining MVP evidence gaps; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
 
 ## 2026-06-27 19:02 - Require result-statement figure close reading
 
