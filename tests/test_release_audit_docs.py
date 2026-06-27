@@ -148,6 +148,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "registered-only figure interpretation scope" in text
     assert "plot manifest and interpretation output path consistency" in text
     assert "complete per-figure close-reading text" in text
+    assert "result-statement observations rather than instructional prompts" in text
     assert "QC tables and warnings" in text
     assert "software/R package versions" in text
     assert "software_version_detection_warnings_visible" in text

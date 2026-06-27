@@ -24,6 +24,7 @@ REQUIRED_INTERPRETATION_FIELDS = [
 ]
 REPORT_EMBEDDED_INTERPRETATION_FIELDS = REQUIRED_INTERPRETATION_FIELDS
 PLACEHOLDER_TOKENS = ("todo", "tbd", "placeholder")
+INSTRUCTIONAL_READING_PREFIXES = ("inspect ", "review ", "validate ", "check ")
 VERSIONED_METHOD_COMPONENTS = [
     "Nextflow",
     "HMMER",
@@ -177,6 +178,17 @@ def _missing_detail_fields(rows: list[dict[str, str]]) -> list[str]:
             elif field == "result_reading_status" and not value.startswith("figure-specific close reading"):
                 missing.append(f"{figure_key}:{field}:not_figure_specific")
     return missing
+
+
+def _instructional_reading_issues(rows: list[dict[str, str]]) -> list[str]:
+    issues: list[str] = []
+    for row in rows:
+        figure_key = row.get("figure_key", "").strip() or "unknown"
+        for field in ["key_observations", "biological_interpretation"]:
+            value = row.get(field, "").strip().lower()
+            if value.startswith(INSTRUCTIONAL_READING_PREFIXES):
+                issues.append(f"{figure_key}:{field}:instructional_text")
+    return issues
 
 
 def _placeholder_text_issues(text: str, source: str) -> list[str]:
@@ -345,6 +357,7 @@ def audit_publication_report(
 
     detail_rows = [interpretation_rows[key] for key in plot_keys if key in interpretation_rows]
     missing_details = _missing_detail_fields(detail_rows)
+    instructional_reading_issues = _instructional_reading_issues(detail_rows)
     missing_method_component_versions = _missing_method_component_versions(detail_rows, software)
     methods_summary_issues = _methods_summary_issues(report_text)
     traceability_matrix_issues = _traceability_matrix_issues(report_text, detail_rows)
@@ -418,6 +431,15 @@ def audit_publication_report(
             "all figure interpretation rows include close-reading text, QC tables, method/software, reproducibility, status, and output path"
             if not missing_details and detail_rows
             else "missing required interpretation details: " + ", ".join(missing_details or ["no interpretation rows"]),
+        ),
+        _row(
+            "figure_interpretation_close_reading_voice",
+            not instructional_reading_issues and bool(detail_rows),
+            str(figure_interpretations),
+            "figure observation and biological interpretation fields are result statements, not instructions"
+            if not instructional_reading_issues and detail_rows
+            else "instructional interpretation text: "
+            + ", ".join(instructional_reading_issues or ["no interpretation rows"]),
         ),
         _row(
             "figure_output_paths_match_manifest",

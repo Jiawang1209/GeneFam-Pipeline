@@ -38,7 +38,7 @@ def test_build_figure_interpretations_creates_reading_notes_for_each_plot():
     assert "plot_gene_family_info.R" in by_key["gene_family_pangenome_summary"]["method_and_software"]
     assert "run_gene_family_info_smoke.py" in by_key["gene_family_pangenome_summary"]["reproducibility"]
     assert by_key["ppi_ggnetview"]["title"] == "PPI network generated with ggNetView"
-    assert "hub" in by_key["ppi_ggnetview"]["key_observations"]
+    assert "hub" in by_key["ppi_ggnetview"]["key_observations"].lower()
     assert "tables/ppi_network_qc.tsv" in by_key["ppi_ggnetview"]["qc_tables"]
     assert "ggNetView" in by_key["ppi_ggnetview"]["method_and_software"]
     assert "figure-specific close reading" in by_key["ppi_ggnetview"]["result_reading_status"]

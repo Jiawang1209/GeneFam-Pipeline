@@ -44,6 +44,7 @@ def test_quickstart_documents_minimum_verified_run_path():
         "registered-only figure interpretation scope",
         "plot manifest and interpretation output path consistency",
         "complete per-figure close-reading text",
+        "result-statement observations rather than instructional prompts",
         "QC tables and warnings",
         "software/R package versions",
         "per-figure method/software version coverage",

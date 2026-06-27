@@ -36,6 +36,7 @@ def _publication_audit_rows(omit=None):
         "figure_interpretation_coverage",
         "figure_interpretation_scope",
         "figure_interpretation_detail",
+        "figure_interpretation_close_reading_voice",
         "figure_output_paths_match_manifest",
         "software_versions_present",
         "software_detected_versions_parseable",

@@ -34,6 +34,62 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 19:02 - Require result-statement figure close reading
+
+Context:
+- The active `/goal` requires final reports to include close reading for every figure, not only generic instructions for how a user should inspect a figure.
+- Current generated figure interpretations often used key observations beginning with `Inspect ...`, which reads like an instructional prompt rather than a result statement.
+- Publication audits accepted those instructional observation fields, so final report closure could pass without enforcing result-statement close reading.
+
+Decisions:
+- Add a publication-report audit check, `figure_interpretation_close_reading_voice`, that rejects key observations or biological interpretations beginning with instructional prefixes such as `Inspect`, `Review`, `Validate`, or `Check`.
+- Convert built-in figure interpretation templates from instruction-style observations into result-statement observations while preserving the biological meaning.
+- Include the new audit check in objective-audit final-report detail closure.
+
+Added:
+- Regression test proving instructional `Inspect ...` observation text fails the publication audit.
+- Documentation assertions for result-statement observations rather than instructional prompts.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `bin/genefam/build_figure_interpretations.py`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_publication_report.py`
+- `tests/test_build_figure_interpretations.py`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_quickstart_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_release_audit_docs.py`
+- `README.md`
+- `docs/release_audit.md`
+- `docs/readiness_checklist.md`
+- `docs/quickstart.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_rejects_instructional_observation_text -q` first failed because `figure_interpretation_close_reading_voice` did not exist.
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_rejects_instructional_observation_text tests/test_build_figure_interpretations.py -q` passed with 6 tests after adding the audit check and revising templates.
+- `python -m pytest tests/test_audit_objective_completion.py tests/test_run_release_checks.py::test_write_objective_audit_reads_publication_detail_audits tests/test_audit_publication_report.py::test_publication_report_audit_requires_figure_reading_versions_qc_and_reproducibility -q` passed with 49 tests after syncing objective and release-check fixtures.
+- `python -m pytest tests/test_audit_publication_report.py tests/test_build_figure_interpretations.py tests/test_audit_objective_completion.py tests/test_run_release_checks.py::test_write_objective_audit_reads_publication_detail_audits -q` passed with 73 tests.
+- `python -m pytest tests/test_quickstart_docs.py tests/test_runtime_environment_files.py tests/test_release_audit_docs.py -q` passed with 17 tests after documenting result-statement observations.
+- `python -m pytest tests -q` passed with 460 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 51`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `rg -n "figure_interpretation_close_reading_voice|Passed:|Failed:" results/publication_report_audit/publication_report_audit.md results/publication_report_audit/wgd_publication_report_audit.md` confirmed both standard and WGD publication audits passed the new close-reading voice check with `Passed: 15`, `Failed: 0`.
+- A Python scan of `results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv` and `results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv` found `instructional_rows 0` for key observations and biological interpretations beginning with `Inspect`, `Review`, `Validate`, or `Check`.
+- `bash scripts/run_local_acceptance.sh` exited 0; `results/local_acceptance/local_acceptance_summary.md` still reports `Overall status: blocked` only because `final_stage_blocker` remains `Docker/Apptainer reproducibility`.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: publication audit, figure interpretation templates, objective audit, docs, tests, history
+
+Next:
+- Commit the close-reading voice audit and template update, then backfill this entry with the commit hash.
+
 ## 2026-06-27 18:48 - Make software versions parseable in publication reports
 
 Context:
