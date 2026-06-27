@@ -23,6 +23,8 @@ def test_local_acceptance_script_runs_release_gate_and_quickstart():
     assert "standard_report_index_status=" in text
     assert "wgd_publication_status=" in text
     assert "wgd_report_index_status=" in text
+    assert "final_stage_blocker_status=" in text
+    assert "final_stage_blocker_note=" in text
     assert "publication report audit" in text
     assert "standard report index audit" in text
     assert "WGD publication report audit" in text
@@ -31,12 +33,15 @@ def test_local_acceptance_script_runs_release_gate_and_quickstart():
     assert "--standard-report-index-status \"$standard_report_index_status\"" in text
     assert "--wgd-publication-status \"$wgd_publication_status\"" in text
     assert "--wgd-report-index-status \"$wgd_report_index_status\"" in text
+    assert "--final-stage-blocker-status \"$final_stage_blocker_status\"" in text
+    assert "--final-stage-blocker-note \"$final_stage_blocker_note\"" in text
     assert "--publication-outdir \"$PUBLICATION_OUTDIR\"" in text
     assert "--report-index-outdir \"$REPORT_INDEX_OUTDIR\"" in text
     assert "Publication report audit exited with status ${publication_status}." in text
     assert "Standard report index audit exited with status ${standard_report_index_status}." in text
     assert "WGD publication report audit exited with status ${wgd_publication_status}." in text
     assert "WGD report index audit exited with status ${wgd_report_index_status}." in text
+    assert "Final-stage blocker: ${final_stage_blocker_note}." in text
     assert "--conda-env \"$CONDA_ENV\"" in text
     assert "--quickstart \"$QUICKSTART_OUTDIR/quickstart_summary.tsv\"" in text
     assert "--outdir \"$DELIVERY_OUTDIR\"" in text

@@ -78,6 +78,28 @@ raise SystemExit(1)
 PY
 )
 wgd_report_index_status=$?
+final_stage_blocker_note=$("$PYTHON_BIN" - "results/objective_audit/objective_audit.tsv" <<'PY'
+import csv
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+if not path.exists():
+    print("objective audit missing")
+    raise SystemExit(0)
+blockers = []
+with path.open("r", encoding="utf-8", newline="") as handle:
+    for row in csv.DictReader(handle, delimiter="\t"):
+        if row.get("status") in {"blocked", "missing"} and row.get("requirement"):
+            blockers.append(row["requirement"])
+print(", ".join(blockers) if blockers else "none")
+PY
+)
+if [ "$final_stage_blocker_note" = "none" ]; then
+  final_stage_blocker_status=passed
+else
+  final_stage_blocker_status=blocked
+fi
 
 echo "[GeneFam] Running quickstart handoff into ${QUICKSTART_OUTDIR}"
 "$PYTHON_BIN" bin/genefam/run_quickstart.py \
@@ -103,6 +125,8 @@ echo "[GeneFam] Writing local acceptance summary into ${ACCEPTANCE_OUTDIR}"
   --wgd-report-index-status "$wgd_report_index_status" \
   --quickstart-status "$quickstart_status" \
   --delivery-status "$delivery_status" \
+  --final-stage-blocker-status "$final_stage_blocker_status" \
+  --final-stage-blocker-note "$final_stage_blocker_note" \
   --release-outdir "$RELEASE_OUTDIR" \
   --publication-outdir "$PUBLICATION_OUTDIR" \
   --report-index-outdir "$REPORT_INDEX_OUTDIR" \
@@ -150,6 +174,9 @@ if [ "$wgd_publication_status" -ne 0 ]; then
 fi
 if [ "$wgd_report_index_status" -ne 0 ]; then
   echo "[GeneFam] WGD report index audit exited with status ${wgd_report_index_status}."
+fi
+if [ "$final_stage_blocker_status" != "passed" ]; then
+  echo "[GeneFam] Final-stage blocker: ${final_stage_blocker_note}."
 fi
 
 if [ "$quickstart_status" -ne 0 ]; then

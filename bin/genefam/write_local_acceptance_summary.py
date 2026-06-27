@@ -31,6 +31,8 @@ def build_acceptance_rows(
     wgd_report_index_status: int,
     quickstart_status: int,
     delivery_status: int,
+    final_stage_blocker_status: str,
+    final_stage_blocker_note: str,
     release_outdir: Path,
     publication_outdir: Path,
     report_index_outdir: Path,
@@ -87,7 +89,22 @@ def build_acceptance_rows(
             path=delivery_outdir / "delivery_bundle.md",
             note="final user-facing delivery index",
         ),
+        AcceptanceRow(
+            step="final_stage_blocker",
+            status=final_stage_blocker_status,
+            exit_code=0,
+            path=Path("results/objective_audit/objective_audit.md"),
+            note=final_stage_blocker_note,
+        ),
     ]
+
+
+def _overall_status(rows: list[AcceptanceRow]) -> str:
+    if any(row.status == "failed" for row in rows):
+        return "failed"
+    if any(row.status in {"blocked", "missing"} for row in rows):
+        return "blocked"
+    return "passed"
 
 
 def write_acceptance_summary(
@@ -99,6 +116,8 @@ def write_acceptance_summary(
     wgd_report_index_status: int,
     quickstart_status: int,
     delivery_status: int,
+    final_stage_blocker_status: str,
+    final_stage_blocker_note: str,
     release_outdir: Path,
     publication_outdir: Path,
     report_index_outdir: Path,
@@ -115,6 +134,8 @@ def write_acceptance_summary(
         wgd_report_index_status=wgd_report_index_status,
         quickstart_status=quickstart_status,
         delivery_status=delivery_status,
+        final_stage_blocker_status=final_stage_blocker_status,
+        final_stage_blocker_note=final_stage_blocker_note,
         release_outdir=release_outdir,
         publication_outdir=publication_outdir,
         report_index_outdir=report_index_outdir,
@@ -141,7 +162,7 @@ def write_acceptance_summary(
                 }
             )
 
-    overall_status = "passed" if all(row.status == "passed" for row in rows) else "failed"
+    overall_status = _overall_status(rows)
     markdown_lines = [
         "# GeneFam-Pipeline Local Acceptance Summary",
         "",
@@ -170,6 +191,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--wgd-report-index-status", type=int, required=True)
     parser.add_argument("--quickstart-status", type=int, required=True)
     parser.add_argument("--delivery-status", type=int, required=True)
+    parser.add_argument("--final-stage-blocker-status", choices=["passed", "blocked", "missing"], required=True)
+    parser.add_argument("--final-stage-blocker-note", required=True)
     parser.add_argument("--release-outdir", type=Path, required=True)
     parser.add_argument("--publication-outdir", type=Path, required=True)
     parser.add_argument("--report-index-outdir", type=Path, required=True)
@@ -189,6 +212,8 @@ def main() -> int:
         wgd_report_index_status=args.wgd_report_index_status,
         quickstart_status=args.quickstart_status,
         delivery_status=args.delivery_status,
+        final_stage_blocker_status=args.final_stage_blocker_status,
+        final_stage_blocker_note=args.final_stage_blocker_note,
         release_outdir=args.release_outdir,
         publication_outdir=args.publication_outdir,
         report_index_outdir=args.report_index_outdir,

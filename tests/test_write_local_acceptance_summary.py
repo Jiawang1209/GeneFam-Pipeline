@@ -18,6 +18,8 @@ def test_write_local_acceptance_summary_records_step_statuses(tmp_path):
         wgd_report_index_status=0,
         quickstart_status=0,
         delivery_status=0,
+        final_stage_blocker_status="blocked",
+        final_stage_blocker_note="Docker/Apptainer reproducibility",
         release_outdir=Path("results/release_checks"),
         publication_outdir=Path("results/publication_report_audit"),
         report_index_outdir=Path("results/report_index_audit"),
@@ -79,6 +81,13 @@ def test_write_local_acceptance_summary_records_step_statuses(tmp_path):
             "path": "results/delivery_bundle/delivery_bundle.md",
             "note": "final user-facing delivery index",
         },
+        {
+            "step": "final_stage_blocker",
+            "status": "blocked",
+            "exit_code": "0",
+            "path": "results/objective_audit/objective_audit.md",
+            "note": "Docker/Apptainer reproducibility",
+        },
     ]
 
     markdown = (outdir / "local_acceptance_summary.md").read_text(encoding="utf-8")
@@ -91,6 +100,34 @@ def test_write_local_acceptance_summary_records_step_statuses(tmp_path):
     assert "results/report_index_audit/wgd_report_index_audit.md" in markdown
     assert "WGD report-index closure evidence" in markdown
     assert "results/delivery_bundle/delivery_bundle.md" in markdown
+    assert "final_stage_blocker" in markdown
+    assert "Docker/Apptainer reproducibility" in markdown
+
+
+def test_write_local_acceptance_summary_marks_overall_blocked_when_only_final_stage_is_blocked(tmp_path):
+    outdir = tmp_path / "acceptance"
+
+    write_acceptance_summary(
+        release_status=0,
+        publication_status=0,
+        standard_report_index_status=0,
+        wgd_publication_status=0,
+        wgd_report_index_status=0,
+        quickstart_status=0,
+        delivery_status=0,
+        final_stage_blocker_status="blocked",
+        final_stage_blocker_note="Docker/Apptainer reproducibility",
+        release_outdir=Path("results/release_checks"),
+        publication_outdir=Path("results/publication_report_audit"),
+        report_index_outdir=Path("results/report_index_audit"),
+        quickstart_outdir=Path("results/quickstart"),
+        delivery_outdir=Path("results/delivery_bundle"),
+        outdir=outdir,
+    )
+
+    markdown = (outdir / "local_acceptance_summary.md").read_text(encoding="utf-8")
+    assert "Overall status: blocked" in markdown
+    assert "| final_stage_blocker | blocked | 0 | results/objective_audit/objective_audit.md | Docker/Apptainer reproducibility |" in markdown
 
 
 def test_build_acceptance_rows_reports_all_passed_status():
@@ -102,6 +139,8 @@ def test_build_acceptance_rows_reports_all_passed_status():
         wgd_report_index_status=0,
         quickstart_status=0,
         delivery_status=0,
+        final_stage_blocker_status="passed",
+        final_stage_blocker_note="none",
         release_outdir=Path("release"),
         publication_outdir=Path("publication"),
         report_index_outdir=Path("report_index"),
@@ -118,4 +157,5 @@ def test_build_acceptance_rows_reports_all_passed_status():
         Path("report_index/wgd_report_index_audit.md"),
         Path("quickstart/quickstart_summary.md"),
         Path("delivery/delivery_bundle.md"),
+        Path("results/objective_audit/objective_audit.md"),
     ]

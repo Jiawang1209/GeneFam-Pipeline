@@ -34,6 +34,56 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 11:13 - Surface final-stage blocker in local acceptance
+
+Context:
+- The active `/goal` keeps Docker/Apptainer packaging as the final-stage blocker while analysis-flow evidence is release-ready.
+- `results/local_acceptance/local_acceptance_summary.md` showed all acceptance steps as passed, which could make the full objective look complete even though objective audit still reports Docker/Apptainer reproducibility as blocked.
+- The first local acceptance surface should distinguish analysis-flow readiness from final container-stage completion.
+
+Decisions:
+- Add a `final_stage_blocker` row to local acceptance TSV/Markdown outputs.
+- Compute `Overall status: blocked` when all executable acceptance steps pass but objective audit still contains blocked or missing requirements.
+- Extract final-stage blockers from `results/objective_audit/objective_audit.tsv` inside `scripts/run_local_acceptance.sh` after the release gate refreshes objective evidence.
+- Document in quickstart that `Overall status: blocked` means analysis evidence is ready but container runtime packaging remains.
+
+Added:
+- `final_stage_blocker` local acceptance row pointing to `results/objective_audit/objective_audit.md`.
+- CLI options `--final-stage-blocker-status` and `--final-stage-blocker-note` for `write_local_acceptance_summary.py`.
+- Wrapper extraction of blocked/missing objective requirements for local acceptance summaries.
+
+Modified:
+- `bin/genefam/write_local_acceptance_summary.py`
+- `scripts/run_local_acceptance.sh`
+- `docs/quickstart.md`
+- `tests/test_write_local_acceptance_summary.py`
+- `tests/test_local_acceptance_script.py`
+- `tests/test_quickstart_docs.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_write_local_acceptance_summary.py -q` first failed because `write_acceptance_summary()` did not accept `final_stage_blocker_status`.
+- `python -m pytest tests/test_local_acceptance_script.py -q` first failed because the wrapper did not define `final_stage_blocker_status`.
+- `python -m pytest tests/test_quickstart_docs.py -q` first failed because quickstart did not mention `final_stage_blocker` or `Overall status: blocked`.
+- `python -m pytest tests/test_write_local_acceptance_summary.py tests/test_local_acceptance_script.py tests/test_quickstart_docs.py -q` passed with 7 tests after implementation and documentation updates.
+- `python -m pytest tests -q` passed with 431 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 47`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `bash scripts/run_local_acceptance.sh` exited 0 and printed `Final-stage blocker: Docker/Apptainer reproducibility.`
+- `sed -n '1,25p' results/local_acceptance/local_acceptance_summary.md` confirmed `Overall status: blocked` and a `final_stage_blocker` row pointing to `results/objective_audit/objective_audit.md`.
+- `sed -n '1,8p' results/release_checks/release_checks.md && sed -n '1,8p' results/objective_audit/objective_audit.md` confirmed release readiness remains `Passed: 47`, `Required failed: 0`, `Release ready: true`, with objective audit `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+- `rg -n "Overall status: blocked|final_stage_blocker|Docker/Apptainer reproducibility" results/local_acceptance/local_acceptance_summary.md results/local_acceptance/local_acceptance_summary.tsv results/handoff/handoff_report.md` confirmed local acceptance and handoff agree on the final-stage blocker.
+
+Commit:
+- hash: pending
+- message: `feat: surface final stage blocker in local acceptance`
+- files: local acceptance summary, local acceptance wrapper, quickstart docs, tests, and history entry.
+
+Next:
+- Continue final MVP hardening while Docker/Apptainer remain the final-stage runtime blocker.
+
 ## 2026-06-27 11:04 - Sync report-index audits into handoff evidence
 
 Context:

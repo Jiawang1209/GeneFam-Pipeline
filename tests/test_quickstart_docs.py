@@ -33,6 +33,8 @@ def test_quickstart_documents_minimum_verified_run_path():
         "standard_report_index_audit",
         "wgd_report_index_audit",
         "report-index audit exit status",
+        "final_stage_blocker",
+        "Overall status: blocked",
         "paper-style report closure",
         "WGD report closure",
         "report-index closure",
