@@ -140,10 +140,24 @@ def build_delivery_manifest(
         },
         {
             "section": "status",
+            "item": "standard_report_index_audit",
+            "status": _status_from_check(release_rows, "standard report index audit"),
+            "path": "results/report_index_audit/standard_report_index_audit.md",
+            "note": "report-index closure: standard report index exposes plot manifest, software versions, figure interpretations in TSV/Markdown, and final report",
+        },
+        {
+            "section": "status",
             "item": "wgd_publication_report_audit",
             "status": _status_from_check(release_rows, "WGD publication report audit"),
             "path": "results/publication_report_audit/wgd_publication_report_audit.md",
             "note": "WGD report closure: valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, complete Ka/Ks/WGD figure close-reading text, gamma beta alpha theta interpretation, QC tables and warnings, software/R package versions, per-figure method/software version coverage, and reproducibility commands",
+        },
+        {
+            "section": "status",
+            "item": "wgd_report_index_audit",
+            "status": _status_from_check(release_rows, "WGD report index audit"),
+            "path": "results/report_index_audit/wgd_report_index_audit.md",
+            "note": "report-index closure: WGD report index exposes plot manifest, software versions, figure interpretations in TSV/Markdown, and final report",
         },
         {
             "section": "input",

@@ -23,7 +23,9 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
             "Nextflow standard manifest smoke\ttrue\tpassed\t0\tnextflow manifest\tmanifest config",
             "WGD event smoke\ttrue\tpassed\t0\twgd\talpha beta gamma theta",
             "publication report audit\ttrue\tpassed\t0\tpublication report\tfigures interpreted",
+            "standard report index audit\ttrue\tpassed\t0\tstandard report index\tindexed standard report artifacts",
             "WGD publication report audit\ttrue\tpassed\t0\twgd publication report\twgd figures interpreted",
+            "WGD report index audit\ttrue\tpassed\t0\twgd report index\tindexed WGD report artifacts",
             "readiness audit\ttrue\tpassed\t0\treadiness\tcore tools available",
             "Docker profile smoke\tfalse\tfailed\t1\tdocker profile\tmissing runtime",
             "Apptainer profile smoke\tfalse\tfailed\t1\tapptainer profile\tmissing runtime",
@@ -161,7 +163,15 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         in manifest_text
     )
     assert (
+        "status\tstandard_report_index_audit\tavailable\tresults/report_index_audit/standard_report_index_audit.md\treport-index closure: standard report index exposes plot manifest, software versions, figure interpretations in TSV/Markdown, and final report"
+        in manifest_text
+    )
+    assert (
         "status\twgd_publication_report_audit\tavailable\tresults/publication_report_audit/wgd_publication_report_audit.md\tWGD report closure: valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, complete Ka/Ks/WGD figure close-reading text, gamma beta alpha theta interpretation, QC tables and warnings, software/R package versions, per-figure method/software version coverage, and reproducibility commands"
+        in manifest_text
+    )
+    assert (
+        "status\twgd_report_index_audit\tavailable\tresults/report_index_audit/wgd_report_index_audit.md\treport-index closure: WGD report index exposes plot manifest, software versions, figure interpretations in TSV/Markdown, and final report"
         in manifest_text
     )
     assert (
@@ -203,8 +213,13 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "per-figure method/software version coverage" in summary_text
     assert "reproducibility commands" in summary_text
     assert "results/publication_report_audit/publication_report_audit.md" in summary_text
+    assert "results/report_index_audit/standard_report_index_audit.md" in summary_text
+    assert "standard_report_index_audit" in summary_text
+    assert "report-index closure" in summary_text
     assert "complete Ka/Ks/WGD figure close-reading text" in summary_text
     assert "results/publication_report_audit/wgd_publication_report_audit.md" in summary_text
+    assert "results/report_index_audit/wgd_report_index_audit.md" in summary_text
+    assert "wgd_report_index_audit" in summary_text
     assert "Docker/Apptainer reproducibility" in summary_text
     assert "final_stage_blocker" in summary_text
     assert "release_ready=true" in summary_text

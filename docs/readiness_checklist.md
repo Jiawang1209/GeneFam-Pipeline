@@ -23,10 +23,12 @@ After the release gate finishes, the first file to inspect is:
 - `results/handoff/handoff_summary.tsv`
 - `results/local_acceptance/local_acceptance_summary.md`
 - `results/publication_report_audit/publication_report_audit.md`
+- `results/report_index_audit/standard_report_index_audit.md`
+- `results/report_index_audit/wgd_report_index_audit.md`
 - `results/delivery_bundle/delivery_manifest.tsv`
 - `results/delivery_bundle/delivery_bundle.md`
 
-The handoff Markdown is the human-facing status summary. The local acceptance summary is the compact local acceptance pass/fail index for release, `publication_report_audit`, quickstart, and delivery-bundle refresh steps. The publication audit is the paper-style report closure check for valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, complete per-figure close-reading text, QC tables and warnings, software/R package versions, per-figure method/software version coverage, and reproducibility commands. The delivery bundle is the final index for standard reports, prepared WGD reports, alpha/beta/gamma/theta event evidence, Reference governance, runtime availability, runtime recovery, and documentation entrypoints. The TSV summaries carry stable machine-readable tables for automated checks; `results/handoff/handoff_summary.tsv` includes `container_default_smoke` as `Dockerfile -> results/container_default_smoke`. Together they summarize release readiness, objective completion, available and missing runtime commands, container-profile smoke status, runtime recovery artifacts, and the report/evidence files to open first.
+The handoff Markdown is the human-facing status summary. The local acceptance summary is the compact local acceptance pass/fail index for release, `publication_report_audit`, report-index closure, quickstart, and delivery-bundle refresh steps. The publication audit is the paper-style report closure check for valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, complete per-figure close-reading text, QC tables and warnings, software/R package versions, per-figure method/software version coverage, and reproducibility commands. The standard and WGD report-index audits verify that each report index exposes plot manifests, software versions, figure interpretations in TSV/Markdown, and final reports. The delivery bundle is the final index for standard reports, prepared WGD reports, alpha/beta/gamma/theta event evidence, Reference governance, runtime availability, runtime recovery, and documentation entrypoints. The TSV summaries carry stable machine-readable tables for automated checks; `results/handoff/handoff_summary.tsv` includes `container_default_smoke` as `Dockerfile -> results/container_default_smoke`. Together they summarize release readiness, objective completion, available and missing runtime commands, container-profile smoke status, runtime recovery artifacts, and the report/evidence files to open first.
 
 Expected core mock outputs:
 
@@ -60,7 +62,7 @@ The bootstrap planner reads the TSV and writes:
 
 After the Docker image is built, the generated shell runs `docker run --rm -v "$PWD/results:/opt/GeneFam-Pipeline/results" genefam-pipeline:latest` so the image default smoke writes `results/container_default_smoke`.
 
-After a missing runtime is installed, rerun `scripts/run_local_acceptance.sh` to refresh `results/handoff/handoff_report.md`, `results/local_acceptance/local_acceptance_summary.md`, `results/publication_report_audit/publication_report_audit.md`, `results/delivery_bundle/delivery_manifest.tsv`, and `results/delivery_bundle/delivery_bundle.md` from the same evidence set.
+After a missing runtime is installed, rerun `scripts/run_local_acceptance.sh` to refresh `results/handoff/handoff_report.md`, `results/local_acceptance/local_acceptance_summary.md`, `results/publication_report_audit/publication_report_audit.md`, `results/report_index_audit/standard_report_index_audit.md`, `results/report_index_audit/wgd_report_index_audit.md`, `results/delivery_bundle/delivery_manifest.tsv`, and `results/delivery_bundle/delivery_bundle.md` from the same evidence set.
 
 Default audited commands:
 

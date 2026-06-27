@@ -34,6 +34,49 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 10:45 - Index report-index audits in delivery bundle
+
+Context:
+- The active `/goal` treats `results/delivery_bundle/delivery_bundle.md` as the final user-facing index for the MVP result package.
+- Standard and WGD report-index audits were already enforced by release checks and objective audit, but the delivery bundle still surfaced only publication-report audits.
+- Users opening the final delivery bundle could miss the report navigation closure evidence for `figure_interpretations.md`, software versions, plot manifests, and final reports.
+
+Decisions:
+- Add standard and WGD report-index audit rows to the delivery manifest status section.
+- Keep report-index audit status driven by release-check rows, matching the existing publication-audit pattern.
+- Document report-index closure in the readiness checklist alongside publication-report closure.
+
+Added:
+- Delivery manifest entries for `standard_report_index_audit` and `wgd_report_index_audit`.
+- Readiness checklist references to `results/report_index_audit/standard_report_index_audit.md` and `results/report_index_audit/wgd_report_index_audit.md`.
+
+Modified:
+- `bin/genefam/run_delivery_bundle.py`
+- `docs/readiness_checklist.md`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_runtime_environment_files.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py -q` first failed because `standard_report_index_audit` was missing from the delivery manifest.
+- `python -m pytest tests/test_runtime_environment_files.py::test_readiness_checklist_documents_command_audit -q` first failed because the readiness checklist did not mention `results/report_index_audit/standard_report_index_audit.md`.
+- `python -m pytest tests/test_run_delivery_bundle.py tests/test_runtime_environment_files.py::test_readiness_checklist_documents_command_audit -q` passed with 2 tests after implementation and documentation updates.
+- `python -m pytest tests -q` passed with 429 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 47`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `rg -n "report index audit|report_index_audit|standard_report_index_audit|wgd_report_index_audit" results/release_checks/release_checks.md results/delivery_bundle/delivery_bundle.md results/delivery_bundle/delivery_manifest.tsv` confirmed standard and WGD report-index audits are indexed by the release gate and delivery bundle.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
+- hash: pending
+- message: `feat: index report audits in delivery bundle`
+- files: delivery bundle builder, readiness checklist, delivery bundle test, runtime docs test, and history entry.
+
+Next:
+- Refresh full release evidence and continue final MVP hardening while keeping Docker/Apptainer runtime verification as the final-stage external blocker.
+
 ## 2026-06-27 10:38 - Document report-index audit gates
 
 Context:

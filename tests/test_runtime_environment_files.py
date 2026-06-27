@@ -96,6 +96,9 @@ def test_readiness_checklist_documents_command_audit():
     assert "results/handoff/handoff_summary.tsv" in text
     assert "results/local_acceptance/local_acceptance_summary.md" in text
     assert "results/publication_report_audit/publication_report_audit.md" in text
+    assert "results/report_index_audit/standard_report_index_audit.md" in text
+    assert "results/report_index_audit/wgd_report_index_audit.md" in text
+    assert "report-index closure" in text
     assert "publication_report_audit" in text
     assert "paper-style report closure" in text
     assert "valid plot file signatures" in text
