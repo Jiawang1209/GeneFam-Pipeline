@@ -1,5 +1,12 @@
 import subprocess
 import sys
+from pathlib import Path
+
+
+def test_gitignore_excludes_reference_source_material():
+    gitignore = Path(".gitignore").read_text(encoding="utf-8")
+
+    assert "\nReference/\n" in f"\n{gitignore}"
 
 
 def test_reference_governance_cli_allows_untracked_reference_sources(tmp_path):
@@ -27,6 +34,33 @@ def test_reference_governance_cli_allows_untracked_reference_sources(tmp_path):
     markdown = (outdir / "reference_governance.md").read_text(encoding="utf-8")
     assert "Tracked changes: 0" in markdown
     assert "Untracked reference files: 2" in markdown
+
+
+def test_reference_governance_cli_fails_when_reference_is_not_ignored(tmp_path):
+    outdir = tmp_path / "reference_governance"
+    gitignore = tmp_path / ".gitignore"
+    gitignore.write_text("results/\nwork/\n", encoding="utf-8")
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "bin/genefam/audit_reference_governance.py",
+            "--gitignore-path",
+            str(gitignore),
+            "--outdir",
+            str(outdir),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 1
+    tsv = (outdir / "reference_governance.tsv").read_text(encoding="utf-8")
+    assert "gitignore_reference\t0\tmissing Reference/ ignore rule\n" in tsv
+    markdown = (outdir / "reference_governance.md").read_text(encoding="utf-8")
+    assert "Reference/ ignored: no" in markdown
+    assert "Add `Reference/` to `.gitignore`" in markdown
 
 
 def test_reference_governance_cli_fails_on_tracked_reference_changes(tmp_path):

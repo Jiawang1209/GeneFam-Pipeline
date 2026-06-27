@@ -34,6 +34,55 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 15:41 - Enforce Reference ignore governance
+
+Context:
+- The active `/goal` requires `Reference/` to stay read-only and out of commits.
+- `git status --short --untracked-files=all` still listed many `Reference/` files, which made accidental staging too easy even though the Reference governance audit blocked tracked Reference changes.
+
+Decisions:
+- Add `Reference/` to `.gitignore` so paper PDFs, source data, and reference plotting scripts do not appear as normal untracked files.
+- Extend `bin/genefam/audit_reference_governance.py` so release checks fail when `.gitignore` does not explicitly ignore `Reference/`.
+- Keep tracked `Reference/` changes release-blocking.
+- Report `Reference/ ignored: yes/no` in the Reference governance Markdown and add a machine-readable `gitignore_reference` row to the TSV.
+
+Added:
+- Test coverage requiring `.gitignore` to exclude `Reference/`.
+- Test coverage proving the Reference governance CLI fails when the Reference ignore rule is missing.
+- Release-audit documentation contract for `.gitignore` and `Reference/ ignored` evidence.
+
+Modified:
+- `.gitignore`
+- `bin/genefam/audit_reference_governance.py`
+- `docs/release_audit.md`
+- `tests/test_audit_reference_governance.py`
+- `tests/test_release_audit_docs.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_reference_governance.py -q` first failed because `.gitignore` did not contain `Reference/` and the audit CLI did not support `--gitignore-path`.
+- `python -m pytest tests/test_audit_reference_governance.py -q` passed with 4 tests after adding the ignore rule and audit check.
+- `python bin/genefam/audit_reference_governance.py --outdir results/reference_governance` exited 0; `results/reference_governance/reference_governance.md` reported `Reference/ ignored: yes`, `Tracked changes: 0`, and `Untracked reference files: 0`.
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because `docs/release_audit.md` did not mention `.gitignore`.
+- `python -m pytest tests/test_release_audit_docs.py -q` passed after updating the release audit documentation.
+- `python -m pytest tests/test_audit_reference_governance.py tests/test_release_audit_docs.py tests/test_run_release_checks.py::test_default_checks_include_reference_governance_before_readiness -q` passed with 6 tests.
+- `git status --short --untracked-files=all` no longer listed `Reference/` files.
+- `python -m pytest tests -q` passed with 447 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and wrote `Passed: 50`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; `Reference governance audit` passed in the release table.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed release, quickstart, handoff, report-index, figure-gallery, delivery-manifest, and delivery-bundle outputs.
+- `sed -n '1,80p' results/local_acceptance/local_acceptance_summary.md` confirmed all analysis/report/delivery acceptance steps passed, with only `final_stage_blocker` blocked by Docker/Apptainer reproducibility.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: Reference ignore governance, audit script, release-audit docs, tests, and history entry.
+
+Next:
+- Commit this governance hardening, then backfill the commit hash in a follow-up history entry.
+
 ## 2026-06-27 15:30 - Synchronize Chinese README acceptance entrypoints
 
 Context:

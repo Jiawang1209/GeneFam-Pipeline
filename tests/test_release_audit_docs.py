@@ -71,6 +71,11 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert 'docker run --rm -v "$PWD/results:/opt/GeneFam-Pipeline/results" genefam-pipeline:latest' in text
     assert "run_standard_smoke.py" in text
     assert ".dockerignore" in text
+    assert ".gitignore" in text
+    assert "Reference/ ignored" in text
+    assert "Reference/ must also be ignored" in text
+    assert "Reference/` is ignored by `.gitignore`" in text
+    assert "tracked `Reference/` changes are release-blocking" in text
     assert "results/handoff/handoff_report.md" in text
     assert "results/handoff/handoff_summary.tsv" in text
     assert "run_delivery_bundle.py" in text
