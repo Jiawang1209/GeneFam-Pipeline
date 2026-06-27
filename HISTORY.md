@@ -34,6 +34,47 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 11:34 - Document local blocker status in Chinese README
+
+Context:
+- The active `/goal` is mostly operated by a Chinese-speaking user and requires final handoff surfaces to avoid confusing release-ready analysis evidence with final container-stage completion.
+- English quickstart and machine-readable summaries now explain `Overall status: blocked` and `final_stage_blocker`, but `README.zh-CN.md` still described local acceptance as only a pass/fail index.
+- A user reading only the Chinese README could mistake the Docker/Apptainer final-stage blocker for an analysis-flow failure or miss the unblock path.
+
+Decisions:
+- Update the Chinese local acceptance section to describe pass/fail/blocked semantics.
+- Explain that `Overall status: blocked` means analysis evidence is release-ready while Docker / Apptainer runtime verification remains.
+- Point the user to the `final_stage_blocker` row and `results/readiness/runtime_bootstrap.sh`.
+
+Added:
+- Chinese README explanation for `Overall status: blocked`.
+- Chinese README reference to `final_stage_blocker` and the Docker / Apptainer final-stage unblock script.
+
+Modified:
+- `README.zh-CN.md`
+- `tests/test_runtime_environment_files.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_runtime_environment_files.py::test_chinese_readme_points_to_publication_audit_acceptance -q` first failed because `README.zh-CN.md` did not mention `final_stage_blocker`.
+- `python -m pytest tests/test_runtime_environment_files.py::test_chinese_readme_points_to_publication_audit_acceptance tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report tests/test_quickstart_docs.py -q` passed with 4 tests after the Chinese README update.
+- `python -m pytest tests -q` passed with 431 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 47`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `bash scripts/run_local_acceptance.sh` exited 0 and printed `Final-stage blocker: Docker/Apptainer reproducibility.`
+- `sed -n '1,8p' results/release_checks/release_checks.md && sed -n '1,8p' results/objective_audit/objective_audit.md` confirmed objective audit remains `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+- `rg -n "Overall status: blocked|final_stage_blocker|Docker / Apptainer|Docker/Apptainer reproducibility|runtime_bootstrap" README.zh-CN.md results/local_acceptance/local_acceptance_summary.md results/delivery_bundle/delivery_bundle.md` confirmed the Chinese README and generated handoff artifacts describe the same final-stage blocker.
+
+Commit:
+- hash: pending
+- message: `docs: explain local blocker status in Chinese README`
+- files: Chinese README, runtime environment doc test, and history entry.
+
+Next:
+- Continue final MVP hardening while Docker/Apptainer remain the final-stage runtime blocker.
+
 ## 2026-06-27 11:23 - Propagate local acceptance blocker into delivery bundle
 
 Context:

@@ -223,6 +223,9 @@ def test_chinese_readme_points_to_publication_audit_acceptance():
     assert "bash scripts/run_local_acceptance.sh" in readme
     assert "results/local_acceptance/local_acceptance_summary.md" in readme
     assert "results/publication_report_audit/publication_report_audit.md" in readme
+    assert "final_stage_blocker" in readme
+    assert "Overall status: blocked" in readme
+    assert "Docker / Apptainer" in readme
     assert "论文级报告闭环检查" in readme
     assert "每张图的结果精读" in readme
     assert "方法、软件和 R 包版本" in readme
