@@ -34,6 +34,50 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 08:19 - Require promoter extraction smoke for promoter audit
+
+Context:
+- The active `/goal` requires promoter cis-element analysis and publication-level visualization, while the objective audit note explicitly mentions promoter extraction outputs.
+- The release gate already has an independent `promoter smoke` check for promoter BED/FASTA and feature-summary outputs, but the promoter objective evidence only required cis-element visualization and Nextflow standard visualization evidence.
+
+Decisions:
+- Treat `promoter smoke` as required evidence for the `promoter cis-element visualization` objective row.
+- Also require `promoter smoke` in the aggregate `paper-level visualization modules` row, so the top-level paper-figure gate proves both promoter extraction and cis-element visualization.
+
+Added:
+- Regression test that the promoter objective is missing when `promoter smoke` is absent, even if cis-element visualization and Nextflow visualization smoke pass.
+- Regression test that the paper-level visualization row is missing when promoter extraction smoke is absent.
+- Regression expectations that achieved promoter rows name `promoter smoke`.
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+- `results/objective_audit/objective_audit.md`
+- `results/objective_audit/objective_audit.tsv`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_paper_level_visualization_modules_require_promoter_extraction_smoke tests/test_audit_objective_completion.py::test_promoter_cis_element_visualization_requires_promoter_extraction_smoke -q` first failed because `promoter smoke` was not required by either objective row.
+- `python -m pytest tests/test_audit_objective_completion.py::test_paper_level_visualization_modules_require_promoter_extraction_smoke tests/test_audit_objective_completion.py::test_promoter_cis_element_visualization_requires_promoter_extraction_smoke -q` passed after requiring promoter extraction smoke.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 41 tests.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and refreshed the objective audit.
+- `rg -n "paper-level visualization modules|promoter cis-element visualization|promoter smoke" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed both promoter-related objective rows now list `promoter smoke`.
+- `python -m pytest tests -q` passed with 401 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 after the fresh release check run.
+- `head -n 8 results/objective_audit/objective_audit.md` reported `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the remaining blocked item is the intentionally deferred Docker/Apptainer reproducibility stage.
+
+Commit:
+- hash: pending
+- message: `test: require promoter extraction for promoter audit`
+- files: objective audit promoter evidence rule, regression tests, refreshed objective audit outputs, and history entry.
+
+Next:
+- Continue auditing whether remaining objective rows prove both raw/tool-level evidence and formal Nextflow/report evidence.
+
 ## 2026-06-27 08:13 - Require ggNetView status smoke for PPI audit
 
 Context:

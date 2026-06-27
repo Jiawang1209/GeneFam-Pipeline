@@ -44,6 +44,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
         _release_row("chromosome location smoke"),
         _release_row("gene family information visualization smoke"),
         _release_row("feature summary visualization smoke"),
+        _release_row("promoter smoke"),
         _release_row("promoter cis-element visualization smoke"),
         _release_row("tree feature visualization smoke"),
         _release_row("MCScanX circlize visualization smoke"),
@@ -100,6 +101,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
     assert by_requirement["WGD gamma beta alpha theta evidence"]["status"] == "achieved"
     assert by_requirement["paper-level visualization modules"]["status"] == "achieved"
     assert "gene family information visualization smoke" in by_requirement["paper-level visualization modules"]["evidence"]
+    assert "promoter smoke" in by_requirement["paper-level visualization modules"]["evidence"]
     assert "promoter cis-element visualization smoke" in by_requirement["paper-level visualization modules"]["evidence"]
     assert "PPI ggNetView smoke" in by_requirement["paper-level visualization modules"]["evidence"]
     assert by_requirement["quickstart handoff"]["status"] == "achieved"
@@ -109,6 +111,7 @@ def test_paper_level_visualization_modules_require_promoter_cis_smoke():
     release_rows = [
         _release_row("gene family information visualization smoke"),
         _release_row("feature summary visualization smoke"),
+        _release_row("promoter smoke"),
         _release_row("tree feature visualization smoke"),
         _release_row("MCScanX circlize visualization smoke"),
         _release_row("PPI ggNetView smoke"),
@@ -135,10 +138,47 @@ def test_paper_level_visualization_modules_require_promoter_cis_smoke():
     assert "promoter cis-element visualization smoke" in by_requirement["paper-level visualization modules"]["evidence"]
 
 
+def test_paper_level_visualization_modules_require_promoter_extraction_smoke():
+    release_rows = [
+        _release_row("gene family information visualization smoke"),
+        _release_row("feature summary visualization smoke"),
+        _release_row("promoter cis-element visualization smoke"),
+        _release_row("tree feature visualization smoke"),
+        _release_row("MCScanX circlize visualization smoke"),
+        _release_row("PPI ggNetView smoke"),
+        _release_row("PPI ggNetView plot smoke"),
+        _release_row("standard branch expression smoke"),
+        _release_row("expression heatmap visualization smoke"),
+        _release_row("Ka/Ks WGD annotation plot smoke"),
+        _release_row("duplicate-type Ka/Ks visualization smoke"),
+        _release_row("pangenome-class Ka/Ks visualization smoke"),
+        _release_row("Nextflow WGD event smoke"),
+        _release_row("WGD publication report audit"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["paper-level visualization modules"]["status"] == "missing"
+    assert "promoter smoke" in by_requirement["paper-level visualization modules"]["evidence"]
+
+
 def test_paper_level_visualization_modules_require_expression_heatmap_smoke():
     release_rows = [
         _release_row("gene family information visualization smoke"),
         _release_row("feature summary visualization smoke"),
+        _release_row("promoter smoke"),
         _release_row("promoter cis-element visualization smoke"),
         _release_row("tree feature visualization smoke"),
         _release_row("MCScanX circlize visualization smoke"),
@@ -173,6 +213,7 @@ def test_objective_audit_lists_named_paper_level_visualization_requirements():
         _release_row("synteny parser smoke"),
         _release_row("MCScanX circlize visualization smoke"),
         _release_row("Nextflow standard visualization smoke"),
+        _release_row("promoter smoke"),
         _release_row("promoter cis-element visualization smoke"),
         _release_row("standard branch expression smoke"),
         _release_row("expression heatmap visualization smoke"),
@@ -237,6 +278,30 @@ def test_objective_audit_lists_named_paper_level_visualization_requirements():
     assert "Nextflow WGD event smoke" in by_requirement["Ka/Ks WGD visualization"]["evidence"]
     assert "WGD publication report audit" in by_requirement["Ka/Ks WGD visualization"]["evidence"]
     assert "Nextflow report evidence" in by_requirement["Ka/Ks WGD visualization"]["note"]
+
+
+def test_promoter_cis_element_visualization_requires_promoter_extraction_smoke():
+    release_rows = [
+        _release_row("promoter cis-element visualization smoke"),
+        _release_row("Nextflow standard visualization smoke"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["promoter cis-element visualization"]["status"] == "missing"
+    assert "promoter smoke" in by_requirement["promoter cis-element visualization"]["evidence"]
 
 
 def test_paper_level_visualization_modules_require_wgd_visualization_evidence():
