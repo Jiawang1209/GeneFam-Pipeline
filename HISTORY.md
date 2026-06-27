@@ -66,7 +66,7 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
 
 Commit:
-- hash: pending
+- hash: c29b95b2d98969c39ebc98da7a6f6bd8a00b723d
 - message: `test: reject placeholder final reports`
 - files: publication report audit final-report placeholder check, regression tests, and history entry.
 
