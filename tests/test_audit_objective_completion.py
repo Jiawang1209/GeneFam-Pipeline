@@ -48,6 +48,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
         _release_row("tree feature visualization smoke"),
         _release_row("MCScanX circlize visualization smoke"),
         _release_row("Nextflow standard visualization smoke"),
+        _release_row("PPI ggNetView smoke"),
         _release_row("PPI ggNetView plot smoke"),
         _release_row("standard branch expression smoke"),
         _release_row("expression heatmap visualization smoke"),
@@ -100,6 +101,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
     assert by_requirement["paper-level visualization modules"]["status"] == "achieved"
     assert "gene family information visualization smoke" in by_requirement["paper-level visualization modules"]["evidence"]
     assert "promoter cis-element visualization smoke" in by_requirement["paper-level visualization modules"]["evidence"]
+    assert "PPI ggNetView smoke" in by_requirement["paper-level visualization modules"]["evidence"]
     assert by_requirement["quickstart handoff"]["status"] == "achieved"
 
 
@@ -109,6 +111,7 @@ def test_paper_level_visualization_modules_require_promoter_cis_smoke():
         _release_row("feature summary visualization smoke"),
         _release_row("tree feature visualization smoke"),
         _release_row("MCScanX circlize visualization smoke"),
+        _release_row("PPI ggNetView smoke"),
         _release_row("PPI ggNetView plot smoke"),
         _release_row("standard branch expression smoke"),
         _release_row("expression heatmap visualization smoke"),
@@ -139,6 +142,7 @@ def test_paper_level_visualization_modules_require_expression_heatmap_smoke():
         _release_row("promoter cis-element visualization smoke"),
         _release_row("tree feature visualization smoke"),
         _release_row("MCScanX circlize visualization smoke"),
+        _release_row("PPI ggNetView smoke"),
         _release_row("PPI ggNetView plot smoke"),
         _release_row("standard branch expression smoke"),
     ]
@@ -172,6 +176,7 @@ def test_objective_audit_lists_named_paper_level_visualization_requirements():
         _release_row("promoter cis-element visualization smoke"),
         _release_row("standard branch expression smoke"),
         _release_row("expression heatmap visualization smoke"),
+        _release_row("PPI ggNetView smoke"),
         _release_row("PPI ggNetView plot smoke"),
         _release_row("Ka/Ks WGD annotation plot smoke"),
         _release_row("duplicate-type Ka/Ks visualization smoke"),
@@ -371,6 +376,7 @@ def test_tree_motif_gene_structure_domain_requires_nextflow_standard_visualizati
 
 def test_ppi_ggnetview_visualization_requires_nextflow_standard_visualization_smoke():
     release_rows = [
+        _release_row("PPI ggNetView smoke"),
         _release_row("PPI ggNetView plot smoke"),
     ]
     readiness_rows = [
@@ -390,6 +396,30 @@ def test_ppi_ggnetview_visualization_requires_nextflow_standard_visualization_sm
 
     assert by_requirement["PPI ggNetView visualization"]["status"] == "missing"
     assert "Nextflow standard visualization smoke" in by_requirement["PPI ggNetView visualization"]["evidence"]
+
+
+def test_ppi_ggnetview_visualization_requires_ggnetview_status_smoke():
+    release_rows = [
+        _release_row("PPI ggNetView plot smoke"),
+        _release_row("Nextflow standard visualization smoke"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["PPI ggNetView visualization"]["status"] == "missing"
+    assert "PPI ggNetView smoke" in by_requirement["PPI ggNetView visualization"]["evidence"]
 
 
 def test_expression_heatmap_visualization_requires_nextflow_standard_visualization_smoke():

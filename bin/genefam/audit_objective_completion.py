@@ -172,6 +172,7 @@ def build_objective_audit(
                     "tree feature visualization smoke",
                     "MCScanX circlize visualization smoke",
                     "Nextflow standard visualization smoke",
+                    "PPI ggNetView smoke",
                     "PPI ggNetView plot smoke",
                     "standard branch expression smoke",
                     "expression heatmap visualization smoke",
@@ -183,7 +184,7 @@ def build_objective_audit(
                 ],
             ),
             "paper-level visualization modules",
-            "gene family information visualization smoke, feature summary visualization smoke, promoter cis-element visualization smoke, tree feature visualization smoke, MCScanX circlize visualization smoke, Nextflow standard visualization smoke, PPI ggNetView plot smoke, standard branch expression smoke, expression heatmap visualization smoke, Ka/Ks WGD annotation plot smoke, duplicate-type Ka/Ks visualization smoke, pangenome-class Ka/Ks visualization smoke, Nextflow WGD event smoke, and WGD publication report audit",
+            "gene family information visualization smoke, feature summary visualization smoke, promoter cis-element visualization smoke, tree feature visualization smoke, MCScanX circlize visualization smoke, Nextflow standard visualization smoke, PPI ggNetView smoke, PPI ggNetView plot smoke, standard branch expression smoke, expression heatmap visualization smoke, Ka/Ks WGD annotation plot smoke, duplicate-type Ka/Ks visualization smoke, pangenome-class Ka/Ks visualization smoke, Nextflow WGD event smoke, and WGD publication report audit",
             "Report-ready gene-family information, feature summary, promoter extraction and cis-element, tree/motif/gene-structure/domain, synteny/circlize, PPI, annotated expression heatmap, Ks distribution, duplicate-type Ka/Ks, pangenome-class Ka/Ks, and WGD report figures are exercised by script smoke checks and formal Nextflow report evidence.",
         ),
         _achieved_if(
@@ -238,9 +239,12 @@ def build_objective_audit(
             "RNA-seq expression subsetting, sample metadata integration, group summaries, gene-level QC, expression heatmap plotting, and Nextflow report evidence are exercised.",
         ),
         _achieved_if(
-            _all_passed(release, ["PPI ggNetView plot smoke", "Nextflow standard visualization smoke"]),
+            _all_passed(
+                release,
+                ["PPI ggNetView smoke", "PPI ggNetView plot smoke", "Nextflow standard visualization smoke"],
+            ),
             "PPI ggNetView visualization",
-            "PPI ggNetView plot smoke and Nextflow standard visualization smoke",
+            "PPI ggNetView smoke, PPI ggNetView plot smoke, and Nextflow standard visualization smoke",
             "PPI edge/node normalization, hub summaries, network QC, ggNetView status, ggNetView-rendered network plots, and Nextflow report evidence are exercised.",
         ),
         _achieved_if(

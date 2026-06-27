@@ -34,6 +34,49 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 08:13 - Require ggNetView status smoke for PPI audit
+
+Context:
+- The active `/goal` requires PPI visualization to use ggNetView and to be judged at publication-MVP level.
+- The objective audit note already mentioned ggNetView status, but the PPI objective evidence only required the plotted PPI smoke and Nextflow standard visualization smoke.
+
+Decisions:
+- Treat `PPI ggNetView smoke` as a required status/readiness proof for the PPI objective row.
+- Also require the same ggNetView status smoke in the aggregate `paper-level visualization modules` row, so the paper-level visualization gate proves ggNetView readiness plus rendered network plots.
+
+Added:
+- Regression test that `PPI ggNetView visualization` is missing when `PPI ggNetView smoke` is absent, even if the plot smoke and Nextflow visualization smoke pass.
+- Regression expectation that the paper-level visualization evidence names `PPI ggNetView smoke`.
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+- `results/objective_audit/objective_audit.md`
+- `results/objective_audit/objective_audit.tsv`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_ppi_ggnetview_visualization_requires_ggnetview_status_smoke -q` first failed because the PPI objective was still achieved without `PPI ggNetView smoke`.
+- `python -m pytest tests/test_audit_objective_completion.py::test_ppi_ggnetview_visualization_requires_ggnetview_status_smoke -q` passed after requiring the status smoke.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 39 tests.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 and refreshed the objective audit.
+- `rg -n "paper-level visualization modules|PPI ggNetView visualization|PPI ggNetView smoke" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed both objective rows now list `PPI ggNetView smoke`.
+- `python -m pytest tests -q` passed with 399 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 after the fresh release check run.
+- `head -n 8 results/objective_audit/objective_audit.md` reported `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the remaining blocked item is the intentionally deferred Docker/Apptainer reproducibility stage.
+
+Commit:
+- hash: pending
+- message: `test: require ggnetview status for ppi audit`
+- files: objective audit PPI evidence rule, regression tests, refreshed objective audit outputs, and history entry.
+
+Next:
+- Continue hardening any remaining report rows where a figure-level output needs both standalone tool evidence and formal Nextflow/report evidence.
+
 ## 2026-06-27 07:14 - Require Nextflow report evidence for tree-feature audit
 
 Context:
