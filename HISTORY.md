@@ -11594,6 +11594,54 @@ Commit:
 Next:
 - Continue tightening release evidence so every paper-level handoff artifact is generated and independently audited.
 
+## 2026-06-27 - Document figure gallery audit and traceability index evidence
+
+Timestamp:
+- 2026-06-27 14:12 CST
+
+Context:
+- The release gate now includes `delivery bundle figure gallery audit`.
+- The standard and WGD report indexes expose `figure_traceability_matrix` anchors, but README, quickstart, release-audit, and readiness docs still described the older evidence surface.
+
+Decisions:
+- Document `bin/genefam/audit_figure_gallery.py` and its generated `figure_gallery_audit.tsv/md` outputs as release-gated delivery evidence.
+- Update report-index wording so users know `figure_traceability_matrix` is part of report-index closure.
+- Keep the user-facing inspection order focused on handoff, publication audits, report-index audits, delivery bundle, and the final-stage Docker/Apptainer blocker.
+
+Added:
+- Documentation references to `results/delivery_bundle_smoke/figure_gallery_audit.tsv`.
+- Documentation references to `results/delivery_bundle_smoke/figure_gallery_audit.md`.
+- Documentation references to `figure_traceability_matrix`.
+- Regression assertions in docs tests for the new gallery audit and traceability-index wording.
+
+Modified:
+- `README.md`
+- `docs/quickstart.md`
+- `docs/release_audit.md`
+- `docs/readiness_checklist.md`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_release_audit_docs.py tests/test_runtime_environment_files.py::test_readiness_checklist_documents_command_audit tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report tests/test_quickstart_docs.py::test_quickstart_documents_minimum_verified_run_path -q` first failed because the docs did not mention `audit_figure_gallery.py`, `figure_gallery_audit`, or `figure_traceability_matrix`.
+- After documentation updates, the same command passed with 4 tests.
+- `python -m pytest tests/test_release_audit_docs.py tests/test_runtime_environment_files.py tests/test_quickstart_docs.py -q` passed with 17 tests.
+- `python -m pytest tests -q` passed with 438 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0; the generated TSV reported 51 total checks, 0 required failures, and 2 optional failures for missing Docker and Apptainer runtimes.
+- `cat results/delivery_bundle_smoke/figure_gallery_audit.tsv` showed `figure_gallery_required_columns` and `figure_gallery_linked_files_exist` both passed.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed handoff, delivery bundle, release checks, report-index audits, quickstart, and local acceptance summaries; final-stage blocker remains Docker/Apptainer reproducibility.
+
+Commit:
+- pending; hash will be backfilled after the code commit.
+
+Next:
+- Continue aligning user-facing docs with each new release-gated evidence surface.
+
 ## 2026-06-27 - Expose figure traceability links in delivery gallery
 
 Timestamp:

@@ -82,6 +82,9 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "global paper-level figure gallery" in text
     assert "results/delivery_bundle/figure_gallery.tsv" in text
     assert "results/delivery_bundle/figure_gallery.md" in text
+    assert "audit_figure_gallery.py" in text
+    assert "results/delivery_bundle_smoke/figure_gallery_audit.tsv" in text
+    assert "results/delivery_bundle_smoke/figure_gallery_audit.md" in text
     assert "final_stage_blocker" in text
     assert "audit_publication_report.py" in text
     assert "audit_report_index.py" in text
@@ -122,7 +125,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "per-figure method/software version coverage" in text
     assert "Figure Traceability Matrix" in text
     assert "reproducibility commands" in text
-    assert "report indexes expose plot manifests, software versions, figure interpretations in TSV/Markdown, and final reports" in text
+    assert "report indexes expose plot manifests, software versions, figure interpretations in TSV/Markdown, final reports, and figure_traceability_matrix anchors" in text
     assert "docs/quickstart.md" in text
     assert "run_species_selection_smoke.py" in text
     assert "configs/manifest.example.yaml" in text

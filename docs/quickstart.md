@@ -121,15 +121,17 @@ The delivery bundle now records both report-closure audits:
 
 - `publication_report_audit`: standard report paper-style report closure at `results/publication_report_audit/publication_report_audit.md`, covering valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, complete per-figure close-reading text, QC tables and warnings, software/R package versions, per-figure method/software version coverage, and reproducibility commands
 - `wgd_publication_report_audit`: WGD report closure at `results/publication_report_audit/wgd_publication_report_audit.md`, covering valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, complete Ka/Ks/WGD figure close-reading text, gamma beta alpha theta interpretation, QC tables and warnings, software/R package versions, per-figure method/software version coverage, and reproducibility commands
-- `standard_report_index_audit`: standard report-index closure at `results/report_index_audit/standard_report_index_audit.md`, covering indexed plot manifests, software versions, `figure_interpretations.tsv`, `figure_interpretations.md`, and `final_report.md`
-- `wgd_report_index_audit`: WGD report-index closure at `results/report_index_audit/wgd_report_index_audit.md`, covering indexed plot manifests, software versions, `figure_interpretations.tsv`, `figure_interpretations.md`, and `final_report.md`
+- `standard_report_index_audit`: standard report-index closure at `results/report_index_audit/standard_report_index_audit.md`, covering indexed plot manifests, software versions, `figure_interpretations.tsv`, `figure_interpretations.md`, `final_report.md`, and `figure_traceability_matrix`
+- `wgd_report_index_audit`: WGD report-index closure at `results/report_index_audit/wgd_report_index_audit.md`, covering indexed plot manifests, software versions, `figure_interpretations.tsv`, `figure_interpretations.md`, `final_report.md`, and `figure_traceability_matrix`
 
 The global paper-level figure gallery is the fastest way to inspect plots across the standard and WGD branches:
 
 - `results/delivery_bundle/figure_gallery.tsv`: machine-readable plot index
 - `results/delivery_bundle/figure_gallery.md`: human-readable plot index
+- `results/delivery_bundle_smoke/figure_gallery_audit.tsv`: machine-readable figure-gallery link audit from `bin/genefam/audit_figure_gallery.py`
+- `results/delivery_bundle_smoke/figure_gallery_audit.md`: human-readable figure-gallery link audit
 
-Each gallery row links a plot PDF to its `figure_interpretations.md`, `software_versions.tsv`, and `final_report.md`.
+Each gallery row links a plot PDF to its `figure_interpretations.md`, `software_versions.tsv`, `final_report.md`, and `figure_traceability_matrix` anchor.
 
 ```bash
 python bin/genefam/run_delivery_bundle.py \
