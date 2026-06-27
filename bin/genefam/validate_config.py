@@ -289,6 +289,8 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
 
     if modules.get("domain_filtering") is True and modules.get("identification") is not True:
         errors.append("modules.domain_filtering requires modules.identification: true")
+    if modules.get("family_summary") is True and modules.get("domain_filtering") is not True:
+        errors.append("modules.family_summary requires modules.domain_filtering: true")
     if modules.get("phylogeny") is True and modules.get("family_summary") is not True:
         errors.append("modules.phylogeny requires modules.family_summary: true")
     if modules.get("motif") is True and modules.get("family_summary") is not True:

@@ -425,6 +425,7 @@ def _valid_base_config():
         "plotting": {"reuse_policy": "adapt_not_modify"},
         "modules": {
             "identification": True,
+            "domain_filtering": True,
             "family_summary": True,
             "phylogeny": False,
             "motif": False,
@@ -481,6 +482,16 @@ def test_validate_config_reports_family_summary_requires_pep_inputs():
     errors = validate_config(config)
 
     assert "modules.family_summary requires input.required.pep: true" in errors
+
+
+def test_validate_config_reports_family_summary_requires_domain_filtering():
+    config = _valid_base_config()
+    config["modules"]["domain_filtering"] = False
+    config["modules"]["family_summary"] = True
+
+    errors = validate_config(config)
+
+    assert "modules.family_summary requires modules.domain_filtering: true" in errors
 
 
 def test_validate_config_reports_synteny_requires_pep_and_gff3_inputs():

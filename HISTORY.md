@@ -34,6 +34,46 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 09:30 - Require domain filtering before family summary
+
+Context:
+- The active `/goal` requires the standard branch to be reliable from identification through report generation.
+- `FAMILY_SUMMARY` consumes `CONCAT_FAMILY_CANDIDATES.out`, and `family_candidates.tsv` is produced by the domain-filtering step.
+- A YAML config could enable `modules.family_summary` while disabling `modules.domain_filtering`, which would make the standard branch dependency chain unclear before runtime.
+
+Decisions:
+- Require `modules.domain_filtering: true` whenever `modules.family_summary` is enabled.
+- Update the shared valid config fixture so it reflects the real standard module chain: identification -> domain_filtering -> family_summary.
+
+Added:
+- Regression test that family summary reports a missing domain-filtering dependency.
+
+Modified:
+- `bin/genefam/validate_config.py`
+- `tests/test_validate_config.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_validate_config.py::test_validate_config_reports_family_summary_requires_domain_filtering -q` first failed because family summary did not report the missing domain-filtering dependency.
+- `python -m pytest tests/test_validate_config.py::test_validate_config_reports_family_summary_requires_domain_filtering tests/test_validate_config.py::test_validate_config_reports_domain_filtering_requires_identification tests/test_validate_config.py::test_validate_config_reports_family_summary_requires_pep_inputs -q` passed.
+- `python -m pytest tests/test_validate_config.py -q` passed with 39 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/manifest.example.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python -m pytest tests -q` passed with 413 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
+- hash: pending
+- message: `test: require domain filtering for family summary`
+- files: family-summary config validation, regression tests, and history entry.
+
+Next:
+- Continue tightening module dependency validation and user-facing handoff evidence before final Docker/Apptainer packaging.
+
 ## 2026-06-27 09:24 - Require identification before domain filtering
 
 Context:
