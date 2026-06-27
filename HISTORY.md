@@ -13888,7 +13888,7 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` exited 0 and refreshed release checks, quickstart, delivery bundle, final delivery manifest audit, and local acceptance outputs; it reported the expected final-stage blocker: Docker/Apptainer reproducibility.
 
 Commit:
-- hash: pending
+- hash: d0a5ad2a6bcc06ab228b252cb42afa3865ebe8f2
 - message: feat: make figure gallery markdown clickable
 - files: delivery-bundle gallery rendering, figure-gallery audit, tests, README/quickstart/readiness docs, history
 
