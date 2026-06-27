@@ -854,6 +854,7 @@ def test_final_reports_note_names_complete_publication_report_closure():
     assert "Figure Traceability Matrix" in final_report_row["note"]
     assert "delivery figure gallery" in final_report_row["note"]
     assert "figure_gallery_audit" in final_report_row["note"]
+    assert "valid gallery plot file signatures" in final_report_row["note"]
     assert "delivery manifest audit" in final_report_row["note"]
     assert "reproducibility commands" in final_report_row["note"]
     assert "no TODO/TBD/placeholder text" in final_report_row["note"]

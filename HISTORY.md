@@ -134,6 +134,39 @@ Commit:
 Next:
 - Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
 
+## 2026-06-27 16:33 - Surface gallery signatures in objective audit
+
+Context:
+- The global figure gallery audit already validates PDF, PNG, and SVG signatures for delivery-gallery plot targets.
+- The active `/goal` requires final objective evidence to prove paper-level visualization integrity, so the objective audit should explicitly surface gallery-level plot-signature evidence rather than only saying gallery links exist.
+
+Decisions:
+- Keep the release check dependency unchanged: `delivery bundle figure gallery audit` remains the gate for gallery coverage.
+- Update the final-report objective note to mention valid gallery plot file signatures as part of `figure_gallery_audit` evidence.
+
+Added:
+- Red test assertion requiring the `final reports` objective-audit note to mention valid gallery plot file signatures.
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_note_names_complete_publication_report_closure -q` first failed because the objective-audit final-report note did not mention valid gallery plot file signatures.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 46 tests after updating the note.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: objective audit note, objective audit test, and history entry.
+
+Next:
+- Run full tests and release/local acceptance checks, then commit and backfill this history entry.
+
 ## 2026-06-27 15:51 - Surface Reference gitignore evidence in delivery bundle
 
 Context:
