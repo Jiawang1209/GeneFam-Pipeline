@@ -34,6 +34,50 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 17:48 - Expose non-detected software versions in report audits
+
+Context:
+- The active `/goal` requires final reports to state methods, software, software versions, QC, and reproducibility for every figure.
+- The software version tables can contain rows such as `version_not_detected` for command-line tools whose version cannot be read from the local binary.
+- Publication report audits previously passed when detected version categories were present, but they did not separately prove that non-detected version statuses remained visible in the final report.
+
+Decisions:
+- Add a `software_version_detection_warnings_visible` publication-report audit row.
+- Treat non-detected version rows as acceptable only when their component, version/status, and source are visible in the final report.
+- Keep actual tool installation/version resolution as a final runtime/container concern while making version-detection gaps explicit in paper-style reports.
+
+Added:
+- Red test covering a `version_not_detected` MCScanX row that is absent from the final report.
+- `software_version_detection_warnings_visible` audit output in standard and WGD publication report audits.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `tests/test_audit_publication_report.py`
+- `tests/test_release_audit_docs.py`
+- `docs/release_audit.md`
+- `README.md`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_requires_non_detected_versions_visible_in_final_report -q` first failed with `KeyError: 'software_version_detection_warnings_visible'`.
+- `python -m pytest tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` first failed because `software_version_detection_warnings_visible` was not documented in `docs/release_audit.md`.
+- `python -m pytest tests/test_audit_publication_report.py tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_quickstart_docs.py tests/test_runtime_environment_files.py -q` passed with 34 tests.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` exited 0 and reported `Passed: 12`, `Failed: 0`, `Complete: true`.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv --software-versions results/nextflow_wgd_smoke/wgd/report/software_versions.tsv --final-report results/nextflow_wgd_smoke/wgd/report/final_report.md --out-tsv results/publication_report_audit/wgd_publication_report_audit.tsv --out-md results/publication_report_audit/wgd_publication_report_audit.md` exited 0 and reported `Passed: 12`, `Failed: 0`, `Complete: true`.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: publication report audit, publication audit tests, release/quickstart/readiness docs, README, and history entry.
+
+Next:
+- Run full tests and release/local acceptance checks, then commit and backfill this history entry.
+
 ## 2026-06-27 17:36 - Require delivery gallery traceability targets
 
 Context:

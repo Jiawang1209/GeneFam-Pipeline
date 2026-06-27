@@ -139,7 +139,7 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
     )
     summary = summarize_audit(rows)
 
-    assert summary == {"passed": 11, "failed": 0, "complete": True}
+    assert summary == {"passed": 12, "failed": 0, "complete": True}
     assert {row["check"] for row in rows} == {
         "plot_files_exist",
         "plot_file_format_valid",
@@ -148,6 +148,7 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
         "figure_interpretation_detail",
         "figure_output_paths_match_manifest",
         "software_versions_present",
+        "software_version_detection_warnings_visible",
         "figure_method_software_versions",
         "final_report_embeds_publication_sections",
         "final_report_figure_traceability",
@@ -518,6 +519,100 @@ def test_publication_report_audit_requires_software_versions_embedded_in_final_r
     assert "software_version:FastTree:2.1.11" in by_check["final_report_embeds_publication_sections"]["note"]
     assert "software_version:R:4.4.0" in by_check["final_report_embeds_publication_sections"]["note"]
     assert "software_version:ggplot2:4.0.3" in by_check["final_report_embeds_publication_sections"]["note"]
+
+
+def test_publication_report_audit_requires_non_detected_versions_visible_in_final_report(tmp_path):
+    plot_manifest = tmp_path / "plot_manifest.tsv"
+    figure_interpretations = tmp_path / "figure_interpretations.tsv"
+    software_versions = tmp_path / "software_versions.tsv"
+    final_report = tmp_path / "final_report.md"
+    (tmp_path / "plots").mkdir()
+    (tmp_path / "plots/mcscanx_circlize.pdf").write_bytes(b"%PDF mcscanx")
+
+    _write_tsv(
+        plot_manifest,
+        ["plot_key", "path", "description"],
+        [["mcscanx_circlize", "plots/mcscanx_circlize.pdf", "MCScanX circlize"]],
+    )
+    _write_tsv(
+        figure_interpretations,
+        [
+            "figure_key",
+            "input_data",
+            "what_figure_shows",
+            "key_observations",
+            "biological_interpretation",
+            "qc_warnings",
+            "qc_tables",
+            "method_and_software",
+            "reproducibility",
+            "result_reading_status",
+            "output_path",
+        ],
+        [[
+            "mcscanx_circlize",
+            "MCScanX syntenic pairs",
+            "chromosome-scale links",
+            "linked blocks are visible",
+            "retained synteny supports duplication context",
+            "MCScanX version could not be detected from local binary",
+            "tables/circlize_links.tsv",
+            "MCScanX; circlize; /usr/local/bin/R",
+            "python bin/genefam/run_mcscanx_circlize_smoke.py --r-bin /usr/local/bin/R --outdir results/mcscanx_circlize_smoke",
+            "figure-specific close reading",
+            "plots/mcscanx_circlize.pdf",
+        ]],
+    )
+    _write_tsv(
+        software_versions,
+        ["component", "kind", "version", "status", "source"],
+        [
+            ["MCScanX", "command", "version_not_detected", "version_not_detected", "MCScanX"],
+            ["R", "command", "4.4.0", "detected", "/usr/local/bin/R --version"],
+            ["circlize", "R_package", "0.4.17", "detected", "packageVersion(\"circlize\")"],
+        ],
+    )
+    final_report.write_text(
+        "\n".join(
+            [
+                "### Software Versions",
+                "| component | kind | version | status | source |",
+                "| --- | --- | --- | --- | --- |",
+                "| R | command | 4.4.0 | detected | /usr/local/bin/R --version |",
+                "| circlize | R_package | 0.4.17 | detected | packageVersion(\"circlize\") |",
+                "## Figure Traceability Matrix",
+                "| figure_key | plot_path | interpretation_status | qc_tables | method_and_software | reproducibility |",
+                "| --- | --- | --- | --- | --- | --- |",
+                "| mcscanx_circlize | plots/mcscanx_circlize.pdf | figure-specific close reading | tables/circlize_links.tsv | MCScanX; circlize; /usr/local/bin/R | python bin/genefam/run_mcscanx_circlize_smoke.py --r-bin /usr/local/bin/R --outdir results/mcscanx_circlize_smoke |",
+                "## Figure Result Interpretations",
+                "### mcscanx_circlize: MCScanX circlize",
+                "- Input data: MCScanX syntenic pairs",
+                "- What the figure shows: chromosome-scale links",
+                "- Key observations: linked blocks are visible",
+                "- Biological interpretation: retained synteny supports duplication context",
+                "- QC warnings / limitations: MCScanX version could not be detected from local binary",
+                "- QC tables: tables/circlize_links.tsv",
+                "- Method/software: MCScanX; circlize; /usr/local/bin/R",
+                "- Reproducibility: python bin/genefam/run_mcscanx_circlize_smoke.py --r-bin /usr/local/bin/R --outdir results/mcscanx_circlize_smoke",
+                "- Result reading status: figure-specific close reading",
+                "- Output path: `plots/mcscanx_circlize.pdf`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    rows = audit_publication_report(
+        plot_manifest=plot_manifest,
+        figure_interpretations=figure_interpretations,
+        software_versions=software_versions,
+        final_report=final_report,
+    )
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["software_version_detection_warnings_visible"]["status"] == "failed"
+    assert "software_version_warning:MCScanX:version_not_detected:version_not_detected" in by_check[
+        "software_version_detection_warnings_visible"
+    ]["note"]
 
 
 def test_publication_report_audit_requires_close_reading_text_embedded_in_final_report(tmp_path):

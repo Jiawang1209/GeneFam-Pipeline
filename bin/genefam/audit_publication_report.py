@@ -193,6 +193,30 @@ def _missing_software_versions_in_report(
     return missing
 
 
+def _non_detected_version_warning_issues(
+    report_text: str,
+    version_rows: list[dict[str, str]],
+) -> list[str]:
+    issues: list[str] = []
+    for row in version_rows:
+        component = row.get("component", "").strip()
+        version = row.get("version", "").strip()
+        status = row.get("status", "").strip()
+        source = row.get("source", "").strip()
+        if not component or not version:
+            continue
+        if status == "detected" and version != "version_not_detected":
+            continue
+        missing_tokens = [
+            token
+            for token in [component, version, status, source]
+            if token and not _report_contains(report_text, token)
+        ]
+        if missing_tokens:
+            issues.append(f"software_version_warning:{component}:{version}:{status or 'missing_status'}")
+    return issues
+
+
 def _versioned_components(software_rows: list[dict[str, str]]) -> set[str]:
     return {
         row.get("component", "").strip()
@@ -291,6 +315,7 @@ def audit_publication_report(
     required_version_kinds = {"command", "R_package"}
     version_kinds = _version_kinds(version_rows)
     missing_version_kinds = sorted(required_version_kinds - version_kinds)
+    non_detected_version_warning_issues = _non_detected_version_warning_issues(report_text, version_rows)
 
     missing_report_sections: list[str] = []
     for section in ["### Software Versions", "## Figure Result Interpretations"]:
@@ -364,6 +389,15 @@ def audit_publication_report(
             if version_rows and not missing_version_kinds
             else "missing required software version categories: "
             + ", ".join(missing_version_kinds or ["no detected software version rows"]),
+        ),
+        _row(
+            "software_version_detection_warnings_visible",
+            not non_detected_version_warning_issues,
+            f"{software_versions}; {final_report}",
+            "all non-detected software version statuses are visible in the final report"
+            if not non_detected_version_warning_issues
+            else "non-detected software version statuses missing from final report: "
+            + ", ".join(non_detected_version_warning_issues),
         ),
         _row(
             "figure_method_software_versions",
