@@ -34,6 +34,55 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 10:49 - Add report-index audits to local acceptance
+
+Context:
+- The active `/goal` requires final users to inspect a compact acceptance surface before opening the full report bundle.
+- `results/delivery_bundle` now indexes standard and WGD report-index audits, but `results/local_acceptance/local_acceptance_summary.md` still summarized only release, publication audit, quickstart, and delivery bundle status.
+- The local acceptance wrapper should expose the report navigation closure gate in the same first-pass status table as publication-report closure.
+
+Decisions:
+- Add standard and WGD report-index audit statuses to the local acceptance summary API and CLI.
+- Keep the statuses sourced from `results/release_checks/release_checks.tsv`, matching publication-report audit handling.
+- Add `REPORT_INDEX_OUTDIR` to `scripts/run_local_acceptance.sh` so paths remain configurable and separate from publication report audit outputs.
+
+Added:
+- `standard_report_index_audit` and `wgd_report_index_audit` rows in local acceptance TSV/Markdown summaries.
+- `--standard-report-index-status`, `--wgd-report-index-status`, and `--report-index-outdir` CLI options for `write_local_acceptance_summary.py`.
+- Local acceptance wrapper extraction of `standard report index audit` and `WGD report index audit` exit codes.
+
+Modified:
+- `bin/genefam/write_local_acceptance_summary.py`
+- `scripts/run_local_acceptance.sh`
+- `docs/quickstart.md`
+- `tests/test_write_local_acceptance_summary.py`
+- `tests/test_local_acceptance_script.py`
+- `tests/test_quickstart_docs.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_write_local_acceptance_summary.py -q` first failed because the summary API did not accept `standard_report_index_status` or `wgd_report_index_status`.
+- `python -m pytest tests/test_local_acceptance_script.py -q` first failed because the wrapper did not define `REPORT_INDEX_OUTDIR`.
+- `python -m pytest tests/test_quickstart_docs.py -q` first failed because quickstart did not mention `report-index audit exit status`.
+- `python -m pytest tests/test_write_local_acceptance_summary.py tests/test_local_acceptance_script.py tests/test_quickstart_docs.py -q` passed with 6 tests after implementation and documentation updates.
+- `python -m pytest tests -q` passed with 429 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 47`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+- `python bin/genefam/write_local_acceptance_summary.py --release-status 0 --publication-status 0 --standard-report-index-status 0 --wgd-publication-status 0 --wgd-report-index-status 0 --quickstart-status 0 --delivery-status 0 --release-outdir results/release_checks --publication-outdir results/publication_report_audit --report-index-outdir results/report_index_audit --quickstart-outdir results/quickstart --delivery-outdir results/delivery_bundle --outdir results/local_acceptance` exited 0.
+- `rg -n "report_index|report-index" results/local_acceptance/local_acceptance_summary.md results/local_acceptance/local_acceptance_summary.tsv` confirmed both standard and WGD report-index audit rows are present in refreshed local acceptance outputs.
+- `bash scripts/run_local_acceptance.sh` exited 0 and printed `results/report_index_audit/standard_report_index_audit.md` and `results/report_index_audit/wgd_report_index_audit.md` in the primary handoff file list.
+
+Commit:
+- hash: pending
+- message: `feat: add report index audits to local acceptance`
+- files: local acceptance summary, local acceptance wrapper, quickstart docs, tests, and history entry.
+
+Next:
+- Run full tests and release checks, then continue final MVP hardening while Docker/Apptainer remain the final-stage runtime blocker.
+
 ## 2026-06-27 10:45 - Index report-index audits in delivery bundle
 
 Context:

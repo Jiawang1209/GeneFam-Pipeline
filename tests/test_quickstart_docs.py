@@ -32,6 +32,7 @@ def test_quickstart_documents_minimum_verified_run_path():
         "wgd_publication_report_audit",
         "standard_report_index_audit",
         "wgd_report_index_audit",
+        "report-index audit exit status",
         "paper-style report closure",
         "WGD report closure",
         "report-index closure",

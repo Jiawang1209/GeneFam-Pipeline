@@ -20,7 +20,7 @@ For a local acceptance pass that runs the release gate and then still writes the
 bash scripts/run_local_acceptance.sh
 ```
 
-The wrapper also writes `results/local_acceptance/local_acceptance_summary.tsv` and `results/local_acceptance/local_acceptance_summary.md`, which record the release gate, `publication_report_audit`, quickstart, and delivery-bundle exit status in one place. The publication audit points to `results/publication_report_audit/publication_report_audit.md` and verifies paper-style report closure: valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, complete per-figure close-reading text, QC tables and warnings, software/R package versions, per-figure method/software version coverage, and reproducibility commands.
+The wrapper also writes `results/local_acceptance/local_acceptance_summary.tsv` and `results/local_acceptance/local_acceptance_summary.md`, which record the release gate, `publication_report_audit`, report-index audit exit status, quickstart, and delivery-bundle exit status in one place. The publication audit points to `results/publication_report_audit/publication_report_audit.md` and verifies paper-style report closure: valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, complete per-figure close-reading text, QC tables and warnings, software/R package versions, per-figure method/software version coverage, and reproducibility commands.
 
 Optional overrides:
 

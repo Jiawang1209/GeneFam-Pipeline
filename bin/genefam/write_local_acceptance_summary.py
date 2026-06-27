@@ -26,11 +26,14 @@ def build_acceptance_rows(
     *,
     release_status: int,
     publication_status: int,
+    standard_report_index_status: int,
     wgd_publication_status: int,
+    wgd_report_index_status: int,
     quickstart_status: int,
     delivery_status: int,
     release_outdir: Path,
     publication_outdir: Path,
+    report_index_outdir: Path,
     quickstart_outdir: Path,
     delivery_outdir: Path,
 ) -> list[AcceptanceRow]:
@@ -50,11 +53,25 @@ def build_acceptance_rows(
             note="paper-style report closure evidence",
         ),
         AcceptanceRow(
+            step="standard_report_index_audit",
+            status=_status_label(standard_report_index_status),
+            exit_code=standard_report_index_status,
+            path=report_index_outdir / "standard_report_index_audit.md",
+            note="standard report-index closure evidence",
+        ),
+        AcceptanceRow(
             step="wgd_publication_report_audit",
             status=_status_label(wgd_publication_status),
             exit_code=wgd_publication_status,
             path=publication_outdir / "wgd_publication_report_audit.md",
             note="WGD report closure evidence",
+        ),
+        AcceptanceRow(
+            step="wgd_report_index_audit",
+            status=_status_label(wgd_report_index_status),
+            exit_code=wgd_report_index_status,
+            path=report_index_outdir / "wgd_report_index_audit.md",
+            note="WGD report-index closure evidence",
         ),
         AcceptanceRow(
             step="quickstart_handoff",
@@ -77,11 +94,14 @@ def write_acceptance_summary(
     *,
     release_status: int,
     publication_status: int,
+    standard_report_index_status: int,
     wgd_publication_status: int,
+    wgd_report_index_status: int,
     quickstart_status: int,
     delivery_status: int,
     release_outdir: Path,
     publication_outdir: Path,
+    report_index_outdir: Path,
     quickstart_outdir: Path,
     delivery_outdir: Path,
     outdir: Path,
@@ -90,11 +110,14 @@ def write_acceptance_summary(
     rows = build_acceptance_rows(
         release_status=release_status,
         publication_status=publication_status,
+        standard_report_index_status=standard_report_index_status,
         wgd_publication_status=wgd_publication_status,
+        wgd_report_index_status=wgd_report_index_status,
         quickstart_status=quickstart_status,
         delivery_status=delivery_status,
         release_outdir=release_outdir,
         publication_outdir=publication_outdir,
+        report_index_outdir=report_index_outdir,
         quickstart_outdir=quickstart_outdir,
         delivery_outdir=delivery_outdir,
     )
@@ -142,11 +165,14 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--release-status", type=int, required=True)
     parser.add_argument("--publication-status", type=int, required=True)
+    parser.add_argument("--standard-report-index-status", type=int, required=True)
     parser.add_argument("--wgd-publication-status", type=int, required=True)
+    parser.add_argument("--wgd-report-index-status", type=int, required=True)
     parser.add_argument("--quickstart-status", type=int, required=True)
     parser.add_argument("--delivery-status", type=int, required=True)
     parser.add_argument("--release-outdir", type=Path, required=True)
     parser.add_argument("--publication-outdir", type=Path, required=True)
+    parser.add_argument("--report-index-outdir", type=Path, required=True)
     parser.add_argument("--quickstart-outdir", type=Path, required=True)
     parser.add_argument("--delivery-outdir", type=Path, required=True)
     parser.add_argument("--outdir", type=Path, required=True)
@@ -158,11 +184,14 @@ def main() -> int:
     write_acceptance_summary(
         release_status=args.release_status,
         publication_status=args.publication_status,
+        standard_report_index_status=args.standard_report_index_status,
         wgd_publication_status=args.wgd_publication_status,
+        wgd_report_index_status=args.wgd_report_index_status,
         quickstart_status=args.quickstart_status,
         delivery_status=args.delivery_status,
         release_outdir=args.release_outdir,
         publication_outdir=args.publication_outdir,
+        report_index_outdir=args.report_index_outdir,
         quickstart_outdir=args.quickstart_outdir,
         delivery_outdir=args.delivery_outdir,
         outdir=args.outdir,
