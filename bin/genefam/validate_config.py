@@ -74,6 +74,14 @@ def _validate_species_manifest_paths(manifest: Path, input_required: dict[str, b
     return errors
 
 
+def _normalize_include(include: str | list[str]) -> set[str] | None:
+    if include == "all":
+        return None
+    if isinstance(include, str):
+        return {include}
+    return set(include)
+
+
 def _validate_auto_species_bank_paths(
     root: Path,
     patterns: dict[str, list[str]],
@@ -84,10 +92,12 @@ def _validate_auto_species_bank_paths(
     errors: list[str] = []
     if not root.is_dir():
         return errors
-    include_set = None if include == "all" else set(include)
+    include_set = _normalize_include(include)
     exclude_set = set(exclude or [])
+    discovered_species: set[str] = set()
     for species_dir in sorted(path for path in root.iterdir() if path.is_dir()):
         species_id = species_dir.name
+        discovered_species.add(species_id)
         if include_set is not None and species_id not in include_set:
             continue
         if species_id in exclude_set:
@@ -102,6 +112,10 @@ def _validate_auto_species_bank_paths(
             if len(unique_matches) > 1:
                 names = ", ".join(path.name for path in unique_matches)
                 errors.append(f"input.root multiple {file_type} files for species {species_id}: {names}")
+    if include_set is not None:
+        missing = sorted(include_set - discovered_species - exclude_set)
+        if missing:
+            errors.append(f"input.root requested species not found: {', '.join(missing)}")
     return errors
 
 
