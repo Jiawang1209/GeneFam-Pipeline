@@ -67,7 +67,7 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
 
 Commit:
-- hash: pending
+- hash: e3952419e1e0158102c9e986818cd08c15a0714d
 - message: `test: require identification for domain filtering`
 - files: domain-filtering config validation, regression tests, and history entry.
 
