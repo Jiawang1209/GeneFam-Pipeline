@@ -78,6 +78,8 @@ def build_objective_audit(
     core_tools = ["nextflow", "/usr/local/bin/R", "hmmsearch", "diamond", "mafft", "iqtree2", "meme"]
     missing_core_tools = _missing_commands(readiness, core_tools)
     missing_container_tools = _missing_commands(readiness, ["docker", "apptainer"])
+    r_path_available = _available(readiness, "/usr/local/bin/R")
+    r_runtime_health_passed = release.get("R runtime health") == "passed"
     missing_publication_audit_checks = _failed_or_missing_audit_checks(publication_audit_rows)
     missing_wgd_publication_audit_checks = _failed_or_missing_audit_checks(wgd_publication_audit_rows)
     final_report_audit_details_ok = (
@@ -144,11 +146,13 @@ def build_objective_audit(
         ),
         _row(
             "/usr/local/bin/R plotting",
-            "achieved" if _available(readiness, "/usr/local/bin/R") else "blocked",
-            "command readiness audit",
-            "R plotting path is available at /usr/local/bin/R."
-            if _available(readiness, "/usr/local/bin/R")
-            else "Missing /usr/local/bin/R.",
+            "achieved" if r_path_available and r_runtime_health_passed else "blocked",
+            "command readiness audit and R runtime health release check",
+            "R plotting path is available at /usr/local/bin/R and R runtime health passed before plotting smokes."
+            if r_path_available and r_runtime_health_passed
+            else "Missing /usr/local/bin/R."
+            if not r_path_available
+            else "R runtime health release check is missing or failed before plotting smokes.",
         ),
         _row(
             "Docker/Apptainer reproducibility",

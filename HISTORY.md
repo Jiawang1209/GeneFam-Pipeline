@@ -34,6 +34,48 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 18:38 - Require R runtime health in objective audit
+
+Context:
+- The active `/goal` requires the final MVP evidence chain to prove plotting/reporting is reproducible under `/usr/local/bin/R`.
+- The release gate and delivery bundle already exposed `R runtime health`, but the long objective audit still marked `/usr/local/bin/R plotting` achieved from command-readiness path evidence alone.
+
+Decisions:
+- Treat `/usr/local/bin/R plotting` as achieved only when both command readiness finds `/usr/local/bin/R` and the release-check row `R runtime health` passes.
+- Keep missing or failed R startup health as a blocked objective row rather than hiding it behind downstream plot smoke failures.
+- Document that the objective audit consumes both evidence sources.
+
+Added:
+- Regression test proving `/usr/local/bin/R plotting` is blocked without `R runtime health` and achieved when both evidence rows pass.
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+- `README.md`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_r_plotting_objective_requires_runtime_health_release_evidence -q` first failed because the old objective audit marked `/usr/local/bin/R plotting` achieved from readiness alone.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 47 tests after implementation.
+- `python -m pytest tests/test_audit_objective_completion.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py -q` passed with 62 tests.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` refreshed the objective audit.
+- `rg -n "/usr/local/bin/R plotting|R runtime health|Achieved|Blocked|Missing|Complete" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed `/usr/local/bin/R plotting` is achieved with `command readiness audit and R runtime health release check`, while the objective remains `Complete: false` only because Docker/Apptainer reproducibility is blocked.
+- `python -m pytest tests -q` passed with 457 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 51`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; `R runtime health` passed.
+- `bash scripts/run_local_acceptance.sh` exited 0; `results/local_acceptance/local_acceptance_summary.md` reported `Overall status: blocked` only because `final_stage_blocker` remains `Docker/Apptainer reproducibility`, and `results/delivery_bundle/delivery_manifest.tsv` includes `status/r_runtime_health`.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: objective audit R runtime health rule, docs, tests, history
+
+Next:
+- Commit the rule/docs/test update, then backfill this entry with the commit hash.
+
 ## 2026-06-27 18:34 - Expose R runtime health in final delivery bundle
 
 Context:

@@ -136,6 +136,24 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
     assert by_requirement["quickstart handoff"]["status"] == "achieved"
 
 
+def test_r_plotting_objective_requires_runtime_health_release_evidence():
+    readiness_rows = [_readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R")]
+
+    rows = build_objective_audit([], readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["/usr/local/bin/R plotting"]["status"] == "blocked"
+    assert "R runtime health" in by_requirement["/usr/local/bin/R plotting"]["evidence"]
+    assert "R runtime health" in by_requirement["/usr/local/bin/R plotting"]["note"]
+
+    rows = build_objective_audit([_release_row("R runtime health")], readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["/usr/local/bin/R plotting"]["status"] == "achieved"
+    assert "command readiness audit" in by_requirement["/usr/local/bin/R plotting"]["evidence"]
+    assert "R runtime health" in by_requirement["/usr/local/bin/R plotting"]["evidence"]
+
+
 def test_paper_level_visualization_modules_require_promoter_cis_smoke():
     release_rows = [
         _release_row("gene family information visualization smoke"),
