@@ -67,7 +67,7 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
 
 Commit:
-- hash: pending
+- hash: 0a2ca2181133275b83ba1f288bc817cc3cd727cd
 - message: `test: require family summary peptide inputs`
 - files: family summary config validation, regression tests, and history entry.
 
