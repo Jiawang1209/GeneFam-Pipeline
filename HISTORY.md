@@ -12092,7 +12092,9 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` exited 0 and refreshed release checks, quickstart, delivery bundle, and local acceptance outputs; it reported the expected final-stage blocker: Docker/Apptainer reproducibility.
 
 Commit:
-- pending
+- hash: 9503b4a919c5e9682459e55d5c7eafae30df106d
+- message: test: require figure gallery objective evidence
+- files: objective audit rule, release/objective tests, history
 
 Next:
 - Continue final MVP hardening; Docker/Apptainer runtime verification remains intentionally deferred to the final packaging stage.
