@@ -11498,7 +11498,9 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` exited 0 and refreshed handoff, delivery bundle, release checks, report-index audits, quickstart, and local acceptance summaries; final-stage blocker remains Docker/Apptainer reproducibility.
 
 Commit:
-- pending; hash will be backfilled after the code commit.
+- hash: 26052c8c336a8e03bf3a3eb91bb91bf1a2074a21
+- message: feat: index figure traceability in report indexes
+- files: report-index builders, report-index audit, report-index tests, history
 
 Next:
 - Continue final MVP hardening while Docker/Apptainer packaging remains the intentionally deferred final stage.
