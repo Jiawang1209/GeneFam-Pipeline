@@ -98,6 +98,10 @@ def test_readiness_checklist_documents_command_audit():
     assert "results/publication_report_audit/publication_report_audit.md" in text
     assert "results/report_index_audit/standard_report_index_audit.md" in text
     assert "results/report_index_audit/wgd_report_index_audit.md" in text
+    assert "results/reference_visual_alignment/reference_visual_alignment.md" in text
+    assert "Reference visual alignment audit" in text
+    assert "standard_reference_visual_modules" in text
+    assert "wgd_reference_visual_modules" in text
     assert "report-index closure" in text
     assert "figure_traceability_matrix" in text
     assert "all available indexed report paths exist" in text
@@ -209,6 +213,8 @@ def test_readme_points_to_final_handoff_report():
     assert "results/publication_report_audit/publication_report_audit.md" in readme
     assert "results/report_index_audit/standard_report_index_audit.md" in readme
     assert "results/report_index_audit/wgd_report_index_audit.md" in readme
+    assert "results/reference_visual_alignment/reference_visual_alignment.md" in readme
+    assert "Reference visual alignment audit" in readme
     assert "results/delivery_bundle/figure_gallery.tsv" in readme
     assert "results/delivery_bundle/figure_gallery.md" in readme
     assert "figure_gallery_audit" in readme
@@ -259,6 +265,9 @@ def test_chinese_readme_points_to_publication_audit_acceptance():
     assert "results/publication_report_audit/publication_report_audit.md" in readme
     assert "results/report_index_audit/standard_report_index_audit.md" in readme
     assert "results/report_index_audit/wgd_report_index_audit.md" in readme
+    assert "results/reference_visual_alignment/reference_visual_alignment.md" in readme
+    assert "Reference visual alignment audit" in readme
+    assert "reference_visual_alignment" in readme
     assert "results/delivery_bundle/figure_gallery.tsv" in readme
     assert "results/delivery_bundle/figure_gallery.md" in readme
     assert "results/delivery_bundle_smoke/figure_gallery_audit.md" in readme

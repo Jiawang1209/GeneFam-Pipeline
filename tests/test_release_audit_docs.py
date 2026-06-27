@@ -101,6 +101,17 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "nextflow_single_tool_smoke" in text
     assert "delivery_bundle_figure_gallery_smoke" in text
     assert "audit_figure_gallery.py" in text
+    assert "audit_reference_visual_alignment.py" in text
+    assert "Reference visual alignment audit" in text
+    assert "results/reference_visual_alignment/reference_visual_alignment.tsv" in text
+    assert "results/reference_visual_alignment/reference_visual_alignment.md" in text
+    assert "reference_visual_alignment" in text
+    assert "standard_reference_visual_modules" in text
+    assert "wgd_reference_visual_modules" in text
+    assert "reference_visual_interpretations" in text
+    assert "tree_features, motif, gene structure, domain" in text
+    assert "MCScanX/synteny/circlize" in text
+    assert "Ka/Ks/WGD gamma beta alpha theta" in text
     assert "results/delivery_bundle_smoke/figure_gallery_audit.tsv" in text
     assert "results/delivery_bundle_smoke/figure_gallery_audit.md" in text
     assert "valid gallery plot file signatures" in text

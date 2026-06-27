@@ -173,6 +173,7 @@ results/local_acceptance/local_acceptance_summary.md
 results/publication_report_audit/publication_report_audit.md
 results/report_index_audit/standard_report_index_audit.md
 results/report_index_audit/wgd_report_index_audit.md
+results/reference_visual_alignment/reference_visual_alignment.md
 results/delivery_bundle/figure_gallery.tsv
 results/delivery_bundle/figure_gallery.md
 results/delivery_bundle_smoke/figure_gallery_audit.md
@@ -185,6 +186,8 @@ results/delivery_bundle/final_delivery_manifest_audit.md
 `results/publication_report_audit/publication_report_audit.md` 用来确认最终报告是否真的把图件格式、只精读已注册图件、图件清单与精读表路径一致性、QC、逐图方法/软件版本和复现命令闭环。
 
 `results/report_index_audit/standard_report_index_audit.md` 和 `results/report_index_audit/wgd_report_index_audit.md` 用来检查标准分析分支和 WGD 分支的 report-index 是否把 plot_manifest、software_versions、figure_interpretations、`final_report.md` 和 figure_traceability_matrix 都挂到索引里，并确认所有 available 索引路径都真实存在。
+
+`results/reference_visual_alignment/reference_visual_alignment.md` 是 Reference visual alignment audit 的人工入口；它会检查 `reference_visual_alignment` 交付行，确认标准分支和 WGD 分支的 plot manifest 覆盖论文级图件模块，包括 gene family information、tree+motif+gene structure+domain、MCScanX/synteny/circlize、promoter cis-element、expression heatmap、ggNetView PPI，以及 Ka/Ks/WGD gamma beta alpha theta 图件，并确认对应图件都有逐图精读解释。
 
 `results/delivery_bundle/figure_gallery.tsv` 和 `results/delivery_bundle/figure_gallery.md` 是全局论文图件目录：每一行把标准分析和 WGD 分支的图件 PDF 连接到逐图精读、软件/R 包版本表和最终报告，适合交付时快速定位所有图。
 

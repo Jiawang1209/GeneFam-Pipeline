@@ -14220,3 +14220,50 @@ Commit:
 
 Next:
 - Continue final MVP handoff polish; Docker/Apptainer runtime execution remains the intentionally deferred final packaging stage.
+
+## 2026-06-27 - Document Reference visual alignment handoff
+
+Timestamp:
+- 2026-06-27 23:02 CST
+
+Context:
+- `Reference visual alignment audit` was already implemented and wired into release checks, objective audit, delivery bundle, and final delivery manifest.
+- Human-facing docs still needed to expose this evidence path so users do not have to infer Reference-level visualization closure from TSV files alone.
+
+Decisions:
+- Add document-contract tests requiring release audit, quickstart, readiness checklist, English README, and Chinese README to mention the Reference visual alignment artifact.
+- Document `results/reference_visual_alignment/reference_visual_alignment.md` as the human-facing audit entry.
+- Document the checked modules: `standard_reference_visual_modules`, `wgd_reference_visual_modules`, `reference_visual_interpretations`, `tree_features, motif, gene structure, domain`, `MCScanX/synteny/circlize`, and `Ka/Ks/WGD gamma beta alpha theta`.
+
+Added:
+- Documentation assertions for Reference visual alignment handoff evidence in release-audit, quickstart, readiness, README, and Chinese README tests.
+- Chinese README explanation of `Reference visual alignment audit` and the `reference_visual_alignment` delivery row.
+
+Modified:
+- `README.md`
+- `README.zh-CN.md`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_release_audit_docs.py tests/test_quickstart_docs.py tests/test_runtime_environment_files.py -q` first failed because `docs/release_audit.md`, `docs/quickstart.md`, `docs/readiness_checklist.md`, `README.md`, and `README.zh-CN.md` did not yet expose `results/reference_visual_alignment/reference_visual_alignment.md`.
+- The same documentation test command passed after documentation updates with 19 tests.
+- `python -m pytest tests -q` passed with 484 tests.
+- Existing release evidence remains `results/reference_visual_alignment/reference_visual_alignment.md` with `Passed: 3`, `Failed: 0`, `Complete: true`.
+- Existing release evidence remains `results/release_checks/release_checks.md` with `Passed: 54`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+
+Commit:
+- hash: pending
+- message: docs: document reference visual alignment handoff
+- files: README, Chinese README, quickstart/readiness/release-audit docs, documentation tests, history
+
+Next:
+- Continue final MVP handoff polish; Docker/Apptainer runtime execution remains the intentionally deferred final packaging stage.
