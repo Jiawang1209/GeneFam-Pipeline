@@ -34,6 +34,46 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 22:27 - Add native Apptainer build to runtime bootstrap
+
+Context:
+- `Apptainer.def` was added as a Reference-safe Apptainer-native build contract.
+- The generated runtime bootstrap files still only included the Docker-daemon-to-SIF path: `apptainer build --force genefam-pipeline_latest.sif docker-daemon://genefam-pipeline:latest`.
+- The final-stage runtime recovery path should expose both the Docker-derived SIF build and the native `Apptainer.def` SIF build.
+
+Decisions:
+- Keep the existing Docker image build and Docker-daemon SIF conversion path.
+- Add `apptainer build --force genefam-pipeline_latest.sif Apptainer.def` to the generated `runtime_bootstrap.sh`.
+- Add a Markdown explanation that the native Apptainer definition is Reference-safe and useful when Docker daemon access is unavailable or not preferred.
+
+Added:
+- Regression coverage requiring the generated bootstrap shell and Markdown to expose the native `Apptainer.def` build path.
+
+Modified:
+- `bin/genefam/plan_runtime_bootstrap.py`
+- `tests/test_plan_runtime_bootstrap.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_plan_runtime_bootstrap.py::test_build_bootstrap_plan_groups_missing_commands_into_actionable_steps -q` first failed because the generated shell did not include `apptainer build --force genefam-pipeline_latest.sif Apptainer.def`.
+- `python -m pytest tests/test_plan_runtime_bootstrap.py -q` passed with 3 tests.
+- `python bin/genefam/plan_runtime_bootstrap.py --readiness results/readiness/command_readiness.tsv --outdir results/readiness` refreshed `runtime_bootstrap_plan.md` and `runtime_bootstrap.sh`.
+- `rg -n "Apptainer.def|docker-daemon|Reference-safe|apptainer build" results/readiness/runtime_bootstrap_plan.md results/readiness/runtime_bootstrap.sh` confirmed both Apptainer build paths in the generated outputs.
+- `python -m pytest tests -q` passed with 480 tests.
+- `bash scripts/run_local_acceptance.sh` completed; release gate reported `Release ready: true`, `Required failed: 0`, `Optional failed: 2`; local acceptance remains blocked only by Docker/Apptainer runtime availability.
+
+Commit:
+- hash: pending
+- message: pending
+- files: runtime bootstrap planner, bootstrap tests, and history
+
+Next:
+- Backfill this entry with the commit hash after committing.
+- When Docker/Apptainer commands are available, run `bash results/readiness/runtime_bootstrap.sh` to build Docker and Apptainer images, run both container profile smokes, and clear the final-stage blocker.
+
 ## 2026-06-27 22:20 - Add Reference-safe Apptainer definition
 
 Context:
