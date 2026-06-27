@@ -74,7 +74,7 @@ Verification:
 - `sed -n '1,10p' results/objective_audit/objective_audit.md` confirmed objective audit remains `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
 
 Commit:
-- hash: pending
+- hash: e743277c039a599dbfccbbe400c535594ea8ae75
 - message: `docs: document delivery figure gallery`
 - files: English README, Chinese README, quickstart, docs tests, and history entry.
 
