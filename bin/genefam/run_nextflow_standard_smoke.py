@@ -40,6 +40,8 @@ def _bool_param(value: object) -> str:
 
 def load_standard_params(config_path: Path) -> dict[str, str]:
     config = load_config(config_path)
+    project = config.get("project", {}) or {}
+    gene_family = config.get("gene_family", {}) or {}
     identification = config.get("identification", {}) or {}
     dev = config.get("dev", {}) or {}
     plotting = config.get("plotting", {}) or {}
@@ -48,6 +50,8 @@ def load_standard_params(config_path: Path) -> dict[str, str]:
     ppi = config.get("ppi", {}) or {}
     expression = config.get("expression", {}) or {}
     return {
+        "project_name": str(project.get("name", "GDSL_demo")),
+        "gene_family": str(gene_family.get("name", "GDSL")),
         "use_hmmer": _bool_param(identification.get("use_hmmer", True)),
         "use_diamond": _bool_param(identification.get("use_diamond", True)),
         "final_rule": str(identification.get("final_rule", "intersection")),
@@ -185,6 +189,8 @@ def build_nextflow_command(
     use_hmmer: bool | str = True,
     use_diamond: bool | str = True,
     final_rule: str = "intersection",
+    project_name: str | None = None,
+    gene_family: str | None = None,
     mock_external_tools: bool | str = True,
     stop_after_family_candidates: bool | str = False,
     run_feature_summary: bool | str = False,
@@ -209,6 +215,10 @@ def build_nextflow_command(
     ]
     if profile:
         command.extend(["-profile", profile])
+    if project_name:
+        command.extend(["--project_name", project_name])
+    if gene_family:
+        command.extend(["--gene_family", gene_family])
     command.extend(
         [
             "--config",

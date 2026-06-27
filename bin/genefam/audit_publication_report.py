@@ -275,6 +275,47 @@ def _markdown_section(report_text: str, heading: str) -> str:
     return report_text[start:next_heading]
 
 
+def _markdown_table_values(section: str) -> dict[str, str]:
+    values: dict[str, str] = {}
+    for line in section.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|") or not stripped.endswith("|"):
+            continue
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        if len(cells) < 2 or cells[0] in {"key", "---"}:
+            continue
+        values[cells[0]] = cells[1]
+    return values
+
+
+def _final_report_identity_values(report_text: str) -> dict[str, str]:
+    values: dict[str, str] = {}
+    for line in report_text.splitlines():
+        if line.startswith("Project:"):
+            values["Project"] = line.split(":", 1)[1].strip()
+        elif line.startswith("Gene family:"):
+            values["Gene family"] = line.split(":", 1)[1].strip()
+    return values
+
+
+def _report_identity_issues(report_text: str) -> list[str]:
+    run_config = _markdown_table_values(_markdown_section(report_text, "Run Configuration Snapshot"))
+    report_identity = _final_report_identity_values(report_text)
+    expected_fields = {
+        "project.name": "Project",
+        "gene_family.name": "Gene family",
+    }
+    issues: list[str] = []
+    for config_key, report_key in expected_fields.items():
+        expected = run_config.get(config_key, "").strip()
+        if not expected:
+            continue
+        actual = report_identity.get(report_key, "").strip()
+        if actual != expected:
+            issues.append(f"report_identity:{config_key}:expected={expected}:actual={actual or 'missing'}")
+    return issues
+
+
 def _methods_summary_issues(report_text: str) -> list[str]:
     section = _markdown_section(report_text, "Methods Summary")
     if not section:
@@ -446,6 +487,7 @@ def audit_publication_report(
     for section in ["### Software Versions", "## Figure Result Interpretations"]:
         if not _report_contains(report_text, section):
             missing_report_sections.append(section)
+    missing_report_sections.extend(_report_identity_issues(report_text))
     missing_report_sections.extend(_missing_software_versions_in_report(report_text, version_rows))
     for key in plot_keys:
         if not _report_contains(report_text, f"### {key}:"):

@@ -238,6 +238,30 @@ def test_load_standard_params_reads_yaml_tool_and_mock_flags(tmp_path):
     assert params["gene_family_species_order"] == ""
 
 
+def test_load_standard_params_reads_yaml_report_identity_fields(tmp_path):
+    config = tmp_path / "identity.yaml"
+    config.write_text(
+        "\n".join(
+            [
+                "project:",
+                "  name: Custom_project",
+                "gene_family:",
+                "  name: ASMT",
+                "identification:",
+                "  final_rule: intersection",
+                "dev:",
+                "  mock_external_tools: true",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    params = load_standard_params(config)
+
+    assert params["project_name"] == "Custom_project"
+    assert params["gene_family"] == "ASMT"
+
+
 def test_load_standard_params_reads_yaml_species_order_for_copy_number_plots(tmp_path):
     config = tmp_path / "species_order.yaml"
     config.write_text(

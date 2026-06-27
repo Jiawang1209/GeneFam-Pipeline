@@ -34,6 +34,52 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 20:43 - Align final report identity with YAML config
+
+Context:
+- The active `/goal` requires the Nextflow/YAML/report path to be coherent enough for a polished MVP handoff.
+- A real standard publication smoke run showed `final_report.md` still used default `Project: GDSL_demo`, while `run_config_snapshot.tsv` recorded the YAML project name `GDSL_publication_modules_demo`.
+- This meant the report narrative could silently drift from the YAML-driven run configuration.
+
+Decisions:
+- Treat `project.name` and `gene_family.name` as first-class YAML-driven Nextflow params in the standard smoke runner.
+- Add a publication-report audit guard that compares the final-report identity lines with the embedded `Run Configuration Snapshot`.
+- Keep the new identity check inside the existing `final_report_embeds_publication_sections` row so the report-closure gate stays compact.
+
+Added:
+- Regression test proving `load_standard_params()` reads `project.name` and `gene_family.name`.
+- Regression test proving publication audit fails when `Project:` or `Gene family:` in the final report does not match the run configuration snapshot.
+
+Modified:
+- `bin/genefam/run_nextflow_standard_smoke.py`
+- `bin/genefam/audit_publication_report.py`
+- `tests/test_run_nextflow_standard_smoke.py`
+- `tests/test_audit_publication_report.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py::test_load_standard_params_reads_yaml_report_identity_fields -q` first failed with `KeyError: 'project_name'`.
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_requires_final_report_identity_matches_run_config -q` first failed because `final_report_embeds_publication_sections` still passed a stale report identity.
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_requires_final_report_identity_matches_run_config -q` passed after adding report identity parsing and comparison.
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py -q` passed with 21 tests.
+- `python -m pytest tests/test_audit_publication_report.py -q` passed with 23 tests.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --config configs/publication_modules.example.yaml --outdir results/nextflow_standard_feature_smoke` exited 0; the refreshed final report now shows `Project: GDSL_publication_modules_demo`, matching `run_config_snapshot.tsv`.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --report-index results/nextflow_standard_feature_smoke/standard/report/report_index.tsv --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` exited 0 and `final_report_embeds_publication_sections` passed with no `report_identity` issue.
+- `python -m pytest tests -q` passed with 470 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed the delivery bundle; it still reports the expected final-stage blocker: Docker/Apptainer reproducibility.
+
+Commit:
+- hash: not created in this session
+- message: fix: align report identity with yaml config
+- files: standard smoke YAML identity params, publication report identity audit, tests, history
+
+Next:
+- Continue final-stage packaging only after Docker/Apptainer runtime access is available.
+
 ## 2026-06-27 19:54 - Audit report-index PDF/PNG plot variants
 
 Context:
