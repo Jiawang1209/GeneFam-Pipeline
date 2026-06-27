@@ -12055,6 +12055,56 @@ Commit:
 Next:
 - Continue final MVP hardening with container/runtime packaging still intentionally deferred until the analysis flow and report gates are fully stable.
 
+## 2026-06-27 - Audit all available report-index paths
+
+Timestamp:
+- 2026-06-27 15:26 CST
+
+Context:
+- The report-index audit checked required core artifacts such as plot manifest, software versions, figure interpretations, final report, and traceability anchor.
+- Standard and WGD `report_index.tsv` files also contain many additional `available` rows for report tables, plots, sequences, alignments, trees, promoter/PPI/expression outputs, WGD event evidence, and Ka/Ks outputs.
+- A non-core indexed plot/table path could drift without failing the previous report-index audit.
+
+Decisions:
+- Add `report_index_available_paths_exist` to `bin/genefam/audit_report_index.py`.
+- Make the new check validate every `status=available` report-index row, including non-core tables and plots, with anchor checks for Markdown fragment paths.
+- Update README, quickstart, release audit, and readiness checklist to state that report-index audits verify all available indexed report paths exist.
+
+Added:
+- Regression test proving a missing non-core `tree_features_pdf` available path fails report-index audit.
+- Documentation assertions for the stronger report-index audit contract.
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/audit_report_index.py`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `tests/test_audit_report_index.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_report_index.py -q` first failed because `report_index_available_paths_exist` did not exist.
+- `python -m pytest tests/test_audit_report_index.py -q` passed with 5 tests after implementation and summary-count updates.
+- `python -m pytest tests/test_audit_report_index.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py tests/test_quickstart_docs.py -q` passed with 22 tests after documentation updates.
+- `python -m pytest tests -q` passed with 445 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and wrote `Passed: 50`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+- `cat results/report_index_audit/standard_report_index_audit.tsv` and `cat results/report_index_audit/wgd_report_index_audit.tsv` confirmed `report_index_available_paths_exist` passed for both standard and WGD report indexes.
+- `rg -n "report_index_available_paths_exist|all available indexed report paths exist|standard report index audit|WGD report index audit" results/report_index_audit/standard_report_index_audit.md results/report_index_audit/wgd_report_index_audit.md results/release_checks/release_checks.tsv README.md docs/quickstart.md docs/release_audit.md docs/readiness_checklist.md` confirmed generated audit outputs, release commands, and docs expose the stronger report-index contract.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed release checks, quickstart, delivery bundle, and local acceptance outputs; it reported the expected final-stage blocker: Docker/Apptainer reproducibility.
+- `python -m pytest tests -q` passed again with 445 tests after local acceptance refreshed generated outputs.
+
+Commit:
+- pending
+
+Next:
+- Continue final MVP hardening by checking remaining report/summary surfaces for drift between generated inventories and top-level evidence; Docker/Apptainer remains the final packaging-stage runtime blocker.
+
 ## 2026-06-27 - Surface delivery audits in handoff report
 
 Timestamp:

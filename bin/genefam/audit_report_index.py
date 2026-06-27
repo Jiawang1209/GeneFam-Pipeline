@@ -120,10 +120,34 @@ def _artifact_file_issues(report_index: Path, rows: list[dict[str, str]], profil
     return issues
 
 
+def _available_path_issues(report_index: Path, rows: list[dict[str, str]]) -> list[str]:
+    issues: list[str] = []
+    for row_number, row in enumerate(rows, start=2):
+        if row.get("status", "").strip() != "available":
+            continue
+        key = row.get("key", "").strip() or f"row_{row_number}"
+        indexed_path = row.get("path", "").strip()
+        if not indexed_path:
+            issues.append(f"{key}:missing_path")
+            continue
+        resolved = _resolve_indexed_path(report_index, indexed_path)
+        if not resolved.exists():
+            issues.append(f"{key}:missing_file:{indexed_path}")
+            continue
+        if resolved.is_file() and resolved.stat().st_size <= 0:
+            issues.append(f"{key}:empty_file:{indexed_path}")
+            continue
+        anchor = _anchor_from_indexed_path(indexed_path)
+        if anchor and not _markdown_has_anchor(resolved, anchor):
+            issues.append(f"{key}:missing_anchor:{anchor}")
+    return issues
+
+
 def audit_report_index(report_index: Path, profile: str) -> list[dict[str, str]]:
     rows = read_tsv(report_index)
     required_issues = _required_artifact_issues(rows, profile)
     file_issues = _artifact_file_issues(report_index, rows, profile)
+    available_path_issues = _available_path_issues(report_index, rows)
     return [
         _row(
             "report_index_required_artifacts",
@@ -140,6 +164,15 @@ def audit_report_index(report_index: Path, profile: str) -> list[dict[str, str]]
             f"{profile} report index artifact paths exist and are non-empty"
             if not file_issues
             else "missing or empty indexed report artifacts: " + ", ".join(file_issues or required_issues),
+        ),
+        _row(
+            "report_index_available_paths_exist",
+            not available_path_issues,
+            str(report_index),
+            f"{profile} report index available paths exist and are non-empty"
+            if not available_path_issues
+            else "missing, empty, or unresolved available report-index paths: "
+            + ", ".join(available_path_issues),
         ),
     ]
 

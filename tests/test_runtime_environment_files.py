@@ -100,6 +100,7 @@ def test_readiness_checklist_documents_command_audit():
     assert "results/report_index_audit/wgd_report_index_audit.md" in text
     assert "report-index closure" in text
     assert "figure_traceability_matrix" in text
+    assert "all available indexed report paths exist" in text
     assert "results/delivery_bundle_smoke/figure_gallery_audit.md" in text
     assert "results/delivery_bundle_smoke/delivery_manifest_audit.md" in text
     assert "available and blocked handoff index paths" in text
@@ -215,6 +216,7 @@ def test_readme_points_to_final_handoff_report():
     assert "and delivery-bundle steps" in readme
     assert "paper-style report closure" in readme
     assert "report-index closure" in readme
+    assert "all available indexed report paths exist" in readme
     assert "figure_interpretations.md" in readme
     assert "valid plot file signatures" in readme
     assert "registered-only figure interpretation scope" in readme
