@@ -12055,6 +12055,48 @@ Commit:
 Next:
 - Continue final MVP hardening with container/runtime packaging still intentionally deferred until the analysis flow and report gates are fully stable.
 
+## 2026-06-27 - Surface delivery audits in handoff report
+
+Timestamp:
+- 2026-06-27 15:13 CST
+
+Context:
+- Release checks, delivery bundle, and local acceptance already exposed `figure_gallery_audit` and `delivery_manifest_audit`.
+- The compact handoff report and `handoff_summary.tsv` still only exposed report-index audits plus figure-gallery file paths, so the top-level handoff surface did not show whether the delivery audits passed.
+
+Decisions:
+- Add `figure_gallery_audit` and `delivery_manifest_audit` status rows to handoff sections and summary TSV.
+- Add both audit Markdown paths to the handoff report's key evidence list.
+- Keep handoff report focused on status and evidence rather than duplicating full audit tables.
+
+Added:
+- Handoff status line for `figure_gallery_audit`.
+- Handoff status line for `delivery_manifest_audit`.
+- Handoff evidence links to `results/delivery_bundle_smoke/figure_gallery_audit.md` and `results/delivery_bundle_smoke/delivery_manifest_audit.md`.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/build_handoff_report.py`
+- `tests/test_build_handoff_report.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_handoff_report.py -q` first failed because the handoff report and summary did not output the two delivery audit statuses; the initial fixture count also needed to reflect the two newly added passed release rows.
+- `python -m pytest tests/test_build_handoff_report.py -q` passed with 5 tests after implementation.
+- `python -m pytest tests -q` passed with 444 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and wrote `Passed: 50`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+- `rg -n "Figure gallery audit|Delivery manifest audit|figure_gallery_audit|delivery_manifest_audit|Passed: 50|Required failed: 0|Optional failed: 2" results/handoff/handoff_report.md results/handoff/handoff_summary.tsv results/release_checks/release_checks.md` confirmed the top-level handoff report, handoff summary TSV, and release report all expose the delivery-audit evidence.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed release checks, quickstart, delivery bundle, and local acceptance outputs; it reported the expected final-stage blocker: Docker/Apptainer reproducibility.
+- `python -m pytest tests -q` passed again with 444 tests after local acceptance refreshed generated outputs.
+
+Commit:
+- pending
+
+Next:
+- Continue final MVP hardening by checking any remaining top-level documentation or generated summaries for missing report/visualization evidence; Docker/Apptainer remains the final packaging-stage runtime blocker.
+
 ## 2026-06-27 - Surface delivery audits in local acceptance
 
 Timestamp:

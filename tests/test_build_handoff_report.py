@@ -16,6 +16,8 @@ def test_build_handoff_sections_summarizes_release_objective_and_runtime_state(t
         "pytest\ttrue\tpassed\t0\tpytest\t\n"
         "standard report index audit\ttrue\tpassed\t0\taudit standard report index\t\n"
         "WGD report index audit\ttrue\tpassed\t0\taudit WGD report index\t\n"
+        "delivery bundle figure gallery audit\ttrue\tpassed\t0\taudit figure gallery\t\n"
+        "delivery bundle manifest audit\ttrue\tpassed\t0\taudit delivery manifest\t\n"
         "readiness audit\ttrue\tfailed\t1\treadiness\t\n"
         "Docker profile smoke\tfalse\tfailed\t1\tdocker smoke\tmissing docker\n",
         encoding="utf-8",
@@ -49,7 +51,7 @@ def test_build_handoff_sections_summarizes_release_objective_and_runtime_state(t
         container_rows=read_tsv(docker_smoke),
     )
 
-    assert sections["release"] == "passed=3 failed=2 required_failed=1 optional_failed=1 release_ready=false"
+    assert sections["release"] == "passed=5 failed=2 required_failed=1 optional_failed=1 release_ready=false"
     assert sections["analysis_flow_status"] == "analysis_release_ready=false; final_stage_blockers=Docker/Apptainer reproducibility"
     assert sections["objective"] == "achieved=1 blocked=1 missing=0 complete=false"
     assert sections["blocked_requirements"] == "Docker/Apptainer reproducibility"
@@ -64,6 +66,8 @@ def test_build_handoff_sections_summarizes_release_objective_and_runtime_state(t
     assert sections["container_default_smoke"] == "Dockerfile -> results/container_default_smoke"
     assert sections["standard_report_index_audit"] == "standard_report_index_audit=passed"
     assert sections["wgd_report_index_audit"] == "wgd_report_index_audit=passed"
+    assert sections["figure_gallery_audit"] == "figure_gallery_audit=passed"
+    assert sections["delivery_manifest_audit"] == "delivery_manifest_audit=passed"
 
 
 def test_write_handoff_markdown_contains_copyable_next_steps(tmp_path):
@@ -81,6 +85,8 @@ def test_write_handoff_markdown_contains_copyable_next_steps(tmp_path):
         "container_default_smoke": "Dockerfile -> results/container_default_smoke",
         "standard_report_index_audit": "standard_report_index_audit=passed",
         "wgd_report_index_audit": "wgd_report_index_audit=passed",
+        "figure_gallery_audit": "figure_gallery_audit=passed",
+        "delivery_manifest_audit": "delivery_manifest_audit=passed",
     }
 
     write_markdown(sections, out)
@@ -106,6 +112,10 @@ def test_write_handoff_markdown_contains_copyable_next_steps(tmp_path):
     assert "standard_report_index_audit=passed" in text
     assert "WGD report index audit" in text
     assert "wgd_report_index_audit=passed" in text
+    assert "Figure gallery audit" in text
+    assert "figure_gallery_audit=passed" in text
+    assert "Delivery manifest audit" in text
+    assert "delivery_manifest_audit=passed" in text
     assert "results/objective_audit/objective_audit.md" in text
     assert "results/local_acceptance/local_acceptance_summary.md" in text
     assert "results/report_index_audit/standard_report_index_audit.md" in text
@@ -115,6 +125,8 @@ def test_write_handoff_markdown_contains_copyable_next_steps(tmp_path):
     assert "Global paper-level figure gallery" in text
     assert "results/delivery_bundle/figure_gallery.tsv" in text
     assert "results/delivery_bundle/figure_gallery.md" in text
+    assert "results/delivery_bundle_smoke/figure_gallery_audit.md" in text
+    assert "results/delivery_bundle_smoke/delivery_manifest_audit.md" in text
     assert "Dockerfile" in text
     assert "results/container_default_smoke" in text
 
@@ -133,6 +145,8 @@ def test_write_handoff_markdown_uses_release_gate_when_no_unblock_command(tmp_pa
         "container_smoke": "docker=passed; apptainer=passed",
         "standard_report_index_audit": "standard_report_index_audit=passed",
         "wgd_report_index_audit": "wgd_report_index_audit=passed",
+        "figure_gallery_audit": "figure_gallery_audit=passed",
+        "delivery_manifest_audit": "delivery_manifest_audit=passed",
     }
 
     write_markdown(sections, out)
@@ -156,6 +170,8 @@ def test_write_handoff_summary_tsv_contains_stable_keys(tmp_path):
         "container_smoke": "docker=missing_runtime; apptainer=missing_runtime",
         "standard_report_index_audit": "standard_report_index_audit=passed",
         "wgd_report_index_audit": "wgd_report_index_audit=passed",
+        "figure_gallery_audit": "figure_gallery_audit=passed",
+        "delivery_manifest_audit": "delivery_manifest_audit=passed",
     }
 
     write_summary_tsv(sections, out)
@@ -183,6 +199,8 @@ def test_write_handoff_summary_tsv_contains_stable_keys(tmp_path):
         {"section": "container_default_smoke", "summary": "Dockerfile -> results/container_default_smoke"},
         {"section": "standard_report_index_audit", "summary": "standard_report_index_audit=passed"},
         {"section": "wgd_report_index_audit", "summary": "wgd_report_index_audit=passed"},
+        {"section": "figure_gallery_audit", "summary": "figure_gallery_audit=passed"},
+        {"section": "delivery_manifest_audit", "summary": "delivery_manifest_audit=passed"},
         {
             "section": "figure_gallery",
             "summary": "results/delivery_bundle/figure_gallery.tsv, results/delivery_bundle/figure_gallery.md",

@@ -118,6 +118,16 @@ def build_handoff_sections(
             "WGD report index audit",
             "wgd_report_index_audit",
         ),
+        "figure_gallery_audit": _release_check_status(
+            release_rows,
+            "delivery bundle figure gallery audit",
+            "figure_gallery_audit",
+        ),
+        "delivery_manifest_audit": _release_check_status(
+            release_rows,
+            "delivery bundle manifest audit",
+            "delivery_manifest_audit",
+        ),
         "figure_gallery": "results/delivery_bundle/figure_gallery.tsv, results/delivery_bundle/figure_gallery.md",
     }
 
@@ -142,6 +152,8 @@ def write_markdown(sections: dict[str, str], out_path: Path) -> None:
         f"- Container smoke: `{sections['container_smoke']}`",
         f"- Standard report index audit: `{sections.get('standard_report_index_audit', 'standard_report_index_audit=missing')}`",
         f"- WGD report index audit: `{sections.get('wgd_report_index_audit', 'wgd_report_index_audit=missing')}`",
+        f"- Figure gallery audit: `{sections.get('figure_gallery_audit', 'figure_gallery_audit=missing')}`",
+        f"- Delivery manifest audit: `{sections.get('delivery_manifest_audit', 'delivery_manifest_audit=missing')}`",
         "",
         "## Key Evidence",
         "",
@@ -157,6 +169,8 @@ def write_markdown(sections: dict[str, str], out_path: Path) -> None:
         "- `results/delivery_bundle/delivery_bundle.md`",
         "- Global paper-level figure gallery: `results/delivery_bundle/figure_gallery.tsv`",
         "- Global paper-level figure gallery Markdown: `results/delivery_bundle/figure_gallery.md`",
+        "- Figure gallery audit: `results/delivery_bundle_smoke/figure_gallery_audit.md`",
+        "- Delivery manifest audit: `results/delivery_bundle_smoke/delivery_manifest_audit.md`",
         "- `Dockerfile`",
         "- `results/container_default_smoke`",
         "- `results/container_profile_smoke/docker/container_profile_smoke.md`",
@@ -195,6 +209,14 @@ def write_summary_tsv(sections: dict[str, str], out_path: Path) -> None:
         (
             "wgd_report_index_audit",
             sections.get("wgd_report_index_audit", "wgd_report_index_audit=missing"),
+        ),
+        (
+            "figure_gallery_audit",
+            sections.get("figure_gallery_audit", "figure_gallery_audit=missing"),
+        ),
+        (
+            "delivery_manifest_audit",
+            sections.get("delivery_manifest_audit", "delivery_manifest_audit=missing"),
         ),
         (
             "figure_gallery",
