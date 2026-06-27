@@ -632,6 +632,19 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "delivery bundle manifest audit",
+            [
+                python,
+                "bin/genefam/audit_delivery_manifest.py",
+                "--delivery-manifest",
+                "results/delivery_bundle_smoke/delivery_bundle/delivery_manifest.tsv",
+                "--out-tsv",
+                "results/delivery_bundle_smoke/delivery_manifest_audit.tsv",
+                "--out-md",
+                "results/delivery_bundle_smoke/delivery_manifest_audit.md",
+            ],
+        ),
+        CheckSpec(
             "readiness audit",
             [
                 python,

@@ -794,6 +794,19 @@ def test_default_checks_include_delivery_bundle_gallery_audit_after_smoke():
     assert "--out-md results/delivery_bundle_smoke/figure_gallery_audit.md" in command
 
 
+def test_default_checks_include_delivery_bundle_manifest_audit_after_gallery_audit():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("delivery bundle manifest audit") > names.index("delivery bundle figure gallery audit")
+    assert names.index("delivery bundle manifest audit") < names.index("readiness audit")
+    audit = next(check for check in default_checks() if check.name == "delivery bundle manifest audit")
+    command = " ".join(audit.command)
+    assert "bin/genefam/audit_delivery_manifest.py" in command
+    assert "--delivery-manifest results/delivery_bundle_smoke/delivery_bundle/delivery_manifest.tsv" in command
+    assert "--out-tsv results/delivery_bundle_smoke/delivery_manifest_audit.tsv" in command
+    assert "--out-md results/delivery_bundle_smoke/delivery_manifest_audit.md" in command
+
+
 def test_write_delivery_bundle_uses_latest_release_outputs(tmp_path):
     release_tsv = tmp_path / "release_checks.tsv"
     objective_tsv = tmp_path / "objective_audit.tsv"
@@ -997,10 +1010,11 @@ def test_write_objective_audit_reads_publication_detail_audits(tmp_path):
             "publication report audit",
             "WGD publication report audit",
             "standard report index audit",
-            "WGD report index audit",
-            "delivery bundle figure gallery audit",
+                "WGD report index audit",
+                "delivery bundle figure gallery audit",
+                "delivery bundle manifest audit",
+            ]
         ]
-    ]
 
     written = write_objective_audit(
         rows,
@@ -1014,6 +1028,7 @@ def test_write_objective_audit_reads_publication_detail_audits(tmp_path):
     objective_tsv = (tmp_path / "objective" / "objective_audit.tsv").read_text(encoding="utf-8")
     assert "final reports\tachieved" in objective_tsv
     assert "delivery bundle figure gallery audit" in objective_tsv
+    assert "delivery bundle manifest audit" in objective_tsv
 
 
 def test_write_objective_audit_requires_expression_smoke_for_expression_integration(tmp_path):

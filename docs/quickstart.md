@@ -130,8 +130,11 @@ The global paper-level figure gallery is the fastest way to inspect plots across
 - `results/delivery_bundle/figure_gallery.md`: human-readable plot index
 - `results/delivery_bundle_smoke/figure_gallery_audit.tsv`: machine-readable figure-gallery link audit from `bin/genefam/audit_figure_gallery.py`
 - `results/delivery_bundle_smoke/figure_gallery_audit.md`: human-readable figure-gallery link audit
+- `results/delivery_bundle_smoke/delivery_manifest_audit.tsv`: machine-readable delivery-manifest path audit from `bin/genefam/audit_delivery_manifest.py`
+- `results/delivery_bundle_smoke/delivery_manifest_audit.md`: human-readable delivery-manifest path audit
 
 Each gallery row links a plot PDF to its `figure_interpretations.md`, `software_versions.tsv`, `final_report.md`, and `figure_traceability_matrix` anchor.
+The delivery manifest audit verifies that available and blocked handoff index paths resolve to real files or accepted runtime locators.
 
 ```bash
 python bin/genefam/run_delivery_bundle.py \

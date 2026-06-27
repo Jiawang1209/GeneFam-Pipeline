@@ -101,6 +101,8 @@ def test_readiness_checklist_documents_command_audit():
     assert "report-index closure" in text
     assert "figure_traceability_matrix" in text
     assert "results/delivery_bundle_smoke/figure_gallery_audit.md" in text
+    assert "results/delivery_bundle_smoke/delivery_manifest_audit.md" in text
+    assert "available and blocked handoff index paths" in text
     assert "plot_manifest coverage" in text
     assert "publication_report_audit" in text
     assert "paper-style report closure" in text
@@ -204,6 +206,7 @@ def test_readme_points_to_final_handoff_report():
     assert "results/delivery_bundle/figure_gallery.tsv" in readme
     assert "results/delivery_bundle/figure_gallery.md" in readme
     assert "figure_gallery_audit" in readme
+    assert "delivery_manifest_audit" in readme
     assert "plot_manifest coverage" in readme
     assert "figure_traceability_matrix" in readme
     assert "global paper-level figure gallery" in readme

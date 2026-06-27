@@ -12055,6 +12055,63 @@ Commit:
 Next:
 - Continue final MVP hardening with container/runtime packaging still intentionally deferred until the analysis flow and report gates are fully stable.
 
+## 2026-06-27 - Audit delivery manifest handoff paths
+
+Timestamp:
+- 2026-06-27 14:51 CST
+
+Context:
+- The delivery bundle manifest is the final user-facing handoff index, but release checks did not yet verify that rows marked `available` or `blocked` point to real files or accepted runtime locators.
+- A stale delivery manifest path would make the MVP look complete while sending users to a missing report, audit, config, or recovery artifact.
+
+Decisions:
+- Add a dedicated delivery-manifest audit after the figure-gallery audit in the release gate.
+- Treat `available` and `blocked` manifest rows as path-bearing handoff rows that must resolve to existing filesystem targets, while allowing `missing` rows to point at absent optional runtime diagnostics and allowing `GeneFamilyFlow:` runtime locators.
+- Include `delivery bundle manifest audit` in the `final reports` objective-audit completion evidence.
+- Document the new audit in README, quickstart, release audit, and readiness checklist.
+
+Added:
+- `bin/genefam/audit_delivery_manifest.py`
+- `tests/test_audit_delivery_manifest.py`
+- Release check `delivery bundle manifest audit`
+- Objective-audit regression test proving final reports remain missing without the delivery manifest audit.
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_delivery_manifest.py tests/test_run_release_checks.py::test_default_checks_include_delivery_bundle_manifest_audit_after_gallery_audit tests/test_audit_objective_completion.py::test_final_reports_require_delivery_manifest_audit tests/test_audit_objective_completion.py::test_final_reports_note_names_complete_publication_report_closure -q` first failed because `bin.genefam.audit_delivery_manifest` did not exist.
+- `python -m pytest tests/test_audit_delivery_manifest.py tests/test_run_release_checks.py::test_default_checks_include_delivery_bundle_manifest_audit_after_gallery_audit tests/test_audit_objective_completion.py::test_final_reports_require_delivery_manifest_audit tests/test_audit_objective_completion.py::test_final_reports_note_names_complete_publication_report_closure -q` passed with 5 tests after implementation.
+- `python -m pytest tests/test_audit_delivery_manifest.py tests/test_audit_objective_completion.py tests/test_run_release_checks.py -q` first failed because `tests/test_run_release_checks.py::test_write_objective_audit_reads_publication_detail_audits` used the old final-report release fixture without `delivery bundle manifest audit`.
+- `python -m pytest tests/test_audit_delivery_manifest.py tests/test_audit_objective_completion.py tests/test_run_release_checks.py -q` passed with 104 tests after fixture update.
+- `python -m pytest tests/test_quickstart_docs.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py -q` passed with 17 tests after documentation updates.
+- `python -m pytest tests -q` passed with 444 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and wrote `Passed: 50`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+- `cat results/delivery_bundle_smoke/delivery_manifest_audit.tsv` confirmed `delivery_manifest_required_columns` and `delivery_manifest_paths_exist` both passed.
+- `rg -n "delivery bundle manifest audit|delivery_manifest_audit|delivery manifest audit|final reports|Available and blocked|available and blocked" results/release_checks/release_checks.tsv results/objective_audit/objective_audit.tsv results/objective_audit/objective_audit.md README.md docs/quickstart.md docs/release_audit.md docs/readiness_checklist.md` confirmed release, objective, and documentation evidence for the new audit.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed release checks, quickstart, delivery bundle, and local acceptance outputs; it reported the expected final-stage blocker: Docker/Apptainer reproducibility.
+- `python -m pytest tests -q` passed again with 444 tests after local acceptance refreshed generated outputs.
+
+Commit:
+- pending
+
+Next:
+- Continue final MVP hardening by checking remaining generated handoff/report artifacts for drift, while keeping Docker/Apptainer runtime verification as the final packaging-stage blocker.
+
 ## 2026-06-27 - Audit delivery figure gallery against plot manifests
 
 Timestamp:
