@@ -67,6 +67,8 @@ DESCRIPTIONS = {
     "plot_manifest": "Generated plot inventory",
     "software_versions": "Software and R package version table for methods reporting",
     "figure_interpretations": "Structured per-figure result interpretation notes",
+    "figure_interpretations_md": "Markdown per-figure result interpretation notes",
+    "final_report": "Final Markdown report with methods, software versions, QC, and per-figure result interpretation",
 }
 OPTIONAL_KEYS = {
     "promoters_bed",
@@ -99,6 +101,8 @@ OPTIONAL_KEYS = {
     "expression_gene_summary",
     "expression_heatmap_pdf",
     "expression_heatmap_png",
+    "figure_interpretations_md",
+    "final_report",
 }
 
 
@@ -182,6 +186,8 @@ def published_paths(
         "plot_manifest": str(outdir / "report/plot_manifest.tsv"),
         "software_versions": str(outdir / "report/software_versions.tsv"),
         "figure_interpretations": str(outdir / "report/figure_interpretations.tsv"),
+        "figure_interpretations_md": str(outdir / "report/figure_interpretations.md"),
+        "final_report": str(outdir / "report/final_report.md"),
     }
 
 

@@ -51,6 +51,25 @@ def test_build_wgd_report_index_points_to_published_outputs():
         "description": "Pangenome-class grouped Ks and Ka/Ks PDF plot",
     }
     assert by_key["pangenome_kaks_summary"]["path"].endswith("tables/pangenome_kaks_summary.tsv")
+    assert by_key["plot_manifest"] == {
+        "key": "plot_manifest",
+        "path": "results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv",
+        "status": "available",
+        "description": "Generated WGD plot inventory",
+    }
+    assert by_key["software_versions"]["path"] == "results/nextflow_wgd_smoke/wgd/report/software_versions.tsv"
+    assert by_key["figure_interpretations"]["path"] == (
+        "results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv"
+    )
+    assert by_key["figure_interpretations_md"]["path"] == (
+        "results/nextflow_wgd_smoke/wgd/report/figure_interpretations.md"
+    )
+    assert by_key["final_report"] == {
+        "key": "final_report",
+        "path": "results/nextflow_wgd_smoke/wgd/report/final_report.md",
+        "status": "available",
+        "description": "Final WGD Markdown report with methods, software versions, QC, and per-figure result interpretation",
+    }
 
 
 def test_build_wgd_report_index_cli_writes_tsv(tmp_path):
@@ -79,3 +98,8 @@ def test_build_wgd_report_index_cli_writes_tsv(tmp_path):
     assert rows["ks_distribution_pdf"]["path"] == "results/demo_wgd/plots/ks_distribution.pdf"
     assert rows["duplicate_type_kaks_png"]["path"] == "results/demo_wgd/plots/duplicate_type_kaks.png"
     assert rows["pangenome_kaks_png"]["path"] == "results/demo_wgd/plots/pangenome_kaks.png"
+    assert rows["plot_manifest"]["path"] == "results/demo_wgd/report/plot_manifest.tsv"
+    assert rows["software_versions"]["path"] == "results/demo_wgd/report/software_versions.tsv"
+    assert rows["figure_interpretations"]["path"] == "results/demo_wgd/report/figure_interpretations.tsv"
+    assert rows["figure_interpretations_md"]["path"] == "results/demo_wgd/report/figure_interpretations.md"
+    assert rows["final_report"]["path"] == "results/demo_wgd/report/final_report.md"

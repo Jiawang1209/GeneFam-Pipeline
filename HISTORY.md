@@ -34,6 +34,52 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 10:22 - Add final report artifacts to report indexes
+
+Context:
+- The active `/goal` requires all paper-level figures and reports to be connected through the report index and final report.
+- Standard report indexes listed plot and interpretation TSV evidence, but did not list `figure_interpretations.md` or `final_report.md`.
+- WGD report indexes listed WGD tables and plots, but did not list report-layer files such as `plot_manifest.tsv`, `software_versions.tsv`, `figure_interpretations.tsv`, `figure_interpretations.md`, or `final_report.md`.
+
+Decisions:
+- Treat report-layer files as first-class indexed deliverables for both standard and WGD branches.
+- Let standard report indexes publish future report paths through the existing `--published-outdir` mechanism, because the index is assembled before `final_report.md` is generated.
+- Keep WGD report index paths derived from the published output directory.
+
+Added:
+- Standard report-index entries for `figure_interpretations_md` and `final_report`.
+- WGD report-index entries for `plot_manifest`, `software_versions`, `figure_interpretations`, `figure_interpretations_md`, and `final_report`.
+- Regression tests for standard and WGD report indexes covering both Python APIs and CLIs.
+
+Modified:
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/build_wgd_report_index.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_wgd_report_index.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_standard_branch_report_index.py tests/test_wgd_report_index.py -q` first failed because the standard builder lacked `figure_interpretations_md` and `final_report`, the standard CLI rejected `--figure-interpretations-md` and `--final-report`, and the WGD builder lacked report-layer index rows.
+- `python -m pytest tests/test_standard_branch_report_index.py tests/test_wgd_report_index.py -q` passed with 6 tests after implementation.
+- `python -m pytest tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_duplication_retention_module_exposes_wgd_helper_processes -q` passed.
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py tests/test_run_nextflow_wgd_smoke.py tests/test_run_standard_smoke.py tests/test_run_wgd_smoke.py -q` passed with 28 tests.
+- `python -m pytest tests/test_assemble_report.py -q` passed with 3 tests.
+- `python -m pytest tests -q` passed with 424 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `rg -n "figure_interpretations_md|final_report|plot_manifest|software_versions|figure_interpretations" results/nextflow_standard_feature_smoke/standard/report/report_index.tsv results/nextflow_wgd_smoke/wgd/report/report_index.tsv` confirmed both standard and WGD report indexes include the report-layer deliverables.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
+- hash: pending
+- message: `test: index final report artifacts`
+- files: standard/WGD report-index builders, report-index tests, and history entry.
+
+Next:
+- Continue final MVP hardening while keeping Docker/Apptainer verification as the final-stage external blocker.
+
 ## 2026-06-27 10:15 - Require publication audit detail in objective audit
 
 Context:

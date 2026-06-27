@@ -31,6 +31,11 @@ DESCRIPTIONS = {
     "pangenome_kaks_skipped": "Ka/Ks pairs skipped because pangenome class evidence was missing",
     "pangenome_kaks_pdf": "Pangenome-class grouped Ks and Ka/Ks PDF plot",
     "pangenome_kaks_png": "Pangenome-class grouped Ks and Ka/Ks PNG plot",
+    "plot_manifest": "Generated WGD plot inventory",
+    "software_versions": "Software and R package version table for WGD methods reporting",
+    "figure_interpretations": "Structured per-figure WGD result interpretation notes",
+    "figure_interpretations_md": "Markdown per-figure WGD result interpretation notes",
+    "final_report": "Final WGD Markdown report with methods, software versions, QC, and per-figure result interpretation",
 }
 
 
@@ -58,6 +63,11 @@ def build_report_index(published_outdir: str) -> list[dict[str, str]]:
         "pangenome_kaks_skipped": outdir / "tables/pangenome_kaks_skipped.tsv",
         "pangenome_kaks_pdf": outdir / "plots/pangenome_kaks.pdf",
         "pangenome_kaks_png": outdir / "plots/pangenome_kaks.png",
+        "plot_manifest": outdir / "report/plot_manifest.tsv",
+        "software_versions": outdir / "report/software_versions.tsv",
+        "figure_interpretations": outdir / "report/figure_interpretations.tsv",
+        "figure_interpretations_md": outdir / "report/figure_interpretations.md",
+        "final_report": outdir / "report/final_report.md",
     }
     return [
         {

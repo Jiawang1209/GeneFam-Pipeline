@@ -64,6 +64,8 @@ def test_build_standard_report_index_marks_core_outputs_available():
             "plot_manifest": "tables/plot_manifest.tsv",
             "software_versions": "report/software_versions.tsv",
             "figure_interpretations": "report/figure_interpretations.tsv",
+            "figure_interpretations_md": "report/figure_interpretations.md",
+            "final_report": "report/final_report.md",
         }
     )
 
@@ -127,6 +129,8 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "wgd_handoff_manifest",
         "software_versions",
         "figure_interpretations",
+        "figure_interpretations_md",
+        "final_report",
     }
     assert next(row for row in rows if row["key"] == "family_expression")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "expression_heatmap_pdf")["status"] == "missing"
@@ -200,6 +204,8 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
         "plot_manifest": "results/nextflow_standard_smoke/standard/report/plot_manifest.tsv",
         "software_versions": "results/nextflow_standard_smoke/standard/report/software_versions.tsv",
         "figure_interpretations": "results/nextflow_standard_smoke/standard/report/figure_interpretations.tsv",
+        "figure_interpretations_md": "results/nextflow_standard_smoke/standard/report/figure_interpretations.md",
+        "final_report": "results/nextflow_standard_smoke/standard/report/final_report.md",
     }
 
 
@@ -276,6 +282,10 @@ def test_build_standard_report_index_cli_writes_tsv(tmp_path):
             "software_versions.tsv",
             "--figure-interpretations",
             "figure_interpretations.tsv",
+            "--figure-interpretations-md",
+            "figure_interpretations.md",
+            "--final-report",
+            "final_report.md",
             "--out",
             str(out),
         ],
@@ -286,10 +296,10 @@ def test_build_standard_report_index_cli_writes_tsv(tmp_path):
 
     assert completed.returncode == 0, completed.stderr
     assert read_tsv(out)[-1] == {
-        "key": "figure_interpretations",
-        "path": "figure_interpretations.tsv",
+        "key": "final_report",
+        "path": "final_report.md",
         "status": "available",
-        "description": "Structured per-figure result interpretation notes",
+        "description": "Final Markdown report with methods, software versions, QC, and per-figure result interpretation",
     }
 
 
@@ -366,6 +376,10 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
             "software_versions.tsv",
             "--figure-interpretations",
             "figure_interpretations.tsv",
+            "--figure-interpretations-md",
+            "figure_interpretations.md",
+            "--final-report",
+            "final_report.md",
             "--published-outdir",
             "results/demo",
             "--out",
@@ -399,3 +413,5 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
     assert rows["plot_manifest"]["path"] == "results/demo/report/plot_manifest.tsv"
     assert rows["software_versions"]["path"] == "results/demo/report/software_versions.tsv"
     assert rows["figure_interpretations"]["path"] == "results/demo/report/figure_interpretations.tsv"
+    assert rows["figure_interpretations_md"]["path"] == "results/demo/report/figure_interpretations.md"
+    assert rows["final_report"]["path"] == "results/demo/report/final_report.md"
