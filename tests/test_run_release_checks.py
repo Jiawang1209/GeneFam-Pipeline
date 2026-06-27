@@ -779,6 +779,19 @@ def test_default_checks_include_delivery_bundle_gallery_smoke_after_quickstart()
     assert "--outdir results/delivery_bundle_smoke" in command
 
 
+def test_default_checks_include_delivery_bundle_gallery_audit_after_smoke():
+    names = [check.name for check in default_checks()]
+
+    assert names.index("delivery bundle figure gallery audit") > names.index("delivery bundle figure gallery smoke")
+    assert names.index("delivery bundle figure gallery audit") < names.index("readiness audit")
+    audit = next(check for check in default_checks() if check.name == "delivery bundle figure gallery audit")
+    command = " ".join(audit.command)
+    assert "bin/genefam/audit_figure_gallery.py" in command
+    assert "--figure-gallery results/delivery_bundle_smoke/delivery_bundle/figure_gallery.tsv" in command
+    assert "--out-tsv results/delivery_bundle_smoke/figure_gallery_audit.tsv" in command
+    assert "--out-md results/delivery_bundle_smoke/figure_gallery_audit.md" in command
+
+
 def test_write_delivery_bundle_uses_latest_release_outputs(tmp_path):
     release_tsv = tmp_path / "release_checks.tsv"
     objective_tsv = tmp_path / "objective_audit.tsv"

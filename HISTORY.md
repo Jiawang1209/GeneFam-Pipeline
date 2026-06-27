@@ -11549,6 +11549,49 @@ Commit:
 Next:
 - Continue final MVP hardening with report and audit evidence increasingly tied to concrete generated artifacts.
 
+## 2026-06-27 - Add release-gated figure gallery audit
+
+Timestamp:
+- 2026-06-27 13:59 CST
+
+Context:
+- The delivery bundle writes a global `figure_gallery.tsv` and `figure_gallery.md` as the shortest paper-level plot navigation entry.
+- The existing delivery bundle smoke only checked a few text fragments, so it did not prove that every gallery row links to real plot files, close-reading reports, software version tables, final reports, and traceability anchors.
+
+Decisions:
+- Add an explicit `audit_figure_gallery.py` gate for the delivery-bundle figure gallery.
+- Validate required navigation columns and every linked file target in each row.
+- Validate Markdown anchors such as `final_report.md#figure-traceability-matrix` by checking the target heading exists.
+- Run the gallery audit in release checks immediately after the delivery bundle gallery smoke and before readiness/runtime checks.
+
+Added:
+- `bin/genefam/audit_figure_gallery.py`
+- `tests/test_audit_figure_gallery.py`
+- Release check `delivery bundle figure gallery audit`.
+
+Modified:
+- `bin/genefam/run_release_checks.py`
+- `tests/test_run_release_checks.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_figure_gallery.py tests/test_run_release_checks.py::test_default_checks_include_delivery_bundle_gallery_audit_after_smoke -q` first failed because `bin.genefam.audit_figure_gallery` did not exist.
+- After implementation, `python -m pytest tests/test_audit_figure_gallery.py tests/test_run_release_checks.py::test_default_checks_include_delivery_bundle_gallery_audit_after_smoke -q` passed with 3 tests.
+- `python -m pytest tests/test_audit_figure_gallery.py tests/test_run_release_checks.py tests/test_run_delivery_bundle.py -q` passed with 58 tests.
+- `python -m pytest tests -q` passed with 438 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0; the generated TSV reported 51 total checks, 0 required failures, and 2 optional failures for missing Docker and Apptainer runtimes.
+- `cat results/delivery_bundle_smoke/figure_gallery_audit.tsv` and `cat results/delivery_bundle_smoke/figure_gallery_audit.md` showed `figure_gallery_required_columns` and `figure_gallery_linked_files_exist` both passed.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed handoff, delivery bundle, release checks, report-index audits, quickstart, and local acceptance summaries; final-stage blocker remains Docker/Apptainer reproducibility.
+
+Commit:
+- pending; hash will be backfilled after the code commit.
+
+Next:
+- Continue tightening release evidence so every paper-level handoff artifact is generated and independently audited.
+
 ## 2026-06-27 - Expose figure traceability links in delivery gallery
 
 Timestamp:
