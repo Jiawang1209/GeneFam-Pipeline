@@ -291,6 +291,8 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
         errors.append("modules.phylogeny requires modules.family_summary: true")
     if modules.get("motif") is True and modules.get("family_summary") is not True:
         errors.append("modules.motif requires modules.family_summary: true")
+    if modules.get("expression") is True and modules.get("family_summary") is not True:
+        errors.append("modules.expression requires modules.family_summary: true")
     if modules.get("duplication_retention") is True:
         if modules.get("synteny") is not True:
             errors.append("modules.duplication_retention requires modules.synteny: true")

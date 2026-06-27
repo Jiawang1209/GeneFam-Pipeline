@@ -34,6 +34,46 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 09:19 - Require family summary for expression integration
+
+Context:
+- The active `/goal` requires RNA-seq expression heatmap integration as a family-member-level analysis.
+- The standard Nextflow branch subsets expression data with `SUBSET_EXPRESSION_MATRIX`, which consumes `family_candidates` and produces `tables/family_expression.tsv`.
+- A YAML config could enable `modules.expression` while disabling `modules.family_summary`, making the expression module look standalone even though the reported heatmap is tied to the family member set.
+
+Decisions:
+- Require `modules.family_summary: true` whenever `modules.expression` is enabled.
+- Keep the existing `expression.matrix` path requirement unchanged.
+
+Added:
+- Regression test that expression integration reports a missing family summary dependency.
+
+Modified:
+- `bin/genefam/validate_config.py`
+- `tests/test_validate_config.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_validate_config.py::test_validate_config_reports_expression_requires_family_summary -q` first failed because expression integration did not report the missing family summary dependency.
+- `python -m pytest tests/test_validate_config.py::test_validate_config_reports_expression_requires_family_summary tests/test_validate_config.py::test_validate_config_reports_expression_requires_matrix_path tests/test_validate_config.py::test_validate_config_checks_expression_metadata_path_when_provided -q` passed.
+- `python -m pytest tests/test_validate_config.py -q` passed with 37 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/manifest.example.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python -m pytest tests -q` passed with 411 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
+- hash: pending
+- message: `test: require family summary for expression`
+- files: expression config validation, regression tests, and history entry.
+
+Next:
+- Continue tightening formal YAML/module contracts and final handoff evidence before container packaging.
+
 ## 2026-06-27 09:13 - Require peptide inputs for family summary module
 
 Context:

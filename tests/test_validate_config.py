@@ -504,6 +504,17 @@ def test_validate_config_reports_expression_requires_matrix_path():
     assert "modules.expression requires expression.matrix" in errors
 
 
+def test_validate_config_reports_expression_requires_family_summary():
+    config = _valid_base_config()
+    config["modules"]["expression"] = True
+    config["modules"]["family_summary"] = False
+    config["expression"] = {"matrix": "tests/fixtures/expression/family_expression.tsv"}
+
+    errors = validate_config(config)
+
+    assert "modules.expression requires modules.family_summary: true" in errors
+
+
 def test_validate_config_checks_expression_metadata_path_when_provided():
     config = _valid_base_config()
     config["modules"]["expression"] = True
