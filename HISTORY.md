@@ -70,12 +70,12 @@ Verification:
 - `python bin/genefam/audit_report_index.py --report-index results/nextflow_wgd_smoke/wgd/report/report_index.tsv --profile wgd --out-tsv results/report_index_audit/wgd_report_index_audit.tsv --out-md results/report_index_audit/wgd_report_index_audit.md` exited 0 and reported `Passed: 4`, `Failed: 0`, `Complete: true`.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: a11e8a7b9518a797247e2bb75607c34208ac4e70
+- message: test: enforce report-index traceability anchor
 - files: report-index audit, report-index tests, release/quickstart/readiness docs, README, and history entry.
 
 Next:
-- Run full tests and release/local acceptance checks, then commit and backfill this history entry.
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
 
 ## 2026-06-27 16:13 - Audit final delivery manifest in local acceptance
 
