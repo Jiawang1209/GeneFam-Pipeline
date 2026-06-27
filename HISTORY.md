@@ -12510,7 +12510,9 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` exited 0, refreshed the delivery bundle, and reported the expected `final_stage_blocker`: Docker/Apptainer reproducibility.
 
 Commit:
-- pending
+- hash: d912539a2a631316b0cb6eade470d45c12fd5beb
+- message: test: drive publication smoke from yaml
+- files: publication module YAML, release gate, release/quickstart docs, README files, tests, history
 
 Next:
 - Commit this YAML-only release-gate hardening and backfill the commit hash in this history entry.
