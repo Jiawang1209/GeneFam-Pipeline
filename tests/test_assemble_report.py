@@ -121,6 +121,7 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
     assert "| ggNetView | R_package | version_not_detected | version_not_detected | packageVersion(\"ggNetView\") |" in report
     assert "## Figure Result Interpretations" in report
     assert "### family_counts: Family copy number and member count overview" in report
+    assert "![family_counts: Family copy number and member count overview](../plots/family_counts.png)" in report
     assert "- Biological interpretation: High-copy species may indicate expansion." in report
     assert "- QC tables: tables/gene_family_copy_number.tsv; tables/gene_family_pangenome_summary.tsv" in report
     assert "- Method/software: build_gene_family_info.py; plot_gene_family_info.R; /usr/local/bin/R" in report
@@ -237,6 +238,7 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
     assert "## Results Package Inventory" in text
     assert "### Software Versions" in text
     assert "## Figure Result Interpretations" in text
+    assert "![family_counts: Family copy number and member count overview](../plots/family_counts.png)" in text
     assert "## Figure Traceability Matrix" in text
     assert (
         "| family_counts | plots/family_counts.pdf | figure-specific close reading | tables/gene_family_copy_number.tsv | plot_gene_family_info.R; /usr/local/bin/R | nextflow run main.nf -profile conda --branch standard |"

@@ -13738,3 +13738,59 @@ Commit:
 
 Next:
 - Keep Docker/Apptainer runtime verification as the remaining final-stage external blocker; continue polishing Reference-level figure fidelity where useful.
+
+## 2026-06-27 - Embed plot previews in final reports
+
+Timestamp:
+- 2026-06-27 05:05 CST
+
+Context:
+- Standard and WGD final reports already contained per-figure close-reading text, software/version context, QC warnings, traceability rows, and output paths.
+- The reports still required users to open plot files manually from paths, so the reading experience was weaker than a paper-style results package.
+
+Decisions:
+- Render a Markdown PNG preview under every `Figure Result Interpretations` heading.
+- Convert interpreted plot output paths such as `plots/tree_features.pdf` to report-relative preview paths such as `../plots/tree_features.png`.
+- Add a dedicated `final_report_plot_previews` publication-report audit check and include it in the long-form objective audit.
+
+Added:
+- `final_report_plot_previews` audit row in `bin/genefam/audit_publication_report.py`.
+- Objective-audit requirement for `final_report_plot_previews`.
+- Regression tests for final-report preview rendering and missing preview-audit evidence.
+
+Modified:
+- `bin/genefam/assemble_report.py`
+- `bin/genefam/audit_publication_report.py`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_assemble_report.py`
+- `tests/test_audit_publication_report.py`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_run_release_checks.py`
+- `README.md`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_assemble_report.py -q` first failed because `assemble_report.py` did not emit preview image Markdown.
+- `python -m pytest tests/test_assemble_report.py tests/test_audit_publication_report.py -q` passed with 27 tests after implementation.
+- `python -m pytest tests/test_audit_objective_completion.py tests/test_run_release_checks.py tests/test_quickstart_docs.py tests/test_release_audit_docs.py -q` passed with 110 tests after objective and documentation updates.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --config configs/publication_modules.example.yaml --outdir results/nextflow_standard_feature_smoke` exited 0 and refreshed the standard final report.
+- `python bin/genefam/run_nextflow_wgd_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_wgd_smoke` exited 0 and refreshed the WGD final report.
+- Standard publication report audit passed with `final_report_plot_previews` and embedded previews for 9 standard figures.
+- WGD publication report audit passed with `final_report_plot_previews` and embedded previews for 3 WGD figures.
+- `python -m pytest tests -q` passed with 474 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed release checks, quickstart, delivery bundle, final delivery manifest audit, and local acceptance outputs; it reported the expected final-stage blocker: Docker/Apptainer reproducibility.
+
+Commit:
+- hash: pending
+- message: feat: embed plot previews in final reports
+- files: report assembler, publication/objective audits, tests, README/quickstart/readiness/release docs, history
+
+Next:
+- Continue final MVP polish from the report package outward; Docker/Apptainer runtime verification remains the intentionally deferred final packaging stage.

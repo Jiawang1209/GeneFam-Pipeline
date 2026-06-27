@@ -456,6 +456,31 @@ def _traceability_matrix_issues(report_text: str, detail_rows: list[dict[str, st
     return issues
 
 
+def _figure_preview_path(output_path: str) -> str:
+    value = output_path.split("#", 1)[0].strip()
+    if not value:
+        return ""
+    path = Path(value).with_suffix(".png")
+    if not path.is_absolute() and path.parts and path.parts[0] == "plots":
+        return str(Path("..") / path)
+    return str(path)
+
+
+def _final_report_plot_preview_issues(report_text: str, detail_rows: list[dict[str, str]]) -> list[str]:
+    issues: list[str] = []
+    for row in detail_rows:
+        figure_key = row.get("figure_key", "").strip() or "unknown"
+        title = row.get("title", "").strip()
+        preview_path = _figure_preview_path(row.get("output_path", ""))
+        if not preview_path:
+            issues.append(f"{figure_key}:missing_preview_path")
+            continue
+        expected = f"![{figure_key}: {title}]({preview_path})"
+        if expected not in report_text:
+            issues.append(f"{figure_key}:missing_preview:{preview_path}")
+    return issues
+
+
 def audit_publication_report(
     plot_manifest: Path,
     figure_interpretations: Path,
@@ -484,6 +509,7 @@ def audit_publication_report(
     missing_method_component_versions = _missing_method_component_versions(detail_rows, software)
     methods_summary_issues = _methods_summary_issues(report_text)
     traceability_matrix_issues = _traceability_matrix_issues(report_text, detail_rows)
+    final_report_plot_preview_issues = _final_report_plot_preview_issues(report_text, detail_rows)
     final_report_placeholder_issues = _placeholder_text_issues(report_text, "final_report")
 
     version_rows = [
@@ -655,6 +681,15 @@ def audit_publication_report(
             if not traceability_matrix_issues and detail_rows
             else "missing figure traceability matrix evidence: "
             + ", ".join(traceability_matrix_issues or ["no interpretation rows"]),
+        ),
+        _row(
+            "final_report_plot_previews",
+            not final_report_plot_preview_issues and bool(detail_rows),
+            str(final_report),
+            "final report embeds PNG previews for every interpreted plot"
+            if not final_report_plot_preview_issues and detail_rows
+            else "missing final report plot previews: "
+            + ", ".join(final_report_plot_preview_issues or ["no interpretation rows"]),
         ),
         _row(
             "final_report_placeholder_text",

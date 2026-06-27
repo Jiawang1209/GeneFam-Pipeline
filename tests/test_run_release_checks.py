@@ -1021,6 +1021,7 @@ def test_write_objective_audit_reads_publication_detail_audits(tmp_path):
         "figure_method_software_versions\tpassed\tversions\tok\n"
         "final_report_embeds_publication_sections\tpassed\treport\tok\n"
         "final_report_figure_traceability\tpassed\treport\tok\n"
+        "final_report_plot_previews\tpassed\treport\tok\n"
         "final_report_placeholder_text\tpassed\treport\tok\n"
     )
     publication_audit.write_text(audit_text, encoding="utf-8")

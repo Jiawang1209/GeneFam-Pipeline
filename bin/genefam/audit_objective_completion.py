@@ -24,6 +24,7 @@ PUBLICATION_AUDIT_CHECKS = [
     "figure_method_software_versions",
     "final_report_embeds_publication_sections",
     "final_report_figure_traceability",
+    "final_report_plot_previews",
     "final_report_placeholder_text",
 ]
 
@@ -362,7 +363,7 @@ def build_objective_audit(
             and final_report_audit_details_ok,
             "final reports",
             "standard branch smoke, Nextflow standard visualization smoke, Nextflow WGD event smoke, prepared WGD handoff example, quickstart report outputs, standard publication report audit, WGD publication report audit, standard report index audit, WGD report index audit, delivery bundle figure gallery audit, and delivery bundle manifest audit",
-            "Final Markdown reports are produced for standard and WGD handoff paths from formal Nextflow standard visualization and WGD branch evidence, while publication audits verify valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, Figure Traceability Matrix rows, and complete per-figure close-reading text: input data, what the figure shows, key observations, biological interpretation, figure-specific QC warnings, QC tables, method/software entries, software/R package versions, parseable detected version values, reproducibility commands, reading status, output paths, registered plot files, and no TODO/TBD/placeholder text for both report families. Report index audits verify that standard and WGD report indexes expose plot manifests, software versions, figure interpretations in TSV/Markdown, and final reports. "
+            "Final Markdown reports are produced for standard and WGD handoff paths from formal Nextflow standard visualization and WGD branch evidence, while publication audits verify valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, Figure Traceability Matrix rows, embedded PNG plot previews, and complete per-figure close-reading text: input data, what the figure shows, key observations, biological interpretation, figure-specific QC warnings, QC tables, method/software entries, software/R package versions, parseable detected version values, reproducibility commands, reading status, output paths, registered plot files, and no TODO/TBD/placeholder text for both report families. Report index audits verify that standard and WGD report indexes expose plot manifests, software versions, figure interpretations in TSV/Markdown, and final reports. "
             "The delivery figure gallery is audited by figure_gallery_audit so each row links plot files to interpretation, software versions, final report anchors, and the traceability matrix with valid gallery plot file signatures and per-figure close-reading anchors. "
             "The delivery manifest audit verifies that available and blocked handoff index paths resolve to real files or accepted runtime locators. "
             + final_report_detail_note,

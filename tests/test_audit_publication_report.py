@@ -107,6 +107,7 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
                 "| ppi_ggnetview | plots/ppi_ggnetview.pdf | figure-specific close reading | tables/ppi_network_qc.tsv | ggNetView; plot_ppi_ggnetview.R; /usr/local/bin/R | python bin/genefam/run_ppi_ggnetview_plot_smoke.py --r-bin /usr/local/bin/R --outdir results/ppi_ggnetview_plot_smoke |",
                 "## Figure Result Interpretations",
                 "### tree_features: Tree, motif, gene-structure, and domain composite",
+                "![tree_features: Tree, motif, gene-structure, and domain composite](../plots/tree_features.png)",
                 "- Input data: tree and feature tables",
                 "- What the figure shows: tree-ordered feature tracks",
                 "- Key observations: clades share motif/domain architecture",
@@ -118,6 +119,7 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
                 "- Result reading status: figure-specific close reading",
                 "- Output path: `plots/tree_features.pdf`",
                 "### ppi_ggnetview: PPI network generated with ggNetView",
+                "![ppi_ggnetview: PPI network generated with ggNetView](../plots/ppi_ggnetview.png)",
                 "- Input data: PPI edges and nodes",
                 "- What the figure shows: network hubs and modules",
                 "- Key observations: hub genes are visible",
@@ -141,7 +143,7 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
     )
     summary = summarize_audit(rows)
 
-    assert summary == {"passed": 16, "failed": 0, "complete": True}
+    assert summary == {"passed": 17, "failed": 0, "complete": True}
     assert {row["check"] for row in rows} == {
         "plot_files_exist",
         "plot_file_format_valid",
@@ -158,6 +160,7 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
         "final_report_methods_summary",
         "final_report_embeds_publication_sections",
         "final_report_figure_traceability",
+        "final_report_plot_previews",
         "final_report_placeholder_text",
     }
 
@@ -740,6 +743,7 @@ def test_publication_report_audit_cli_writes_markdown_and_tsv(tmp_path):
                 "| family_counts | plots/family_counts.pdf | figure-specific close reading | tables/family_counts.tsv | plot_family_counts.R; /usr/local/bin/R | python bin/genefam/run_standard_smoke.py --outdir results/standard_smoke |",
                 "## Figure Result Interpretations",
                 "### family_counts: Family copy number",
+                "![family_counts: ](../plots/family_counts.png)",
                 "- Input data: Family member count table",
                 "- What the figure shows: Per-species member totals",
                 "- Key observations: Expansion or contraction signals are visible in the per-species member totals",
@@ -781,6 +785,7 @@ def test_publication_report_audit_cli_writes_markdown_and_tsv(tmp_path):
     assert "plot_files_exist\tpassed" in out_tsv.read_text(encoding="utf-8")
     assert "figure_interpretation_coverage\tpassed" in out_tsv.read_text(encoding="utf-8")
     assert "final_report_figure_traceability\tpassed" in out_tsv.read_text(encoding="utf-8")
+    assert "final_report_plot_previews\tpassed" in out_tsv.read_text(encoding="utf-8")
     assert "Complete: true" in out_md.read_text(encoding="utf-8")
 
 

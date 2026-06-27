@@ -69,6 +69,16 @@ def _figure_traceability_rows(
     return rows
 
 
+def _figure_preview_path(output_path: str) -> str:
+    value = output_path.split("#", 1)[0].strip()
+    if not value:
+        return ""
+    path = Path(value).with_suffix(".png")
+    if not path.is_absolute() and path.parts and path.parts[0] == "plots":
+        return str(Path("..") / path)
+    return str(path)
+
+
 def assemble_report(
     project_name: str,
     gene_family: str,
@@ -252,9 +262,14 @@ def assemble_report(
     lines.extend(["## Figure Result Interpretations", ""])
     if figure_interpretations:
         for row in figure_interpretations:
+            figure_key = row.get("figure_key", "")
+            title = row.get("title", "")
+            preview_path = _figure_preview_path(row.get("output_path", ""))
             lines.extend(
                 [
-                    f"### {row.get('figure_key', '')}: {row.get('title', '')}",
+                    f"### {figure_key}: {title}",
+                    "",
+                    f"![{figure_key}: {title}]({preview_path})" if preview_path else "",
                     "",
                     f"- Input data: {row.get('input_data', '')}",
                     f"- What the figure shows: {row.get('what_figure_shows', '')}",
