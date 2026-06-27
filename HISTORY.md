@@ -14261,7 +14261,7 @@ Verification:
 - Existing release evidence remains `results/release_checks/release_checks.md` with `Passed: 54`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
 
 Commit:
-- hash: pending
+- hash: 64989599e5537de4ff940f548af228259d2c13f7
 - message: docs: document reference visual alignment handoff
 - files: README, Chinese README, quickstart/readiness/release-audit docs, documentation tests, history
 
