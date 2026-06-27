@@ -160,12 +160,12 @@ Verification:
 - `python -m pytest tests/test_audit_objective_completion.py -q` passed with 46 tests after updating the note.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: 7114b77e05aa525b56c90457928dea20e28bdfa0
+- message: test: surface gallery signatures in objective audit
 - files: objective audit note, objective audit test, and history entry.
 
 Next:
-- Run full tests and release/local acceptance checks, then commit and backfill this history entry.
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
 
 ## 2026-06-27 15:51 - Surface Reference gitignore evidence in delivery bundle
 
