@@ -34,6 +34,55 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 18:04 - Require final report methods summary in publication audits
+
+Context:
+- The active `/goal` requires each final report method section to state the analysis software and software versions, not just list figures.
+- Standard and WGD smoke final reports already contained `## Methods Summary`, but `audit_publication_report.py` did not yet enforce that section as a release gate.
+
+Decisions:
+- Add a dedicated `final_report_methods_summary` publication-report audit row.
+- Require `Methods Summary` to name the core HMMER/DIAMOND search context, MCScanX synteny, Ka/Ks evidence, and gamma/beta/alpha/theta WGD interpretation terms.
+- Keep software version table embedding and per-figure method/software version coverage as separate audit checks.
+
+Added:
+- Red test for a report with complete figure interpretation, software versions, and traceability matrix but no `Methods Summary`.
+- `final_report_methods_summary` rows in standard and WGD publication report audit outputs.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `tests/test_audit_publication_report.py`
+- `tests/test_release_audit_docs.py`
+- `docs/release_audit.md`
+- `README.md`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_requires_methods_summary -q` first failed with `KeyError: 'final_report_methods_summary'`.
+- `python -m pytest tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` first failed because `final_report_methods_summary` was not documented in `docs/release_audit.md`.
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_requires_methods_summary tests/test_audit_publication_report.py::test_publication_report_audit_requires_figure_reading_versions_qc_and_reproducibility tests/test_audit_publication_report.py::test_publication_report_audit_cli_writes_markdown_and_tsv -q` passed with 3 tests.
+- `python -m pytest tests/test_audit_publication_report.py tests/test_release_audit_docs.py tests/test_quickstart_docs.py tests/test_runtime_environment_files.py -q` passed with 35 tests.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` exited 0 and reported `Passed: 13`, `Failed: 0`, `Complete: true`.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv --software-versions results/nextflow_wgd_smoke/wgd/report/software_versions.tsv --final-report results/nextflow_wgd_smoke/wgd/report/final_report.md --out-tsv results/publication_report_audit/wgd_publication_report_audit.tsv --out-md results/publication_report_audit/wgd_publication_report_audit.md` exited 0 and reported `Passed: 13`, `Failed: 0`, `Complete: true`.
+- `/usr/local/bin/R --vanilla --slave -e 'cat(R.version.string, "\n"); cat(tempdir(), "\n")'` and `/usr/local/bin/Rscript -e 'cat(R.version.string, "\n")'` both exited 137, showing the current local R runtime is killed before any plotting script runs.
+- `python -m pytest tests -q` failed with 13 R-dependent smoke failures and 440 passes; failures were concentrated in visualization smoke tests using `/usr/local/bin/R`.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 1; `results/release_checks/release_checks.md` reported `Failed: 15`, `Required failed: 13`, `Optional failed: 2`, with standard and WGD publication report audits still passed and Docker/Apptainer remaining optional final-stage blockers.
+- `git diff --check && python -m pytest tests/test_audit_publication_report.py tests/test_release_audit_docs.py tests/test_quickstart_docs.py tests/test_runtime_environment_files.py -q` passed with 35 tests.
+
+Commit:
+- hash: pending
+- message: pending
+- files: publication report audit, publication audit tests, release/quickstart/readiness docs, README, and history entry.
+
+Next:
+- Restore or restart the local `/usr/local/bin/R` runtime, then rerun `python -m pytest tests -q` and `python bin/genefam/run_release_checks.py --outdir results/release_checks`.
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
+
 ## 2026-06-27 17:48 - Expose non-detected software versions in report audits
 
 Context:

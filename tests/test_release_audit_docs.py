@@ -146,6 +146,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "software/R package versions" in text
     assert "software_version_detection_warnings_visible" in text
     assert "per-figure method/software version coverage" in text
+    assert "final_report_methods_summary" in text
     assert "Figure Traceability Matrix" in text
     assert "reproducibility commands" in text
     assert "report indexes expose plot manifests, software versions, figure interpretations in TSV/Markdown, final reports, and figure_traceability_matrix anchors" in text

@@ -91,6 +91,8 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
         "\n".join(
             [
                 "# GeneFam-Pipeline Final Report",
+                "## Methods Summary",
+                "Family members are identified with HMMER and DIAMOND evidence. MCScanX synteny and Ka/Ks evidence support gamma, beta, alpha, and theta WGD interpretations.",
                 "### Software Versions",
                 "| component | kind | version | status | source |",
                 "| --- | --- | --- | --- | --- |",
@@ -139,7 +141,7 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
     )
     summary = summarize_audit(rows)
 
-    assert summary == {"passed": 12, "failed": 0, "complete": True}
+    assert summary == {"passed": 13, "failed": 0, "complete": True}
     assert {row["check"] for row in rows} == {
         "plot_files_exist",
         "plot_file_format_valid",
@@ -150,6 +152,7 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
         "software_versions_present",
         "software_version_detection_warnings_visible",
         "figure_method_software_versions",
+        "final_report_methods_summary",
         "final_report_embeds_publication_sections",
         "final_report_figure_traceability",
         "final_report_placeholder_text",
@@ -266,6 +269,98 @@ def test_publication_report_audit_requires_figure_traceability_matrix(tmp_path):
 
     assert by_check["final_report_figure_traceability"]["status"] == "failed"
     assert "missing_section:Figure Traceability Matrix" in by_check["final_report_figure_traceability"]["note"]
+
+
+def test_publication_report_audit_requires_methods_summary(tmp_path):
+    plot_manifest = tmp_path / "plot_manifest.tsv"
+    figure_interpretations = tmp_path / "figure_interpretations.tsv"
+    software_versions = tmp_path / "software_versions.tsv"
+    final_report = tmp_path / "final_report.md"
+    (tmp_path / "plots").mkdir()
+    (tmp_path / "plots/ks_distribution.pdf").write_bytes(b"%PDF ks")
+
+    _write_tsv(plot_manifest, ["plot_key", "path", "description"], [["ks_distribution", "plots/ks_distribution.pdf", "Ks distribution"]])
+    _write_tsv(
+        figure_interpretations,
+        [
+            "figure_key",
+            "input_data",
+            "what_figure_shows",
+            "key_observations",
+            "biological_interpretation",
+            "qc_warnings",
+            "qc_tables",
+            "method_and_software",
+            "reproducibility",
+            "result_reading_status",
+            "output_path",
+        ],
+        [[
+            "ks_distribution",
+            "Ks and WGD event table",
+            "Ks peaks and WGD layers",
+            "gamma beta alpha theta layers are visible",
+            "Ks-supported WGD labels summarize duplication history",
+            "review sparse bins",
+            "tables/wgd_event_summary.tsv",
+            "MCScanX; Ka/Ks; plot_wgd_results.R; /usr/local/bin/R",
+            "python bin/genefam/run_wgd_smoke.py --outdir results/wgd_smoke",
+            "figure-specific close reading",
+            "plots/ks_distribution.pdf",
+        ]],
+    )
+    _write_tsv(
+        software_versions,
+        ["component", "kind", "version", "status", "source"],
+        [
+            ["MCScanX", "command", "1.0", "detected", "MCScanX"],
+            ["KaKs_Calculator", "command", "3.0", "detected", "KaKs_Calculator -h"],
+            ["R", "command", "4.4.0", "detected", "/usr/local/bin/R --version"],
+            ["ggplot2", "R_package", "4.0.3", "detected", "packageVersion(\"ggplot2\")"],
+        ],
+    )
+    final_report.write_text(
+        "\n".join(
+            [
+                "# GeneFam-Pipeline Final Report",
+                "### Software Versions",
+                "| component | kind | version | status | source |",
+                "| --- | --- | --- | --- | --- |",
+                "| MCScanX | command | 1.0 | detected | MCScanX |",
+                "| KaKs_Calculator | command | 3.0 | detected | KaKs_Calculator -h |",
+                "| R | command | 4.4.0 | detected | /usr/local/bin/R --version |",
+                "| ggplot2 | R_package | 4.0.3 | detected | packageVersion(\"ggplot2\") |",
+                "## Figure Traceability Matrix",
+                "| figure_key | plot_path | interpretation_status | qc_tables | method_and_software | reproducibility |",
+                "| --- | --- | --- | --- | --- | --- |",
+                "| ks_distribution | plots/ks_distribution.pdf | figure-specific close reading | tables/wgd_event_summary.tsv | MCScanX; Ka/Ks; plot_wgd_results.R; /usr/local/bin/R | python bin/genefam/run_wgd_smoke.py --outdir results/wgd_smoke |",
+                "## Figure Result Interpretations",
+                "### ks_distribution: Ks distribution",
+                "- Input data: Ks and WGD event table",
+                "- What the figure shows: Ks peaks and WGD layers",
+                "- Key observations: gamma beta alpha theta layers are visible",
+                "- Biological interpretation: Ks-supported WGD labels summarize duplication history",
+                "- QC warnings / limitations: review sparse bins",
+                "- QC tables: tables/wgd_event_summary.tsv",
+                "- Method/software: MCScanX; Ka/Ks; plot_wgd_results.R; /usr/local/bin/R",
+                "- Reproducibility: python bin/genefam/run_wgd_smoke.py --outdir results/wgd_smoke",
+                "- Result reading status: figure-specific close reading",
+                "- Output path: `plots/ks_distribution.pdf`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    rows = audit_publication_report(
+        plot_manifest=plot_manifest,
+        figure_interpretations=figure_interpretations,
+        software_versions=software_versions,
+        final_report=final_report,
+    )
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["final_report_methods_summary"]["status"] == "failed"
+    assert "missing_section:Methods Summary" in by_check["final_report_methods_summary"]["note"]
 
 
 def test_publication_report_audit_flags_missing_or_empty_plot_files(tmp_path):
@@ -389,6 +484,8 @@ def test_publication_report_audit_cli_writes_markdown_and_tsv(tmp_path):
     final_report.write_text(
         "\n".join(
             [
+                "## Methods Summary",
+                "Family members are identified with HMMER and DIAMOND evidence. MCScanX synteny and Ka/Ks evidence support gamma, beta, alpha, and theta WGD interpretations.",
                 "### Software Versions",
                 "| component | kind | version | status | source |",
                 "| --- | --- | --- | --- | --- |",

@@ -41,6 +41,16 @@ VERSIONED_METHOD_COMPONENTS = [
     "treeio",
     "ggNetView",
 ]
+METHOD_SUMMARY_REQUIRED_TERMS = [
+    "HMMER",
+    "DIAMOND",
+    "MCScanX",
+    "Ka/Ks",
+    "gamma",
+    "beta",
+    "alpha",
+    "theta",
+]
 
 
 def read_tsv(path: Path) -> list[dict[str, str]]:
@@ -177,6 +187,28 @@ def _report_contains(report_text: str, needle: str) -> bool:
     return needle in report_text
 
 
+def _markdown_section(report_text: str, heading: str) -> str:
+    marker = f"## {heading}"
+    start = report_text.find(marker)
+    if start < 0:
+        return ""
+    next_heading = report_text.find("\n## ", start + len(marker))
+    if next_heading < 0:
+        return report_text[start:]
+    return report_text[start:next_heading]
+
+
+def _methods_summary_issues(report_text: str) -> list[str]:
+    section = _markdown_section(report_text, "Methods Summary")
+    if not section:
+        return ["missing_section:Methods Summary"]
+
+    issues = [f"missing_term:{term}" for term in METHOD_SUMMARY_REQUIRED_TERMS if term not in section]
+    if "### Software Versions" not in report_text:
+        issues.append("missing_linked_section:Software Versions")
+    return issues
+
+
 def _missing_software_versions_in_report(
     report_text: str,
     version_rows: list[dict[str, str]],
@@ -302,6 +334,7 @@ def audit_publication_report(
     detail_rows = [interpretation_rows[key] for key in plot_keys if key in interpretation_rows]
     missing_details = _missing_detail_fields(detail_rows)
     missing_method_component_versions = _missing_method_component_versions(detail_rows, software)
+    methods_summary_issues = _methods_summary_issues(report_text)
     traceability_matrix_issues = _traceability_matrix_issues(report_text, detail_rows)
     final_report_placeholder_issues = _placeholder_text_issues(report_text, "final_report")
 
@@ -407,6 +440,14 @@ def audit_publication_report(
             if not missing_method_component_versions and detail_rows
             else "missing method/software version rows: "
             + ", ".join(missing_method_component_versions or ["no interpretation rows"]),
+        ),
+        _row(
+            "final_report_methods_summary",
+            not methods_summary_issues,
+            str(final_report),
+            "final report Methods Summary names core search, synteny, Ka/Ks, WGD event-label, and software-version context"
+            if not methods_summary_issues
+            else "missing or incomplete final report Methods Summary: " + ", ".join(methods_summary_issues),
         ),
         _row(
             "final_report_embeds_publication_sections",
