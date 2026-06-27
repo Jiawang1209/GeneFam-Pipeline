@@ -86,7 +86,7 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` exited 0 and refreshed the delivery bundle; `results/local_acceptance/local_acceptance_summary.md` still reports `Overall status: blocked` only because `final_stage_blocker` remains `Docker/Apptainer reproducibility`.
 
 Commit:
-- hash: not created in this session
+- hash: 9d58d8a
 - message: test: require figure-specific qc warnings
 - files: publication audit, figure interpretation templates, objective audit, docs, tests, history
 
