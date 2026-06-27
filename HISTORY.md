@@ -78,7 +78,7 @@ Verification:
 - `git status --short --untracked-files=all` lists only tracked code/test/workflow/history changes; local data and result directories remain ignored.
 
 Commit:
-- hash: pending
+- hash: e9638d3
 - message: feat: harden real species gff3 matching
 - files: GFF3 alias matching, gene-structure/chromosome tests, reproducibility-code labels, workflow wiring, history
 
