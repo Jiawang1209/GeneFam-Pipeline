@@ -34,6 +34,57 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 10:30 - Audit report-index delivery artifacts
+
+Context:
+- The active `/goal` requires paper-level figures and reports to be connected through report indexes, final reports, smoke checks, release checks, and final objective audit.
+- Standard and WGD report indexes now list report-layer deliverables, but release checks still only validated them indirectly through tests and Nextflow smoke outputs.
+- A future regression could drop `final_report` or `figure_interpretations_md` from a report index while publication audits and high-level objective audit still looked complete.
+
+Decisions:
+- Add a dedicated `audit_report_index.py` gate with TSV/Markdown outputs.
+- Require standard and WGD report indexes to expose `plot_manifest`, `software_versions`, `figure_interpretations`, `figure_interpretations_md`, and `final_report`.
+- Make release checks run both standard and WGD report-index audits as required checks.
+- Make the high-level `final reports` objective depend on both report-index audits.
+
+Added:
+- `bin/genefam/audit_report_index.py`
+- `tests/test_audit_report_index.py`
+- Release checks for `standard report index audit` and `WGD report index audit`.
+- Objective-audit regression test for missing standard report-index audit evidence.
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_release_checks.py`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_run_release_checks.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_report_index.py -q` first failed with `ModuleNotFoundError: No module named 'bin.genefam.audit_report_index'`.
+- `python -m pytest tests/test_run_release_checks.py::test_default_checks_include_report_index_audits_after_report_generation -q` first failed because `standard report index audit` was not in `default_checks()`.
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_require_standard_report_index_audit -q` first failed because `final reports` was still `achieved` without standard report-index audit evidence.
+- `python -m pytest tests/test_audit_report_index.py tests/test_run_release_checks.py::test_default_checks_include_report_index_audits_after_report_generation -q` passed with 4 tests.
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_require_standard_report_index_audit tests/test_audit_objective_completion.py::test_final_reports_note_names_complete_publication_report_closure tests/test_audit_objective_completion.py::test_build_objective_audit_marks_goal_items_and_runtime_blockers -q` passed.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 43 tests.
+- `python -m pytest tests/test_run_release_checks.py -q` passed with 52 tests.
+- `python -m pytest tests -q` passed with 429 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 47`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `sed -n '1,80p' results/report_index_audit/standard_report_index_audit.md` and the same command for `wgd_report_index_audit.md` showed `Passed: 2`, `Failed: 0`, and `Complete: true` for both report-index audits.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+- `rg -n "final reports|Report index audits|standard report index audit|WGD report index audit" results/objective_audit/objective_audit.md` confirmed the high-level final-report objective now requires both report-index audits.
+
+Commit:
+- hash: pending
+- message: `test: audit report index artifacts`
+- files: report-index audit tool, release/objective audit integration, tests, and history entry.
+
+Next:
+- Continue final MVP hardening while keeping Docker/Apptainer verification as the final-stage external blocker.
+
 ## 2026-06-27 10:22 - Add final report artifacts to report indexes
 
 Context:

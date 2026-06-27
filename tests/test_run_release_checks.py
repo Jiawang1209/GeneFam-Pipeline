@@ -283,6 +283,30 @@ def test_default_checks_include_publication_report_audit_after_visualization_rep
     assert "--out-md results/publication_report_audit/publication_report_audit.md" in command
 
 
+def test_default_checks_include_report_index_audits_after_report_generation():
+    checks = default_checks()
+    names = [check.name for check in checks]
+
+    assert names.index("standard report index audit") > names.index("publication report audit")
+    assert names.index("WGD report index audit") > names.index("WGD publication report audit")
+
+    standard_audit = next(check for check in checks if check.name == "standard report index audit")
+    standard_command = " ".join(standard_audit.command)
+    assert "bin/genefam/audit_report_index.py" in standard_command
+    assert "--profile standard" in standard_command
+    assert "--report-index results/nextflow_standard_feature_smoke/standard/report/report_index.tsv" in standard_command
+    assert "--out-tsv results/report_index_audit/standard_report_index_audit.tsv" in standard_command
+    assert "--out-md results/report_index_audit/standard_report_index_audit.md" in standard_command
+
+    wgd_audit = next(check for check in checks if check.name == "WGD report index audit")
+    wgd_command = " ".join(wgd_audit.command)
+    assert "bin/genefam/audit_report_index.py" in wgd_command
+    assert "--profile wgd" in wgd_command
+    assert "--report-index results/nextflow_wgd_smoke/wgd/report/report_index.tsv" in wgd_command
+    assert "--out-tsv results/report_index_audit/wgd_report_index_audit.tsv" in wgd_command
+    assert "--out-md results/report_index_audit/wgd_report_index_audit.md" in wgd_command
+
+
 def test_default_checks_do_not_include_handoff_report_as_a_stale_input_check():
     checks = default_checks()
     names = [check.name for check in checks]

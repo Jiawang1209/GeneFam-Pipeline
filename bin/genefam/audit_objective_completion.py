@@ -344,12 +344,14 @@ def build_objective_audit(
                     "quickstart handoff",
                     "publication report audit",
                     "WGD publication report audit",
+                    "standard report index audit",
+                    "WGD report index audit",
                 ],
             )
             and final_report_audit_details_ok,
             "final reports",
-            "standard branch smoke, Nextflow standard visualization smoke, Nextflow WGD event smoke, prepared WGD handoff example, quickstart report outputs, standard publication report audit, and WGD publication report audit",
-            "Final Markdown reports are produced for standard and WGD handoff paths from formal Nextflow standard visualization and WGD branch evidence, while publication audits verify valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, and complete per-figure close-reading text: input data, what the figure shows, key observations, biological interpretation, QC warnings, QC tables, method/software entries, software/R package versions, reproducibility commands, reading status, output paths, registered plot files, and no TODO/TBD/placeholder text for both report families. "
+            "standard branch smoke, Nextflow standard visualization smoke, Nextflow WGD event smoke, prepared WGD handoff example, quickstart report outputs, standard publication report audit, WGD publication report audit, standard report index audit, and WGD report index audit",
+            "Final Markdown reports are produced for standard and WGD handoff paths from formal Nextflow standard visualization and WGD branch evidence, while publication audits verify valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, and complete per-figure close-reading text: input data, what the figure shows, key observations, biological interpretation, QC warnings, QC tables, method/software entries, software/R package versions, reproducibility commands, reading status, output paths, registered plot files, and no TODO/TBD/placeholder text for both report families. Report index audits verify that standard and WGD report indexes expose plot manifests, software versions, figure interpretations in TSV/Markdown, and final reports. "
             + final_report_detail_note,
         ),
         _achieved_if(

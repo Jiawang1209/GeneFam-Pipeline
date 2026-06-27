@@ -485,6 +485,21 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "standard report index audit",
+            [
+                python,
+                "bin/genefam/audit_report_index.py",
+                "--report-index",
+                "results/nextflow_standard_feature_smoke/standard/report/report_index.tsv",
+                "--profile",
+                "standard",
+                "--out-tsv",
+                "results/report_index_audit/standard_report_index_audit.tsv",
+                "--out-md",
+                "results/report_index_audit/standard_report_index_audit.md",
+            ],
+        ),
+        CheckSpec(
             "Nextflow standard manifest smoke",
             [
                 python,
@@ -536,6 +551,21 @@ def default_checks() -> list[CheckSpec]:
                 "results/publication_report_audit/wgd_publication_report_audit.tsv",
                 "--out-md",
                 "results/publication_report_audit/wgd_publication_report_audit.md",
+            ],
+        ),
+        CheckSpec(
+            "WGD report index audit",
+            [
+                python,
+                "bin/genefam/audit_report_index.py",
+                "--report-index",
+                "results/nextflow_wgd_smoke/wgd/report/report_index.tsv",
+                "--profile",
+                "wgd",
+                "--out-tsv",
+                "results/report_index_audit/wgd_report_index_audit.tsv",
+                "--out-md",
+                "results/report_index_audit/wgd_report_index_audit.md",
             ],
         ),
         CheckSpec(
