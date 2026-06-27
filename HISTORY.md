@@ -202,12 +202,12 @@ Verification:
 - `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report -q` passed with 3 tests after documentation updates.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: b250c1522354ca71cc25629ffa9537012fd93d68
+- message: test: expose baseline smoke evidence in delivery bundle
 - files: delivery bundle manifest builder, delivery bundle tests, docs, README, and history entry.
 
 Next:
-- Run full tests and release/local acceptance checks, then commit and backfill this history entry.
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
 
 ## 2026-06-27 15:51 - Surface Reference gitignore evidence in delivery bundle
 
