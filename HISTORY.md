@@ -68,7 +68,7 @@ Verification:
 - `sed -n '1,10p' results/objective_audit/objective_audit.md` confirmed objective audit remains `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
 
 Commit:
-- hash: pending
+- hash: 21ce16688ab4b18543d12b1d587a06a4893ef514
 - message: `docs: list figure gallery in acceptance handoff`
 - files: local acceptance script, local acceptance script test, and history entry.
 
