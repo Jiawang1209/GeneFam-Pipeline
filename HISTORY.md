@@ -12055,6 +12055,48 @@ Commit:
 Next:
 - Continue final MVP hardening with container/runtime packaging still intentionally deferred until the analysis flow and report gates are fully stable.
 
+## 2026-06-27 - Require figure gallery audit in final objective reports
+
+Timestamp:
+- 2026-06-27 14:24 CST
+
+Context:
+- The delivery bundle already had a dedicated `delivery bundle figure gallery audit` release gate.
+- The long-form objective audit still allowed `final reports` to be marked achieved from publication/report-index audits alone, so the final goal summary did not explicitly require the global figure gallery linkage audit.
+
+Decisions:
+- Treat `delivery bundle figure gallery audit` as part of the formal `final reports` completion contract.
+- Make the final-report objective note describe how `figure_gallery_audit` links plot files to figure interpretations, software versions, final report anchors, and the traceability matrix.
+
+Added:
+- Regression test proving `final reports` remains `missing` when the delivery figure gallery audit is absent.
+- Release-check writer test coverage proving `objective_audit.tsv` records `delivery bundle figure gallery audit` in the final-report evidence.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_run_release_checks.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_require_delivery_figure_gallery_audit tests/test_audit_objective_completion.py::test_final_reports_note_names_complete_publication_report_closure -q` first failed because the old objective audit marked final reports achieved without `delivery bundle figure gallery audit` and did not mention `figure_gallery_audit`.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 45 tests after implementation.
+- `python -m pytest tests -q` first failed because `tests/test_run_release_checks.py::test_write_objective_audit_reads_publication_detail_audits` still used the old release fixture without the gallery audit row.
+- `python -m pytest tests/test_audit_objective_completion.py tests/test_run_release_checks.py::test_write_objective_audit_reads_publication_detail_audits -q` passed with 46 tests after fixture update.
+- `python -m pytest tests -q` passed with 439 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and wrote `Passed: 49`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+- `rg -n "delivery bundle figure gallery audit|final reports|figure_gallery_audit|Achieved|Blocked|Missing|Complete" results/release_checks/release_checks.tsv results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed `final reports` is achieved with `delivery bundle figure gallery audit`, `figure_gallery_audit`, `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed release checks, quickstart, delivery bundle, and local acceptance outputs; it reported the expected final-stage blocker: Docker/Apptainer reproducibility.
+
+Commit:
+- pending
+
+Next:
+- Continue final MVP hardening; Docker/Apptainer runtime verification remains intentionally deferred to the final packaging stage.
+
 ## 2026-06-27 - Surface WGD publication audit in delivery outputs
 
 Timestamp:

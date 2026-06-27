@@ -996,6 +996,7 @@ def test_write_objective_audit_reads_publication_detail_audits(tmp_path):
             "WGD publication report audit",
             "standard report index audit",
             "WGD report index audit",
+            "delivery bundle figure gallery audit",
         ]
     ]
 
@@ -1010,6 +1011,7 @@ def test_write_objective_audit_reads_publication_detail_audits(tmp_path):
     assert written is True
     objective_tsv = (tmp_path / "objective" / "objective_audit.tsv").read_text(encoding="utf-8")
     assert "final reports\tachieved" in objective_tsv
+    assert "delivery bundle figure gallery audit" in objective_tsv
 
 
 def test_write_objective_audit_requires_expression_smoke_for_expression_integration(tmp_path):
