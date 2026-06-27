@@ -34,6 +34,52 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 11:04 - Sync report-index audits into handoff evidence
+
+Context:
+- The active `/goal` requires the final handoff surfaces to reflect the same paper-level report closure evidence.
+- Delivery bundle and local acceptance already surfaced standard and WGD report-index audits, but `results/handoff/handoff_report.md` did not list those audit files.
+- While refreshing handoff evidence, the release-gate-generated objective audit still marked `final reports` as missing because `run_release_checks.write_objective_audit()` did not pass the standard/WGD publication audit detail TSV files into `build_objective_audit()`.
+
+Decisions:
+- Add standard and WGD report-index audit status summaries to the handoff sections, Markdown, and summary TSV.
+- Add both report-index audit Markdown files to handoff Key Evidence.
+- Make `write_objective_audit()` read standard and WGD publication audit detail TSV files by default so release-gate-generated objective and handoff reports match the standalone objective audit CLI.
+- Keep `container_default_smoke` and report-index audit summary keys in an explicit TSV order.
+
+Added:
+- `standard_report_index_audit` and `wgd_report_index_audit` handoff summary keys.
+- Handoff Key Evidence links for `results/report_index_audit/standard_report_index_audit.md` and `results/report_index_audit/wgd_report_index_audit.md`.
+- A regression test proving `write_objective_audit()` reads publication audit detail TSV files before deciding final-report objective status.
+
+Modified:
+- `bin/genefam/build_handoff_report.py`
+- `bin/genefam/run_release_checks.py`
+- `tests/test_build_handoff_report.py`
+- `tests/test_run_release_checks.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_handoff_report.py -q` first failed because handoff sections did not expose `standard_report_index_audit` and Markdown did not include `Standard report index audit`.
+- `python -m pytest tests/test_run_release_checks.py::test_write_objective_audit_reads_publication_detail_audits -q` first failed because `write_objective_audit()` did not accept publication audit detail TSV paths.
+- `python -m pytest tests/test_run_release_checks.py::test_write_objective_audit_reads_publication_detail_audits tests/test_build_handoff_report.py -q` passed with 6 tests after implementation.
+- `python -m pytest tests -q` passed with 430 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 47`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `sed -n '1,32p' results/objective_audit/objective_audit.md` confirmed `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `final reports` achieved.
+- `sed -n '1,35p' results/handoff/handoff_report.md` confirmed `Objective audit: achieved=19 blocked=1 missing=0 complete=false` plus standard and WGD report-index audit status lines.
+- `rg -n "final reports|standard_report_index_audit|wgd_report_index_audit|achieved=19|missing=0" results/objective_audit/objective_audit.md results/handoff/handoff_report.md results/handoff/handoff_summary.tsv` confirmed objective and handoff evidence are synchronized.
+
+Commit:
+- hash: pending
+- message: `fix: sync handoff report audit evidence`
+- files: handoff report builder, release objective writer, tests, and history entry.
+
+Next:
+- Continue final MVP hardening while Docker/Apptainer remain the final-stage runtime blocker.
+
 ## 2026-06-27 10:49 - Add report-index audits to local acceptance
 
 Context:

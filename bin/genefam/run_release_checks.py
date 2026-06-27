@@ -754,10 +754,19 @@ def write_objective_audit(
     rows: list[dict[str, str]],
     readiness_path: Path = Path("results/readiness/command_readiness.tsv"),
     outdir: Path = Path("results/objective_audit"),
+    publication_audit_path: Path = Path("results/publication_report_audit/publication_report_audit.tsv"),
+    wgd_publication_audit_path: Path = Path("results/publication_report_audit/wgd_publication_report_audit.tsv"),
 ) -> bool:
     if not readiness_path.exists():
         return False
-    objective_rows = build_objective_audit(rows, read_tsv(readiness_path))
+    objective_rows = build_objective_audit(
+        rows,
+        read_tsv(readiness_path),
+        publication_audit_rows=read_tsv(publication_audit_path) if publication_audit_path.exists() else None,
+        wgd_publication_audit_rows=read_tsv(wgd_publication_audit_path)
+        if wgd_publication_audit_path.exists()
+        else None,
+    )
     write_objective_tsv(objective_rows, outdir / "objective_audit.tsv")
     write_objective_markdown(objective_rows, outdir / "objective_audit.md")
     return True

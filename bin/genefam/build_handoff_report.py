@@ -84,6 +84,13 @@ def _container_smoke(rows: list[dict[str, str]]) -> str:
     return "; ".join(parts)
 
 
+def _release_check_status(rows: list[dict[str, str]], check: str, label: str) -> str:
+    for row in rows:
+        if row.get("check") == check:
+            return f"{label}={row.get('status', 'unknown')}"
+    return f"{label}=missing"
+
+
 def build_handoff_sections(
     release_rows: list[dict[str, str]],
     objective_rows: list[dict[str, str]],
@@ -101,6 +108,16 @@ def build_handoff_sections(
         "missing_runtime": _missing_runtime(readiness_rows),
         "container_smoke": _container_smoke(container_rows),
         "container_default_smoke": "Dockerfile -> results/container_default_smoke",
+        "standard_report_index_audit": _release_check_status(
+            release_rows,
+            "standard report index audit",
+            "standard_report_index_audit",
+        ),
+        "wgd_report_index_audit": _release_check_status(
+            release_rows,
+            "WGD report index audit",
+            "wgd_report_index_audit",
+        ),
     }
 
 
@@ -122,12 +139,16 @@ def write_markdown(sections: dict[str, str], out_path: Path) -> None:
         f"- Available runtime commands: `{sections['available_runtime']}`",
         f"- Missing runtime commands: `{sections['missing_runtime']}`",
         f"- Container smoke: `{sections['container_smoke']}`",
+        f"- Standard report index audit: `{sections.get('standard_report_index_audit', 'standard_report_index_audit=missing')}`",
+        f"- WGD report index audit: `{sections.get('wgd_report_index_audit', 'wgd_report_index_audit=missing')}`",
         "",
         "## Key Evidence",
         "",
         "- `results/release_checks/release_checks.md`",
         "- `results/objective_audit/objective_audit.md`",
         "- `results/local_acceptance/local_acceptance_summary.md`",
+        "- `results/report_index_audit/standard_report_index_audit.md`",
+        "- `results/report_index_audit/wgd_report_index_audit.md`",
         "- `results/readiness/command_readiness.tsv`",
         "- `results/readiness/runtime_bootstrap_plan.md`",
         "- `results/readiness/runtime_bootstrap.sh`",
@@ -150,18 +171,34 @@ def write_markdown(sections: dict[str, str], out_path: Path) -> None:
 
 
 def write_summary_tsv(sections: dict[str, str], out_path: Path) -> None:
-    sections = {
-        **sections,
-        "container_default_smoke": sections.get(
+    ordered_sections = [
+        ("release", sections.get("release", "")),
+        ("analysis_flow_status", sections.get("analysis_flow_status", "")),
+        ("objective", sections.get("objective", "")),
+        ("blocked_requirements", sections.get("blocked_requirements", "")),
+        ("next_unblock_artifacts", sections.get("next_unblock_artifacts", "")),
+        ("next_unblock_command", sections.get("next_unblock_command", "")),
+        ("available_runtime", sections.get("available_runtime", "")),
+        ("missing_runtime", sections.get("missing_runtime", "")),
+        ("container_smoke", sections.get("container_smoke", "")),
+        (
             "container_default_smoke",
-            "Dockerfile -> results/container_default_smoke",
+            sections.get("container_default_smoke", "Dockerfile -> results/container_default_smoke"),
         ),
-    }
+        (
+            "standard_report_index_audit",
+            sections.get("standard_report_index_audit", "standard_report_index_audit=missing"),
+        ),
+        (
+            "wgd_report_index_audit",
+            sections.get("wgd_report_index_audit", "wgd_report_index_audit=missing"),
+        ),
+    ]
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=["section", "summary"], delimiter="\t")
         writer.writeheader()
-        writer.writerows({"section": key, "summary": value} for key, value in sections.items())
+        writer.writerows({"section": key, "summary": value} for key, value in ordered_sections)
 
 
 def main() -> None:

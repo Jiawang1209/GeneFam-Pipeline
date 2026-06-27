@@ -920,6 +920,73 @@ def test_write_objective_audit_uses_release_rows_and_readiness_tsv(tmp_path):
     assert "Complete: false" in (tmp_path / "objective" / "objective_audit.md").read_text(encoding="utf-8")
 
 
+def test_write_objective_audit_reads_publication_detail_audits(tmp_path):
+    readiness = tmp_path / "command_readiness.tsv"
+    readiness.write_text(
+        "command\tstatus\tpath\n"
+        "nextflow\tavailable_in_conda\tGeneFamilyFlow:/bin/nextflow\n"
+        "/usr/local/bin/R\tavailable\t/usr/local/bin/R\n"
+        "hmmsearch\tavailable_in_conda\tGeneFamilyFlow:/bin/hmmsearch\n"
+        "diamond\tavailable_in_conda\tGeneFamilyFlow:/bin/diamond\n"
+        "mafft\tavailable_in_conda\tGeneFamilyFlow:/bin/mafft\n"
+        "iqtree2\tavailable_in_conda\tGeneFamilyFlow:/bin/iqtree\n"
+        "meme\tavailable_in_conda\tGeneFamilyFlow:/bin/meme\n"
+        "docker\tmissing\t\n"
+        "apptainer\tmissing\t\n",
+        encoding="utf-8",
+    )
+    publication_audit = tmp_path / "publication_report_audit.tsv"
+    wgd_publication_audit = tmp_path / "wgd_publication_report_audit.tsv"
+    audit_text = (
+        "check\tstatus\tevidence\tnote\n"
+        "plot_files_exist\tpassed\tplots\tok\n"
+        "plot_file_format_valid\tpassed\tplots\tok\n"
+        "figure_interpretation_coverage\tpassed\tfigures\tok\n"
+        "figure_interpretation_scope\tpassed\tfigures\tok\n"
+        "figure_interpretation_detail\tpassed\tfigures\tok\n"
+        "figure_output_paths_match_manifest\tpassed\tfigures\tok\n"
+        "software_versions_present\tpassed\tversions\tok\n"
+        "figure_method_software_versions\tpassed\tversions\tok\n"
+        "final_report_embeds_publication_sections\tpassed\treport\tok\n"
+        "final_report_placeholder_text\tpassed\treport\tok\n"
+    )
+    publication_audit.write_text(audit_text, encoding="utf-8")
+    wgd_publication_audit.write_text(audit_text, encoding="utf-8")
+    rows = [
+        {
+            "check": check,
+            "required": "true",
+            "status": "passed",
+            "exit_code": "0",
+            "command": check,
+            "note": "",
+        }
+        for check in [
+            "standard branch smoke",
+            "Nextflow standard visualization smoke",
+            "Nextflow WGD event smoke",
+            "prepared WGD handoff example",
+            "quickstart handoff",
+            "publication report audit",
+            "WGD publication report audit",
+            "standard report index audit",
+            "WGD report index audit",
+        ]
+    ]
+
+    written = write_objective_audit(
+        rows,
+        readiness,
+        tmp_path / "objective",
+        publication_audit,
+        wgd_publication_audit,
+    )
+
+    assert written is True
+    objective_tsv = (tmp_path / "objective" / "objective_audit.tsv").read_text(encoding="utf-8")
+    assert "final reports\tachieved" in objective_tsv
+
+
 def test_write_objective_audit_requires_expression_smoke_for_expression_integration(tmp_path):
     readiness = tmp_path / "command_readiness.tsv"
     readiness.write_text(
