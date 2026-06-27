@@ -69,7 +69,7 @@ Verification:
 - `rg -n "YAML-driven species selection|validate manifest config|species manifest" results/objective_audit/objective_audit.md results/release_checks/release_checks.md` confirmed manifest-mode validation remains part of YAML-driven species-selection evidence.
 
 Commit:
-- hash: pending
+- hash: 087baea10f245012baec276a99875b870781c0e0
 - message: `test: validate selected manifest species only`
 - files: manifest-mode selected-species path validation, regression tests, and history entry.
 
