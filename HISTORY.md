@@ -70,7 +70,7 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
 
 Commit:
-- hash: pending
+- hash: b3ace46664fec770e585091c66b56ee00a244109
 - message: `feat: index report audits in delivery bundle`
 - files: delivery bundle builder, readiness checklist, delivery bundle test, runtime docs test, and history entry.
 
