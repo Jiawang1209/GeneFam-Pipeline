@@ -136,12 +136,13 @@ def build_objective_audit(
                     "synteny parser smoke",
                     "WGD event smoke",
                     "Nextflow WGD event smoke",
+                    "Nextflow raw MCScanX/KaKs WGD smoke",
                     "prepared WGD handoff example",
                 ],
             ),
             "WGD gamma beta alpha theta evidence",
-            "synteny parser smoke, WGD event smoke, Nextflow WGD event smoke, and prepared WGD handoff checks",
-            "MCScanX collinearity parsing feeds named events interpreted from configured Ks-supported WGD layers through prepared evidence and the formal Nextflow WGD branch.",
+            "synteny parser smoke, WGD event smoke, Nextflow WGD event smoke, Nextflow raw MCScanX/KaKs WGD smoke, and prepared WGD handoff checks",
+            "MCScanX collinearity parsing feeds named events interpreted from configured Ks-supported WGD layers through prepared evidence, raw MCScanX/KaKs inputs, and the formal Nextflow WGD branch.",
         ),
         _achieved_if(
             _all_passed(
@@ -153,12 +154,13 @@ def build_objective_audit(
                     "retention enrichment smoke",
                     "WGD event smoke",
                     "Nextflow WGD event smoke",
+                    "Nextflow raw MCScanX/KaKs WGD smoke",
                     "prepared WGD handoff example",
                 ],
             ),
             "Ka/Ks and retention analysis",
-            "Ka/Ks parser smoke, duplicate-type Ka/Ks visualization smoke, pangenome-class Ka/Ks visualization smoke, retention enrichment smoke, WGD event smoke, Nextflow WGD event smoke, and prepared WGD handoff outputs",
-            "Ka/Ks selection categories, duplicate-type grouped Ka/Ks panels, pangenome-class Ka/Ks panels, retention class, family-event membership, retention enrichment, and retention summaries are generated from prepared evidence and formal Nextflow WGD branch evidence.",
+            "Ka/Ks parser smoke, duplicate-type Ka/Ks visualization smoke, pangenome-class Ka/Ks visualization smoke, retention enrichment smoke, WGD event smoke, Nextflow WGD event smoke, Nextflow raw MCScanX/KaKs WGD smoke, and prepared WGD handoff outputs",
+            "Ka/Ks selection categories, duplicate-type grouped Ka/Ks panels, pangenome-class Ka/Ks panels, retention class, family-event membership, retention enrichment, and retention summaries are generated from prepared evidence, raw MCScanX/KaKs inputs, and formal Nextflow WGD branch evidence.",
         ),
         _achieved_if(
             _all_passed(

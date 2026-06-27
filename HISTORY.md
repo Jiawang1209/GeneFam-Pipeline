@@ -9750,6 +9750,48 @@ Commit:
 Next:
 - Keep Docker/Apptainer runtime verification as the remaining final-stage external blocker; continue polishing Reference-level figure fidelity where useful.
 
+## 2026-06-27 - Require raw MCScanX KaKs Nextflow evidence for WGD audits
+
+Timestamp:
+- 2026-06-27 08:09 CST
+
+Context:
+- The active MVP goal explicitly includes real MCScanX and Ka/Ks end-to-end entrypoints for WGD/evolution analysis.
+- Release checks already included `Nextflow raw MCScanX/KaKs WGD smoke`, but `WGD gamma beta alpha theta evidence` and `Ka/Ks and retention analysis` could still be achieved without that raw-input Nextflow evidence.
+
+Decisions:
+- Require `Nextflow raw MCScanX/KaKs WGD smoke` for the WGD event evidence objective row.
+- Require the same raw-input smoke for the Ka/Ks and retention analysis objective row.
+- Update notes so both rows state that prepared evidence, raw MCScanX/Ka/Ks inputs, and formal Nextflow WGD branch evidence are represented.
+
+Added:
+- Regression test proving WGD event evidence remains `missing` without `Nextflow raw MCScanX/KaKs WGD smoke`.
+- Regression test proving Ka/Ks and retention analysis remains `missing` without `Nextflow raw MCScanX/KaKs WGD smoke`.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_wgd_event_evidence_requires_raw_mcscanx_kaks_nextflow_smoke tests/test_audit_objective_completion.py::test_kaks_and_retention_analysis_requires_raw_mcscanx_kaks_nextflow_smoke -q` first failed with the old rule because both objective rows were `achieved` without raw MCScanX/Ka/Ks Nextflow evidence.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 38 tests after implementation.
+- `python -m pytest tests -q` passed with 398 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 45`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` passed and reported `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+- `rg -n "WGD gamma beta alpha theta evidence|Ka/Ks and retention analysis|Nextflow raw MCScanX/KaKs WGD smoke|raw MCScanX/KaKs" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed both WGD/KaKs audit rows now name the raw MCScanX/Ka/Ks Nextflow evidence.
+
+Commit:
+- hash: pending
+- message: test: require raw mcscanx kaks evidence for wgd audits
+- files: objective audit rule, objective audit tests, history
+
+Next:
+- Continue final MVP hardening with Docker/Apptainer packaging still intentionally deferred to the final runtime stage.
+
 ## 2026-06-27 - Require formal Nextflow sources for final report audit
 
 Timestamp:
