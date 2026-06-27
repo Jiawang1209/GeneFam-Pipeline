@@ -45,12 +45,14 @@ def _hmm_profile_reference_paths(config_paths: list[Path]) -> list[str]:
 
 def audit_container_materials(
     dockerfile: Path,
+    apptainer_def: Path,
     linux_env: Path,
     nextflow_config: Path,
     dockerignore: Path,
     example_configs: list[Path] | None = None,
 ) -> list[dict[str, str]]:
     docker_text = _read(dockerfile)
+    apptainer_text = _read(apptainer_def)
     env_text = _read(linux_env)
     config_text = _read(nextflow_config)
     dockerignore_text = _read(dockerignore)
@@ -76,6 +78,34 @@ def audit_container_materials(
         '"--groups", "configs/species_groups.yaml"',
         '"--mock-evidence-dir", "tests/fixtures/mock_evidence"',
         '"--outdir", "results/container_default_smoke"',
+    ]
+    apptainer_env_required = [
+        "Bootstrap: docker",
+        "From: mambaorg/micromamba:1.5.10",
+        "GeneFamilyFlow.linux-64.conda.yaml /tmp/GeneFamilyFlow.linux-64.conda.yaml",
+        "micromamba create -y -f /tmp/GeneFamilyFlow.linux-64.conda.yaml",
+        "CONDA_DEFAULT_ENV=GeneFamilyFlow",
+        "/opt/conda/envs/GeneFamilyFlow/bin",
+    ]
+    apptainer_r_required = [
+        "ln -sf /opt/conda/envs/GeneFamilyFlow/bin/R /usr/local/bin/R",
+    ]
+    apptainer_default_smoke_required = [
+        "%runscript",
+        "exec python bin/genefam/run_standard_smoke.py",
+        "--config configs/example.config.yaml",
+        "--groups configs/species_groups.yaml",
+        "--mock-evidence-dir tests/fixtures/mock_evidence",
+        "--outdir results/container_default_smoke",
+    ]
+    apptainer_reference_safe_required = [
+        "%files",
+        "bin /opt/GeneFam-Pipeline/bin",
+        "configs /opt/GeneFam-Pipeline/configs",
+        "envs /opt/GeneFam-Pipeline/envs",
+        "workflows /opt/GeneFam-Pipeline/workflows",
+        "schemas /opt/GeneFam-Pipeline/schemas",
+        "tests/fixtures /opt/GeneFam-Pipeline/tests/fixtures",
     ]
     linux_toolchain_required = [
         "name: GeneFamilyFlow",
@@ -133,6 +163,30 @@ def audit_container_materials(
             docker_text,
             docker_default_smoke_required,
             "Dockerfile default command runs the standard branch smoke inside the image.",
+        ),
+        (
+            "apptainer_definition_genefamilyflow_env",
+            apptainer_text,
+            apptainer_env_required,
+            "Apptainer.def creates and exposes the GeneFamilyFlow linux-64 Conda environment.",
+        ),
+        (
+            "apptainer_definition_usr_local_r",
+            apptainer_text,
+            apptainer_r_required,
+            "Apptainer.def links GeneFamilyFlow R to /usr/local/bin/R.",
+        ),
+        (
+            "apptainer_definition_default_standard_smoke",
+            apptainer_text,
+            apptainer_default_smoke_required,
+            "Apptainer.def runscript executes the default standard branch smoke inside the SIF.",
+        ),
+        (
+            "apptainer_definition_reference_safe_files",
+            apptainer_text,
+            apptainer_reference_safe_required,
+            "Apptainer.def copies only required source, config, workflow, schema, environment, and fixture paths rather than local Reference source material.",
         ),
         (
             "linux_env_full_toolchain",
@@ -215,6 +269,7 @@ def write_markdown(rows: list[dict[str, str]], out_path: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dockerfile", default=Path("Dockerfile"), type=Path)
+    parser.add_argument("--apptainer-def", default=Path("Apptainer.def"), type=Path)
     parser.add_argument("--linux-env", default=Path("envs/GeneFamilyFlow.linux-64.conda.yaml"), type=Path)
     parser.add_argument("--nextflow-config", default=Path("workflows/nextflow.config"), type=Path)
     parser.add_argument("--dockerignore", default=Path(".dockerignore"), type=Path)
@@ -230,6 +285,7 @@ def main() -> None:
 
     rows = audit_container_materials(
         dockerfile=args.dockerfile,
+        apptainer_def=args.apptainer_def,
         linux_env=args.linux_env,
         nextflow_config=args.nextflow_config,
         dockerignore=args.dockerignore,

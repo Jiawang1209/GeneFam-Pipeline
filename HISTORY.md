@@ -34,6 +34,62 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 22:20 - Add Reference-safe Apptainer definition
+
+Context:
+- The active `/goal` keeps Docker/Apptainer reproducibility as the final packaging stage.
+- Static container materials already covered Dockerfile, Linux Conda environment, Nextflow container profiles, and `.dockerignore`.
+- The repository did not yet include an Apptainer-native definition file, so the Apptainer route depended only on building a SIF from the local Docker daemon image.
+
+Decisions:
+- Add `Apptainer.def` as a first-class, auditable Apptainer-native build contract.
+- Keep the definition Reference-safe by copying only `bin`, `configs`, `envs`, `workflows`, `schemas`, and `tests/fixtures` into `/opt/GeneFam-Pipeline`.
+- Keep `/usr/local/bin/R` linked to the `GeneFamilyFlow` R binary inside Apptainer, matching the Docker and host plotting contract.
+- Keep the default Apptainer runscript aligned with the Docker default standard smoke, writing `results/container_default_smoke`.
+- Add `*.sif` to `.gitignore` so locally built Apptainer images are not accidentally committed.
+
+Added:
+- `Apptainer.def`
+- Static container-materials audit checks for `apptainer_definition_genefamilyflow_env`, `apptainer_definition_usr_local_r`, `apptainer_definition_default_standard_smoke`, and `apptainer_definition_reference_safe_files`.
+- Documentation for `apptainer build --force genefam-pipeline_latest.sif Apptainer.def`.
+- Regression tests for the Apptainer definition contract and `.sif` ignore rule.
+
+Modified:
+- `.gitignore`
+- `README.md`
+- `bin/genefam/audit_container_materials.py`
+- `bin/genefam/audit_objective_completion.py`
+- `docs/release_audit.md`
+- `docs/runtime_environment.md`
+- `tests/test_audit_container_materials.py`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_container_materials.py -q` first failed because `audit_container_materials()` did not accept or audit `apptainer_def`.
+- `python -m pytest tests/test_runtime_environment_files.py::test_readme_current_status_matches_release_evidence tests/test_runtime_environment_files.py::test_runtime_environment_documents_native_apptainer_definition tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` first failed because the docs did not mention `Apptainer.def`.
+- `python -m pytest tests/test_audit_objective_completion.py::test_build_objective_audit_marks_goal_items_and_runtime_blockers -q` first failed because the Docker/Apptainer objective-audit evidence did not mention `Apptainer.def`.
+- `python -m pytest tests/test_runtime_environment_files.py::test_gitignore_excludes_container_image_artifacts -q` first failed because `.gitignore` did not ignore `*.sif`.
+- `python -m pytest tests/test_audit_container_materials.py tests/test_runtime_environment_files.py::test_readme_current_status_matches_release_evidence tests/test_runtime_environment_files.py::test_runtime_environment_documents_native_apptainer_definition tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` passed with 7 tests.
+- `python -m pytest tests/test_runtime_environment_files.py::test_gitignore_excludes_container_image_artifacts tests/test_audit_reference_governance.py -q` passed with 5 tests.
+- `python -m pytest tests -q` passed with 480 tests.
+- `python bin/genefam/audit_container_materials.py --outdir results/container_materials` passed with 12 static container-material checks.
+- `bash scripts/run_local_acceptance.sh` completed; release gate reported `Release ready: true`, `Required failed: 0`, `Optional failed: 2`; local acceptance remains blocked only by the final-stage Docker/Apptainer runtime availability.
+
+Commit:
+- hash: pending
+- message: pending
+- files: Apptainer definition, container audits, objective audit, runtime docs, gitignore, tests, and history
+
+Next:
+- Backfill this entry with the commit hash after committing.
+- When Docker/Apptainer commands are available, run `bash results/readiness/runtime_bootstrap.sh` to build images, run container profile smokes, and clear the final-stage blocker.
+
 ## 2026-06-27 22:00 - Make delivery bundle paths clickable and audited
 
 Context:

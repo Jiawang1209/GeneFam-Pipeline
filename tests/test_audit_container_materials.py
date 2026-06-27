@@ -8,6 +8,7 @@ from bin.genefam.audit_container_materials import audit_container_materials
 def test_audit_container_materials_passes_repository_contracts():
     rows = audit_container_materials(
         dockerfile=Path("Dockerfile"),
+        apptainer_def=Path("Apptainer.def"),
         linux_env=Path("envs/GeneFamilyFlow.linux-64.conda.yaml"),
         nextflow_config=Path("workflows/nextflow.config"),
         dockerignore=Path(".dockerignore"),
@@ -24,6 +25,10 @@ def test_audit_container_materials_passes_repository_contracts():
         "dockerfile_genefamilyflow_env",
         "dockerfile_usr_local_r",
         "dockerfile_default_standard_smoke",
+        "apptainer_definition_genefamilyflow_env",
+        "apptainer_definition_usr_local_r",
+        "apptainer_definition_default_standard_smoke",
+        "apptainer_definition_reference_safe_files",
         "linux_env_full_toolchain",
         "nextflow_container_profiles",
         "container_image_params",
@@ -42,6 +47,7 @@ def test_audit_container_materials_reports_missing_required_contract(tmp_path):
 
     rows = audit_container_materials(
         dockerfile=dockerfile,
+        apptainer_def=tmp_path / "Apptainer.def",
         linux_env=env,
         nextflow_config=config,
         dockerignore=tmp_path / ".dockerignore",
@@ -50,10 +56,14 @@ def test_audit_container_materials_reports_missing_required_contract(tmp_path):
     failed = {row["check"]: row for row in rows if row["status"] == "failed"}
     assert "dockerfile_genefamilyflow_env" in failed
     assert "dockerfile_default_standard_smoke" in failed
+    assert "apptainer_definition_genefamilyflow_env" in failed
+    assert "apptainer_definition_default_standard_smoke" in failed
+    assert "apptainer_definition_reference_safe_files" in failed
     assert "linux_env_full_toolchain" in failed
     assert "nextflow_container_profiles" in failed
     assert "dockerignore_build_context" in failed
     assert "GeneFamilyFlow.linux-64.conda.yaml" in failed["dockerfile_genefamilyflow_env"]["note"]
+    assert "Bootstrap: docker" in failed["apptainer_definition_genefamilyflow_env"]["note"]
     assert "jcvi" in failed["linux_env_full_toolchain"]["note"]
     assert "work/" in failed["dockerignore_build_context"]["note"]
 
@@ -108,6 +118,27 @@ def test_audit_container_materials_reports_reference_backed_example_hmm_profiles
         ".git\n.nextflow*\nwork/\nresults/\n__pycache__/\n.pytest_cache/\nReference/\n",
         encoding="utf-8",
     )
+    apptainer_def = tmp_path / "Apptainer.def"
+    apptainer_def.write_text(
+        "Bootstrap: docker\n"
+        "From: mambaorg/micromamba:1.5.10\n"
+        "%files\n"
+        "    envs/GeneFamilyFlow.linux-64.conda.yaml /tmp/GeneFamilyFlow.linux-64.conda.yaml\n"
+        "    bin /opt/GeneFam-Pipeline/bin\n"
+        "    configs /opt/GeneFam-Pipeline/configs\n"
+        "    workflows /opt/GeneFam-Pipeline/workflows\n"
+        "    tests/fixtures /opt/GeneFam-Pipeline/tests/fixtures\n"
+        "%post\n"
+        "    micromamba create -y -f /tmp/GeneFamilyFlow.linux-64.conda.yaml\n"
+        "    ln -sf /opt/conda/envs/GeneFamilyFlow/bin/R /usr/local/bin/R\n"
+        "%environment\n"
+        "    export PATH=/opt/conda/envs/GeneFamilyFlow/bin:$PATH\n"
+        "    export CONDA_DEFAULT_ENV=GeneFamilyFlow\n"
+        "%runscript\n"
+        "    cd /opt/GeneFam-Pipeline\n"
+        "    exec python bin/genefam/run_standard_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/container_default_smoke \"$@\"\n",
+        encoding="utf-8",
+    )
     example = tmp_path / "example.config.yaml"
     example.write_text(
         "gene_family:\n"
@@ -119,6 +150,7 @@ def test_audit_container_materials_reports_reference_backed_example_hmm_profiles
 
     rows = audit_container_materials(
         dockerfile=dockerfile,
+        apptainer_def=apptainer_def,
         linux_env=env,
         nextflow_config=config,
         dockerignore=dockerignore,
@@ -155,3 +187,4 @@ def test_audit_container_materials_cli_writes_tsv_and_markdown(tmp_path):
     assert "# Container Materials Audit" in markdown
     assert "container_image_params" in markdown
     assert "dockerfile_default_standard_smoke" in markdown
+    assert "apptainer_definition_default_standard_smoke" in markdown

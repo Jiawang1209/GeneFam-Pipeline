@@ -59,7 +59,7 @@ This writes:
 - `results/container_materials/container_materials.tsv`
 - `results/container_materials/container_materials.md`
 
-The container-materials audit is static: it verifies that the Dockerfile, Linux Conda environment, and Nextflow container profiles agree on `GeneFamilyFlow`, `/usr/local/bin/R`, and the configured Docker/Apptainer image names before a runtime engine is available.
+The container-materials audit is static: it verifies that the Dockerfile, `Apptainer.def`, Linux Conda environment, and Nextflow container profiles agree on `GeneFamilyFlow`, `/usr/local/bin/R`, and the configured Docker/Apptainer image names before a runtime engine is available.
 
 ## Docker
 
@@ -74,6 +74,14 @@ Build a local Apptainer image from the Docker image when Apptainer is available:
 ```bash
 apptainer build --force genefam-pipeline_latest.sif docker-daemon://genefam-pipeline:latest
 ```
+
+Or build the SIF through the checked-in Apptainer-native definition:
+
+```bash
+apptainer build --force genefam-pipeline_latest.sif Apptainer.def
+```
+
+`Apptainer.def` is Reference-safe: it copies only `bin`, `configs`, `envs`, `workflows`, `schemas`, and `tests/fixtures` into `/opt/GeneFam-Pipeline`, so local `Reference/` PDFs, paper data, and plotting templates are not pulled into the SIF build context.
 
 The Docker image creates the `GeneFamilyFlow` environment and links:
 

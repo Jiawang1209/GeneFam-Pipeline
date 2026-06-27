@@ -1,0 +1,32 @@
+Bootstrap: docker
+From: mambaorg/micromamba:1.5.10
+
+%files
+    envs/GeneFamilyFlow.linux-64.conda.yaml /tmp/GeneFamilyFlow.linux-64.conda.yaml
+    bin /opt/GeneFam-Pipeline/bin
+    configs /opt/GeneFam-Pipeline/configs
+    envs /opt/GeneFam-Pipeline/envs
+    workflows /opt/GeneFam-Pipeline/workflows
+    schemas /opt/GeneFam-Pipeline/schemas
+    tests/fixtures /opt/GeneFam-Pipeline/tests/fixtures
+
+%post
+    set -e
+    export MAMBA_ROOT_PREFIX=/opt/conda
+    micromamba create -y -f /tmp/GeneFamilyFlow.linux-64.conda.yaml
+    micromamba clean --all --yes
+    ln -sf /opt/conda/envs/GeneFamilyFlow/bin/R /usr/local/bin/R
+
+%environment
+    export PATH=/opt/conda/envs/GeneFamilyFlow/bin:$PATH
+    export CONDA_DEFAULT_ENV=GeneFamilyFlow
+    export MAMBA_ROOT_PREFIX=/opt/conda
+
+%runscript
+    cd /opt/GeneFam-Pipeline
+    exec python bin/genefam/run_standard_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --outdir results/container_default_smoke "$@"
+
+%test
+    cd /opt/GeneFam-Pipeline
+    /usr/local/bin/R --version
+    python bin/genefam/validate_config.py configs/example.config.yaml

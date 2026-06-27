@@ -304,8 +304,26 @@ def test_readme_current_status_matches_release_evidence():
     assert "runtime recovery" in readme
     assert "scripts/run_local_acceptance.sh" in readme
     assert 'docker run --rm -v "$PWD/results:/opt/GeneFam-Pipeline/results" genefam-pipeline:latest' in readme
+    assert "Apptainer.def" in readme
+    assert "apptainer build --force genefam-pipeline_latest.sif Apptainer.def" in readme
+    assert "Reference-safe" in readme
     assert "params.container_image" in readme
     assert "params.apptainer_image" in readme
+
+
+def test_runtime_environment_documents_native_apptainer_definition():
+    text = Path("docs/runtime_environment.md").read_text(encoding="utf-8")
+
+    assert "Apptainer.def" in text
+    assert "apptainer build --force genefam-pipeline_latest.sif Apptainer.def" in text
+    assert "Reference-safe" in text
+    assert "tests/fixtures" in text
+
+
+def test_gitignore_excludes_container_image_artifacts():
+    gitignore = Path(".gitignore").read_text(encoding="utf-8")
+
+    assert "\n*.sif\n" in f"\n{gitignore}\n"
 
 
 def test_standard_to_wgd_handoff_doc_links_identification_and_wgd_branches():
