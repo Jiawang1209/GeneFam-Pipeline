@@ -69,12 +69,11 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` completed; release gate reported `Release ready: true`, `Required failed: 0`, `Optional failed: 2`; local acceptance remains blocked only by Docker/Apptainer runtime availability.
 
 Commit:
-- hash: pending
-- message: pending
+- hash: 819ec81
+- message: feat: make runtime bootstrap container-aware
 - files: runtime bootstrap planner, bootstrap tests, and history
 
 Next:
-- Backfill this entry with the commit hash after committing.
 - When Docker/Apptainer commands are available, run `bash results/readiness/runtime_bootstrap.sh`; the script will now execute whichever container routes are available and still refresh release/local acceptance diagnostics.
 
 ## 2026-06-27 22:27 - Add native Apptainer build to runtime bootstrap
