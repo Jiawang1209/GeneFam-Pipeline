@@ -34,6 +34,49 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 22:33 - Make container bootstrap runtime-aware
+
+Context:
+- The generated runtime bootstrap now exposed both Docker-daemon-to-SIF and native `Apptainer.def` SIF build commands.
+- The generated shell still executed container commands linearly under `set -euo pipefail`.
+- If Docker was unavailable but Apptainer was available, the script would stop at `docker build` before reaching the Reference-safe native Apptainer build path.
+
+Decisions:
+- Keep the Docker image build, Docker default smoke, Docker profile smoke, Docker-daemon SIF conversion, native `Apptainer.def` SIF build, and Apptainer profile smoke in the generated bootstrap.
+- Guard Docker-specific steps behind `command -v docker`.
+- Guard Apptainer-specific steps behind `command -v apptainer`.
+- Run the Docker-daemon SIF conversion only when both Docker and Apptainer are available.
+- Keep final `run_release_checks.py` and `scripts/run_local_acceptance.sh` at the end so missing container runtimes still produce refreshed diagnostics and delivery summaries.
+
+Added:
+- Regression coverage requiring `runtime_bootstrap.sh` to include runtime checks and skip messages for missing Docker or Apptainer.
+- Markdown note that the generated shell checks `docker` and `apptainer` before running container-specific commands.
+
+Modified:
+- `bin/genefam/plan_runtime_bootstrap.py`
+- `tests/test_plan_runtime_bootstrap.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_plan_runtime_bootstrap.py::test_build_bootstrap_plan_groups_missing_commands_into_actionable_steps -q` first failed because the generated shell did not include Docker/Apptainer `command -v` guards.
+- `python -m pytest tests/test_plan_runtime_bootstrap.py -q` passed with 3 tests.
+- `python bin/genefam/plan_runtime_bootstrap.py --readiness results/readiness/command_readiness.tsv --outdir results/readiness` refreshed `runtime_bootstrap_plan.md` and `runtime_bootstrap.sh`.
+- `rg -n "checks whether|docker not found|apptainer not found|docker-daemon|Apptainer.def" results/readiness/runtime_bootstrap_plan.md results/readiness/runtime_bootstrap.sh` confirmed runtime-aware skip messages and both SIF build routes in generated outputs.
+- `python -m pytest tests -q` passed with 480 tests.
+- `bash scripts/run_local_acceptance.sh` completed; release gate reported `Release ready: true`, `Required failed: 0`, `Optional failed: 2`; local acceptance remains blocked only by Docker/Apptainer runtime availability.
+
+Commit:
+- hash: pending
+- message: pending
+- files: runtime bootstrap planner, bootstrap tests, and history
+
+Next:
+- Backfill this entry with the commit hash after committing.
+- When Docker/Apptainer commands are available, run `bash results/readiness/runtime_bootstrap.sh`; the script will now execute whichever container routes are available and still refresh release/local acceptance diagnostics.
+
 ## 2026-06-27 22:27 - Add native Apptainer build to runtime bootstrap
 
 Context:

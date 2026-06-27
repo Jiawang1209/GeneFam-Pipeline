@@ -27,6 +27,11 @@ def test_build_bootstrap_plan_groups_missing_commands_into_actionable_steps():
     assert "conda run -n GeneFamilyFlow iqtree2 --version || conda run -n GeneFamilyFlow iqtree --version" in plan["shell"]
     assert "docker build -t genefam-pipeline:latest ." in plan["shell"]
     assert "docker run --rm -v \"$PWD/results:/opt/GeneFam-Pipeline/results\" genefam-pipeline:latest" in plan["shell"]
+    assert "if command -v docker >/dev/null 2>&1; then" in plan["shell"]
+    assert "else\n  echo \"[GeneFam] docker not found; skipping Docker image build and Docker profile smoke.\"" in plan["shell"]
+    assert "if command -v apptainer >/dev/null 2>&1; then" in plan["shell"]
+    assert "echo \"[GeneFam] docker not found; skipping docker-daemon SIF build.\"" in plan["shell"]
+    assert "else\n  echo \"[GeneFam] apptainer not found; skipping Apptainer SIF builds and Apptainer profile smoke.\"" in plan["shell"]
     assert plan["shell"].index("docker build -t genefam-pipeline:latest .") < plan["shell"].index(
         "docker run --rm -v \"$PWD/results:/opt/GeneFam-Pipeline/results\" genefam-pipeline:latest"
     )
@@ -51,6 +56,7 @@ def test_build_bootstrap_plan_groups_missing_commands_into_actionable_steps():
     assert "genefam-pipeline_latest.sif" in plan["markdown"]
     assert "apptainer build --force genefam-pipeline_latest.sif Apptainer.def" in plan["markdown"]
     assert "Reference-safe" in plan["markdown"]
+    assert "The generated shell checks whether `docker` and `apptainer` are available before running container-specific commands." in plan["markdown"]
     assert "docker run --rm -v \"$PWD/results:/opt/GeneFam-Pipeline/results\" genefam-pipeline:latest" in plan["markdown"]
     assert "results/container_default_smoke" in plan["markdown"]
     assert "run_container_profile_smoke.py --profile docker" in plan["markdown"]
