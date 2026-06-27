@@ -52,6 +52,8 @@ def test_quickstart_documents_minimum_verified_run_path():
         "results/delivery_bundle/delivery_bundle.md",
         "results/delivery_bundle/figure_gallery.tsv",
         "results/delivery_bundle/figure_gallery.md",
+        "r_runtime_health",
+        "results/r_runtime_health/r_runtime_health.md",
         "audit_figure_gallery.py",
         "results/delivery_bundle_smoke/figure_gallery_audit.tsv",
         "results/delivery_bundle_smoke/figure_gallery_audit.md",

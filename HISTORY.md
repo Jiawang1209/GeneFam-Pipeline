@@ -34,6 +34,58 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 18:34 - Expose R runtime health in final delivery bundle
+
+Context:
+- The active `/goal` requires a final MVP handoff that exposes all report, visualization, software-version, QC, and reproducibility evidence.
+- `R runtime health` was already a release-check row, but the final delivery manifest did not yet expose the generated `results/r_runtime_health/r_runtime_health.md` file.
+- This made the final user-facing bundle weaker than the release gate for diagnosing `/usr/local/bin/R` startup health.
+
+Decisions:
+- Add `status/r_runtime_health` to the final delivery manifest near the release status rows.
+- Treat `status/r_runtime_health` as a required delivery-manifest handoff item, so the final manifest audit fails if it is removed.
+- Keep the row status driven by the release-check status for `R runtime health`.
+
+Added:
+- `status/r_runtime_health` row in generated delivery manifests.
+- Delivery-manifest audit requirement for `status/r_runtime_health`.
+- Tests that the final delivery bundle and audit require the R runtime health handoff row.
+
+Modified:
+- `bin/genefam/run_delivery_bundle.py`
+- `bin/genefam/audit_delivery_manifest.py`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_audit_delivery_manifest.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_quickstart_docs.py`
+- `docs/release_audit.md`
+- `README.md`
+- `docs/quickstart.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index tests/test_audit_delivery_manifest.py::test_delivery_manifest_audit_requires_core_handoff_items tests/test_audit_delivery_manifest.py::test_delivery_manifest_audit_cli_writes_outputs_for_complete_manifest -q` first failed because `r_runtime_health` was missing from generated manifests and required delivery-manifest items.
+- `python -m pytest tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` first failed because `docs/release_audit.md` did not explicitly state that the delivery manifest exposes `r_runtime_health`.
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index tests/test_audit_delivery_manifest.py::test_delivery_manifest_audit_requires_core_handoff_items tests/test_audit_delivery_manifest.py::test_delivery_manifest_audit_cli_writes_outputs_for_complete_manifest -q` passed with 3 tests.
+- `python -m pytest tests/test_run_delivery_bundle.py tests/test_audit_delivery_manifest.py tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_quickstart_docs.py::test_quickstart_documents_minimum_verified_run_path tests/test_runtime_environment_files.py -q` passed with 20 tests.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` refreshed the delivery bundle.
+- `python bin/genefam/audit_delivery_manifest.py --delivery-manifest results/delivery_bundle/delivery_manifest.tsv --out-tsv results/delivery_bundle/final_delivery_manifest_audit.tsv --out-md results/delivery_bundle/final_delivery_manifest_audit.md` exited 0; `final_delivery_manifest_audit.md` reported `Passed: 3`, `Failed: 0`, and `Complete: true`.
+- `rg -n "r_runtime_health|Passed:|Failed:|Complete:" results/delivery_bundle/delivery_manifest.tsv results/delivery_bundle/delivery_bundle.md results/delivery_bundle/final_delivery_manifest_audit.md` confirmed `r_runtime_health` appears in TSV and Markdown delivery outputs.
+- `python -m pytest tests -q` passed with 456 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 51`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `bash scripts/run_local_acceptance.sh` exited 0; `results/local_acceptance/local_acceptance_summary.md` reported all analysis/report/index/gallery/quickstart/delivery steps passed, with only `final_stage_blocker` blocked for Docker/Apptainer reproducibility.
+
+Commit:
+- hash: pending
+- message: pending
+- files: pending
+
+Next:
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
+
 ## 2026-06-27 18:22 - Add R runtime health release gate
 
 Context:

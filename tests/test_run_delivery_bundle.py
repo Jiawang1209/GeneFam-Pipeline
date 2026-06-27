@@ -24,6 +24,7 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
             "Nextflow mock MVP smoke\ttrue\tpassed\t0\tnextflow mock mvp\tNextflow mock MVP",
             "Nextflow standard manifest smoke\ttrue\tpassed\t0\tnextflow manifest\tmanifest config",
             "Nextflow standard single-tool smoke\ttrue\tpassed\t0\tnextflow single tool\tHMMER-only and DIAMOND-only routing",
+            "R runtime health\ttrue\tpassed\t0\tR health\t/usr/local/bin/R startup OK",
             "WGD event smoke\ttrue\tpassed\t0\twgd\talpha beta gamma theta",
             "delivery bundle figure gallery smoke\ttrue\tpassed\t0\tdelivery bundle smoke\tfigure gallery bundle smoke",
             "publication report audit\ttrue\tpassed\t0\tpublication report\tfigures interpreted",
@@ -249,6 +250,10 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         in manifest_text
     )
     assert (
+        "status\tr_runtime_health\tavailable\tresults/r_runtime_health/r_runtime_health.md\t/usr/local/bin/R startup health before R plotting smokes"
+        in manifest_text
+    )
+    assert (
         "runtime_recovery\tdocker_profile_smoke\tmissing\tresults/container_profile_smoke/docker/container_profile_smoke.md\toptional container profile diagnostic"
         in manifest_text
     )
@@ -308,6 +313,8 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "Docker/Apptainer reproducibility" in summary_text
     assert "final_stage_blocker" in summary_text
     assert "release_ready=true" in summary_text
+    assert "r_runtime_health" in summary_text
+    assert "results/r_runtime_health/r_runtime_health.md" in summary_text
     assert "results/container_profile_smoke/docker/container_profile_smoke.md" in summary_text
     assert "results/container_profile_smoke/apptainer/container_profile_smoke.md" in summary_text
 

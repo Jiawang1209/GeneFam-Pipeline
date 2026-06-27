@@ -15,6 +15,7 @@ VIRTUAL_PATH_PREFIXES = ("GeneFamilyFlow:",)
 REQUIRED_ITEMS = [
     ("status", "release_checks"),
     ("status", "release_ready"),
+    ("status", "r_runtime_health"),
     ("status", "objective_audit"),
     ("status", "final_stage_blocker"),
     ("status", "figure_gallery"),

@@ -240,6 +240,13 @@ def build_delivery_manifest(
         },
         {
             "section": "status",
+            "item": "r_runtime_health",
+            "status": _status_from_check(release_rows, "R runtime health"),
+            "path": "results/r_runtime_health/r_runtime_health.md",
+            "note": "/usr/local/bin/R startup health before R plotting smokes",
+        },
+        {
+            "section": "status",
             "item": "objective_audit",
             "status": "available",
             "path": "results/objective_audit/objective_audit.md",

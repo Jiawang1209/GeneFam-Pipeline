@@ -82,6 +82,9 @@ def test_delivery_manifest_audit_requires_core_handoff_items(tmp_path):
     assert "status:standard_report_index_audit:missing_item" in by_check[
         "delivery_manifest_required_items"
     ]["note"]
+    assert "status:r_runtime_health:missing_item" in by_check[
+        "delivery_manifest_required_items"
+    ]["note"]
     assert summarize_audit(rows) == {"passed": 2, "failed": 1, "complete": False}
 
 
@@ -96,6 +99,7 @@ def test_delivery_manifest_audit_cli_writes_outputs_for_complete_manifest(tmp_pa
             ["status", "release_checks", "available", str(existing), "ok"],
             ["status", "release_ready", "available", str(existing), "ok"],
             ["status", "objective_audit", "available", str(existing), "ok"],
+            ["status", "r_runtime_health", "available", str(existing), "ok"],
             ["status", "final_stage_blocker", "blocked", str(existing), "known final-stage blocker"],
             ["status", "figure_gallery", "available", str(existing), "ok"],
             ["status", "delivery_bundle_figure_gallery_smoke", "available", str(existing), "ok"],

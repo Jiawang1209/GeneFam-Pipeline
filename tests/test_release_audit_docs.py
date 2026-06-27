@@ -106,6 +106,8 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/delivery_bundle_smoke/delivery_manifest_audit.tsv" in text
     assert "results/delivery_bundle_smoke/delivery_manifest_audit.md" in text
     assert "required handoff items" in text
+    assert "r_runtime_health" in text
+    assert "delivery manifest exposes `r_runtime_health`" in text
     assert "standard_report_index_audit" in text
     assert "wgd_report_index_audit" in text
     assert "results/delivery_bundle/final_delivery_manifest_audit.tsv" in text
