@@ -73,7 +73,7 @@ Verification:
 - `rg -n "final reports|Report index audits" results/objective_audit/objective_audit.md` confirmed the high-level final-report objective still requires both report-index audits.
 
 Commit:
-- hash: pending
+- hash: 866af5315921f7d4a95c52e3a945231b9ca8fec5
 - message: `docs: document report index audits`
 - files: README, quickstart, release audit docs, doc tests, and history entry.
 
