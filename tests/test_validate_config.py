@@ -463,6 +463,16 @@ def test_validate_config_reports_identification_modules_require_pep_inputs():
     assert "modules.motif requires input.required.pep: true" in errors
 
 
+def test_validate_config_reports_domain_filtering_requires_identification():
+    config = _valid_base_config()
+    config["modules"]["identification"] = False
+    config["modules"]["domain_filtering"] = True
+
+    errors = validate_config(config)
+
+    assert "modules.domain_filtering requires modules.identification: true" in errors
+
+
 def test_validate_config_reports_family_summary_requires_pep_inputs():
     config = _valid_base_config()
     config["input"]["required"]["pep"] = False

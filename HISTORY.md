@@ -34,6 +34,46 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 09:24 - Require identification before domain filtering
+
+Context:
+- The active `/goal` requires a reliable standard identification branch before final MVP handoff.
+- The Nextflow standard branch builds HMMER/DIAMOND-style evidence first, then `DOMAIN_FILTER` merges that evidence into `family_candidates.tsv`.
+- A YAML config could enable `modules.domain_filtering` while disabling `modules.identification`, allowing an impossible standard-branch module combination to pass early validation.
+
+Decisions:
+- Require `modules.identification: true` whenever `modules.domain_filtering` is enabled.
+- Keep the rule in YAML preflight validation so invalid module combinations fail before workflow execution.
+
+Added:
+- Regression test that domain filtering reports a missing identification dependency.
+
+Modified:
+- `bin/genefam/validate_config.py`
+- `tests/test_validate_config.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_validate_config.py::test_validate_config_reports_domain_filtering_requires_identification -q` first failed because domain filtering did not report the missing identification dependency.
+- `python -m pytest tests/test_validate_config.py::test_validate_config_reports_domain_filtering_requires_identification tests/test_validate_config.py::test_validate_config_reports_identification_modules_require_pep_inputs -q` passed.
+- `python -m pytest tests/test_validate_config.py -q` passed with 38 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/manifest.example.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python -m pytest tests -q` passed with 412 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
+- hash: pending
+- message: `test: require identification for domain filtering`
+- files: domain-filtering config validation, regression tests, and history entry.
+
+Next:
+- Continue hardening module dependency validation and handoff evidence before the final container packaging stage.
+
 ## 2026-06-27 09:19 - Require family summary for expression integration
 
 Context:
