@@ -157,3 +157,20 @@ def test_load_event_metadata_rejects_events_missing_name(tmp_path):
 
     with pytest.raises(ValueError, match="WGD event entry 1 is missing required field: name"):
         load_event_metadata(events_config)
+
+
+def test_load_event_metadata_rejects_non_mapping_event_entries(tmp_path):
+    events_config = tmp_path / "wgd_events.yaml"
+    events_config.write_text(
+        "\n".join(
+            [
+                "wgd_events:",
+                "  - alpha",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="WGD event entry 1 must be a mapping"):
+        load_event_metadata(events_config)

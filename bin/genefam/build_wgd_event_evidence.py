@@ -90,6 +90,8 @@ def load_event_metadata(path: Path | None) -> dict[str, dict[str, str]]:
     events = data.get("wgd_events", []) or []
     metadata: dict[str, dict[str, str]] = {}
     for index, event in enumerate(events, start=1):
+        if not isinstance(event, dict):
+            raise ValueError(f"WGD event entry {index} must be a mapping")
         name = event.get("name")
         for field in EVENT_METADATA_REQUIRED_FIELDS:
             if not event.get(field):
