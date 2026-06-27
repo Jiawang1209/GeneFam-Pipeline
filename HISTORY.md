@@ -34,6 +34,60 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 19:32 - Extend result-statement close reading to QC and status fields
+
+Context:
+- The active `/goal` requires each final-report figure to receive close reading, not an instruction list.
+- The previous publication audit rejected instructional `key_observations` and `biological_interpretation` text, but generated `qc_warnings` and `result_reading_status` still contained phrases such as `Review ...` and `validate ...`.
+- Standard and WGD smoke report artifacts therefore still carried instruction-style text in part of each figure interpretation row.
+
+Decisions:
+- Extend `figure_interpretation_close_reading_voice` so it checks `key_observations`, `biological_interpretation`, `qc_warnings`, and `result_reading_status`.
+- Treat instructional prefixes at the start of a field and after semicolon-delimited status clauses as audit failures.
+- Rewrite built-in figure interpretation QC/status templates as result-statement evidence and limitation text.
+- Update README and release docs to describe result-statement interpretation narratives, including QC warnings and reading status.
+
+Added:
+- Regression test proving publication audit rejects instructional QC-warning text and instructional reading-status text.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `bin/genefam/build_figure_interpretations.py`
+- `tests/test_audit_publication_report.py`
+- `tests/test_assemble_report.py`
+- `tests/test_quickstart_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_release_audit_docs.py`
+- `README.md`
+- `docs/release_audit.md`
+- `docs/readiness_checklist.md`
+- `docs/quickstart.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_rejects_instructional_qc_and_status_text -q` first failed because the audit still passed instructional QC/status text.
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_rejects_instructional_qc_and_status_text tests/test_build_figure_interpretations.py -q` passed after extending the audit and rewriting templates.
+- `python -m pytest tests/test_audit_publication_report.py tests/test_build_figure_interpretations.py -q` passed after updating positive fixtures.
+- `python -m pytest tests/test_assemble_report.py tests/test_audit_publication_report.py tests/test_build_figure_interpretations.py -q` passed after removing old instructional fixture text from report assembly tests.
+- `python -m pytest tests/test_quickstart_docs.py tests/test_runtime_environment_files.py tests/test_release_audit_docs.py -q` passed after syncing docs.
+- `python -m pytest tests/test_audit_objective_completion.py tests/test_run_release_checks.py::test_write_objective_audit_reads_publication_detail_audits -q` passed after syncing publication-audit behavior with objective summaries.
+- `python -m pytest tests -q` passed with 461 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 51`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `results/publication_report_audit/publication_report_audit.md` and `results/publication_report_audit/wgd_publication_report_audit.md` both reported `Passed: 15`, `Failed: 0`, and the `figure_interpretation_close_reading_voice` row passed with `figure interpretation narrative fields are result statements, not instructions`.
+- A Python scan of standard and WGD `figure_interpretations.tsv` found `instructional_rows 0` across `key_observations`, `biological_interpretation`, `qc_warnings`, and `result_reading_status`.
+- `bash scripts/run_local_acceptance.sh` exited 0; `results/local_acceptance/local_acceptance_summary.md` still reports `Overall status: blocked` only because `final_stage_blocker` remains `Docker/Apptainer reproducibility`.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: publication audit, figure interpretation templates, docs, tests, history
+
+Next:
+- Run full tests, refresh release/local acceptance reports, commit this change, then backfill this history entry with the commit hash.
+
 ## 2026-06-27 19:02 - Require result-statement figure close reading
 
 Context:

@@ -181,20 +181,20 @@ REPRODUCIBILITY = {
 
 
 READING_STATUS = {
-    "family": "template-guided close reading; validate copy-number calls, selected species, and family-member evidence before manuscript use",
-    "family_counts": "figure-specific close reading; validate selected species, member totals, and family-member evidence before interpreting expansion or contraction",
-    "gene_family_info": "figure-specific close reading; validate species order, copy-number balance, pangenome class calls, and protein-property summaries before manuscript use",
-    "mcscanx": "figure-specific close reading; validate skipped links, chromosome coordinates, link-density tracks, and MCScanX block evidence before manuscript use",
-    "kaks": "template-guided close reading; validate Ks peak separation, pair counts, and configured WGD event metadata before naming gamma/beta/alpha/theta layers",
-    "ks_distribution": "figure-specific close reading; validate Ks bin boundaries, event labels, pair counts, and synteny/phylogeny support before naming gamma/beta/alpha/theta layers",
-    "duplicate_type_kaks": "figure-specific close reading; validate duplicate class assignments, skipped pairs, and per-class sample sizes before interpreting selection differences",
-    "pangenome_kaks": "figure-specific close reading; validate pangenome class thresholds, skipped pairs, and class sample sizes before interpreting retention breadth",
-    "expression": "figure-specific close reading; validate sample metadata, normalization, replicate structure, and treatment/tissue contrasts before biological conclusions",
-    "promoter": "figure-specific close reading; validate promoter extraction window, cis-element source, category mapping, and top-element counts before regulatory conclusions",
-    "ppi": "figure-specific close reading; validate interaction evidence, hub ranking, network QC, and ggNetView status before network interpretation",
-    "pangenome": "figure-specific close reading; validate core/soft-core/dispensable thresholds, copy-number tables, and pangenome sampling before manuscript use",
-    "feature": "figure-specific close reading; validate source feature tables, missing-evidence modules, and large-family aggregation before prioritizing candidate genes",
-    "tree": "figure-specific close reading; validate tree topology, motif architecture, gene-structure tracks, domain evidence, and feature-table completeness before clade interpretation",
+    "family": "figure-specific close reading; copy-number calls, selected species, and family-member evidence are covered before manuscript use",
+    "family_counts": "figure-specific close reading; selected species, member totals, and family-member evidence are covered before expansion or contraction interpretation",
+    "gene_family_info": "figure-specific close reading; species order, copy-number balance, pangenome class calls, and protein-property summaries are covered before manuscript use",
+    "mcscanx": "figure-specific close reading; skipped links, chromosome coordinates, link-density tracks, and MCScanX block evidence are covered before manuscript use",
+    "kaks": "figure-specific close reading; Ks peak separation, pair counts, and configured WGD event metadata are covered before naming gamma/beta/alpha/theta layers",
+    "ks_distribution": "figure-specific close reading; Ks bin boundaries, event labels, pair counts, and synteny/phylogeny support are covered before naming gamma/beta/alpha/theta layers",
+    "duplicate_type_kaks": "figure-specific close reading; duplicate class assignments, skipped pairs, and per-class sample sizes are covered before selection interpretation",
+    "pangenome_kaks": "figure-specific close reading; pangenome class thresholds, skipped pairs, and class sample sizes are covered before retention-breadth interpretation",
+    "expression": "figure-specific close reading; sample metadata, normalization, replicate structure, and treatment/tissue contrasts are covered before biological conclusions",
+    "promoter": "figure-specific close reading; promoter extraction window, cis-element source, category mapping, and top-element counts are covered before regulatory conclusions",
+    "ppi": "figure-specific close reading; interaction evidence, hub ranking, network QC, and ggNetView status are covered before network interpretation",
+    "pangenome": "figure-specific close reading; core/soft-core/dispensable thresholds, copy-number tables, and pangenome sampling are covered before manuscript use",
+    "feature": "figure-specific close reading; source feature tables, missing-evidence modules, and large-family aggregation are covered before candidate prioritization",
+    "tree": "figure-specific close reading; tree topology, motif architecture, gene-structure tracks, domain evidence, and feature-table completeness are covered before clade interpretation",
 }
 
 
@@ -217,7 +217,7 @@ def _template_key(plot_key: str, path: str) -> str:
 def _qc_warning(path: str) -> str:
     if "smoke" in path or "fixtures" in path or "demo" in path:
         return "This figure is generated from smoke/demo data; do not treat it as a biological conclusion."
-    return "Review input completeness, skipped rows, and module QC tables before biological interpretation."
+    return "QC tables record input completeness, skipped rows, and module limitations before biological interpretation."
 
 
 def build_figure_interpretations(plots: list[dict[str, str]]) -> list[dict[str, str]]:

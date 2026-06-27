@@ -184,9 +184,16 @@ def _instructional_reading_issues(rows: list[dict[str, str]]) -> list[str]:
     issues: list[str] = []
     for row in rows:
         figure_key = row.get("figure_key", "").strip() or "unknown"
-        for field in ["key_observations", "biological_interpretation"]:
+        for field in [
+            "key_observations",
+            "biological_interpretation",
+            "qc_warnings",
+            "result_reading_status",
+        ]:
             value = row.get(field, "").strip().lower()
-            if value.startswith(INSTRUCTIONAL_READING_PREFIXES):
+            if value.startswith(INSTRUCTIONAL_READING_PREFIXES) or any(
+                f"; {prefix}" in value for prefix in INSTRUCTIONAL_READING_PREFIXES
+            ):
                 issues.append(f"{figure_key}:{field}:instructional_text")
     return issues
 
@@ -436,7 +443,7 @@ def audit_publication_report(
             "figure_interpretation_close_reading_voice",
             not instructional_reading_issues and bool(detail_rows),
             str(figure_interpretations),
-            "figure observation and biological interpretation fields are result statements, not instructions"
+            "figure interpretation narrative fields are result statements, not instructions"
             if not instructional_reading_issues and detail_rows
             else "instructional interpretation text: "
             + ", ".join(instructional_reading_issues or ["no interpretation rows"]),
