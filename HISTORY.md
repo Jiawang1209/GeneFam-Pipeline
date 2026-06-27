@@ -73,7 +73,7 @@ Verification:
 - `rg -n "final reports|standard_report_index_audit|wgd_report_index_audit|achieved=19|missing=0" results/objective_audit/objective_audit.md results/handoff/handoff_report.md results/handoff/handoff_summary.tsv` confirmed objective and handoff evidence are synchronized.
 
 Commit:
-- hash: pending
+- hash: bc69057dc4aae9418996e80794a9610f7e67751b
 - message: `fix: sync handoff report audit evidence`
 - files: handoff report builder, release objective writer, tests, and history entry.
 
