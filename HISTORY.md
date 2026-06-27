@@ -11587,7 +11587,9 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` exited 0 and refreshed handoff, delivery bundle, release checks, report-index audits, quickstart, and local acceptance summaries; final-stage blocker remains Docker/Apptainer reproducibility.
 
 Commit:
-- pending; hash will be backfilled after the code commit.
+- hash: 87b0c510c9abd38034d9fe3d1a8c84dfca3f96f9
+- message: feat: audit delivery figure gallery links
+- files: figure gallery audit script, release checks, figure gallery audit tests, history
 
 Next:
 - Continue tightening release evidence so every paper-level handoff artifact is generated and independently audited.
