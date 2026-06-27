@@ -106,9 +106,9 @@ Verification:
 - `git status --short --untracked-files=all` no longer lists the local `data/hmm_profiles/PF00657.hmm` input after adding local input ignore rules.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
-- files: not committed yet
+- hash: 4ac6726
+- message: feat: build reference peptides from TAIR domains
+- files: TAIR domain reference generator, config validation, Chinese README guide, real 3-species template, tests, gitignore, and history
 
 Next:
 - Copy the local TAIR file to `data/domain_annotations/all.domains.txt`, keep `data/reference/GDSL_reference.pep.fa` prepared locally, and rerun `python bin/genefam/validate_config.py configs/my_3species.yaml --check-paths`.
