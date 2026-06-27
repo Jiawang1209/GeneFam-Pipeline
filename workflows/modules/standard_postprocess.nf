@@ -258,3 +258,27 @@ process ASSEMBLE_STANDARD_REPORT {
       --out final_report.md
     """
 }
+
+process BUILD_REPRODUCIBILITY_CODE {
+    tag "reproducibility code"
+    publishDir "${params.outdir}/report", mode: "copy", overwrite: true
+
+    input:
+    path config
+    path clean_species_manifest
+    path reference_manifest
+    path family_candidates
+
+    output:
+    path "reproducibility_code.md"
+
+    script:
+    """
+    python ${projectDir}/../bin/genefam/build_reproducibility_code.py \\
+      --config ${config} \\
+      --clean-species-manifest ${clean_species_manifest} \\
+      --reference-manifest ${reference_manifest} \\
+      --family-candidates ${family_candidates} \\
+      --out reproducibility_code.md
+    """
+}

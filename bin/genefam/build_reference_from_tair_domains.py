@@ -132,26 +132,47 @@ def write_ids(ids: list[str], out_path: Path) -> None:
     out_path.write_text("".join(f"{protein_id}\n" for protein_id in ids), encoding="utf-8")
 
 
+def resolve_output_paths(
+    out: Path | None,
+    ids_out: Path | None,
+    missing_out: Path | None,
+    hmm_id: str | None,
+    outdir: Path | None,
+) -> tuple[Path, Path | None, Path | None]:
+    if out is not None:
+        return out, ids_out, missing_out
+    if not hmm_id or outdir is None:
+        raise ValueError("Either --out or both --hmm-id and --outdir are required")
+    return (
+        outdir / f"{hmm_id}.reference.pep.fa",
+        ids_out or outdir / f"{hmm_id}.TAIR.ID",
+        missing_out or outdir / f"{hmm_id}.missing_ids.txt",
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--domains", required=True, type=Path, help="TAIR all.domains.txt file")
     parser.add_argument("--peptides", required=True, type=Path, help="Arabidopsis peptide FASTA")
     parser.add_argument("--terms", required=True, nargs="+", help="Domain terms such as PF00657 or GDSL_lipase")
-    parser.add_argument("--out", required=True, type=Path, help="Output reference peptide FASTA")
+    parser.add_argument("--out", default=None, type=Path, help="Output reference peptide FASTA")
     parser.add_argument("--ids-out", default=None, type=Path, help="Optional output protein ID list")
+    parser.add_argument("--hmm-id", default=None, help="HMM/PFAM ID used for automatic output names")
+    parser.add_argument("--outdir", default=None, type=Path, help="Output directory used with --hmm-id")
     parser.add_argument("--allow-missing", action="store_true", help="Write matched records even if some TAIR IDs are absent from the peptide FASTA")
     parser.add_argument("--missing-out", default=None, type=Path, help="Optional output missing gene ID list")
     args = parser.parse_args()
+    out, ids_out, missing_out = resolve_output_paths(args.out, args.ids_out, args.missing_out, args.hmm_id, args.outdir)
 
     reference_ids, records, missing = select_reference_records(args.domains, args.peptides, args.terms)
     if missing and not args.allow_missing:
         raise ValueError(f"Missing sequence IDs: {', '.join(missing)}")
-    write_fasta(records, args.out)
-    if args.ids_out:
-        write_ids(reference_ids, args.ids_out)
-    if args.missing_out:
-        write_ids(missing, args.missing_out)
-    print(f"Extracted {len(records)} reference peptide records to {args.out}")
+    write_fasta(records, out)
+    if ids_out:
+        write_ids(reference_ids, ids_out)
+    if missing_out:
+        write_ids(missing, missing_out)
+    print(f"Extracted {len(records)} reference peptide records to {out}")
     if missing:
         print(f"Missing {len(missing)} TAIR gene IDs from peptide FASTA")
 

@@ -62,6 +62,36 @@ def test_build_diamond_inputs_uses_reference_peptides_when_configured():
     ]
 
 
+def test_build_diamond_inputs_can_use_generated_reference_peptides_override():
+    manifest_rows = [{"species_id": "Arabidopsis_thaliana", "pep": "ath.clean.fa"}]
+    config = {"gene_family": {"reference_peptides": ""}}
+
+    assert build_diamond_inputs(
+        manifest_rows,
+        config,
+        reference_peptides_override="results/00_preprocess/reference/PF00657.reference.pep.fa",
+    ) == [
+        {
+            "species_id": "Arabidopsis_thaliana",
+            "pep": "ath.clean.fa",
+            "reference_peptides": "results/00_preprocess/reference/PF00657.reference.pep.fa",
+        }
+    ]
+
+
+def test_resolve_reference_override_rebases_generated_reference_path(tmp_path):
+    reference = tmp_path / "PF00657.reference.pep.fa"
+    reference.write_text(">AT1G06990\nMAAA\n", encoding="utf-8")
+
+    rows = build_diamond_inputs(
+        [{"species_id": "Arabidopsis_thaliana", "pep": "ath.clean.fa"}],
+        {"gene_family": {}},
+        reference_peptides_override=str(reference),
+    )
+
+    assert rows[0]["reference_peptides"] == str(reference)
+
+
 def test_build_diamond_inputs_respects_disabled_diamond_flag():
     manifest_rows = [{"species_id": "Arabidopsis_thaliana", "pep": "ath.pep.fa"}]
     config = {
@@ -110,7 +140,7 @@ def test_build_identification_inputs_cli_writes_hmmer_and_diamond_tables(tmp_pat
     completed = subprocess.run(
         [
             sys.executable,
-            "bin/genefam/build_identification_inputs.py",
+            str(Path.cwd() / "bin/genefam/build_identification_inputs.py"),
             "--config",
             str(config),
             "--species-manifest",
@@ -161,7 +191,7 @@ def test_build_identification_inputs_cli_writes_empty_disabled_tool_tables(tmp_p
     completed = subprocess.run(
         [
             sys.executable,
-            "bin/genefam/build_identification_inputs.py",
+            str(Path.cwd() / "bin/genefam/build_identification_inputs.py"),
             "--config",
             str(config),
             "--species-manifest",
@@ -177,6 +207,48 @@ def test_build_identification_inputs_cli_writes_empty_disabled_tool_tables(tmp_p
     assert completed.returncode == 0, completed.stderr
     assert (outdir / "hmmer_inputs.tsv").read_text(encoding="utf-8") == "species_id\tpep\thmm_id\thmm_profile\n"
     assert (outdir / "diamond_inputs.tsv").read_text(encoding="utf-8") == "species_id\tpep\treference_peptides\n"
+
+
+def test_build_identification_inputs_cli_writes_absolute_generated_reference_override(tmp_path):
+    manifest = tmp_path / "species_manifest.tsv"
+    manifest.write_text(
+        "species_id\tpep\tgff3\tcds\tgenome\n"
+        "Arabidopsis_thaliana\tath.clean.fa\tath.gff3\tath.cds.clean.fa\t\n",
+        encoding="utf-8",
+    )
+    config = tmp_path / "config.yaml"
+    config.write_text(
+        "gene_family:\n"
+        "  hmm_profiles: []\n"
+        "identification:\n"
+        "  use_hmmer: false\n"
+        "  use_diamond: true\n",
+        encoding="utf-8",
+    )
+    reference = tmp_path / "PF00657.reference.pep.fa"
+    reference.write_text(">AT1G06990\nMAAA\n", encoding="utf-8")
+    outdir = tmp_path / "inputs"
+
+    subprocess.run(
+        [
+            sys.executable,
+            str(Path.cwd() / "bin/genefam/build_identification_inputs.py"),
+            "--config",
+            str(config),
+            "--species-manifest",
+            str(manifest),
+            "--outdir",
+            str(outdir),
+            "--reference-peptides",
+            str(reference.name),
+        ],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert str(reference.resolve()) in (outdir / "diamond_inputs.tsv").read_text(encoding="utf-8")
 
 
 def test_example_config_builds_diamond_inputs_for_identification_branch(tmp_path):

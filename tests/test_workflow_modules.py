@@ -25,8 +25,27 @@ def test_identification_inputs_module_builds_hmmer_and_diamond_tables():
     assert "process BUILD_IDENTIFICATION_INPUTS" in module
     assert "build_identification_inputs.py" in module
     assert "--species-manifest ${species_manifest}" in module
+    assert "--reference-peptides ${reference_peptides}" in module
     assert 'path "identification_inputs/hmmer_inputs.tsv"' in module
     assert 'path "identification_inputs/diamond_inputs.tsv"' in module
+
+
+def test_preprocess_module_cleans_species_bank_and_builds_reference():
+    module = Path("workflows/modules/preprocess.nf").read_text(encoding="utf-8")
+
+    assert "process PREPROCESS_SPECIES" in module
+    assert "preprocess_species.py" in module
+    assert "--species-manifest ${species_manifest}" in module
+    assert "--outdir ." in module
+    assert 'path "species_manifest.raw.tsv"' in module
+    assert 'path "species_manifest.clean.tsv"' in module
+    assert 'path "species_bank_clean"' in module
+    assert "process BUILD_REFERENCE_FROM_TAIR_DOMAINS" in module
+    assert "build_reference_from_config.py" in module
+    assert "--species-manifest ${clean_species_manifest}" in module
+    assert "--outdir reference" in module
+    assert 'path "reference/*.reference.pep.fa"' in module
+    assert 'path "reference/reference_generation.tsv"' in module
 
 
 def test_config_validation_module_runs_strict_path_preflight():
@@ -140,6 +159,11 @@ def test_standard_postprocess_module_extracts_family_sequences_and_report_index(
     assert "--software-versions ${software_versions}" in module
     assert "--figure-interpretations ${figure_interpretations}" in module
     assert "--out final_report.md" in module
+    assert "process BUILD_REPRODUCIBILITY_CODE" in module
+    assert "build_reproducibility_code.py" in module
+    assert "--clean-species-manifest ${clean_species_manifest}" in module
+    assert "--reference-manifest ${reference_manifest}" in module
+    assert "--family-candidates ${family_candidates}" in module
 
 
 def test_main_workflow_wires_standard_identification_branch():
@@ -151,7 +175,9 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "validated_config_ch = VALIDATE_CONFIG.out" in workflow
     assert "if (asBooleanParam(params.mock_external_tools))" in workflow
     assert "include { BUILD_IDENTIFICATION_INPUTS } from './modules/identification_inputs.nf'" in workflow
+    assert "include { PREPROCESS_SPECIES; BUILD_REFERENCE_FROM_TAIR_DOMAINS } from './modules/preprocess.nf'" in workflow
     assert "BUILD_RUN_CONFIG_SNAPSHOT;" in workflow
+    assert "BUILD_REPRODUCIBILITY_CODE" in workflow
     assert "EXTRACT_FAMILY_SEQUENCES;" in workflow
     assert "BUILD_WGD_HANDOFF_MANIFEST;" in workflow
     assert "BUILD_STANDARD_REPORT_INDEX;" in workflow
@@ -173,8 +199,10 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "} from './modules/domain_filter.nf'" in workflow
     assert "include { FAMILY_SUMMARY } from './modules/family_summary.nf'" in workflow
     assert "} else if (params.run_identification) {" in workflow
-    assert "BUILD_IDENTIFICATION_INPUTS(validated_config_ch, PREPARE_SPECIES.out)" in workflow
-    assert "species_ids_ch = PREPARE_SPECIES.out" in workflow
+    assert "PREPROCESS_SPECIES(PREPARE_SPECIES.out)" in workflow
+    assert "BUILD_REFERENCE_FROM_TAIR_DOMAINS(validated_config_ch, PREPROCESS_SPECIES.out[1])" in workflow
+    assert "BUILD_IDENTIFICATION_INPUTS(validated_config_ch, PREPROCESS_SPECIES.out[1], BUILD_REFERENCE_FROM_TAIR_DOMAINS.out[0])" in workflow
+    assert "species_ids_ch = PREPROCESS_SPECIES.out[1]" in workflow
     assert "if (asBooleanParam(params.use_hmmer))" in workflow
     assert "if (asBooleanParam(params.use_diamond))" in workflow
     assert "HMMER_SEARCH(hmmer_inputs_ch)" in workflow
@@ -188,15 +216,20 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "joined_evidence_ch = MOCK_IDENTIFICATION_EVIDENCE.out" in workflow
     assert "DOMAIN_FILTER(joined_evidence_ch, final_rule_ch)" in workflow
     assert "CONCAT_FAMILY_CANDIDATES(candidate_tables_ch.collect())" in workflow
+    assert "BUILD_REPRODUCIBILITY_CODE(" in workflow
+    assert "validated_config_ch," in workflow
+    assert "PREPROCESS_SPECIES.out[1]," in workflow
+    assert "BUILD_REFERENCE_FROM_TAIR_DOMAINS.out[1]," in workflow
+    assert "CONCAT_FAMILY_CANDIDATES.out" in workflow
     assert "if (!asBooleanParam(params.standard_stop_after_family_candidates))" in workflow
-    assert "BUILD_RUN_CONFIG_SNAPSHOT(validated_config_ch, PREPARE_SPECIES.out)" in workflow
+    assert "BUILD_RUN_CONFIG_SNAPSHOT(validated_config_ch, PREPROCESS_SPECIES.out[1])" in workflow
     assert "BUILD_WGD_HANDOFF_MANIFEST(CONCAT_FAMILY_CANDIDATES.out)" in workflow
     assert "FAMILY_SUMMARY(CONCAT_FAMILY_CANDIDATES.out)" in workflow
-    assert "EXTRACT_FAMILY_SEQUENCES(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)" in workflow
+    assert "EXTRACT_FAMILY_SEQUENCES(CONCAT_FAMILY_CANDIDATES.out, PREPROCESS_SPECIES.out[1])" in workflow
     assert "if (asBooleanParam(params.run_promoter))" in workflow
     assert "EXTRACT_PROMOTERS(" in workflow
     assert "CONCAT_FAMILY_CANDIDATES.out," in workflow
-    assert "PREPARE_SPECIES.out," in workflow
+    assert "PREPROCESS_SPECIES.out[1]," in workflow
     assert "if (asBooleanParam(params.run_feature_summary))" in workflow
     assert "PLOT_TREE_FEATURES(" in workflow
     assert "PLOT_FEATURE_SUMMARY(" in workflow
@@ -657,12 +690,12 @@ def test_main_workflow_includes_remaining_standard_analysis_processes():
     assert "PARSE_MEME_MOTIFS" in workflow
     assert "PARSE_MEME_MOTIFS(" in workflow
     assert "PARSE_MEME_MOTIFS.out" in workflow
-    assert "EXTRACT_GENE_STRUCTURE(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)" in workflow
+    assert "EXTRACT_GENE_STRUCTURE(CONCAT_FAMILY_CANDIDATES.out, PREPROCESS_SPECIES.out[1])" in workflow
     assert "EXTRACT_GENE_STRUCTURE.out" in workflow
     assert "file(params.meme_txt)" in workflow
     assert "EXTRACT_CHROMOSOME_LOCATIONS" in workflow
     assert "SUBSET_EXPRESSION_MATRIX" in workflow
-    assert "EXTRACT_CHROMOSOME_LOCATIONS(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)" in workflow
+    assert "EXTRACT_CHROMOSOME_LOCATIONS(CONCAT_FAMILY_CANDIDATES.out, PREPROCESS_SPECIES.out[1])" in workflow
     assert "BUILD_STANDARD_REPORT_INDEX(" in workflow
     assert "motif_summary" in Path("workflows/modules/standard_postprocess.nf").read_text(encoding="utf-8")
     assert "--motif-summary ${motif_summary}" in Path("workflows/modules/standard_postprocess.nf").read_text(

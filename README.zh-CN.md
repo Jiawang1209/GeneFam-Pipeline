@@ -94,7 +94,7 @@ input:
   required:
     pep: true
     gff3: true
-    cds: false
+    cds: true
     genome: true
 
 species:
@@ -109,7 +109,16 @@ gene_family:
   hmm_profiles:
     - id: PF00657
       path: data/hmm_profiles/PF00657.hmm
-  reference_peptides: data/reference/GDSL_reference.pep.fa
+
+preprocess:
+  enabled: true
+  outdir: results/00_preprocess
+
+reference_generation:
+  enabled: true
+  source: tair_all_domains
+  domain_annotation: data/domain_annotations/all.domains.txt
+  reference_species: Arabidopsis_thaliana
 ```
 
 第一轮真实试跑，建议先开这些模块：
@@ -146,7 +155,7 @@ python bin/genefam/validate_config.py configs/my_3species.yaml --check-paths
 - 你选择的物种能不能找到
 - 每个物种是否有必须的 `pep` / `gff3` / `genome` / `cds`
 - HMM profile 是否存在
-- DIAMOND reference peptide 是否存在
+- `reference_generation.domain_annotation` 是否存在；DIAMOND reference peptide 会在 `00_preprocess` 中自动生成
 - 模块依赖是否合理
 - expression matrix、WGD event map 等路径是否存在
 
@@ -191,12 +200,6 @@ cp configs/real_3species.template.yaml configs/my_3species.yaml
 
 ```text
 data/hmm_profiles/PF00657.hmm
-data/reference/GDSL_reference.pep.fa
-```
-
-如果你已经有 TAIR 的 `all.domains.txt`，建议放在这里：
-
-```text
 data/domain_annotations/all.domains.txt
 ```
 
@@ -207,41 +210,52 @@ grep 'PF00657' all.domains.txt|awk -F '.' '{print $1}'|sort|uniq > PF00657.TAIR.
 seqkit grep -r -f PF00657.TAIR.ID AT.clean.pep.fasta -o PF00657.TAIR.ID.fa
 ```
 
-也就是说，先从 `all.domains.txt` 里筛出包含 `PF00657` 的拟南芥 TAIR gene ID，再从拟南芥蛋白 FASTA 中提取这些序列，生成 `data/reference/GDSL_reference.pep.fa`。这个生成出的 FASTA 才是后续 DIAMOND/BLAST 使用的 reference peptide。
+也就是说，先从 `all.domains.txt` 里筛出包含 `PF00657` 的拟南芥 TAIR gene ID，再从清洗后的拟南芥蛋白 FASTA 中提取这些序列。新版流程会自动生成：
+
+```text
+results/00_preprocess/species_manifest.clean.tsv
+results/00_preprocess/reference/PF00657.TAIR.ID
+results/00_preprocess/reference/PF00657.reference.pep.fa
+results/00_preprocess/reference/PF00657.missing_ids.txt
+```
+
+`PF00657.reference.pep.fa` 才是后续 DIAMOND/BLAST 使用的 reference peptide。
 
 模板里已经预留：
 
 ```yaml
-domain_annotation:
-  tair_all_domains: data/domain_annotations/all.domains.txt
+preprocess:
+  enabled: true
+  outdir: results/00_preprocess
 
 reference_generation:
+  enabled: true
   source: tair_all_domains
-  species_id: Arabidopsis_thaliana
-  peptides: data/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.pep.fa
-  all_domains: data/domain_annotations/all.domains.txt
-  domain_terms:
-    - PF00657
-    - GDSL_lipase/esterase
-  output: data/reference/GDSL_reference.pep.fa
-  ids_output: data/reference/GDSL_reference.ids.txt
+  domain_annotation: data/domain_annotations/all.domains.txt
+  reference_species: Arabidopsis_thaliana
 ```
 
-生成 reference peptide：
+如果你只想单独测试 reference 生成，可以先跑 preprocess，再用 clean manifest 生成 reference：
 
 ```bash
-mkdir -p data/reference
-python bin/genefam/build_reference_from_tair_domains.py \
-  --domains data/domain_annotations/all.domains.txt \
-  --peptides data/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.pep.fa \
-  --terms PF00657 \
-  --out data/reference/GDSL_reference.pep.fa \
-  --ids-out data/reference/GDSL_reference.ids.txt \
-  --allow-missing \
-  --missing-out data/reference/GDSL_reference.missing_ids.txt
+python bin/genefam/discover_species.py \
+  --config configs/my_3species.yaml \
+  --groups configs/species_groups.yaml \
+  --base-dir . \
+  --out results/00_preprocess/species_manifest.raw.tsv
+
+python bin/genefam/preprocess_species.py \
+  --species-manifest results/00_preprocess/species_manifest.raw.tsv \
+  --outdir results/00_preprocess
+
+python bin/genefam/build_reference_from_config.py \
+  --config configs/my_3species.yaml \
+  --species-manifest results/00_preprocess/species_manifest.clean.tsv \
+  --base-dir . \
+  --outdir results/00_preprocess/reference
 ```
 
-这个生成的 `GDSL_reference.pep.fa` 才是 `gene_family.reference_peptides` 使用的 DIAMOND query reference。`GDSL_reference.ids.txt` 等价于 Reference 里的 `PF00657.TAIR.ID`；如果 TAIR domain 注释版本和拟南芥 peptide FASTA 版本不完全一致，缺失的 TAIR gene ID 会写入 `GDSL_reference.missing_ids.txt`。`all.domains.txt` 和生成的 reference FASTA 都属于本地输入/派生数据，不要提交到 git。
+正式 Nextflow 主线会自动执行这三步，不需要你手工写 `gene_family.reference_peptides`。如果 TAIR domain 注释版本和拟南芥 peptide FASTA 版本不完全一致，缺失的 TAIR gene ID 会写入 `PF00657.missing_ids.txt`。`all.domains.txt` 和生成的 reference FASTA 都属于本地输入/派生数据，不要提交到 git。
 
 第一轮建议保持模板里的保守模块组合：打开 identification、domain_filtering、family_summary、phylogeny、chromosome_location 和 report；先不要打开 promoter_cis、ppi、synteny、kaks、duplication_retention。这样可以先确认物种名、GFF3 gene ID、蛋白 ID、HMM profile 和 reference peptide 都能对上。
 

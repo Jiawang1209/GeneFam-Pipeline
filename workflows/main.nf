@@ -2,6 +2,7 @@ nextflow.enable.dsl = 2
 
 include { PREPARE_SPECIES } from './modules/prepare_species.nf'
 include { VALIDATE_CONFIG } from './modules/config_validation.nf'
+include { PREPROCESS_SPECIES; BUILD_REFERENCE_FROM_TAIR_DOMAINS } from './modules/preprocess.nf'
 include { BUILD_IDENTIFICATION_INPUTS } from './modules/identification_inputs.nf'
 include { HMMER_SEARCH } from './modules/hmmer_search.nf'
 include { DIAMOND_SEARCH } from './modules/diamond_search.nf'
@@ -20,7 +21,8 @@ include {
     BUILD_STANDARD_REPORT_INDEX;
     COLLECT_SOFTWARE_VERSIONS;
     BUILD_FIGURE_INTERPRETATIONS;
-    ASSEMBLE_STANDARD_REPORT
+    ASSEMBLE_STANDARD_REPORT;
+    BUILD_REPRODUCIBILITY_CODE
 } from './modules/standard_postprocess.nf'
 include { MOCK_MVP } from './modules/mock_mvp.nf'
 include { ASSEMBLE_REPORT } from './modules/report.nf'
@@ -151,6 +153,7 @@ workflow {
         ASSEMBLE_WGD_REPORT.out.view { report -> "WGD final report: ${report}" }
     } else if (params.run_identification) {
         PREPARE_SPECIES(validated_config_ch, groups_ch)
+        PREPROCESS_SPECIES(PREPARE_SPECIES.out)
 
         final_rule_ch = Channel.value(params.final_rule)
         family_name_ch = Channel.value(params.gene_family)
@@ -165,9 +168,11 @@ workflow {
             MOCK_IDENTIFICATION_EVIDENCE(mock_evidence_ch)
             joined_evidence_ch = MOCK_IDENTIFICATION_EVIDENCE.out
         } else {
-            BUILD_IDENTIFICATION_INPUTS(validated_config_ch, PREPARE_SPECIES.out)
+            BUILD_REFERENCE_FROM_TAIR_DOMAINS(validated_config_ch, PREPROCESS_SPECIES.out[1])
+            BUILD_IDENTIFICATION_INPUTS(validated_config_ch, PREPROCESS_SPECIES.out[1], BUILD_REFERENCE_FROM_TAIR_DOMAINS.out[0])
+            BUILD_REFERENCE_FROM_TAIR_DOMAINS.out[1].view { manifest -> "Reference generation manifest: ${manifest}" }
 
-            species_ids_ch = PREPARE_SPECIES.out
+            species_ids_ch = PREPROCESS_SPECIES.out[1]
                 .splitCsv(header: true, sep: '\t')
                 .map { row -> row.species_id }
 
@@ -203,14 +208,21 @@ workflow {
         DOMAIN_FILTER(joined_evidence_ch, final_rule_ch)
         candidate_tables_ch = DOMAIN_FILTER.out.map { species_id, candidates -> candidates }
         CONCAT_FAMILY_CANDIDATES(candidate_tables_ch.collect())
+        BUILD_REPRODUCIBILITY_CODE(
+            validated_config_ch,
+            PREPROCESS_SPECIES.out[1],
+            BUILD_REFERENCE_FROM_TAIR_DOMAINS.out[1],
+            CONCAT_FAMILY_CANDIDATES.out
+        )
 
-        PREPARE_SPECIES.out.view { manifest -> "Species manifest: ${manifest}" }
+        PREPARE_SPECIES.out.view { manifest -> "Raw species manifest: ${manifest}" }
+        PREPROCESS_SPECIES.out[1].view { manifest -> "Clean species manifest: ${manifest}" }
         CONCAT_FAMILY_CANDIDATES.out.view { candidates -> "Family candidates: ${candidates}" }
 
         if (!asBooleanParam(params.standard_stop_after_family_candidates)) {
-            BUILD_RUN_CONFIG_SNAPSHOT(validated_config_ch, PREPARE_SPECIES.out)
+            BUILD_RUN_CONFIG_SNAPSHOT(validated_config_ch, PREPROCESS_SPECIES.out[1])
             FAMILY_SUMMARY(CONCAT_FAMILY_CANDIDATES.out)
-            EXTRACT_FAMILY_SEQUENCES(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
+            EXTRACT_FAMILY_SEQUENCES(CONCAT_FAMILY_CANDIDATES.out, PREPROCESS_SPECIES.out[1])
             BUILD_WGD_HANDOFF_MANIFEST(CONCAT_FAMILY_CANDIDATES.out)
             PREPARE_ALIGNMENT_INPUTS(family_name_ch, EXTRACT_FAMILY_SEQUENCES.out, aligner_ch, alignment_outdir_ch)
             RUN_ALIGNMENT(family_name_ch, aligner_ch, EXTRACT_FAMILY_SEQUENCES.out)
@@ -218,8 +230,8 @@ workflow {
             RUN_PHYLOGENY(family_name_ch, RUN_ALIGNMENT.out, tree_builder_ch)
             meme_txt_ch = Channel.value(file(params.meme_txt))
             PARSE_MEME_MOTIFS(meme_txt_ch, family_name_ch)
-            EXTRACT_GENE_STRUCTURE(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
-            EXTRACT_CHROMOSOME_LOCATIONS(CONCAT_FAMILY_CANDIDATES.out, PREPARE_SPECIES.out)
+            EXTRACT_GENE_STRUCTURE(CONCAT_FAMILY_CANDIDATES.out, PREPROCESS_SPECIES.out[1])
+            EXTRACT_CHROMOSOME_LOCATIONS(CONCAT_FAMILY_CANDIDATES.out, PREPROCESS_SPECIES.out[1])
             tree_domains_ch = Channel.value(params.filtered_domains ? file(params.filtered_domains) : "")
             PLOT_TREE_FEATURES(
                 RUN_PHYLOGENY.out,
@@ -233,7 +245,7 @@ workflow {
             if (asBooleanParam(params.run_promoter)) {
                 EXTRACT_PROMOTERS(
                     CONCAT_FAMILY_CANDIDATES.out,
-                    PREPARE_SPECIES.out,
+                    PREPROCESS_SPECIES.out[1],
                     Channel.value(params.promoter_upstream_bp),
                     Channel.value(params.promoter_downstream_bp)
                 )
@@ -341,7 +353,7 @@ workflow {
             COLLECT_SOFTWARE_VERSIONS()
             BUILD_FIGURE_INTERPRETATIONS(BUILD_PLOT_MANIFEST.out)
             BUILD_STANDARD_REPORT_INDEX(
-                PREPARE_SPECIES.out,
+                PREPROCESS_SPECIES.out[1],
                 BUILD_RUN_CONFIG_SNAPSHOT.out,
                 CONCAT_FAMILY_CANDIDATES.out,
                 FAMILY_SUMMARY.out,

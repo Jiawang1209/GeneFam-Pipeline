@@ -144,3 +144,39 @@ def test_build_reference_from_tair_domains_cli_can_report_and_allow_missing_ids(
 
     assert out_fasta.read_text(encoding="utf-8") == ">AT1G06990.1\nMAAA\n"
     assert missing_out.read_text(encoding="utf-8") == "AT4G16233\n"
+
+
+def test_build_reference_from_tair_domains_cli_can_name_outputs_from_hmm_id(tmp_path):
+    domains = tmp_path / "all.domains.txt"
+    domains.write_text(
+        "AT1G06990.1\t.\tPfam\tPF00657\tGDSL_lipase/esterase\t38\t347\tNull\tNull\tIPR001087\tGDSL lipase/esterase\n",
+        encoding="utf-8",
+    )
+    peptides = tmp_path / "Arabidopsis_thaliana.pep.clean.fa"
+    peptides.write_text(">AT1G06990\nMAAA\n", encoding="utf-8")
+    outdir = tmp_path / "00_preprocess" / "reference"
+
+    subprocess.run(
+        [
+            sys.executable,
+            "bin/genefam/build_reference_from_tair_domains.py",
+            "--domains",
+            str(domains),
+            "--peptides",
+            str(peptides),
+            "--terms",
+            "PF00657",
+            "--hmm-id",
+            "PF00657",
+            "--outdir",
+            str(outdir),
+            "--allow-missing",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert (outdir / "PF00657.reference.pep.fa").read_text(encoding="utf-8") == ">AT1G06990\nMAAA\n"
+    assert (outdir / "PF00657.TAIR.ID").read_text(encoding="utf-8") == "AT1G06990\n"
+    assert (outdir / "PF00657.missing_ids.txt").read_text(encoding="utf-8") == ""

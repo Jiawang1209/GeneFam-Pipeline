@@ -4,6 +4,7 @@ process BUILD_IDENTIFICATION_INPUTS {
     input:
     path config_file
     path species_manifest
+    path reference_peptides
 
     output:
     path "identification_inputs/hmmer_inputs.tsv"
@@ -14,6 +15,7 @@ process BUILD_IDENTIFICATION_INPUTS {
     python ${projectDir}/../bin/genefam/build_identification_inputs.py \\
       --config ${config_file} \\
       --species-manifest ${species_manifest} \\
+      --reference-peptides ${reference_peptides} \\
       --base-dir ${projectDir}/.. \\
       --outdir identification_inputs
     """

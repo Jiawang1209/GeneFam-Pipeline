@@ -18,17 +18,15 @@ def test_real_three_species_template_is_a_valid_non_mock_config():
         "Capsella_rubella",
     ]
     assert config["dev"]["mock_external_tools"] is False
-    assert config["domain_annotation"]["tair_all_domains"] == "data/domain_annotations/all.domains.txt"
+    assert config["input"]["required"]["cds"] is True
+    assert config["preprocess"] == {"enabled": True, "outdir": "results/00_preprocess"}
     assert config["reference_generation"] == {
+        "enabled": True,
         "source": "tair_all_domains",
-        "species_id": "Arabidopsis_thaliana",
-        "peptides": "data/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.pep.fa",
-        "all_domains": "data/domain_annotations/all.domains.txt",
-        "domain_terms": ["PF00657"],
-        "output": "data/reference/GDSL_reference.pep.fa",
-        "ids_output": "data/reference/GDSL_reference.ids.txt",
-        "missing_ids_output": "data/reference/GDSL_reference.missing_ids.txt",
+        "domain_annotation": "data/domain_annotations/all.domains.txt",
+        "reference_species": "Arabidopsis_thaliana",
     }
+    assert "reference_peptides" not in config["gene_family"]
     assert config["modules"]["phylogeny"] is True
     assert config["modules"]["promoter_cis"] is False
     assert config["modules"]["ppi"] is False

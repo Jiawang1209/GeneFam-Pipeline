@@ -1,0 +1,144 @@
+import csv
+import subprocess
+import sys
+from pathlib import Path
+
+from bin.genefam.preprocess_species import (
+    clean_sequence_records,
+    infer_gene_id,
+    parse_gff3_transcript_gene_map,
+    read_fasta_records,
+)
+
+
+def test_infer_gene_id_prefers_gff3_mapping_and_falls_back_to_common_patterns():
+    mapping = {"AT1G01010.2": "AT1G01010"}
+
+    assert infer_gene_id("AT1G01010.2|PACid:123", mapping) == ("AT1G01010.2", "AT1G01010", "gff3")
+    assert infer_gene_id("BraA01g000010.3C", {}) == ("BraA01g000010.3C", "BraA01g000010", "auto_suffix")
+    assert infer_gene_id("gene001.t1", {}) == ("gene001.t1", "gene001", "auto_suffix")
+    assert infer_gene_id("gene001-RA", {}) == ("gene001-RA", "gene001", "auto_suffix")
+    assert infer_gene_id("Zm00001d001234_T001", {}) == ("Zm00001d001234_T001", "Zm00001d001234", "auto_suffix")
+
+
+def test_parse_gff3_transcript_gene_map_reads_mrna_parent_relationships(tmp_path):
+    gff3 = tmp_path / "demo.gff3"
+    gff3.write_text(
+        "chr1\tTAIR\tgene\t1\t900\t.\t+\t.\tID=AT1G01010\n"
+        "chr1\tTAIR\tmRNA\t1\t900\t.\t+\t.\tID=AT1G01010.1;Parent=AT1G01010\n"
+        "chr1\tTAIR\tCDS\t1\t300\t.\t+\t0\tID=cds1;Parent=AT1G01010.1\n",
+        encoding="utf-8",
+    )
+
+    assert parse_gff3_transcript_gene_map(gff3) == {"AT1G01010.1": "AT1G01010"}
+
+
+def test_clean_sequence_records_selects_longest_pep_and_removes_terminal_stop(tmp_path):
+    pep = tmp_path / "demo.pep.fa"
+    pep.write_text(
+        ">AT1G01010.1|PACid:1\nMAA*\n"
+        ">AT1G01010.2|PACid:2\nMAAAA*\n"
+        ">gene001.t1\nMCC*\n",
+        encoding="utf-8",
+    )
+    cds = tmp_path / "demo.cds.fa"
+    cds.write_text(
+        ">AT1G01010.1|PACid:1\nATGGCTGCTTAA\n"
+        ">AT1G01010.2|PACid:2\nATGGCTGCTGCTGCTTAA\n"
+        ">gene001.t1\nATGTGTTGTTAA\n",
+        encoding="utf-8",
+    )
+    mapping = {"AT1G01010.1": "AT1G01010", "AT1G01010.2": "AT1G01010"}
+
+    cleaned_pep, cleaned_cds, transcript_rows, representative_rows, warnings = clean_sequence_records(
+        species_id="Demo_species",
+        pep_records=read_fasta_records(pep),
+        cds_records=read_fasta_records(cds),
+        transcript_gene_map=mapping,
+    )
+
+    assert cleaned_pep == [("AT1G01010", "MAAAA"), ("gene001", "MCC")]
+    assert cleaned_cds == [("AT1G01010", "ATGGCTGCTGCTGCTTAA"), ("gene001", "ATGTGTTGTTAA")]
+    assert [row["selected_transcript_id"] for row in representative_rows] == ["AT1G01010.2", "gene001.t1"]
+    assert {row["source"] for row in transcript_rows} == {"gff3", "auto_suffix"}
+    assert warnings == []
+
+
+def test_clean_sequence_records_matches_phytozome_pep_and_cds_header_attributes(tmp_path):
+    pep = tmp_path / "bra.pep.fa"
+    pep.write_text(
+        ">BrO_302V.01G000100.1.p pacid=52833220 transcript=BrO_302V.01G000100.1 locus=BrO_302V.01G000100\nMAA*\n",
+        encoding="utf-8",
+    )
+    cds = tmp_path / "bra.cds.fa"
+    cds.write_text(
+        ">BrO_302V.01G000100.1 pacid=52833220 polypeptide=BrO_302V.01G000100.1.p locus=BrO_302V.01G000100\nATGGCTTAA\n",
+        encoding="utf-8",
+    )
+
+    cleaned_pep, cleaned_cds, transcript_rows, representative_rows, warnings = clean_sequence_records(
+        species_id="Brassica_rapa",
+        pep_records=read_fasta_records(pep),
+        cds_records=read_fasta_records(cds),
+        transcript_gene_map={},
+    )
+
+    assert cleaned_pep == [("BrO_302V.01G000100", "MAA")]
+    assert cleaned_cds == [("BrO_302V.01G000100", "ATGGCTTAA")]
+    assert transcript_rows[0]["clean_transcript_id"] == "BrO_302V.01G000100.1"
+    assert representative_rows[0]["selected_transcript_id"] == "BrO_302V.01G000100.1"
+    assert warnings == []
+
+
+def test_preprocess_species_cli_writes_clean_manifest_and_audit_tables(tmp_path):
+    species_dir = tmp_path / "species_bank" / "Demo_species"
+    species_dir.mkdir(parents=True)
+    pep = species_dir / "Demo_species.pep.fa"
+    pep.write_text(">AT1G01010.1|PACid:1\nMAA*\n>AT1G01010.2|PACid:2\nMAAAA*\n", encoding="utf-8")
+    cds = species_dir / "Demo_species.cds.fa"
+    cds.write_text(
+        ">AT1G01010.1|PACid:1\nATGGCTGCTTAA\n>AT1G01010.2|PACid:2\nATGGCTGCTGCTGCTTAA\n",
+        encoding="utf-8",
+    )
+    gff3 = species_dir / "Demo_species.gff3"
+    gff3.write_text(
+        "chr1\tTAIR\tgene\t1\t900\t.\t+\t.\tID=AT1G01010\n"
+        "chr1\tTAIR\tmRNA\t1\t900\t.\t+\t.\tID=AT1G01010.1;Parent=AT1G01010\n"
+        "chr1\tTAIR\tmRNA\t1\t900\t.\t+\t.\tID=AT1G01010.2;Parent=AT1G01010\n",
+        encoding="utf-8",
+    )
+    manifest = tmp_path / "species_manifest.tsv"
+    manifest.write_text(
+        "species_id\tpep\tgff3\tcds\tgenome\n"
+        f"Demo_species\t{pep}\t{gff3}\t{cds}\t\n",
+        encoding="utf-8",
+    )
+    outdir = tmp_path / "00_preprocess"
+
+    subprocess.run(
+        [
+            sys.executable,
+            "bin/genefam/preprocess_species.py",
+            "--species-manifest",
+            str(manifest),
+            "--outdir",
+            str(outdir),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    clean_manifest = outdir / "species_manifest.clean.tsv"
+    with clean_manifest.open("r", encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle, delimiter="\t"))
+    assert rows[0]["pep"].endswith("species_bank_clean/Demo_species/Demo_species.pep.clean.fa")
+    assert rows[0]["cds"].endswith("species_bank_clean/Demo_species/Demo_species.cds.clean.fa")
+    assert (outdir / "species_manifest.raw.tsv").exists()
+    assert (outdir / "species_bank_clean/Demo_species/Demo_species.pep.clean.fa").read_text(encoding="utf-8") == (
+        ">AT1G01010\nMAAAA\n"
+    )
+    assert (outdir / "species_bank_clean/Demo_species/Demo_species.cds.clean.fa").exists()
+    assert (outdir / "species_bank_clean/Demo_species/transcript_gene_map.tsv").exists()
+    assert (outdir / "species_bank_clean/Demo_species/representative_transcripts.tsv").exists()
+    assert (outdir / "species_bank_clean/Demo_species/preprocess_warnings.tsv").exists()

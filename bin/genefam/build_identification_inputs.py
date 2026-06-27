@@ -84,10 +84,14 @@ def build_hmmer_inputs(manifest_rows: list[dict[str, str]], config: dict[str, An
     return rows
 
 
-def build_diamond_inputs(manifest_rows: list[dict[str, str]], config: dict[str, Any]) -> list[dict[str, str]]:
+def build_diamond_inputs(
+    manifest_rows: list[dict[str, str]],
+    config: dict[str, Any],
+    reference_peptides_override: str | None = None,
+) -> list[dict[str, str]]:
     if (config.get("identification", {}) or {}).get("use_diamond", True) is False:
         return []
-    reference_peptides = (config.get("gene_family", {}) or {}).get("reference_peptides")
+    reference_peptides = reference_peptides_override or (config.get("gene_family", {}) or {}).get("reference_peptides")
     if not reference_peptides:
         return []
     return [
@@ -114,12 +118,18 @@ def main() -> None:
     parser.add_argument("--species-manifest", required=True, type=Path)
     parser.add_argument("--outdir", required=True, type=Path)
     parser.add_argument("--base-dir", default=None, type=Path)
+    parser.add_argument("--reference-peptides", default=None, help="Generated reference peptide FASTA overriding YAML gene_family.reference_peptides")
     args = parser.parse_args()
     config = load_yaml(args.config)
     manifest_rows = read_tsv(args.species_manifest)
     manifest_rows, config = resolve_input_paths(manifest_rows, config, args.base_dir)
     write_tsv(build_hmmer_inputs(manifest_rows, config), HMMER_FIELDNAMES, args.outdir / "hmmer_inputs.tsv")
-    write_tsv(build_diamond_inputs(manifest_rows, config), DIAMOND_FIELDNAMES, args.outdir / "diamond_inputs.tsv")
+    reference_peptides_override = str(Path(args.reference_peptides).resolve()) if args.reference_peptides else None
+    write_tsv(
+        build_diamond_inputs(manifest_rows, config, reference_peptides_override=reference_peptides_override),
+        DIAMOND_FIELDNAMES,
+        args.outdir / "diamond_inputs.tsv",
+    )
 
 
 if __name__ == "__main__":

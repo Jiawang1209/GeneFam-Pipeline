@@ -155,6 +155,71 @@ Commit:
 Next:
 - Copy `all.domains.txt` into `data/domain_annotations/all.domains.txt`, generate `data/reference/GDSL_reference.pep.fa` with `build_reference_from_tair_domains.py`, then rerun `python bin/genefam/validate_config.py configs/my_3species.yaml --check-paths`.
 
+## 2026-06-28 00:46 - Add 00_preprocess and automatic PF reference generation
+
+Context:
+- User requested a generalized first-step species-bank preprocessing layer before HMMER and DIAMOND/BLAST.
+- The raw Arabidopsis peptide headers include suffixes such as `|PACid:...` and terminal `*` characters.
+- Brassica and Capsella use Phytozome/JGI-style FASTA attributes where peptide headers and CDS headers differ, for example peptide `...1.p` and CDS `...1`, with shared `transcript=`, `polypeptide=`, and `locus=` attributes.
+- User also requested that final analysis results include a single Markdown file containing the full command-level reproducibility code.
+
+Decisions:
+- Add a formal `00_preprocess` stage that writes directly under `results/00_preprocess`.
+- Keep default preprocessing rules internal rather than exposing fixed transcript suffix regexes in YAML.
+- Prefer GFF3 transcript-to-gene mapping and FASTA header attributes, then fall back to common transcript suffix patterns.
+- Select representative transcripts by longest peptide, remove terminal peptide `*`, and keep peptide/CDS selections synchronized.
+- Generate reference peptides automatically from `gene_family.hmm_profiles[0].id`, producing PF-named outputs such as `PF00657.reference.pep.fa`.
+- Add `reproducibility_code.md` as a report artifact recording command-level reproduction steps.
+
+Added:
+- `bin/genefam/preprocess_species.py`
+- `bin/genefam/build_reference_from_config.py`
+- `bin/genefam/build_reproducibility_code.py`
+- `workflows/modules/preprocess.nf`
+- `tests/test_preprocess_species.py`
+- `tests/test_build_reference_from_config.py`
+- `tests/test_build_reproducibility_code.py`
+
+Modified:
+- `workflows/main.nf`
+- `workflows/modules/identification_inputs.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/nextflow.config`
+- `bin/genefam/build_identification_inputs.py`
+- `bin/genefam/build_reference_from_tair_domains.py`
+- `bin/genefam/validate_config.py`
+- `configs/real_3species.template.yaml`
+- `README.zh-CN.md`
+- `tests/test_build_identification_inputs.py`
+- `tests/test_build_reference_from_tair_domains.py`
+- `tests/test_quickstart_docs.py`
+- `tests/test_real_3species_template.py`
+- `tests/test_validate_config.py`
+- `tests/test_workflow_modules.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_preprocess_species.py tests/test_build_reference_from_config.py tests/test_build_reference_from_tair_domains.py tests/test_build_identification_inputs.py -q` passed with 24 tests.
+- `python -m pytest tests/test_build_reproducibility_code.py tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_workflow_modules.py::test_preprocess_module_cleans_species_bank_and_builds_reference -q` passed with 4 tests.
+- `python -m pytest tests -q` passed with 505 tests.
+- `python bin/genefam/validate_config.py configs/real_3species.template.yaml --check-paths` returned `Configuration OK`.
+- Real 3-species preprocess generated clean peptide/CDS FASTA for Arabidopsis, Brassica, and Capsella with zero preprocess warnings.
+- Clean FASTA counts were Arabidopsis `27416` peptide/CDS records, Brassica `38746` peptide/CDS records, and Capsella `27682` peptide/CDS records.
+- Real PF00657 reference generation produced `113` TAIR gene IDs, `2` missing IDs, and `111` clean representative peptide records.
+- Real Nextflow run to family candidates completed with `PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH" nextflow run workflows/main.nf -c workflows/nextflow.config -profile activated --config configs/real_3species.template.yaml --groups configs/species_groups.yaml --run_identification true --use_hmmer true --use_diamond true --final_rule intersection --mock_external_tools false --standard_stop_after_family_candidates true --outdir results/real_3species_nf_test --preprocess_outdir results/00_preprocess`.
+- The real run wrote `results/real_3species_nf_test/tables/family_candidates.tsv` with `369` lines including the header and wrote `results/real_3species_nf_test/report/reproducibility_code.md`.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: not committed yet
+
+Next:
+- Extend the real run beyond `standard_stop_after_family_candidates` into family summary, sequence extraction, alignment, FastTree phylogeny, chromosome location, report assembly, and then optional heavier modules.
+
 ## 2026-06-27 22:40 - Gate runtime bootstrap shell syntax in release checks
 
 Context:

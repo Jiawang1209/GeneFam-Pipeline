@@ -181,20 +181,15 @@ def test_validate_config_check_paths_reports_missing_runtime_inputs(tmp_path):
 def test_validate_config_check_paths_reports_missing_reference_generation_inputs(tmp_path):
     config = _valid_base_config()
     config["reference_generation"] = {
+        "enabled": True,
         "source": "tair_all_domains",
-        "peptides": "data/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.pep.fa",
-        "all_domains": "data/domain_annotations/all.domains.txt",
-        "domain_terms": ["PF00657"],
-        "output": "data/reference/GDSL_reference.pep.fa",
+        "domain_annotation": "data/domain_annotations/all.domains.txt",
+        "reference_species": "Arabidopsis_thaliana",
     }
 
     errors = validate_config(config, check_paths=True, base_dir=tmp_path)
 
-    assert (
-        "reference_generation.peptides path does not exist: "
-        "data/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.pep.fa"
-    ) in errors
-    assert "reference_generation.all_domains path does not exist: data/domain_annotations/all.domains.txt" in errors
+    assert "reference_generation.domain_annotation path does not exist: data/domain_annotations/all.domains.txt" in errors
 
 
 def test_validate_config_check_paths_reports_invalid_manifest_columns(tmp_path):
