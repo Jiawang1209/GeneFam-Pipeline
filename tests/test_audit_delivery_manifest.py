@@ -41,7 +41,45 @@ def test_delivery_manifest_audit_requires_available_paths_to_exist(tmp_path):
     assert "paper_report:path:missing_file" in by_check["delivery_manifest_paths_exist"]["note"]
     assert "docker_profile_smoke" not in by_check["delivery_manifest_paths_exist"]["note"]
     assert "GeneFamilyFlow" not in by_check["delivery_manifest_paths_exist"]["note"]
-    assert summarize_audit(rows) == {"passed": 1, "failed": 1, "complete": False}
+    assert by_check["delivery_manifest_required_items"]["status"] == "failed"
+    assert "nextflow:nextflow_single_tool_smoke:missing_item" in by_check[
+        "delivery_manifest_required_items"
+    ]["note"]
+    assert summarize_audit(rows) == {"passed": 1, "failed": 2, "complete": False}
+
+
+def test_delivery_manifest_audit_requires_core_handoff_items(tmp_path):
+    existing = tmp_path / "report.md"
+    existing.write_text("# report\n", encoding="utf-8")
+    manifest = tmp_path / "delivery_manifest.tsv"
+    _write_manifest(
+        manifest,
+        [
+            ["status", "release_checks", "available", str(existing), "ok"],
+            ["status", "release_ready", "available", str(existing), "ok"],
+            ["status", "objective_audit", "available", str(existing), "ok"],
+            ["status", "final_stage_blocker", "blocked", str(existing), "known final-stage blocker"],
+            ["status", "figure_gallery", "available", str(existing), "ok"],
+            ["status", "delivery_bundle_figure_gallery_smoke", "available", str(existing), "ok"],
+            ["status", "publication_report_audit", "available", str(existing), "ok"],
+            ["status", "wgd_publication_report_audit", "available", str(existing), "ok"],
+            ["standard", "mock_mvp", "available", str(existing), "ok"],
+            ["nextflow", "nextflow_mock_mvp_smoke", "available", str(existing), "ok"],
+            ["wgd", "event_evidence", "available", str(existing), "ok"],
+            ["governance", "reference_gitignore", "available", str(existing), "ok"],
+            ["runtime_recovery", "local_acceptance", "available", str(existing), "ok"],
+            ["docs", "history", "available", str(existing), "ok"],
+        ],
+    )
+
+    rows = audit_delivery_manifest(manifest)
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["delivery_manifest_required_items"]["status"] == "failed"
+    assert "nextflow:nextflow_single_tool_smoke:missing_item" in by_check[
+        "delivery_manifest_required_items"
+    ]["note"]
+    assert summarize_audit(rows) == {"passed": 2, "failed": 1, "complete": False}
 
 
 def test_delivery_manifest_audit_cli_writes_outputs_for_complete_manifest(tmp_path):
@@ -52,7 +90,21 @@ def test_delivery_manifest_audit_cli_writes_outputs_for_complete_manifest(tmp_pa
         manifest,
         [
             ["status", "delivery_bundle", "available", str(existing), "ok"],
+            ["status", "release_checks", "available", str(existing), "ok"],
+            ["status", "release_ready", "available", str(existing), "ok"],
+            ["status", "objective_audit", "available", str(existing), "ok"],
             ["status", "final_stage_blocker", "blocked", str(existing), "known final-stage blocker"],
+            ["status", "figure_gallery", "available", str(existing), "ok"],
+            ["status", "delivery_bundle_figure_gallery_smoke", "available", str(existing), "ok"],
+            ["status", "publication_report_audit", "available", str(existing), "ok"],
+            ["status", "wgd_publication_report_audit", "available", str(existing), "ok"],
+            ["standard", "mock_mvp", "available", str(existing), "ok"],
+            ["nextflow", "nextflow_mock_mvp_smoke", "available", str(existing), "ok"],
+            ["nextflow", "nextflow_single_tool_smoke", "available", str(existing), "ok"],
+            ["wgd", "event_evidence", "available", str(existing), "ok"],
+            ["governance", "reference_gitignore", "available", str(existing), "ok"],
+            ["runtime_recovery", "local_acceptance", "available", str(existing), "ok"],
+            ["docs", "history", "available", str(existing), "ok"],
             ["runtime", "docker", "missing", "", "container runtime"],
         ],
     )
@@ -77,4 +129,5 @@ def test_delivery_manifest_audit_cli_writes_outputs_for_complete_manifest(tmp_pa
 
     assert completed.returncode == 0, completed.stderr
     assert "delivery_manifest_paths_exist\tpassed" in out_tsv.read_text(encoding="utf-8")
+    assert "delivery_manifest_required_items\tpassed" in out_tsv.read_text(encoding="utf-8")
     assert "Complete: true" in out_md.read_text(encoding="utf-8")

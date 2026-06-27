@@ -12,6 +12,23 @@ FIELDNAMES = ["check", "status", "evidence", "note"]
 REQUIRED_COLUMNS = ["section", "item", "status", "path", "note"]
 PATH_REQUIRED_STATUSES = {"available", "blocked"}
 VIRTUAL_PATH_PREFIXES = ("GeneFamilyFlow:",)
+REQUIRED_ITEMS = [
+    ("status", "release_checks"),
+    ("status", "release_ready"),
+    ("status", "objective_audit"),
+    ("status", "final_stage_blocker"),
+    ("status", "figure_gallery"),
+    ("status", "delivery_bundle_figure_gallery_smoke"),
+    ("status", "publication_report_audit"),
+    ("status", "wgd_publication_report_audit"),
+    ("standard", "mock_mvp"),
+    ("nextflow", "nextflow_mock_mvp_smoke"),
+    ("nextflow", "nextflow_single_tool_smoke"),
+    ("wgd", "event_evidence"),
+    ("governance", "reference_gitignore"),
+    ("runtime_recovery", "local_acceptance"),
+    ("docs", "history"),
+]
 
 
 def read_tsv(path: Path) -> list[dict[str, str]]:
@@ -73,10 +90,20 @@ def _path_issues(manifest: Path, rows: list[dict[str, str]]) -> list[str]:
     return issues
 
 
+def _required_item_issues(rows: list[dict[str, str]]) -> list[str]:
+    seen = {
+        (row.get("section", "").strip(), row.get("item", "").strip())
+        for row in rows
+        if row.get("section", "").strip() and row.get("item", "").strip()
+    }
+    return [f"{section}:{item}:missing_item" for section, item in REQUIRED_ITEMS if (section, item) not in seen]
+
+
 def audit_delivery_manifest(delivery_manifest: Path) -> list[dict[str, str]]:
     rows = read_tsv(delivery_manifest)
     column_issues = _required_column_issues(rows)
     path_issues = _path_issues(delivery_manifest, rows) if not column_issues else []
+    item_issues = _required_item_issues(rows) if not column_issues else []
     return [
         _row(
             "delivery_manifest_required_columns",
@@ -93,6 +120,14 @@ def audit_delivery_manifest(delivery_manifest: Path) -> list[dict[str, str]]:
             "delivery manifest available/blocked filesystem targets exist"
             if not path_issues
             else "missing, empty, or unresolved delivery manifest targets: " + ", ".join(path_issues),
+        ),
+        _row(
+            "delivery_manifest_required_items",
+            not item_issues,
+            str(delivery_manifest),
+            "delivery manifest includes required handoff items"
+            if not item_issues
+            else "missing required delivery manifest handoff items: " + ", ".join(item_issues),
         ),
     ]
 

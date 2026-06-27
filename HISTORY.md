@@ -209,6 +209,47 @@ Commit:
 Next:
 - Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
 
+## 2026-06-27 17:00 - Require core handoff items in delivery manifest audit
+
+Context:
+- The final delivery manifest now exposes baseline smoke rows such as `mock_mvp`, `nextflow_mock_mvp_smoke`, `nextflow_single_tool_smoke`, and `delivery_bundle_figure_gallery_smoke`.
+- The delivery manifest audit still only checked columns and filesystem paths, so a future edit could accidentally remove one of these critical handoff rows while leaving the audit green.
+- The active `/goal` requires a perfect MVP-level handoff, so critical report, runtime, governance, baseline smoke, and delivery rows must be enforced by the audit itself.
+
+Decisions:
+- Add a `delivery_manifest_required_items` audit check with a compact required handoff item list.
+- Keep existing path validation unchanged for `available` and `blocked` rows.
+- Document that delivery-manifest audit checks both paths and required handoff items.
+
+Added:
+- Required handoff item audit for release status, final blocker, figure gallery, baseline smoke, WGD evidence, Reference governance, local acceptance, and history rows.
+- Tests covering a missing required item and the complete-manifest CLI output.
+
+Modified:
+- `bin/genefam/audit_delivery_manifest.py`
+- `tests/test_audit_delivery_manifest.py`
+- `tests/test_release_audit_docs.py`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_delivery_manifest.py -q` first failed because `delivery_manifest_required_items` did not exist.
+- `python -m pytest tests/test_audit_delivery_manifest.py -q` then failed one older path-only test because the new required-item check also correctly failed its intentionally minimal manifest.
+- `python -m pytest tests/test_audit_delivery_manifest.py -q` passed with 3 tests after updating the old test expectation.
+- `python -m pytest tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` first failed because `docs/release_audit.md` did not mention required handoff items.
+- `python -m pytest tests/test_audit_delivery_manifest.py tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` passed with 4 tests after updating the release audit documentation.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: delivery manifest audit, delivery manifest audit tests, release audit docs, and history entry.
+
+Next:
+- Run full tests and release/local acceptance checks, then commit and backfill this history entry.
+
 ## 2026-06-27 15:51 - Surface Reference gitignore evidence in delivery bundle
 
 Context:
