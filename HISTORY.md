@@ -69,7 +69,7 @@ Verification:
 - `sed -n '1,8p' results/release_checks/release_checks.md && sed -n '1,8p' results/objective_audit/objective_audit.md` confirmed objective audit remains `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
 
 Commit:
-- hash: pending
+- hash: 06fc329c1ac2fdfc7f86b159af1d3b75381403b5
 - message: `fix: propagate local acceptance blocker to delivery bundle`
 - files: delivery bundle builder, delivery bundle test, and history entry.
 
