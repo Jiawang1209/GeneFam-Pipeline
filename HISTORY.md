@@ -73,7 +73,7 @@ Verification:
 - `sed -n '1,10p' results/objective_audit/objective_audit.md` confirmed objective audit remains `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
 
 Commit:
-- hash: pending
+- hash: 3e932de5d9ce969781365fe95df87c77131fce55
 - message: `test: add delivery figure gallery release smoke`
 - files: delivery bundle smoke script, release checks, release check tests, and history entry.
 
