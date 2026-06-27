@@ -102,11 +102,35 @@ def _required_item_issues(rows: list[dict[str, str]]) -> list[str]:
     return [f"{section}:{item}:missing_item" for section, item in REQUIRED_ITEMS if (section, item) not in seen]
 
 
+def _markdown_link_target(target: str) -> str:
+    return f"<{target}>" if any(character.isspace() for character in target) else target
+
+
+def _delivery_bundle_markdown_link_issues(manifest: Path, rows: list[dict[str, str]]) -> list[str]:
+    delivery_bundle_markdown = manifest.with_name("delivery_bundle.md")
+    if not delivery_bundle_markdown.exists():
+        return ["delivery_bundle.md:missing_markdown"]
+    text = delivery_bundle_markdown.read_text(encoding="utf-8")
+    issues: list[str] = []
+    for row_number, row in enumerate(rows, start=2):
+        item = row.get("item", "").strip() or f"row_{row_number}"
+        indexed_path = row.get("path", "").strip()
+        if not indexed_path:
+            continue
+        expected = f"[{item}]({_markdown_link_target(indexed_path)})"
+        if expected not in text:
+            issues.append(f"{item}:markdown_link:missing")
+    return issues
+
+
 def audit_delivery_manifest(delivery_manifest: Path) -> list[dict[str, str]]:
     rows = read_tsv(delivery_manifest)
     column_issues = _required_column_issues(rows)
     path_issues = _path_issues(delivery_manifest, rows) if not column_issues else []
     item_issues = _required_item_issues(rows) if not column_issues else []
+    markdown_link_issues = (
+        _delivery_bundle_markdown_link_issues(delivery_manifest, rows) if not column_issues else []
+    )
     return [
         _row(
             "delivery_manifest_required_columns",
@@ -131,6 +155,14 @@ def audit_delivery_manifest(delivery_manifest: Path) -> list[dict[str, str]]:
             "delivery manifest includes required handoff items"
             if not item_issues
             else "missing required delivery manifest handoff items: " + ", ".join(item_issues),
+        ),
+        _row(
+            "delivery_bundle_markdown_links",
+            not markdown_link_issues,
+            str(delivery_manifest.with_name("delivery_bundle.md")),
+            "delivery bundle Markdown exposes manifest paths as clickable item links"
+            if not markdown_link_issues
+            else "missing delivery bundle Markdown links: " + ", ".join(markdown_link_issues),
         ),
     ]
 

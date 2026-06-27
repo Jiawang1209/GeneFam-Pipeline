@@ -608,6 +608,16 @@ def write_tsv(rows: list[dict[str, str]], out_path: Path) -> None:
         writer.writerows(rows)
 
 
+def _markdown_link_target(target: str) -> str:
+    return f"<{target}>" if any(character.isspace() for character in target) else target
+
+
+def _delivery_markdown_path_cell(item: str, path: str) -> str:
+    if not path:
+        return ""
+    return _markdown_link(item, _markdown_link_target(path))
+
+
 def write_markdown(rows: list[dict[str, str]], out_path: Path) -> None:
     blockers = next(
         (row["note"].replace("blocked_or_missing=", "") for row in rows if row["item"] == "objective_audit"),
@@ -626,7 +636,16 @@ def write_markdown(rows: list[dict[str, str]], out_path: Path) -> None:
         "|---|---|---|---|---|",
     ]
     for row in rows:
-        lines.append("| {section} | {item} | {status} | `{path}` | {note} |".format(**row))
+        path_cell = _delivery_markdown_path_cell(row["item"], row["path"])
+        lines.append(
+            "| {section} | {item} | {status} | {path} | {note} |".format(
+                section=row["section"],
+                item=row["item"],
+                status=row["status"],
+                path=path_cell,
+                note=row["note"],
+            )
+        )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 

@@ -34,6 +34,53 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 22:00 - Make delivery bundle paths clickable and audited
+
+Context:
+- The active `/goal` requires a polished MVP handoff package where reports, audits, figure galleries, and configuration evidence are easy to inspect.
+- `results/delivery_bundle/figure_gallery.md` already used clickable Markdown links, but the top-level `delivery_bundle.md` still rendered paths as backticked plain text.
+- The delivery manifest audit verified path existence and required items, but did not verify that the user-facing Markdown index exposed those paths as clickable links.
+
+Decisions:
+- Keep `delivery_manifest.tsv` machine-readable and unchanged.
+- Render every non-empty `delivery_bundle.md` path as a Markdown link labeled with the manifest `item`.
+- Preserve empty runtime paths for missing Docker/Apptainer commands as blank Markdown cells.
+- Add a strict `delivery_bundle_markdown_links` audit check so future regressions are release-visible.
+
+Added:
+- Regression test proving `delivery_bundle.md` contains clickable links for key handoff targets.
+- Regression test proving `audit_delivery_manifest.py` fails when delivery-bundle paths are rendered only as backticked plain text.
+- `delivery_bundle_markdown_links` audit row in delivery manifest audits.
+
+Modified:
+- `bin/genefam/run_delivery_bundle.py`
+- `bin/genefam/audit_delivery_manifest.py`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_audit_delivery_manifest.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index -q` first failed because `release_checks` was not rendered as a Markdown link.
+- `python -m pytest tests/test_audit_delivery_manifest.py::test_delivery_manifest_audit_fails_when_delivery_bundle_paths_are_not_clickable -q` first failed because `delivery_bundle_markdown_links` did not exist.
+- `python -m pytest tests/test_audit_delivery_manifest.py tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index -q` passed with 5 tests.
+- `python -m pytest tests -q` passed with 478 tests.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` refreshed the final delivery bundle.
+- `python bin/genefam/audit_delivery_manifest.py --delivery-manifest results/delivery_bundle/delivery_manifest.tsv --out-tsv results/delivery_bundle/final_delivery_manifest_audit.tsv --out-md results/delivery_bundle/final_delivery_manifest_audit.md` passed with 4 checks.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` passed the release gate with `Release ready: true`, `Required failed: 0`, and `Optional failed: 2`.
+- `bash scripts/run_local_acceptance.sh` completed; local acceptance remains `blocked` only by the final-stage Docker/Apptainer reproducibility item.
+
+Commit:
+- hash: pending
+- message: pending
+- files: delivery bundle generator, delivery manifest audit, tests, and history
+
+Next:
+- Backfill this entry with the commit hash after committing.
+- Continue the final-stage container/runtime reproducibility work when Docker/Apptainer are ready to verify.
+
 ## 2026-06-27 21:11 - Require figure-specific QC warnings in publication reports
 
 Context:

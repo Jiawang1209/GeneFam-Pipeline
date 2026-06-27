@@ -317,6 +317,16 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "results/r_runtime_health/r_runtime_health.md" in summary_text
     assert "results/container_profile_smoke/docker/container_profile_smoke.md" in summary_text
     assert "results/container_profile_smoke/apptainer/container_profile_smoke.md" in summary_text
+    assert "[release_checks](results/release_checks/release_checks.md)" in summary_text
+    assert (
+        "[publication_report_audit](results/publication_report_audit/publication_report_audit.md)"
+        in summary_text
+    )
+    assert (
+        "[paper_level_visual_report](results/nextflow_standard_feature_smoke/standard/report/final_report.md)"
+        in summary_text
+    )
+    assert "`results/release_checks/release_checks.md`" not in summary_text
 
     gallery_text = gallery.read_text(encoding="utf-8")
     assert gallery_text.startswith(
