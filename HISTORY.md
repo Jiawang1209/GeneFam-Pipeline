@@ -69,7 +69,7 @@ Verification:
 - `rg -n "YAML-driven species selection|validate example config|validate manifest config" results/objective_audit/objective_audit.md results/release_checks/release_checks.md` confirmed the objective audit still names both config validation checks as YAML-driven species-selection evidence.
 
 Commit:
-- hash: pending
+- hash: 99aa27be09bc5d3500036de5f98e32a878c4b5d9
 - message: `test: validate selected auto species only`
 - files: auto species-bank validation selection filtering, regression tests, and history entry.
 
