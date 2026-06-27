@@ -76,7 +76,7 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` exited 0 and printed `results/report_index_audit/standard_report_index_audit.md` and `results/report_index_audit/wgd_report_index_audit.md` in the primary handoff file list.
 
 Commit:
-- hash: pending
+- hash: 8b2e906b21a8f0d083369599c433582fe58f9e90
 - message: `feat: add report index audits to local acceptance`
 - files: local acceptance summary, local acceptance wrapper, quickstart docs, tests, and history entry.
 
