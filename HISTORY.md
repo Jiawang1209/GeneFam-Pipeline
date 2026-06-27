@@ -34,6 +34,49 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 10:15 - Require publication audit detail in objective audit
+
+Context:
+- The active `/goal` requires final reports to include per-figure close reading, software/R package versions, QC, reproducibility, and no draft placeholders.
+- `audit_publication_report.py` now checks those details, but `audit_objective_completion.py` only looked at the release-check names `publication report audit` and `WGD publication report audit`.
+- A future weakened publication audit could therefore leave the high-level objective audit too indirect.
+
+Decisions:
+- Make objective audit read standard and WGD publication audit detail rows.
+- Require both report families to pass the full publication-audit checklist, including `final_report_placeholder_text`.
+- Keep CLI defaults pointing at `results/publication_report_audit/publication_report_audit.tsv` and `results/publication_report_audit/wgd_publication_report_audit.tsv`.
+
+Added:
+- Regression test proving final reports are `missing` when the standard publication audit lacks `final_report_placeholder_text`.
+- Objective-audit note text that explicitly records no `TODO`/`TBD`/`placeholder` text for standard and WGD reports.
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_require_placeholder_text_checks_in_publication_audits -q` first failed with `TypeError: build_objective_audit() got an unexpected keyword argument 'publication_audit_rows'`.
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_require_placeholder_text_checks_in_publication_audits tests/test_audit_objective_completion.py::test_final_reports_note_names_complete_publication_report_closure tests/test_audit_objective_completion.py::test_build_objective_audit_marks_goal_items_and_runtime_blockers -q` passed.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 42 tests.
+- `python -m pytest tests -q` passed with 424 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+- `awk -F '\t' 'NR>1 {count[$2]++} END {for (k in count) print k, count[k]}' results/publication_report_audit/publication_report_audit.tsv` and the same command for `wgd_publication_report_audit.tsv` each reported `passed 10`.
+- `rg -n "final_report_placeholder_text" results/publication_report_audit/publication_report_audit.tsv results/publication_report_audit/wgd_publication_report_audit.tsv` confirmed both standard and WGD publication audits include the placeholder-text check.
+- `rg -n "final reports|no TODO|Publication audit detail" results/objective_audit/objective_audit.md` confirmed the high-level final-report objective now records the no-placeholder-text detail.
+
+Commit:
+- hash: pending
+- message: `test: require publication audit details for final reports`
+- files: objective audit detail gating, objective audit tests, and history entry.
+
+Next:
+- Continue final MVP hardening while keeping Docker/Apptainer verification as the final-stage external blocker.
+
 ## 2026-06-27 10:04 - Reject placeholder text in final reports
 
 Context:

@@ -10,6 +10,18 @@ from pathlib import Path
 
 FIELDNAMES = ["requirement", "status", "evidence", "note"]
 AVAILABLE_STATUSES = {"available", "available_in_conda"}
+PUBLICATION_AUDIT_CHECKS = [
+    "plot_files_exist",
+    "plot_file_format_valid",
+    "figure_interpretation_coverage",
+    "figure_interpretation_scope",
+    "figure_interpretation_detail",
+    "figure_output_paths_match_manifest",
+    "software_versions_present",
+    "figure_method_software_versions",
+    "final_report_embeds_publication_sections",
+    "final_report_placeholder_text",
+]
 
 
 def read_tsv(path: Path) -> list[dict[str, str]]:
@@ -27,6 +39,15 @@ def _readiness_statuses(rows: list[dict[str, str]]) -> dict[str, str]:
 
 def _all_passed(statuses: dict[str, str], checks: list[str]) -> bool:
     return all(statuses.get(check) == "passed" for check in checks)
+
+
+def _audit_statuses(rows: list[dict[str, str]] | None) -> dict[str, str]:
+    return {row["check"]: row["status"] for row in (rows or [])}
+
+
+def _failed_or_missing_audit_checks(rows: list[dict[str, str]] | None) -> list[str]:
+    statuses = _audit_statuses(rows)
+    return [check for check in PUBLICATION_AUDIT_CHECKS if statuses.get(check) != "passed"]
 
 
 def _available(statuses: dict[str, str], command: str) -> bool:
@@ -48,12 +69,36 @@ def _achieved_if(condition: bool, requirement: str, evidence: str, note: str) ->
 def build_objective_audit(
     release_rows: list[dict[str, str]],
     readiness_rows: list[dict[str, str]],
+    publication_audit_rows: list[dict[str, str]] | None = None,
+    wgd_publication_audit_rows: list[dict[str, str]] | None = None,
 ) -> list[dict[str, str]]:
     release = _release_statuses(release_rows)
     readiness = _readiness_statuses(readiness_rows)
     core_tools = ["nextflow", "/usr/local/bin/R", "hmmsearch", "diamond", "mafft", "iqtree2", "meme"]
     missing_core_tools = _missing_commands(readiness, core_tools)
     missing_container_tools = _missing_commands(readiness, ["docker", "apptainer"])
+    missing_publication_audit_checks = _failed_or_missing_audit_checks(publication_audit_rows)
+    missing_wgd_publication_audit_checks = _failed_or_missing_audit_checks(wgd_publication_audit_rows)
+    final_report_audit_details_ok = (
+        not missing_publication_audit_checks and not missing_wgd_publication_audit_checks
+    )
+    final_report_detail_note = (
+        "Publication audit detail checks passed for standard and WGD reports, including no TODO/TBD/placeholder text."
+        if final_report_audit_details_ok
+        else "Publication audit detail gaps: "
+        + "; ".join(
+            part
+            for part in [
+                "standard publication audit missing/pending: " + ", ".join(missing_publication_audit_checks)
+                if missing_publication_audit_checks
+                else "",
+                "WGD publication audit missing/pending: " + ", ".join(missing_wgd_publication_audit_checks)
+                if missing_wgd_publication_audit_checks
+                else "",
+            ]
+            if part
+        )
+    )
 
     rows = [
         _achieved_if(
@@ -300,10 +345,12 @@ def build_objective_audit(
                     "publication report audit",
                     "WGD publication report audit",
                 ],
-            ),
+            )
+            and final_report_audit_details_ok,
             "final reports",
             "standard branch smoke, Nextflow standard visualization smoke, Nextflow WGD event smoke, prepared WGD handoff example, quickstart report outputs, standard publication report audit, and WGD publication report audit",
-            "Final Markdown reports are produced for standard and WGD handoff paths from formal Nextflow standard visualization and WGD branch evidence, while publication audits verify valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, and complete per-figure close-reading text: input data, what the figure shows, key observations, biological interpretation, QC warnings, QC tables, method/software entries, software/R package versions, reproducibility commands, reading status, output paths, and registered plot files for both report families.",
+            "Final Markdown reports are produced for standard and WGD handoff paths from formal Nextflow standard visualization and WGD branch evidence, while publication audits verify valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, and complete per-figure close-reading text: input data, what the figure shows, key observations, biological interpretation, QC warnings, QC tables, method/software entries, software/R package versions, reproducibility commands, reading status, output paths, registered plot files, and no TODO/TBD/placeholder text for both report families. "
+            + final_report_detail_note,
         ),
         _achieved_if(
             _all_passed(release, ["pytest", "Reference governance audit"]),
@@ -363,10 +410,27 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--release-checks", required=True, type=Path)
     parser.add_argument("--readiness", required=True, type=Path)
+    parser.add_argument(
+        "--publication-audit",
+        default=Path("results/publication_report_audit/publication_report_audit.tsv"),
+        type=Path,
+    )
+    parser.add_argument(
+        "--wgd-publication-audit",
+        default=Path("results/publication_report_audit/wgd_publication_report_audit.tsv"),
+        type=Path,
+    )
     parser.add_argument("--outdir", default=Path("results/objective_audit"), type=Path)
     args = parser.parse_args()
 
-    rows = build_objective_audit(read_tsv(args.release_checks), read_tsv(args.readiness))
+    rows = build_objective_audit(
+        read_tsv(args.release_checks),
+        read_tsv(args.readiness),
+        publication_audit_rows=read_tsv(args.publication_audit) if args.publication_audit.exists() else None,
+        wgd_publication_audit_rows=read_tsv(args.wgd_publication_audit)
+        if args.wgd_publication_audit.exists()
+        else None,
+    )
     write_tsv(rows, args.outdir / "objective_audit.tsv")
     write_markdown(rows, args.outdir / "objective_audit.md")
 

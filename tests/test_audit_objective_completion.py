@@ -28,6 +28,27 @@ def _readiness_row(command, status="available_in_conda", path=None):
     }
 
 
+def _publication_audit_rows(omit=None):
+    omit = set(omit or [])
+    checks = [
+        "plot_files_exist",
+        "plot_file_format_valid",
+        "figure_interpretation_coverage",
+        "figure_interpretation_scope",
+        "figure_interpretation_detail",
+        "figure_output_paths_match_manifest",
+        "software_versions_present",
+        "figure_method_software_versions",
+        "final_report_embeds_publication_sections",
+        "final_report_placeholder_text",
+    ]
+    return [
+        {"check": check, "status": "passed", "evidence": check, "note": ""}
+        for check in checks
+        if check not in omit
+    ]
+
+
 def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
     release_rows = [
         _release_row("pytest"),
@@ -87,7 +108,12 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
         _readiness_row("apptainer", "missing", ""),
     ]
 
-    rows = build_objective_audit(release_rows, readiness_rows)
+    rows = build_objective_audit(
+        release_rows,
+        readiness_rows,
+        publication_audit_rows=_publication_audit_rows(),
+        wgd_publication_audit_rows=_publication_audit_rows(),
+    )
     by_requirement = {row["requirement"]: row for row in rows}
 
     assert by_requirement["Nextflow DSL2 workflow"]["status"] == "achieved"
@@ -687,7 +713,12 @@ def test_final_reports_note_names_complete_publication_report_closure():
         _readiness_row("apptainer", "missing", ""),
     ]
 
-    rows = build_objective_audit(release_rows, readiness_rows)
+    rows = build_objective_audit(
+        release_rows,
+        readiness_rows,
+        publication_audit_rows=_publication_audit_rows(),
+        wgd_publication_audit_rows=_publication_audit_rows(),
+    )
     final_report_row = {row["requirement"]: row for row in rows}["final reports"]
 
     assert final_report_row["status"] == "achieved"
@@ -702,6 +733,41 @@ def test_final_reports_note_names_complete_publication_report_closure():
     assert "QC warnings" in final_report_row["note"]
     assert "software/R package versions" in final_report_row["note"]
     assert "reproducibility commands" in final_report_row["note"]
+    assert "no TODO/TBD/placeholder text" in final_report_row["note"]
+
+
+def test_final_reports_require_placeholder_text_checks_in_publication_audits():
+    release_rows = [
+        _release_row("standard branch smoke"),
+        _release_row("Nextflow standard visualization smoke"),
+        _release_row("Nextflow WGD event smoke"),
+        _release_row("prepared WGD handoff example"),
+        _release_row("quickstart handoff"),
+        _release_row("publication report audit"),
+        _release_row("WGD publication report audit"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(
+        release_rows,
+        readiness_rows,
+        publication_audit_rows=_publication_audit_rows(omit={"final_report_placeholder_text"}),
+        wgd_publication_audit_rows=_publication_audit_rows(),
+    )
+    final_report_row = {row["requirement"]: row for row in rows}["final reports"]
+
+    assert final_report_row["status"] == "missing"
+    assert "standard publication audit missing/pending: final_report_placeholder_text" in final_report_row["note"]
 
 
 def test_standard_identification_branch_requires_domain_filter_smoke():
