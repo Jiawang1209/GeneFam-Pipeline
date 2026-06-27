@@ -95,6 +95,22 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         "standard\twgd_handoff_manifest\tavailable\tresults/quickstart/standard_smoke/tables/wgd_handoff_manifest.tsv\tstandard-to-WGD handoff checklist"
         in manifest_text
     )
+    assert (
+        "standard\tpaper_level_visual_report\tavailable\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md\tpaper-level standard visualization report with tree/motif/gene-structure/domain, MCScanX/circlize, promoter cis-elements, expression heatmap, copy number, feature summary, and ggNetView PPI"
+        in manifest_text
+    )
+    assert (
+        "standard\tpaper_level_plot_manifest\tavailable\tresults/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv\tregistered plot inventory for the full standard visualization branch"
+        in manifest_text
+    )
+    assert (
+        "standard\tpaper_level_figure_interpretations\tavailable\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md\tper-figure close reading for the full standard visualization branch"
+        in manifest_text
+    )
+    assert (
+        "standard\tpaper_level_software_versions\tavailable\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tsoftware and R package versions for the full standard visualization branch"
+        in manifest_text
+    )
     assert "input\tmanifest_config\tavailable\tconfigs/manifest.example.yaml\tmanifest-mode YAML example" in manifest_text
     assert (
         "input\tspecies_bank_config\tavailable\tconfigs/example.config.yaml\tspecies-bank YAML example with selected species"
@@ -194,6 +210,11 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     summary_text = summary.read_text(encoding="utf-8")
     assert "# GeneFam-Pipeline Delivery Bundle" in summary_text
     assert "standard report" in summary_text
+    assert "paper_level_visual_report" in summary_text
+    assert "results/nextflow_standard_feature_smoke/standard/report/final_report.md" in summary_text
+    assert "tree/motif/gene-structure/domain, MCScanX/circlize, promoter cis-elements, expression heatmap, copy number, feature summary, and ggNetView PPI" in summary_text
+    assert "results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md" in summary_text
+    assert "results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv" in summary_text
     assert "manifest-mode YAML example" in summary_text
     assert "species-bank YAML example with selected species" in summary_text
     assert "manifest-mode standard DSL2 smoke" in summary_text

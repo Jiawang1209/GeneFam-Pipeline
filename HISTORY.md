@@ -34,6 +34,51 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 11:50 - Expose paper-level standard visualization handoff in delivery bundle
+
+Context:
+- The active `/goal` requires the final handoff to make paper-level visualization results easy to find, including tree/motif/gene-structure/domain, MCScanX/circlize, promoter cis-elements, expression heatmap, copy number, feature summary, and ggNetView PPI.
+- `results/nextflow_standard_feature_smoke/standard/report/report_index.tsv` already exposed the full visualization report, plot manifest, figure interpretations, and software versions.
+- `results/delivery_bundle/delivery_bundle.md` still emphasized quickstart standard output and report audits, so a user could miss the full paper-level standard visualization package.
+
+Decisions:
+- Keep the quickstart standard report in the delivery bundle as the shortest reproducible handoff.
+- Add separate `standard` rows for the full paper-level visualization report, plot manifest, figure interpretations, and software/R package versions.
+- Treat these rows as user-facing delivery pointers, not as a new workflow branch.
+
+Added:
+- Delivery manifest row `standard/paper_level_visual_report`.
+- Delivery manifest row `standard/paper_level_plot_manifest`.
+- Delivery manifest row `standard/paper_level_figure_interpretations`.
+- Delivery manifest row `standard/paper_level_software_versions`.
+- Test assertions that the delivery bundle Markdown and TSV expose the full standard visualization package.
+
+Modified:
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_run_delivery_bundle.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py -q` first failed because `paper_level_visual_report` was absent from the delivery manifest.
+- `python -m pytest tests/test_run_delivery_bundle.py -q` passed after adding the full visualization handoff rows.
+- `python -m pytest tests -q` passed with 431 tests.
+- `python bin/genefam/run_delivery_bundle.py --outdir results/delivery_bundle` exited 0, and `rg -n "paper_level_visual_report|paper_level_plot_manifest|paper_level_figure_interpretations|paper_level_software_versions|nextflow_standard_feature_smoke" results/delivery_bundle/delivery_bundle.md results/delivery_bundle/delivery_manifest.tsv` confirmed the new handoff rows.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 47`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `bash scripts/run_local_acceptance.sh` exited 0 and printed `Final-stage blocker: Docker/Apptainer reproducibility.`
+- `sed -n '1,16p' results/local_acceptance/local_acceptance_summary.md` confirmed local acceptance keeps `Overall status: blocked` only for `final_stage_blocker`.
+- `sed -n '1,10p' results/objective_audit/objective_audit.md` confirmed objective audit remains `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
+- hash: pending
+- message: `feat: expose paper-level visualization handoff`
+- files: delivery bundle builder, delivery bundle test, and history entry.
+
+Next:
+- Continue final MVP hardening while Docker/Apptainer remain the final-stage runtime blocker.
+
 ## 2026-06-27 11:34 - Document local blocker status in Chinese README
 
 Context:
