@@ -195,6 +195,10 @@ def _versioned_components(software_rows: list[dict[str, str]]) -> set[str]:
     }
 
 
+def _version_kinds(version_rows: list[dict[str, str]]) -> set[str]:
+    return {row.get("kind", "").strip() for row in version_rows if row.get("kind", "").strip()}
+
+
 def _method_components(method_text: str) -> list[str]:
     normalized = method_text.replace("/usr/local/bin/R", " R ")
     components: list[str] = []
@@ -253,6 +257,9 @@ def audit_publication_report(
         and row.get("version", "").strip()
         and row.get("status", "").strip() not in {"", "missing"}
     ]
+    required_version_kinds = {"command", "R_package"}
+    version_kinds = _version_kinds(version_rows)
+    missing_version_kinds = sorted(required_version_kinds - version_kinds)
 
     missing_report_sections: list[str] = []
     for section in ["### Software Versions", "## Figure Result Interpretations"]:
@@ -320,9 +327,12 @@ def audit_publication_report(
         ),
         _row(
             "software_versions_present",
-            bool(version_rows),
+            bool(version_rows) and not missing_version_kinds,
             str(software_versions),
-            f"detected version rows={len(version_rows)}" if version_rows else "no detected software version rows",
+            f"detected version rows={len(version_rows)}; kinds={','.join(sorted(version_kinds))}"
+            if version_rows and not missing_version_kinds
+            else "missing required software version categories: "
+            + ", ".join(missing_version_kinds or ["no detected software version rows"]),
         ),
         _row(
             "figure_method_software_versions",

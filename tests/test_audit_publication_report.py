@@ -81,10 +81,10 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
         software_versions,
         ["component", "kind", "version", "status", "source"],
         [
-            ["FastTree", "tool", "2.1.11", "detected", "fasttree -help"],
-            ["MAFFT", "tool", "7.520", "detected", "mafft --version"],
+            ["FastTree", "command", "2.1.11", "detected", "fasttree -help"],
+            ["MAFFT", "command", "7.520", "detected", "mafft --version"],
             ["ggNetView", "R_package", "0.1.0", "detected", "R packageVersion"],
-            ["R", "runtime", "4.4.0", "detected", "/usr/local/bin/R --version"],
+            ["R", "command", "4.4.0", "detected", "/usr/local/bin/R --version"],
         ],
     )
     final_report.write_text(
@@ -94,10 +94,10 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
                 "### Software Versions",
                 "| component | kind | version | status | source |",
                 "| --- | --- | --- | --- | --- |",
-                "| FastTree | tool | 2.1.11 | detected | fasttree -help |",
-                "| MAFFT | tool | 7.520 | detected | mafft --version |",
+                "| FastTree | command | 2.1.11 | detected | fasttree -help |",
+                "| MAFFT | command | 7.520 | detected | mafft --version |",
                 "| ggNetView | R_package | 0.1.0 | detected | R packageVersion |",
-                "| R | runtime | 4.4.0 | detected | /usr/local/bin/R --version |",
+                "| R | command | 4.4.0 | detected | /usr/local/bin/R --version |",
                 "## Figure Result Interpretations",
                 "### tree_features: Tree, motif, gene-structure, and domain composite",
                 "- Input data: tree and feature tables",
@@ -202,7 +202,14 @@ def test_publication_report_audit_flags_missing_or_empty_plot_files(tmp_path):
             ["missing_plot", "tables/missing.tsv", "plot_missing.R", "run", "read", "plots/missing_plot.pdf"],
         ],
     )
-    _write_tsv(software_versions, ["component", "kind", "version", "status", "source"], [["R", "runtime", "4.4.0", "detected", "/usr/local/bin/R --version"]])
+    _write_tsv(
+        software_versions,
+        ["component", "kind", "version", "status", "source"],
+        [
+            ["R", "command", "4.4.0", "detected", "/usr/local/bin/R --version"],
+            ["ggplot2", "R_package", "4.0.3", "detected", "packageVersion(\"ggplot2\")"],
+        ],
+    )
     final_report.write_text(
         "\n".join(
             [
@@ -278,14 +285,22 @@ def test_publication_report_audit_cli_writes_markdown_and_tsv(tmp_path):
             "plots/family_counts.pdf",
         ]],
     )
-    _write_tsv(software_versions, ["component", "kind", "version", "status", "source"], [["R", "runtime", "4.4.0", "detected", "/usr/local/bin/R --version"]])
+    _write_tsv(
+        software_versions,
+        ["component", "kind", "version", "status", "source"],
+        [
+            ["R", "command", "4.4.0", "detected", "/usr/local/bin/R --version"],
+            ["ggplot2", "R_package", "4.0.3", "detected", "packageVersion(\"ggplot2\")"],
+        ],
+    )
     final_report.write_text(
         "\n".join(
             [
                 "### Software Versions",
                 "| component | kind | version | status | source |",
                 "| --- | --- | --- | --- | --- |",
-                "| R | runtime | 4.4.0 | detected | /usr/local/bin/R --version |",
+                "| R | command | 4.4.0 | detected | /usr/local/bin/R --version |",
+                "| ggplot2 | R_package | 4.0.3 | detected | packageVersion(\"ggplot2\") |",
                 "## Figure Result Interpretations",
                 "### family_counts: Family copy number",
                 "- Input data: Family member count table",
@@ -373,8 +388,9 @@ def test_publication_report_audit_requires_software_versions_embedded_in_final_r
         software_versions,
         ["component", "kind", "version", "status", "source"],
         [
-            ["FastTree", "tool", "2.1.11", "detected", "fasttree -help"],
-            ["R", "runtime", "4.4.0", "detected", "/usr/local/bin/R --version"],
+            ["FastTree", "command", "2.1.11", "detected", "fasttree -help"],
+            ["R", "command", "4.4.0", "detected", "/usr/local/bin/R --version"],
+            ["ggplot2", "R_package", "4.0.3", "detected", "packageVersion(\"ggplot2\")"],
         ],
     )
     final_report.write_text(
@@ -404,6 +420,7 @@ def test_publication_report_audit_requires_software_versions_embedded_in_final_r
     assert by_check["final_report_embeds_publication_sections"]["status"] == "failed"
     assert "software_version:FastTree:2.1.11" in by_check["final_report_embeds_publication_sections"]["note"]
     assert "software_version:R:4.4.0" in by_check["final_report_embeds_publication_sections"]["note"]
+    assert "software_version:ggplot2:4.0.3" in by_check["final_report_embeds_publication_sections"]["note"]
 
 
 def test_publication_report_audit_requires_close_reading_text_embedded_in_final_report(tmp_path):
@@ -1041,3 +1058,88 @@ def test_publication_report_audit_rejects_unregistered_figure_interpretations(tm
     assert by_check["figure_interpretation_coverage"]["status"] == "passed"
     assert by_check["figure_interpretation_scope"]["status"] == "failed"
     assert "orphan_plot" in by_check["figure_interpretation_scope"]["note"]
+
+
+def test_publication_report_audit_requires_command_and_r_package_versions(tmp_path):
+    plot_manifest = tmp_path / "report/plot_manifest.tsv"
+    figure_interpretations = tmp_path / "report/figure_interpretations.tsv"
+    software_versions = tmp_path / "report/software_versions.tsv"
+    final_report = tmp_path / "report/final_report.md"
+    (tmp_path / "plots").mkdir()
+    (tmp_path / "plots/family_counts.pdf").write_bytes(b"%PDF counts")
+
+    _write_tsv(
+        plot_manifest,
+        ["plot_key", "path", "description"],
+        [["family_counts", "plots/family_counts.pdf", "Family counts"]],
+    )
+    _write_tsv(
+        figure_interpretations,
+        [
+            "figure_key",
+            "input_data",
+            "what_figure_shows",
+            "key_observations",
+            "biological_interpretation",
+            "qc_warnings",
+            "qc_tables",
+            "method_and_software",
+            "reproducibility",
+            "result_reading_status",
+            "output_path",
+        ],
+        [[
+            "family_counts",
+            "family count table",
+            "member counts by species",
+            "copy numbers differ among species",
+            "copy-number shifts may indicate expansion or contraction",
+            "review selected species and missing candidates",
+            "tables/family_counts.tsv",
+            "plot_family_counts.R; /usr/local/bin/R",
+            "python bin/genefam/run_standard_smoke.py --outdir results/standard_smoke",
+            "figure-specific close reading",
+            "plots/family_counts.pdf",
+        ]],
+    )
+    _write_tsv(
+        software_versions,
+        ["component", "kind", "version", "status", "source"],
+        [
+            ["Nextflow", "command", "26.04.4", "detected", "nextflow -version"],
+            ["R", "command", "4.5.1", "detected", "/usr/local/bin/R --version"],
+        ],
+    )
+    final_report.write_text(
+        "\n".join(
+            [
+                "### Software Versions",
+                "| Nextflow | command | 26.04.4 | detected | nextflow -version |",
+                "| R | command | 4.5.1 | detected | /usr/local/bin/R --version |",
+                "## Figure Result Interpretations",
+                "### family_counts: Family counts",
+                "- Input data: family count table",
+                "- What the figure shows: member counts by species",
+                "- Key observations: copy numbers differ among species",
+                "- Biological interpretation: copy-number shifts may indicate expansion or contraction",
+                "- QC warnings / limitations: review selected species and missing candidates",
+                "- QC tables: tables/family_counts.tsv",
+                "- Method/software: plot_family_counts.R; /usr/local/bin/R",
+                "- Reproducibility: python bin/genefam/run_standard_smoke.py --outdir results/standard_smoke",
+                "- Result reading status: figure-specific close reading",
+                "- Output path: `plots/family_counts.pdf`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    rows = audit_publication_report(
+        plot_manifest=plot_manifest,
+        figure_interpretations=figure_interpretations,
+        software_versions=software_versions,
+        final_report=final_report,
+    )
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["software_versions_present"]["status"] == "failed"
+    assert "R_package" in by_check["software_versions_present"]["note"]

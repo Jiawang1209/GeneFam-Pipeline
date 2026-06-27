@@ -34,6 +34,49 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 08:29 - Require command and R package versions in publication audits
+
+Context:
+- The active `/goal` requires final reports to include software versions and R package versions in the methods section.
+- `audit_publication_report.py` already required a software version table and checked that method/software components named in figure interpretations had version rows.
+- The `software_versions_present` check still passed if any version row existed, so a report with command/runtime versions but no `R_package` rows could pass that specific gate.
+
+Decisions:
+- Require publication report audits to see both `command` and `R_package` version categories in detected software-version rows.
+- Keep the existing per-figure method/software component version matching as a separate check.
+- Align successful test fixtures with the real Nextflow report format, which records command-line tools as `command` and R packages as `R_package`.
+
+Added:
+- Regression test that a publication report audit fails `software_versions_present` when command versions are present but `R_package` versions are absent.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `tests/test_audit_publication_report.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_requires_command_and_r_package_versions -q` first failed because `software_versions_present` still passed without any `R_package` version row.
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_requires_command_and_r_package_versions -q` passed after requiring both version categories.
+- `python -m pytest tests/test_audit_publication_report.py -q` passed with 13 tests after updating success fixtures to include `command` and `R_package` rows.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` exited 0.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv --software-versions results/nextflow_wgd_smoke/wgd/report/software_versions.tsv --final-report results/nextflow_wgd_smoke/wgd/report/final_report.md --out-tsv results/wgd_publication_report_audit/wgd_publication_report_audit.tsv --out-md results/wgd_publication_report_audit/wgd_publication_report_audit.md` exited 0.
+- `rg -n "software_versions_present|kinds=R_package,command|final reports" results/publication_report_audit/publication_report_audit.md results/wgd_publication_report_audit/wgd_publication_report_audit.md results/objective_audit/objective_audit.md` confirmed both report-family audits now state `kinds=R_package,command`.
+- `python -m pytest tests -q` passed with 402 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 after the fresh release check run.
+- `head -n 8 results/objective_audit/objective_audit.md` reported `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the remaining blocked item is the intentionally deferred Docker/Apptainer reproducibility stage.
+
+Commit:
+- hash: pending
+- message: `test: require r package versions in publication audit`
+- files: publication report audit version-category rule, regression tests, and history entry.
+
+Next:
+- Continue hardening final-report and visualization evidence where a broad manuscript-level promise still depends on indirect evidence.
+
 ## 2026-06-27 08:19 - Require promoter extraction smoke for promoter audit
 
 Context:
