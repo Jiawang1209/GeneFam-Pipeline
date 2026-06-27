@@ -64,6 +64,20 @@ domain_filtering:
   hmmer_min_bitscore: 50.0
   hmmer_min_domain_coverage: 0.35
 
+domain_annotation:
+  tair_all_domains: data/domain_annotations/all.domains.txt
+
+reference_generation:
+  source: tair_all_domains
+  species_id: Arabidopsis_thaliana
+  peptides: data/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.pep.fa
+  all_domains: data/domain_annotations/all.domains.txt
+  domain_terms:
+    - PF00657
+  output: data/reference/GDSL_reference.pep.fa
+  ids_output: data/reference/GDSL_reference.ids.txt
+  missing_ids_output: data/reference/GDSL_reference.missing_ids.txt
+
 wgd_events:
   named_event_annotation: false
   event_map: null

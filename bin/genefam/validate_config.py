@@ -245,6 +245,27 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
     if min_domain_coverage is not None and not 0 <= float(min_domain_coverage) <= 1:
         errors.append("domain_filtering.hmmer_min_domain_coverage must be between 0 and 1")
 
+    domain_annotation = config.get("domain_annotation", {}) or {}
+    if (
+        check_paths
+        and domain_annotation.get("tair_all_domains")
+        and not _path_exists(str(domain_annotation["tair_all_domains"]), base_dir)
+    ):
+        errors.append(
+            f"domain_annotation.tair_all_domains path does not exist: {domain_annotation['tair_all_domains']}"
+        )
+
+    reference_generation = config.get("reference_generation", {}) or {}
+    if reference_generation:
+        if reference_generation.get("source") != "tair_all_domains":
+            errors.append("reference_generation.source must be tair_all_domains")
+        if not reference_generation.get("domain_terms"):
+            errors.append("reference_generation.domain_terms is required")
+        for field in ("peptides", "all_domains"):
+            value = str(reference_generation.get(field, ""))
+            if check_paths and value and not _path_exists(value, base_dir):
+                errors.append(f"reference_generation.{field} path does not exist: {value}")
+
     final_rule = identification.get("final_rule")
     if final_rule not in {"intersection", "union", "hmmer_only"}:
         errors.append("identification.final_rule must be intersection, union, or hmmer_only")

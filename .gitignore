@@ -8,4 +8,7 @@ results/
 tmp/
 Reference/
 data/species_bank/
+data/domain_annotations/
+data/hmm_profiles/
+data/reference/
 *.sif

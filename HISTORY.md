@@ -74,6 +74,87 @@ Commit:
 Next:
 - Prepare the target gene-family HMM profile and reference peptide FASTA, then copy `configs/real_3species.template.yaml` to `configs/my_3species.yaml` and run `python bin/genefam/validate_config.py configs/my_3species.yaml --check-paths`.
 
+## 2026-06-27 23:55 - Document local TAIR domain annotation input
+
+Context:
+- User clarified that TAIR `all.domains.txt` is already available locally and should be part of the real-data configuration guidance.
+- The file comes from `https://www.arabidopsis.org/download/file?path=Proteins/Domains/all.domains.txt`, but should not be downloaded by the workflow during this step.
+- Local input data directories should not be committed to git.
+
+Decisions:
+- Use `data/domain_annotations/all.domains.txt` as the local path for TAIR domain annotation reference data.
+- Treat `data/species_bank/`, `data/domain_annotations/`, `data/hmm_profiles/`, and `data/reference/` as local-only input data directories.
+- Keep `all.domains.txt` separate from HMMER profile inputs because it is an external annotation/reference table, not the `.hmm` search profile.
+
+Added:
+- `domain_annotation.tair_all_domains: data/domain_annotations/all.domains.txt` to the real three-species template.
+
+Modified:
+- `.gitignore`
+- `README.zh-CN.md`
+- `configs/real_3species.template.yaml`
+- `tests/test_quickstart_docs.py`
+- `tests/test_real_3species_template.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_real_3species_template.py tests/test_quickstart_docs.py::test_chinese_readme_documents_real_three_species_test_path -q` passed with 2 tests.
+- `python bin/genefam/validate_config.py configs/real_3species.template.yaml` returned `Configuration OK`.
+- `git status --short --untracked-files=all` no longer lists the local `data/hmm_profiles/PF00657.hmm` input after adding local input ignore rules.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: not committed yet
+
+Next:
+- Copy the local TAIR file to `data/domain_annotations/all.domains.txt`, keep `data/reference/GDSL_reference.pep.fa` prepared locally, and rerun `python bin/genefam/validate_config.py configs/my_3species.yaml --check-paths`.
+
+## 2026-06-28 00:08 - Align TAIR all.domains reference generation with Reference workflow
+
+Context:
+- User pointed out that `Reference/Long_Weixiong_20240323_1_GDSL/Evolution_LWX_GDSL_2024.md` already defines the exact `all.domains.txt` usage.
+- The Reference workflow uses `grep 'PF00657' all.domains.txt|awk -F '.' '{print $1}'|sort|uniq > PF00657.TAIR.ID`, then `seqkit grep -r` against Arabidopsis peptide FASTA to create the BLAST/DIAMOND reference FASTA.
+- The previous generalized implementation did not faithfully preserve this gene-level TAIR ID extraction behavior.
+
+Decisions:
+- Implement `bin/genefam/build_reference_from_tair_domains.py` to mirror the Reference method: select TAIR gene IDs by domain term, strip transcript suffixes, and extract all matching Arabidopsis peptide isoforms.
+- Keep `GDSL_reference.ids.txt` as the `PF00657.TAIR.ID` equivalent and `GDSL_reference.pep.fa` as the generated DIAMOND query reference.
+- Allow version mismatches between `all.domains.txt` and Arabidopsis peptide FASTA via `--allow-missing` plus a missing-ID report.
+
+Added:
+- `bin/genefam/build_reference_from_tair_domains.py`
+- `tests/test_build_reference_from_tair_domains.py`
+
+Modified:
+- `README.zh-CN.md`
+- `configs/real_3species.template.yaml`
+- `tests/test_quickstart_docs.py`
+- `tests/test_real_3species_template.py`
+- `tests/test_validate_config.py`
+- `bin/genefam/validate_config.py`
+- `.gitignore`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_reference_from_tair_domains.py tests/test_real_3species_template.py tests/test_quickstart_docs.py::test_chinese_readme_documents_real_three_species_test_path tests/test_validate_config.py::test_validate_config_check_paths_reports_missing_reference_generation_inputs -q` passed with 9 tests.
+- Real local trial with the user's `all.domains.txt` and `data/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.pep.fa` extracted 113 TAIR gene IDs, 133 peptide records, and reported 2 missing TAIR gene IDs.
+- `python -m pytest tests -q` passed with 493 tests.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: not committed yet
+
+Next:
+- Copy `all.domains.txt` into `data/domain_annotations/all.domains.txt`, generate `data/reference/GDSL_reference.pep.fa` with `build_reference_from_tair_domains.py`, then rerun `python bin/genefam/validate_config.py configs/my_3species.yaml --check-paths`.
+
 ## 2026-06-27 22:40 - Gate runtime bootstrap shell syntax in release checks
 
 Context:

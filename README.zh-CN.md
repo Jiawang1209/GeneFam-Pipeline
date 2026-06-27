@@ -194,6 +194,55 @@ data/hmm_profiles/PF00657.hmm
 data/reference/GDSL_reference.pep.fa
 ```
 
+如果你已经有 TAIR 的 `all.domains.txt`，建议放在这里：
+
+```text
+data/domain_annotations/all.domains.txt
+```
+
+这个文件不是最终的 DIAMOND reference FASTA，而是 TAIR 已有 domain 注释索引。它在 Reference 流程里的核心用法是：
+
+```bash
+grep 'PF00657' all.domains.txt|awk -F '.' '{print $1}'|sort|uniq > PF00657.TAIR.ID
+seqkit grep -r -f PF00657.TAIR.ID AT.clean.pep.fasta -o PF00657.TAIR.ID.fa
+```
+
+也就是说，先从 `all.domains.txt` 里筛出包含 `PF00657` 的拟南芥 TAIR gene ID，再从拟南芥蛋白 FASTA 中提取这些序列，生成 `data/reference/GDSL_reference.pep.fa`。这个生成出的 FASTA 才是后续 DIAMOND/BLAST 使用的 reference peptide。
+
+模板里已经预留：
+
+```yaml
+domain_annotation:
+  tair_all_domains: data/domain_annotations/all.domains.txt
+
+reference_generation:
+  source: tair_all_domains
+  species_id: Arabidopsis_thaliana
+  peptides: data/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.pep.fa
+  all_domains: data/domain_annotations/all.domains.txt
+  domain_terms:
+    - PF00657
+    - GDSL_lipase/esterase
+  output: data/reference/GDSL_reference.pep.fa
+  ids_output: data/reference/GDSL_reference.ids.txt
+```
+
+生成 reference peptide：
+
+```bash
+mkdir -p data/reference
+python bin/genefam/build_reference_from_tair_domains.py \
+  --domains data/domain_annotations/all.domains.txt \
+  --peptides data/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.pep.fa \
+  --terms PF00657 \
+  --out data/reference/GDSL_reference.pep.fa \
+  --ids-out data/reference/GDSL_reference.ids.txt \
+  --allow-missing \
+  --missing-out data/reference/GDSL_reference.missing_ids.txt
+```
+
+这个生成的 `GDSL_reference.pep.fa` 才是 `gene_family.reference_peptides` 使用的 DIAMOND query reference。`GDSL_reference.ids.txt` 等价于 Reference 里的 `PF00657.TAIR.ID`；如果 TAIR domain 注释版本和拟南芥 peptide FASTA 版本不完全一致，缺失的 TAIR gene ID 会写入 `GDSL_reference.missing_ids.txt`。`all.domains.txt` 和生成的 reference FASTA 都属于本地输入/派生数据，不要提交到 git。
+
 第一轮建议保持模板里的保守模块组合：打开 identification、domain_filtering、family_summary、phylogeny、chromosome_location 和 report；先不要打开 promoter_cis、ppi、synteny、kaks、duplication_retention。这样可以先确认物种名、GFF3 gene ID、蛋白 ID、HMM profile 和 reference peptide 都能对上。
 
 先做路径体检：

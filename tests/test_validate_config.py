@@ -178,6 +178,25 @@ def test_validate_config_check_paths_reports_missing_runtime_inputs(tmp_path):
     assert "expression.matrix path does not exist: data/expression/family_expression.tsv" in errors
 
 
+def test_validate_config_check_paths_reports_missing_reference_generation_inputs(tmp_path):
+    config = _valid_base_config()
+    config["reference_generation"] = {
+        "source": "tair_all_domains",
+        "peptides": "data/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.pep.fa",
+        "all_domains": "data/domain_annotations/all.domains.txt",
+        "domain_terms": ["PF00657"],
+        "output": "data/reference/GDSL_reference.pep.fa",
+    }
+
+    errors = validate_config(config, check_paths=True, base_dir=tmp_path)
+
+    assert (
+        "reference_generation.peptides path does not exist: "
+        "data/species_bank/Arabidopsis_thaliana/Arabidopsis_thaliana.pep.fa"
+    ) in errors
+    assert "reference_generation.all_domains path does not exist: data/domain_annotations/all.domains.txt" in errors
+
+
 def test_validate_config_check_paths_reports_invalid_manifest_columns(tmp_path):
     manifest = tmp_path / "species_manifest.tsv"
     manifest.write_text("species_id\tpep\nArabidopsis\tath.pep.fa\n", encoding="utf-8")
