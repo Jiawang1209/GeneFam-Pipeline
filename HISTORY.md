@@ -11637,7 +11637,9 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` exited 0 and refreshed handoff, delivery bundle, release checks, report-index audits, quickstart, and local acceptance summaries; final-stage blocker remains Docker/Apptainer reproducibility.
 
 Commit:
-- pending; hash will be backfilled after the code commit.
+- hash: e4c9ecf1cc2741ef1654ec8cc6333a65e209b69f
+- message: docs: document figure gallery audit evidence
+- files: README, quickstart/release/readiness docs, docs tests, history
 
 Next:
 - Continue aligning user-facing docs with each new release-gated evidence surface.
