@@ -71,7 +71,7 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
 
 Commit:
-- hash: pending
+- hash: 8c258a2e5521d39c7320f66024fc25caa302738c
 - message: `test: report missing WGD event names`
 - files: WGD event-map validation, config validation coverage, and history entry.
 
