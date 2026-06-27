@@ -78,7 +78,6 @@ Commit:
 - files: delivery bundle generator, delivery manifest audit, tests, and history
 
 Next:
-- Backfill this entry with the commit hash after committing.
 - Continue the final-stage container/runtime reproducibility work when Docker/Apptainer are ready to verify.
 
 ## 2026-06-27 21:11 - Require figure-specific QC warnings in publication reports
