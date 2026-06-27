@@ -14159,7 +14159,7 @@ Verification:
 - `results/delivery_bundle/final_delivery_manifest_audit.md` reports `Complete: true` and `delivery_manifest_required_items` passed.
 
 Commit:
-- hash: pending
+- hash: 5466c1177e9f9536431bb20dffa7bc91d7405040
 - message: feat: trace bootstrap syntax gate in handoff
 - files: objective audit, delivery bundle, delivery manifest audit, targeted tests, history
 
