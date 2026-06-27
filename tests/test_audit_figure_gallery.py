@@ -19,6 +19,7 @@ def test_figure_gallery_audit_requires_files_and_traceability_anchor(tmp_path):
     plots = tmp_path / "plots"
     report.mkdir()
     plots.mkdir()
+    (plots / "missing_tree_features.png").write_bytes(b"\x89PNG\r\n\x1a\n")
     (report / "figure_interpretations.md").write_text(
         '# Figure Interpretations\n\n<a id="tree_features"></a>\n## tree_features: Tree Features\n',
         encoding="utf-8",
@@ -32,6 +33,7 @@ def test_figure_gallery_audit_requires_files_and_traceability_anchor(tmp_path):
             "branch",
             "plot_key",
             "plot_path",
+            "plot_png_path",
             "plot_description",
             "figure_interpretations",
             "software_versions",
@@ -43,6 +45,7 @@ def test_figure_gallery_audit_requires_files_and_traceability_anchor(tmp_path):
                 "standard",
                 "tree_features",
                 str(plots / "missing_tree_features.pdf"),
+                str(plots / "missing_tree_features.png"),
                 "Tree, motif, gene-structure, and domain composite plot",
                 str(report / "figure_interpretations.md") + "#tree_features",
                 str(report / "software_versions.tsv"),
@@ -65,7 +68,7 @@ def test_figure_gallery_audit_requires_files_and_traceability_anchor(tmp_path):
     assert summarize_audit(rows) == {"passed": 4, "failed": 1, "complete": False}
 
 
-def test_figure_gallery_audit_cli_writes_outputs_when_gallery_is_complete(tmp_path):
+def test_figure_gallery_audit_requires_png_preview_column(tmp_path):
     gallery = tmp_path / "figure_gallery.tsv"
     report = tmp_path / "report"
     plots = tmp_path / "plots"
@@ -78,6 +81,7 @@ def test_figure_gallery_audit_cli_writes_outputs_when_gallery_is_complete(tmp_pa
     )
     (report / "software_versions.tsv").write_text("component\tversion\nR\t4.4.0\n", encoding="utf-8")
     (report / "final_report.md").write_text("# Final Report\n\n## Figure Traceability Matrix\n", encoding="utf-8")
+
     _write_tsv(
         gallery,
         [
@@ -95,6 +99,55 @@ def test_figure_gallery_audit_cli_writes_outputs_when_gallery_is_complete(tmp_pa
                 "standard",
                 "tree_features",
                 str(plots / "tree_features.pdf"),
+                "Tree, motif, gene-structure, and domain composite plot",
+                str(report / "figure_interpretations.md") + "#tree_features",
+                str(report / "software_versions.tsv"),
+                str(report / "final_report.md"),
+                str(report / "final_report.md") + "#figure-traceability-matrix",
+            ],
+        ],
+    )
+
+    rows = audit_figure_gallery(gallery)
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["figure_gallery_required_columns"]["status"] == "failed"
+    assert "plot_png_path:missing_column" in by_check["figure_gallery_required_columns"]["note"]
+
+
+def test_figure_gallery_audit_cli_writes_outputs_when_gallery_is_complete(tmp_path):
+    gallery = tmp_path / "figure_gallery.tsv"
+    report = tmp_path / "report"
+    plots = tmp_path / "plots"
+    report.mkdir()
+    plots.mkdir()
+    (plots / "tree_features.pdf").write_bytes(b"%PDF tree")
+    (plots / "tree_features.png").write_bytes(b"\x89PNG\r\n\x1a\n")
+    (report / "figure_interpretations.md").write_text(
+        '# Figure Interpretations\n\n<a id="tree_features"></a>\n## tree_features: Tree Features\n',
+        encoding="utf-8",
+    )
+    (report / "software_versions.tsv").write_text("component\tversion\nR\t4.4.0\n", encoding="utf-8")
+    (report / "final_report.md").write_text("# Final Report\n\n## Figure Traceability Matrix\n", encoding="utf-8")
+    _write_tsv(
+        gallery,
+        [
+            "branch",
+            "plot_key",
+            "plot_path",
+            "plot_png_path",
+            "plot_description",
+            "figure_interpretations",
+            "software_versions",
+            "final_report",
+            "traceability_matrix",
+        ],
+        [
+            [
+                "standard",
+                "tree_features",
+                str(plots / "tree_features.pdf"),
+                str(plots / "tree_features.png"),
                 "Tree, motif, gene-structure, and domain composite plot",
                 str(report / "figure_interpretations.md") + "#tree_features",
                 str(report / "software_versions.tsv"),
@@ -136,6 +189,7 @@ def test_figure_gallery_audit_requires_per_figure_interpretation_anchor(tmp_path
     report.mkdir()
     plots.mkdir()
     (plots / "tree_features.pdf").write_bytes(b"%PDF tree")
+    (plots / "tree_features.png").write_bytes(b"\x89PNG\r\n\x1a\n")
     (report / "figure_interpretations.md").write_text(
         "# Figure Interpretations\n\n## tree_features: Tree Features\n",
         encoding="utf-8",
@@ -149,6 +203,7 @@ def test_figure_gallery_audit_requires_per_figure_interpretation_anchor(tmp_path
             "branch",
             "plot_key",
             "plot_path",
+            "plot_png_path",
             "plot_description",
             "figure_interpretations",
             "software_versions",
@@ -160,6 +215,7 @@ def test_figure_gallery_audit_requires_per_figure_interpretation_anchor(tmp_path
                 "standard",
                 "tree_features",
                 str(plots / "tree_features.pdf"),
+                str(plots / "tree_features.png"),
                 "Tree, motif, gene-structure, and domain composite plot",
                 str(report / "figure_interpretations.md"),
                 str(report / "software_versions.tsv"),
@@ -185,6 +241,7 @@ def test_figure_gallery_audit_rejects_invalid_plot_file_signatures(tmp_path):
     report.mkdir()
     plots.mkdir()
     (plots / "tree_features.pdf").write_bytes(b"not a real pdf")
+    (plots / "tree_features.png").write_bytes(b"\x89PNG\r\n\x1a\n")
     (report / "figure_interpretations.md").write_text(
         '# Figure Interpretations\n\n<a id="tree_features"></a>\n## tree_features: Tree Features\n',
         encoding="utf-8",
@@ -198,6 +255,7 @@ def test_figure_gallery_audit_rejects_invalid_plot_file_signatures(tmp_path):
             "branch",
             "plot_key",
             "plot_path",
+            "plot_png_path",
             "plot_description",
             "figure_interpretations",
             "software_versions",
@@ -209,6 +267,7 @@ def test_figure_gallery_audit_rejects_invalid_plot_file_signatures(tmp_path):
                 "standard",
                 "tree_features",
                 str(plots / "tree_features.pdf"),
+                str(plots / "tree_features.png"),
                 "Tree, motif, gene-structure, and domain composite plot",
                 str(report / "figure_interpretations.md") + "#tree_features",
                 str(report / "software_versions.tsv"),
@@ -233,6 +292,7 @@ def test_figure_gallery_audit_requires_traceability_matrix_on_final_report(tmp_p
     report.mkdir()
     plots.mkdir()
     (plots / "tree_features.pdf").write_bytes(b"%PDF tree")
+    (plots / "tree_features.png").write_bytes(b"\x89PNG\r\n\x1a\n")
     (report / "figure_interpretations.md").write_text(
         '# Figure Interpretations\n\n<a id="tree_features"></a>\n## tree_features: Tree Features\n',
         encoding="utf-8",
@@ -249,6 +309,7 @@ def test_figure_gallery_audit_requires_traceability_matrix_on_final_report(tmp_p
             "branch",
             "plot_key",
             "plot_path",
+            "plot_png_path",
             "plot_description",
             "figure_interpretations",
             "software_versions",
@@ -260,6 +321,7 @@ def test_figure_gallery_audit_requires_traceability_matrix_on_final_report(tmp_p
                 "standard",
                 "tree_features",
                 str(plots / "tree_features.pdf"),
+                str(plots / "tree_features.png"),
                 "Tree, motif, gene-structure, and domain composite plot",
                 str(report / "figure_interpretations.md") + "#tree_features",
                 str(report / "software_versions.tsv"),
@@ -287,6 +349,7 @@ def test_figure_gallery_audit_requires_manifest_plot_coverage(tmp_path):
     report.mkdir(parents=True)
     plots.mkdir()
     (plots / "family_counts.pdf").write_bytes(b"%PDF counts")
+    (plots / "family_counts.png").write_bytes(b"\x89PNG\r\n\x1a\n")
     (plots / "gene_family_info_summary.pdf").write_bytes(b"%PDF pangenome")
     (report / "figure_interpretations.md").write_text(
         '# Figure Interpretations\n\n<a id="family_counts"></a>\n## family_counts: Family Counts\n',
@@ -312,6 +375,7 @@ def test_figure_gallery_audit_requires_manifest_plot_coverage(tmp_path):
             "branch",
             "plot_key",
             "plot_path",
+            "plot_png_path",
             "plot_description",
             "figure_interpretations",
             "software_versions",
@@ -323,6 +387,7 @@ def test_figure_gallery_audit_requires_manifest_plot_coverage(tmp_path):
                 "standard",
                 "family_counts",
                 str(plots / "family_counts.pdf"),
+                str(plots / "family_counts.png"),
                 "Family member counts by species",
                 str(report / "figure_interpretations.md") + "#family_counts",
                 str(report / "software_versions.tsv"),

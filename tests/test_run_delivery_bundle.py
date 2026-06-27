@@ -320,30 +320,30 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
 
     gallery_text = gallery.read_text(encoding="utf-8")
     assert gallery_text.startswith(
-        "branch\tplot_key\tplot_path\tplot_description\tfigure_interpretations\tsoftware_versions\tfinal_report\ttraceability_matrix\n"
+        "branch\tplot_key\tplot_path\tplot_png_path\tplot_description\tfigure_interpretations\tsoftware_versions\tfinal_report\ttraceability_matrix\n"
     )
     assert (
-            "standard\ttree_features\tresults/nextflow_standard_feature_smoke/standard/plots/tree_features.pdf\tTree, motif, gene-structure, and domain composite plot\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md#tree_features\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md#figure-traceability-matrix"
+            "standard\ttree_features\tresults/nextflow_standard_feature_smoke/standard/plots/tree_features.pdf\tresults/nextflow_standard_feature_smoke/standard/plots/tree_features.png\tTree, motif, gene-structure, and domain composite plot\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md#tree_features\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md#figure-traceability-matrix"
         in gallery_text
     )
     assert (
-        "standard\tmcscanx_circlize\tresults/nextflow_standard_feature_smoke/standard/plots/mcscanx_circlize.pdf\tMCScanX synteny and chromosome-scale circlize plot\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md#mcscanx_circlize\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md"
+        "standard\tmcscanx_circlize\tresults/nextflow_standard_feature_smoke/standard/plots/mcscanx_circlize.pdf\tresults/nextflow_standard_feature_smoke/standard/plots/mcscanx_circlize.png\tMCScanX synteny and chromosome-scale circlize plot\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md#mcscanx_circlize\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md"
         in gallery_text
     )
     assert (
-        "standard\tgene_family_pangenome_summary\tresults/nextflow_standard_feature_smoke/standard/plots/gene_family_info_summary.pdf\tGene family pangenome presence and copy-number balance\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md#gene_family_pangenome_summary\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md"
+        "standard\tgene_family_pangenome_summary\tresults/nextflow_standard_feature_smoke/standard/plots/gene_family_info_summary.pdf\tresults/nextflow_standard_feature_smoke/standard/plots/gene_family_info_summary.png\tGene family pangenome presence and copy-number balance\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md#gene_family_pangenome_summary\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md"
         in gallery_text
     )
     assert (
-        "standard\tppi_ggnetview\tresults/nextflow_standard_feature_smoke/standard/plots/ppi_ggnetview.pdf\tPPI network generated with ggNetView\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md#ppi_ggnetview\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md"
+        "standard\tppi_ggnetview\tresults/nextflow_standard_feature_smoke/standard/plots/ppi_ggnetview.pdf\tresults/nextflow_standard_feature_smoke/standard/plots/ppi_ggnetview.png\tPPI network generated with ggNetView\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md#ppi_ggnetview\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md"
         in gallery_text
     )
     assert (
-        "wgd\tks_distribution\tresults/nextflow_wgd_smoke/wgd/plots/ks_distribution.pdf\tKs distribution for duplicated pairs and WGD layer interpretation\tresults/nextflow_wgd_smoke/wgd/report/figure_interpretations.md#ks_distribution\tresults/nextflow_wgd_smoke/wgd/report/software_versions.tsv\tresults/nextflow_wgd_smoke/wgd/report/final_report.md"
+        "wgd\tks_distribution\tresults/nextflow_wgd_smoke/wgd/plots/ks_distribution.pdf\tresults/nextflow_wgd_smoke/wgd/plots/ks_distribution.png\tKs distribution for duplicated pairs and WGD layer interpretation\tresults/nextflow_wgd_smoke/wgd/report/figure_interpretations.md#ks_distribution\tresults/nextflow_wgd_smoke/wgd/report/software_versions.tsv\tresults/nextflow_wgd_smoke/wgd/report/final_report.md"
         in gallery_text
     )
     assert (
-        "wgd\tduplicate_type_kaks\tresults/nextflow_wgd_smoke/wgd/plots/duplicate_type_kaks.pdf\tDuplicate-type grouped Ks and Ka/Ks selection overview\tresults/nextflow_wgd_smoke/wgd/report/figure_interpretations.md#duplicate_type_kaks\tresults/nextflow_wgd_smoke/wgd/report/software_versions.tsv\tresults/nextflow_wgd_smoke/wgd/report/final_report.md"
+        "wgd\tduplicate_type_kaks\tresults/nextflow_wgd_smoke/wgd/plots/duplicate_type_kaks.pdf\tresults/nextflow_wgd_smoke/wgd/plots/duplicate_type_kaks.png\tDuplicate-type grouped Ks and Ka/Ks selection overview\tresults/nextflow_wgd_smoke/wgd/report/figure_interpretations.md#duplicate_type_kaks\tresults/nextflow_wgd_smoke/wgd/report/software_versions.tsv\tresults/nextflow_wgd_smoke/wgd/report/final_report.md"
         in gallery_text
     )
 
@@ -354,6 +354,8 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "ks_distribution" in gallery_md_text
     assert "software_versions.tsv" in gallery_md_text
     assert "traceability_matrix" in gallery_md_text
+    assert "plot_png_path" in gallery_md_text
+    assert "tree_features.png" in gallery_md_text
     assert "final_report.md#figure-traceability-matrix" in gallery_md_text
     assert "figure_interpretations.md#tree_features" in gallery_md_text
     assert "figure_interpretations.md#ks_distribution" in gallery_md_text

@@ -14,6 +14,7 @@ REQUIRED_COLUMNS = [
     "branch",
     "plot_key",
     "plot_path",
+    "plot_png_path",
     "plot_description",
     "figure_interpretations",
     "software_versions",
@@ -22,6 +23,7 @@ REQUIRED_COLUMNS = [
 ]
 LINK_COLUMNS = [
     "plot_path",
+    "plot_png_path",
     "figure_interpretations",
     "software_versions",
     "final_report",
@@ -111,7 +113,7 @@ def _linked_file_issues(gallery: Path, rows: list[dict[str, str]]) -> list[str]:
             if resolved.stat().st_size <= 0:
                 issues.append(f"{plot_key}:{column}:empty_file:{indexed_path}")
                 continue
-            if column == "plot_path":
+            if column in {"plot_path", "plot_png_path"}:
                 format_issue = _plot_format_issue(plot_key, column, indexed_path, resolved)
                 if format_issue:
                     issues.append(format_issue)
@@ -238,7 +240,7 @@ def audit_figure_gallery(
             "figure_gallery_linked_files_exist",
             not link_issues,
             str(figure_gallery),
-            "figure gallery linked plot, interpretation, version, report, and traceability targets exist with valid plot file signatures"
+            "figure gallery linked PDF/PNG plot, interpretation, version, report, and traceability targets exist with valid plot file signatures"
             if not link_issues
             else "missing, empty, or unresolved figure gallery targets: " + ", ".join(link_issues),
         ),

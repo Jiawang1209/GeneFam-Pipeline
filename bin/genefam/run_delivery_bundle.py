@@ -13,6 +13,7 @@ FIGURE_GALLERY_FIELDNAMES = [
     "branch",
     "plot_key",
     "plot_path",
+    "plot_png_path",
     "plot_description",
     "figure_interpretations",
     "software_versions",
@@ -642,6 +643,7 @@ def _figure_gallery_rows_with_traceability() -> list[dict[str, str]]:
     rows = []
     for row in FIGURE_GALLERY_ROWS:
         enriched = dict(row)
+        enriched["plot_png_path"] = str(Path(row["plot_path"]).with_suffix(".png"))
         enriched["figure_interpretations"] = f"{row['figure_interpretations']}#{row['plot_key']}"
         enriched["traceability_matrix"] = f"{row['final_report']}#figure-traceability-matrix"
         rows.append(enriched)
@@ -654,12 +656,12 @@ def write_figure_gallery_markdown(out_path: Path) -> None:
         "",
         "This gallery is the global plot index for the paper-level standard and WGD result packages.",
         "",
-        "| branch | plot_key | plot_path | description | close-reading report | software versions | final report | traceability_matrix |",
-        "|---|---|---|---|---|---|---|---|",
+        "| branch | plot_key | plot_path | plot_png_path | description | close-reading report | software versions | final report | traceability_matrix |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     for row in _figure_gallery_rows_with_traceability():
         lines.append(
-            "| {branch} | {plot_key} | `{plot_path}` | {plot_description} | `{figure_interpretations}` | `{software_versions}` | `{final_report}` | `{traceability_matrix}` |".format(
+            "| {branch} | {plot_key} | `{plot_path}` | `{plot_png_path}` | {plot_description} | `{figure_interpretations}` | `{software_versions}` | `{final_report}` | `{traceability_matrix}` |".format(
                 **row
             )
         )

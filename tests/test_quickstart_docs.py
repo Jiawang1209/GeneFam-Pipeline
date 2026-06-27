@@ -66,6 +66,8 @@ def test_quickstart_documents_minimum_verified_run_path():
         "local acceptance summary",
         "figure_gallery_audit",
         "valid gallery plot file signatures",
+        "plot_png_path",
+        "PDF and PNG plot targets",
         "delivery_manifest_audit",
         "final_delivery_manifest_audit",
         "figure_traceability_matrix",

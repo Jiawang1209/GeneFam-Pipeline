@@ -34,6 +34,62 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 20:56 - Expose PNG plot targets in the delivery figure gallery
+
+Context:
+- The active `/goal` requires paper-level figure delivery, not just internal plot generation.
+- The publication report audits already verified PDF/PNG plot variants through report indexes, but the final global `figure_gallery.tsv` only exposed the primary PDF `plot_path`.
+- This made the user-facing delivery gallery less convenient for quick preview and downstream dashboards that prefer PNG files.
+
+Decisions:
+- Add an explicit `plot_png_path` column to the delivery figure gallery.
+- Derive the PNG path from each registered PDF path by replacing the suffix with `.png`, matching the existing report-index PDF/PNG variant contract.
+- Require `plot_png_path` in `audit_figure_gallery.py` and validate it as a real PNG file with a PNG signature.
+- Keep the final gallery row model compact: one row per figure, with both publication PDF and preview PNG targets.
+
+Added:
+- Regression test proving `run_delivery_bundle.py` writes `plot_png_path` in both TSV and Markdown galleries.
+- Regression test proving `audit_figure_gallery.py` rejects old gallery files without `plot_png_path`.
+- Documentation contract coverage requiring `plot_png_path` and `PDF and PNG plot targets` in README, quickstart, and release audit docs.
+
+Modified:
+- `bin/genefam/run_delivery_bundle.py`
+- `bin/genefam/audit_figure_gallery.py`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_audit_figure_gallery.py`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `README.md`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index -q` first failed because `figure_gallery.tsv` lacked `plot_png_path`.
+- `python -m pytest tests/test_audit_figure_gallery.py::test_figure_gallery_audit_requires_png_preview_column -q` first failed because the audit still accepted old gallery files without `plot_png_path`.
+- `python -m pytest tests/test_audit_figure_gallery.py tests/test_run_delivery_bundle.py -q` passed with 8 tests after adding `plot_png_path` generation and audit validation.
+- `python -m pytest tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_quickstart_docs.py::test_quickstart_documents_minimum_verified_run_path tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report -q` first failed until README, quickstart, and release audit docs documented `plot_png_path` and `PDF and PNG plot targets`.
+- `python -m pytest tests/test_run_delivery_bundle.py tests/test_audit_figure_gallery.py tests/test_release_audit_docs.py tests/test_quickstart_docs.py tests/test_runtime_environment_files.py -q` passed with 25 tests.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` exited 0 and refreshed `figure_gallery.tsv` with `plot_png_path`.
+- `python bin/genefam/audit_figure_gallery.py --figure-gallery results/delivery_bundle/figure_gallery.tsv --plot-manifest standard=results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --plot-manifest wgd=results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --out-tsv results/delivery_bundle_smoke/figure_gallery_audit.tsv --out-md results/delivery_bundle_smoke/figure_gallery_audit.md` exited 0 and reported `Passed: 5`, `Failed: 0`, `Complete: true`.
+- `python -m pytest tests -q` passed with 471 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 52`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed the delivery bundle; `results/local_acceptance/local_acceptance_summary.md` still reports `Overall status: blocked` only because `final_stage_blocker` remains `Docker/Apptainer reproducibility`.
+- `results/delivery_bundle/figure_gallery.tsv` now starts with `branch`, `plot_key`, `plot_path`, `plot_png_path`, and includes rows such as `tree_features.png` and `ks_distribution.png`.
+
+Commit:
+- hash: not created in this session
+- message: feat: expose png targets in figure gallery
+- files: delivery figure gallery, figure-gallery audit, docs, tests, history
+
+Next:
+- Continue final-stage packaging only after Docker/Apptainer runtime access is available.
+
 ## 2026-06-27 20:43 - Align final report identity with YAML config
 
 Context:
