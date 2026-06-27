@@ -20,8 +20,12 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         "check\trequired\tstatus\texit_code\tcommand\tnote",
         [
             "standard branch smoke\ttrue\tpassed\t0\tstandard\tfinal report",
+            "mock MVP\ttrue\tpassed\t0\tmock mvp\tpython mock MVP",
+            "Nextflow mock MVP smoke\ttrue\tpassed\t0\tnextflow mock mvp\tNextflow mock MVP",
             "Nextflow standard manifest smoke\ttrue\tpassed\t0\tnextflow manifest\tmanifest config",
+            "Nextflow standard single-tool smoke\ttrue\tpassed\t0\tnextflow single tool\tHMMER-only and DIAMOND-only routing",
             "WGD event smoke\ttrue\tpassed\t0\twgd\talpha beta gamma theta",
+            "delivery bundle figure gallery smoke\ttrue\tpassed\t0\tdelivery bundle smoke\tfigure gallery bundle smoke",
             "publication report audit\ttrue\tpassed\t0\tpublication report\tfigures interpreted",
             "standard report index audit\ttrue\tpassed\t0\tstandard report index\tindexed standard report artifacts",
             "WGD publication report audit\ttrue\tpassed\t0\twgd publication report\twgd figures interpreted",
@@ -96,7 +100,15 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         + "\tglobal figure gallery linking paper-level plots to their close-reading reports and software versions"
         in manifest_text
     )
+    assert (
+        "status\tdelivery_bundle_figure_gallery_smoke\tavailable\tresults/delivery_bundle_smoke/delivery_bundle_smoke.md\tdelivery bundle smoke writes manifest, Markdown summary, figure gallery TSV, and figure gallery Markdown"
+        in manifest_text
+    )
     assert "standard\tfinal_report\tavailable\tresults/quickstart/standard_smoke/report/final_report.md" in manifest_text
+    assert (
+        "standard\tmock_mvp\tavailable\tresults/mock_mvp/report/final_report.md\tPython mock MVP baseline with family candidates, counts, FASTA, and report outputs"
+        in manifest_text
+    )
     assert (
         "standard\trun_config_snapshot\tavailable\tresults/quickstart/standard_smoke/tables/run_config_snapshot.tsv\tstandard branch run configuration"
         in manifest_text
@@ -136,6 +148,14 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     )
     assert (
         "nextflow\tnextflow_standard_manifest_smoke\tavailable\tresults/nextflow_standard_manifest_smoke/nextflow_standard_smoke.tsv\tmanifest-mode standard DSL2 smoke"
+        in manifest_text
+    )
+    assert (
+        "nextflow\tnextflow_mock_mvp_smoke\tavailable\tresults/nextflow_smoke/nextflow_smoke.md\tNextflow mock MVP smoke for the baseline workflow"
+        in manifest_text
+    )
+    assert (
+        "nextflow\tnextflow_single_tool_smoke\tavailable\tresults/nextflow_single_tool_smoke/nextflow_single_tool_smoke.tsv\tHMMER-only and DIAMOND-only standard workflow routing smoke"
         in manifest_text
     )
     assert (
@@ -250,6 +270,10 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "manifest-mode YAML example" in summary_text
     assert "species-bank YAML example with selected species" in summary_text
     assert "manifest-mode standard DSL2 smoke" in summary_text
+    assert "nextflow_mock_mvp_smoke" in summary_text
+    assert "nextflow_single_tool_smoke" in summary_text
+    assert "mock_mvp" in summary_text
+    assert "delivery_bundle_figure_gallery_smoke" in summary_text
     assert "strict config path preflight" in summary_text
     assert "gamma beta alpha theta named-event YAML mapping" in summary_text
     assert "wgd_paper_level_visual_report" in summary_text

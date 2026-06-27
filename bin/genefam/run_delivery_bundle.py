@@ -317,10 +317,24 @@ def build_delivery_manifest(
         },
         {
             "section": "nextflow",
+            "item": "nextflow_mock_mvp_smoke",
+            "status": _status_from_check(release_rows, "Nextflow mock MVP smoke"),
+            "path": "results/nextflow_smoke/nextflow_smoke.md",
+            "note": "Nextflow mock MVP smoke for the baseline workflow",
+        },
+        {
+            "section": "nextflow",
             "item": "nextflow_standard_manifest_smoke",
             "status": _status_from_check(release_rows, "Nextflow standard manifest smoke"),
             "path": "results/nextflow_standard_manifest_smoke/nextflow_standard_smoke.tsv",
             "note": "manifest-mode standard DSL2 smoke",
+        },
+        {
+            "section": "nextflow",
+            "item": "nextflow_single_tool_smoke",
+            "status": _status_from_check(release_rows, "Nextflow standard single-tool smoke"),
+            "path": "results/nextflow_single_tool_smoke/nextflow_single_tool_smoke.tsv",
+            "note": "HMMER-only and DIAMOND-only standard workflow routing smoke",
         },
         {
             "section": "nextflow",
@@ -339,6 +353,13 @@ def build_delivery_manifest(
                 "results/quickstart/standard_smoke/report/final_report.md",
             ),
             "note": _note_from_step(quickstart_rows, "standard_branch_smoke", "standard gene-family report"),
+        },
+        {
+            "section": "standard",
+            "item": "mock_mvp",
+            "status": _status_from_check(release_rows, "mock MVP"),
+            "path": "results/mock_mvp/report/final_report.md",
+            "note": "Python mock MVP baseline with family candidates, counts, FASTA, and report outputs",
         },
         {
             "section": "standard",
@@ -645,8 +666,9 @@ def run_delivery_bundle(
     quickstart: Path,
     outdir: Path,
 ) -> dict[str, Path]:
+    release_rows = read_tsv(release_checks)
     rows = build_delivery_manifest(
-        release_rows=read_tsv(release_checks),
+        release_rows=release_rows,
         objective_rows=read_tsv(objective_audit),
         readiness_rows=read_tsv(readiness),
         quickstart_rows=read_tsv(quickstart),
@@ -663,6 +685,16 @@ def run_delivery_bundle(
             "status": "available",
             "path": str(figure_gallery),
             "note": "global figure gallery linking paper-level plots to their close-reading reports and software versions",
+        },
+    )
+    rows.insert(
+        6,
+        {
+            "section": "status",
+            "item": "delivery_bundle_figure_gallery_smoke",
+            "status": _status_from_check(release_rows, "delivery bundle figure gallery smoke"),
+            "path": "results/delivery_bundle_smoke/delivery_bundle_smoke.md",
+            "note": "delivery bundle smoke writes manifest, Markdown summary, figure gallery TSV, and figure gallery Markdown",
         },
     )
     write_figure_gallery_tsv(figure_gallery)

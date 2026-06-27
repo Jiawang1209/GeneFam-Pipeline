@@ -89,6 +89,10 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "global paper-level figure gallery" in text
     assert "results/delivery_bundle/figure_gallery.tsv" in text
     assert "results/delivery_bundle/figure_gallery.md" in text
+    assert "mock_mvp" in text
+    assert "nextflow_mock_mvp_smoke" in text
+    assert "nextflow_single_tool_smoke" in text
+    assert "delivery_bundle_figure_gallery_smoke" in text
     assert "audit_figure_gallery.py" in text
     assert "results/delivery_bundle_smoke/figure_gallery_audit.tsv" in text
     assert "results/delivery_bundle_smoke/figure_gallery_audit.md" in text

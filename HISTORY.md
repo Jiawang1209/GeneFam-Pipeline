@@ -167,6 +167,48 @@ Commit:
 Next:
 - Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
 
+## 2026-06-27 16:48 - Surface baseline smoke evidence in delivery bundle
+
+Context:
+- The release gate already runs the Python mock MVP, Nextflow mock MVP, Nextflow single-tool routing, and delivery-bundle figure-gallery smoke checks.
+- These checks were not exposed as named rows in the final user-facing delivery manifest, which made the handoff index less complete than the release gate.
+- The active `/goal` requires a perfect MVP-level handoff that can trace standard analysis, Nextflow routing, and delivery-gallery generation evidence from the final bundle.
+
+Decisions:
+- Add explicit delivery-manifest rows for `mock_mvp`, `nextflow_mock_mvp_smoke`, `nextflow_single_tool_smoke`, and `delivery_bundle_figure_gallery_smoke`.
+- Keep row status derived from the release-check table so failed release evidence is reflected as missing in the delivery bundle.
+- Document the new handoff rows in README and the release-audit evidence map.
+
+Added:
+- Delivery bundle rows for baseline Python MVP, Nextflow mock MVP, Nextflow single-tool routing, and delivery-gallery bundle smoke evidence.
+- Tests requiring the new manifest rows and documentation contract strings.
+
+Modified:
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `README.md`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index -q` first failed because `delivery_bundle_figure_gallery_smoke` and the other baseline smoke rows were absent from the delivery manifest.
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index -q` passed after adding the manifest rows.
+- `python -m pytest tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report -q` first failed because README and release-audit docs did not mention the new handoff item names.
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report -q` passed with 3 tests after documentation updates.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: delivery bundle manifest builder, delivery bundle tests, docs, README, and history entry.
+
+Next:
+- Run full tests and release/local acceptance checks, then commit and backfill this history entry.
+
 ## 2026-06-27 15:51 - Surface Reference gitignore evidence in delivery bundle
 
 Context:
