@@ -9784,7 +9784,7 @@ Verification:
 - `rg -n "final reports|Nextflow standard visualization smoke|Nextflow WGD event smoke|formal Nextflow standard visualization" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed the final reports row now names the formal Nextflow sources.
 
 Commit:
-- hash: pending
+- hash: a1a2d36dc647b828f76897e11acec87458b4af37
 - message: test: require nextflow sources for final report audit
 - files: objective audit rule, objective audit tests, history
 
