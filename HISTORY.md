@@ -73,12 +73,12 @@ Verification:
 - `sed -n '1,40p' results/handoff/handoff_report.md` and `tail -n 5 results/handoff/handoff_summary.tsv` confirmed the handoff outputs expose the global paper-level figure gallery.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: 5ca91bfc58afd1f242610840d2f57ccca886a235
+- message: `docs: expose figure gallery in handoff audit`
 - files: handoff builder, handoff tests, release audit docs/tests, generated handoff outputs, and history entry.
 
 Next:
-- Backfill this entry with the commit hash after the commit is created.
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage blocker.
 
 ## 2026-06-27 12:37 - Document figure gallery in README and quickstart
 
