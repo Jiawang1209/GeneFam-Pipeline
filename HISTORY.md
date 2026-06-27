@@ -87,12 +87,12 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` exited 0 and refreshed the delivery bundle; `results/local_acceptance/local_acceptance_summary.md` still reports `Overall status: blocked` only because `final_stage_blocker` remains `Docker/Apptainer reproducibility`.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: 8a56ac1
+- message: test: link gallery to figure interpretation anchors
 - files: figure gallery audit/navigation, figure interpretation Markdown anchors, delivery bundle, docs, tests, history
 
 Next:
-- Commit this change, then backfill this history entry with the commit hash.
+- Continue final-stage packaging only after Docker/Apptainer runtime access is available.
 
 ## 2026-06-27 19:32 - Extend result-statement close reading to QC and status fields
 
