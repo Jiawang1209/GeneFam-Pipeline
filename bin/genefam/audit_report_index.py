@@ -120,6 +120,27 @@ def _artifact_file_issues(report_index: Path, rows: list[dict[str, str]], profil
     return issues
 
 
+def _traceability_anchor_issues(report_index: Path, rows: list[dict[str, str]]) -> list[str]:
+    indexed = _rows_by_key(rows)
+    final_report = indexed.get("final_report")
+    traceability = indexed.get("figure_traceability_matrix")
+    issues: list[str] = []
+    if final_report is None or traceability is None:
+        return issues
+
+    final_path = final_report.get("path", "").strip()
+    traceability_path = traceability.get("path", "").strip()
+    if not final_path or not traceability_path:
+        return issues
+
+    resolved_final = _resolve_indexed_path(report_index, final_path)
+    resolved_traceability = _resolve_indexed_path(report_index, traceability_path)
+    traceability_anchor = _anchor_from_indexed_path(traceability_path)
+    if resolved_final != resolved_traceability or traceability_anchor != "#figure-traceability-matrix":
+        issues.append("figure_traceability_matrix:not_final_report_anchor")
+    return issues
+
+
 def _available_path_issues(report_index: Path, rows: list[dict[str, str]]) -> list[str]:
     issues: list[str] = []
     for row_number, row in enumerate(rows, start=2):
@@ -148,6 +169,7 @@ def audit_report_index(report_index: Path, profile: str) -> list[dict[str, str]]
     required_issues = _required_artifact_issues(rows, profile)
     file_issues = _artifact_file_issues(report_index, rows, profile)
     available_path_issues = _available_path_issues(report_index, rows)
+    traceability_anchor_issues = _traceability_anchor_issues(report_index, rows)
     return [
         _row(
             "report_index_required_artifacts",
@@ -173,6 +195,14 @@ def audit_report_index(report_index: Path, profile: str) -> list[dict[str, str]]
             if not available_path_issues
             else "missing, empty, or unresolved available report-index paths: "
             + ", ".join(available_path_issues),
+        ),
+        _row(
+            "report_index_traceability_anchor",
+            not traceability_anchor_issues,
+            str(report_index),
+            f"{profile} report index points figure_traceability_matrix to final_report.md#figure-traceability-matrix"
+            if not traceability_anchor_issues
+            else "invalid report-index traceability anchor: " + ", ".join(traceability_anchor_issues),
         ),
     ]
 

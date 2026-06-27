@@ -53,7 +53,7 @@ def test_report_index_audit_requires_core_standard_report_artifacts(tmp_path):
     assert by_check["report_index_required_artifacts"]["status"] == "failed"
     assert "figure_traceability_matrix:missing_row" in by_check["report_index_required_artifacts"]["note"]
     assert by_check["report_index_available_paths_exist"]["status"] == "passed"
-    assert summarize_audit(rows) == {"passed": 2, "failed": 1, "complete": False}
+    assert summarize_audit(rows) == {"passed": 3, "failed": 1, "complete": False}
 
 
 def test_report_index_audit_passes_when_core_wgd_report_artifacts_are_indexed(tmp_path):
@@ -103,7 +103,7 @@ def test_report_index_audit_passes_when_core_wgd_report_artifacts_are_indexed(tm
     assert by_check["report_index_required_artifacts"]["status"] == "passed"
     assert by_check["report_index_artifact_files_exist"]["status"] == "passed"
     assert by_check["report_index_available_paths_exist"]["status"] == "passed"
-    assert summarize_audit(rows) == {"passed": 3, "failed": 0, "complete": True}
+    assert summarize_audit(rows) == {"passed": 4, "failed": 0, "complete": True}
 
 
 def test_report_index_audit_checks_all_available_paths_not_only_core_artifacts(tmp_path):
@@ -156,7 +156,7 @@ def test_report_index_audit_checks_all_available_paths_not_only_core_artifacts(t
     assert by_check["report_index_artifact_files_exist"]["status"] == "passed"
     assert by_check["report_index_available_paths_exist"]["status"] == "failed"
     assert "tree_features_pdf:missing_file" in by_check["report_index_available_paths_exist"]["note"]
-    assert summarize_audit(rows) == {"passed": 2, "failed": 1, "complete": False}
+    assert summarize_audit(rows) == {"passed": 3, "failed": 1, "complete": False}
 
 
 def test_report_index_audit_requires_traceability_anchor_heading(tmp_path):
@@ -208,7 +208,61 @@ def test_report_index_audit_requires_traceability_anchor_heading(tmp_path):
     assert "figure_traceability_matrix:missing_anchor:#figure-traceability-matrix" in (
         by_check["report_index_artifact_files_exist"]["note"]
     )
-    assert summarize_audit(rows) == {"passed": 1, "failed": 2, "complete": False}
+    assert summarize_audit(rows) == {"passed": 2, "failed": 2, "complete": False}
+
+
+def test_report_index_audit_requires_traceability_anchor_on_final_report(tmp_path):
+    report_index = tmp_path / "report_index.tsv"
+    report_dir = tmp_path / "report"
+    for name in [
+        "plot_manifest.tsv",
+        "software_versions.tsv",
+        "figure_interpretations.tsv",
+        "figure_interpretations.md",
+    ]:
+        (report_dir / name).parent.mkdir(parents=True, exist_ok=True)
+        (report_dir / name).write_text("ok\n", encoding="utf-8")
+    final_report = report_dir / "final_report.md"
+    traceability_report = report_dir / "traceability.md"
+    final_report.write_text("# Final Report\n\n## Figure Traceability Matrix\n", encoding="utf-8")
+    traceability_report.write_text("# Traceability\n\n## Figure Traceability Matrix\n", encoding="utf-8")
+
+    _write_tsv(
+        report_index,
+        ["key", "path", "status", "description"],
+        [
+            ["plot_manifest", str(report_dir / "plot_manifest.tsv"), "available", "Generated plot inventory"],
+            ["software_versions", str(report_dir / "software_versions.tsv"), "available", "Software versions"],
+            [
+                "figure_interpretations",
+                str(report_dir / "figure_interpretations.tsv"),
+                "available",
+                "Figure interpretations",
+            ],
+            [
+                "figure_interpretations_md",
+                str(report_dir / "figure_interpretations.md"),
+                "available",
+                "Figure interpretations Markdown",
+            ],
+            ["final_report", str(final_report), "available", "Final report"],
+            [
+                "figure_traceability_matrix",
+                str(traceability_report) + "#figure-traceability-matrix",
+                "available",
+                "Figure traceability matrix",
+            ],
+        ],
+    )
+
+    rows = audit_report_index(report_index, profile="standard")
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["report_index_traceability_anchor"]["status"] == "failed"
+    assert "figure_traceability_matrix:not_final_report_anchor" in by_check[
+        "report_index_traceability_anchor"
+    ]["note"]
+    assert summarize_audit(rows) == {"passed": 3, "failed": 1, "complete": False}
 
 
 def test_report_index_audit_cli_writes_outputs_and_fails_on_missing_files(tmp_path):

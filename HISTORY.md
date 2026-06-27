@@ -34,6 +34,49 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 17:25 - Require report-index traceability anchor target
+
+Context:
+- The active `/goal` requires every paper-level figure to be navigable from report indexes into the final report and its Figure Traceability Matrix.
+- `audit_report_index.py` already verified required report artifacts, available paths, and Markdown anchor existence, but it did not prove that `figure_traceability_matrix` pointed to the `final_report` row itself.
+
+Decisions:
+- Add a dedicated `report_index_traceability_anchor` audit row.
+- Require `figure_traceability_matrix` to resolve to the same file as `final_report` and to use `#figure-traceability-matrix`.
+- Keep the existing available-path and heading-anchor checks so detached Markdown pages, missing headings, missing files, and empty files fail through separate diagnostics.
+
+Added:
+- Red test covering a report index that points `figure_traceability_matrix` at a detached Markdown page with the right heading.
+- `report_index_traceability_anchor` audit output for standard and WGD report indexes.
+
+Modified:
+- `bin/genefam/audit_report_index.py`
+- `tests/test_audit_report_index.py`
+- `tests/test_release_audit_docs.py`
+- `docs/release_audit.md`
+- `README.md`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_report_index.py::test_report_index_audit_requires_traceability_anchor_on_final_report -q` first failed with `KeyError: 'report_index_traceability_anchor'`.
+- `python -m pytest tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` first failed because `report_index_traceability_anchor` was not documented in `docs/release_audit.md`.
+- `python -m pytest tests/test_audit_report_index.py tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_quickstart_docs.py tests/test_runtime_environment_files.py -q` passed with 23 tests.
+- `python bin/genefam/audit_report_index.py --report-index results/nextflow_standard_feature_smoke/standard/report/report_index.tsv --profile standard --out-tsv results/report_index_audit/standard_report_index_audit.tsv --out-md results/report_index_audit/standard_report_index_audit.md` exited 0 and reported `Passed: 4`, `Failed: 0`, `Complete: true`.
+- `python bin/genefam/audit_report_index.py --report-index results/nextflow_wgd_smoke/wgd/report/report_index.tsv --profile wgd --out-tsv results/report_index_audit/wgd_report_index_audit.tsv --out-md results/report_index_audit/wgd_report_index_audit.md` exited 0 and reported `Passed: 4`, `Failed: 0`, `Complete: true`.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: report-index audit, report-index tests, release/quickstart/readiness docs, README, and history entry.
+
+Next:
+- Run full tests and release/local acceptance checks, then commit and backfill this history entry.
+
 ## 2026-06-27 16:13 - Audit final delivery manifest in local acceptance
 
 Context:

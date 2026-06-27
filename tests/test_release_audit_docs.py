@@ -147,6 +147,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "Figure Traceability Matrix" in text
     assert "reproducibility commands" in text
     assert "report indexes expose plot manifests, software versions, figure interpretations in TSV/Markdown, final reports, and figure_traceability_matrix anchors" in text
+    assert "report_index_traceability_anchor" in text
     assert "all available indexed report paths exist" in text
     assert "docs/quickstart.md" in text
     assert "run_species_selection_smoke.py" in text
