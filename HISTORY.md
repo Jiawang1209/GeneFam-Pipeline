@@ -73,7 +73,7 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
 
 Commit:
-- hash: pending
+- hash: 26d70d121771f319cf72f3f3eaa4517cb7db0e57
 - message: `test: index final report artifacts`
 - files: standard/WGD report-index builders, report-index tests, and history entry.
 
