@@ -70,7 +70,7 @@ Verification:
 - `rg -n "final reports|no TODO|Publication audit detail" results/objective_audit/objective_audit.md` confirmed the high-level final-report objective now records the no-placeholder-text detail.
 
 Commit:
-- hash: pending
+- hash: 77264834e04f52e27fbe62e5220760b04d089171
 - message: `test: require publication audit details for final reports`
 - files: objective audit detail gating, objective audit tests, and history entry.
 
