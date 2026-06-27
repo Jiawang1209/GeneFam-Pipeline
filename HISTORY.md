@@ -82,12 +82,12 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` exited 0; `results/local_acceptance/local_acceptance_summary.md` still reports `Overall status: blocked` only because `final_stage_blocker` remains `Docker/Apptainer reproducibility`.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: 53c4e44
+- message: test: require parseable software versions
 - files: software version parser, publication/objective audits, docs, tests, history
 
 Next:
-- Commit the parser/audit/docs/test update, then backfill this entry with the commit hash.
+- Continue closing remaining MVP evidence gaps; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
 
 ## 2026-06-27 18:38 - Require R runtime health in objective audit
 
