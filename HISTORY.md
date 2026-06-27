@@ -34,6 +34,72 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 19:54 - Audit report-index PDF/PNG plot variants
+
+Context:
+- The active `/goal` requires all paper-level figures to be connected to Nextflow, report index, final report, and release checks.
+- `plot_manifest.tsv` registered the standard `family_counts` figure, but the standard `report_index.tsv` did not expose the corresponding `family_counts.pdf` and `family_counts.png` handoff rows.
+- Publication audits previously validated registered plot files and report-index closure separately, but did not prove that every registered plot had report-indexed PDF/PNG delivery variants.
+
+Decisions:
+- Add an optional `--report-index` input to `audit_publication_report.py`.
+- Add a `report_index_plot_variants` check that verifies every registered plot has report-indexed, existing, non-empty, valid PDF/PNG plot variants.
+- Keep the check path-based instead of key-name-only so shared composite plots, such as pangenome summaries drawn inside `gene_family_info_summary`, can pass when the same plot path is properly indexed.
+- Add `family_counts_pdf` and `family_counts_png` as first-class standard report-index rows and wire `PLOT_FAMILY_COUNTS.out[0/1]` into `BUILD_STANDARD_REPORT_INDEX`.
+
+Added:
+- Publication-audit regression coverage for missing report-index PNG variants.
+- Standard report-index coverage for `family_counts_pdf` and `family_counts_png`.
+- Release-check command coverage requiring both standard and WGD publication audits to pass `--report-index`.
+- Documentation coverage for `report_index_plot_variants` and PDF/PNG plot variants.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/run_release_checks.py`
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `tests/test_audit_publication_report.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_workflow_modules.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `README.md`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_requires_report_index_png_variant_for_each_plot -q` first failed because `audit_publication_report()` did not accept `report_index`.
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_requires_report_index_png_variant_for_each_plot -q` passed after adding the optional report-index audit path.
+- `python -m pytest tests/test_standard_branch_report_index.py::test_build_standard_report_index_marks_core_outputs_available tests/test_standard_branch_report_index.py::test_published_paths_map_standard_outputs_to_user_results_tree tests/test_standard_branch_report_index.py::test_build_standard_report_index_cli_writes_tsv tests/test_standard_branch_report_index.py::test_build_standard_report_index_cli_can_write_published_paths -q` first failed because `family_counts_pdf/png` were not indexed and the CLI did not accept the new arguments.
+- The same standard report-index test selection passed after adding `family_counts_pdf/png` and wiring the CLI.
+- `python -m pytest tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q` passed after wiring `PLOT_FAMILY_COUNTS.out[0/1]` into the standard report-index process.
+- `python -m pytest tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_runtime_environment_files.py::test_readiness_checklist_documents_command_audit tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report -q` first failed until docs mentioned `report_index_plot_variants` and PDF/PNG plot variants.
+- `python -m pytest tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_runtime_environment_files.py::test_readiness_checklist_documents_command_audit tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report -q` passed after documentation updates.
+- `python -m pytest tests/test_audit_publication_report.py tests/test_standard_branch_report_index.py tests/test_workflow_modules.py tests/test_run_release_checks.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py -q` passed with 116 tests.
+- `python -m pytest tests/test_audit_objective_completion.py tests/test_run_delivery_bundle.py tests/test_audit_figure_gallery.py tests/test_audit_report_index.py -q` passed with 60 tests.
+- `python -m pytest tests -q` passed with 463 tests.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --run-feature-summary --run-mcscanx-circlize --syntenic-pairs tests/fixtures/mcscanx/syntenic_pairs.tsv --run-promoter --run-promoter-cis --promoter-cis-elements tests/fixtures/promoter_cis/plantcare.tsv --run-ppi --ppi-edges tests/fixtures/ppi/ppi_edges.tsv --ppi-nodes tests/fixtures/ppi/ppi_nodes.tsv --expression-matrix tests/fixtures/expression/family_expression.tsv --expression-metadata tests/fixtures/expression/sample_metadata.tsv --outdir results/nextflow_standard_feature_smoke` exited 0 and refreshed the standard visualization report index.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --report-index results/nextflow_standard_feature_smoke/standard/report/report_index.tsv --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` reported `Passed: 16`, `Failed: 0`, including `report_index_plot_variants`.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv --software-versions results/nextflow_wgd_smoke/wgd/report/software_versions.tsv --final-report results/nextflow_wgd_smoke/wgd/report/final_report.md --report-index results/nextflow_wgd_smoke/wgd/report/report_index.tsv --out-tsv results/publication_report_audit/wgd_publication_report_audit.tsv --out-md results/publication_report_audit/wgd_publication_report_audit.md` reported `Passed: 16`, `Failed: 0`, including `report_index_plot_variants`.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 51`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed the delivery bundle; `results/local_acceptance/local_acceptance_summary.md` still reports `Overall status: blocked` only because `final_stage_blocker` remains `Docker/Apptainer reproducibility`.
+- `results/nextflow_standard_feature_smoke/standard/report/report_index.tsv` now contains `family_counts_pdf` and `family_counts_png`.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: publication audit, standard report index, Nextflow standard report wiring, docs, tests, history
+
+Next:
+- Commit this change, then backfill this history entry with the commit hash.
+
 ## 2026-06-27 20:04 - Link figure gallery rows to per-figure close-reading anchors
 
 Context:

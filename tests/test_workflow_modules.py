@@ -217,6 +217,8 @@ def test_main_workflow_wires_standard_identification_branch():
     assert "PREPARE_ALIGNMENT_INPUTS(family_name_ch, EXTRACT_FAMILY_SEQUENCES.out, aligner_ch, alignment_outdir_ch)" in workflow
     assert "PREPARE_PHYLOGENY_INPUTS(PREPARE_ALIGNMENT_INPUTS.out, tree_builder_ch, phylogeny_outdir_ch)" in workflow
     assert "PLOT_FAMILY_COUNTS(FAMILY_SUMMARY.out)" in workflow
+    assert "PLOT_FAMILY_COUNTS.out[0]" in workflow
+    assert "PLOT_FAMILY_COUNTS.out[1]" in workflow
     assert "BUILD_PLOT_MANIFEST()" in workflow
     assert "COLLECT_SOFTWARE_VERSIONS()" in workflow
     assert "BUILD_FIGURE_INTERPRETATIONS(BUILD_PLOT_MANIFEST.out)" in workflow

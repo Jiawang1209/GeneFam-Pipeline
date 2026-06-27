@@ -146,6 +146,8 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv" in text
     assert "results/nextflow_wgd_smoke/wgd/report/software_versions.tsv" in text
     assert "valid plot file signatures" in text
+    assert "report_index_plot_variants" in text
+    assert "PDF/PNG plot variants" in text
     assert "registered-only figure interpretation scope" in text
     assert "plot manifest and interpretation output path consistency" in text
     assert "complete per-figure close-reading text" in text

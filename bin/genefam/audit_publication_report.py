@@ -137,6 +137,63 @@ def _plot_format_issues(plot_manifest: Path, rows: list[dict[str, str]]) -> list
     return issues
 
 
+def _resolve_indexed_path(index_path: Path, indexed_path: str) -> Path:
+    value = indexed_path.split("#", 1)[0].strip()
+    path = Path(value)
+    if path.is_absolute():
+        return path
+    candidates = [Path.cwd() / path, index_path.parent / path, index_path.parent.parent / path]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return candidates[0]
+
+
+def _plot_variant_targets(plot_manifest: Path, plot_row: dict[str, str]) -> list[tuple[str, Path]]:
+    plot_path = plot_row.get("path", "").strip()
+    if not plot_path:
+        return []
+    resolved = _resolve_plot_path(plot_manifest, plot_path)
+    suffix = resolved.suffix.lower().lstrip(".")
+    targets = [(suffix or "plot", resolved)]
+    if suffix == "pdf":
+        targets.append(("png", resolved.with_suffix(".png")))
+    return targets
+
+
+def _report_index_plot_variant_issues(
+    plot_manifest: Path,
+    plot_rows: list[dict[str, str]],
+    report_index: Path | None,
+) -> list[str]:
+    if report_index is None:
+        return []
+    index_rows = read_tsv(report_index)
+    available_paths = {
+        _resolve_indexed_path(report_index, row.get("path", "")).resolve()
+        for row in index_rows
+        if row.get("status", "").strip() == "available" and row.get("path", "").strip()
+    }
+    issues: list[str] = []
+    for row in plot_rows:
+        plot_key = row.get("plot_key", "").strip() or "unknown"
+        for variant, expected in _plot_variant_targets(plot_manifest, row):
+            expected_resolved = expected.resolve()
+            if expected_resolved not in available_paths:
+                issues.append(f"{plot_key}:{variant}:missing_report_index_row:{expected}")
+                continue
+            if not expected.exists():
+                issues.append(f"{plot_key}:{variant}:missing_file:{expected}")
+                continue
+            if expected.stat().st_size <= 0:
+                issues.append(f"{plot_key}:{variant}:empty_file:{expected}")
+                continue
+            format_issue = _plot_format_issue(plot_key, str(expected), expected)
+            if format_issue:
+                issues.append(f"{plot_key}:{variant}:{format_issue.split(':', 1)[1]}")
+    return issues
+
+
 def _interpretation_by_key(rows: list[dict[str, str]]) -> dict[str, dict[str, str]]:
     return {row.get("figure_key", "").strip(): row for row in rows if row.get("figure_key", "").strip()}
 
@@ -348,6 +405,7 @@ def audit_publication_report(
     figure_interpretations: Path,
     software_versions: Path,
     final_report: Path,
+    report_index: Path | None = None,
 ) -> list[dict[str, str]]:
     plots = read_tsv(plot_manifest)
     interpretations = read_tsv(figure_interpretations)
@@ -357,6 +415,7 @@ def audit_publication_report(
     plot_keys = _plot_keys(plots)
     plot_file_issues = _plot_file_issues(plot_manifest, plots)
     plot_format_issues = _plot_format_issues(plot_manifest, plots)
+    report_index_plot_variant_issues = _report_index_plot_variant_issues(plot_manifest, plots, report_index)
     interpretation_rows = _interpretation_by_key(interpretations)
     missing_interpretations = [key for key in plot_keys if key not in interpretation_rows]
     unregistered_interpretations = _unregistered_interpretation_keys(plot_keys, interpretation_rows)
@@ -397,7 +456,7 @@ def audit_publication_report(
             if value and not _report_contains(report_text, value):
                 missing_report_sections.append(f"{row.get('figure_key', 'unknown')}:{field}")
 
-    return [
+    rows = [
         _row(
             "plot_files_exist",
             not plot_file_issues and bool(plot_keys),
@@ -414,6 +473,20 @@ def audit_publication_report(
             if not plot_format_issues and plot_keys
             else "invalid plot file formats: " + ", ".join(plot_format_issues or ["no plots registered"]),
         ),
+    ]
+    if report_index is not None:
+        rows.append(
+            _row(
+                "report_index_plot_variants",
+                not report_index_plot_variant_issues and bool(plot_keys),
+                f"{plot_manifest}; {report_index}",
+                "report index exposes valid PDF/PNG plot variants for every registered plot"
+                if not report_index_plot_variant_issues and plot_keys
+                else "missing, empty, or invalid report-index plot variants: "
+                + ", ".join(report_index_plot_variant_issues or ["no plots registered"]),
+            )
+        )
+    rows.extend([
         _row(
             "figure_interpretation_coverage",
             not missing_interpretations and bool(plot_keys),
@@ -525,7 +598,8 @@ def audit_publication_report(
             if not final_report_placeholder_issues
             else "final report contains placeholder text: " + ", ".join(final_report_placeholder_issues),
         ),
-    ]
+    ])
+    return rows
 
 
 def summarize_audit(rows: list[dict[str, str]]) -> dict[str, int | bool]:
@@ -575,6 +649,7 @@ def main() -> None:
     parser.add_argument("--figure-interpretations", required=True, type=Path)
     parser.add_argument("--software-versions", required=True, type=Path)
     parser.add_argument("--final-report", required=True, type=Path)
+    parser.add_argument("--report-index", type=Path)
     parser.add_argument("--out-tsv", required=True, type=Path)
     parser.add_argument("--out-md", required=True, type=Path)
     args = parser.parse_args()
@@ -583,6 +658,7 @@ def main() -> None:
         figure_interpretations=args.figure_interpretations,
         software_versions=args.software_versions,
         final_report=args.final_report,
+        report_index=args.report_index,
     )
     write_tsv(rows, args.out_tsv)
     write_markdown(rows, args.out_md)

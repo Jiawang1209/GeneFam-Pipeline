@@ -345,6 +345,8 @@ workflow {
                 BUILD_RUN_CONFIG_SNAPSHOT.out,
                 CONCAT_FAMILY_CANDIDATES.out,
                 FAMILY_SUMMARY.out,
+                PLOT_FAMILY_COUNTS.out[0],
+                PLOT_FAMILY_COUNTS.out[1],
                 EXTRACT_FAMILY_SEQUENCES.out,
                 PLOT_GENE_FAMILY_INFO.out[0],
                 PLOT_GENE_FAMILY_INFO.out[1],

@@ -296,6 +296,7 @@ def test_default_checks_include_publication_report_audit_after_visualization_rep
     assert "--figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv" in command
     assert "--software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv" in command
     assert "--final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md" in command
+    assert "--report-index results/nextflow_standard_feature_smoke/standard/report/report_index.tsv" in command
     assert "--out-tsv results/publication_report_audit/publication_report_audit.tsv" in command
     assert "--out-md results/publication_report_audit/publication_report_audit.md" in command
 
@@ -743,6 +744,7 @@ def test_default_checks_include_wgd_publication_report_audit_after_wgd_smoke():
     assert "--figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv" in command
     assert "--software-versions results/nextflow_wgd_smoke/wgd/report/software_versions.tsv" in command
     assert "--final-report results/nextflow_wgd_smoke/wgd/report/final_report.md" in command
+    assert "--report-index results/nextflow_wgd_smoke/wgd/report/report_index.tsv" in command
     assert "--out-tsv results/publication_report_audit/wgd_publication_report_audit.tsv" in command
     assert "--out-md results/publication_report_audit/wgd_publication_report_audit.md" in command
 

@@ -108,6 +108,8 @@ def test_readiness_checklist_documents_command_audit():
     assert "publication_report_audit" in text
     assert "paper-style report closure" in text
     assert "valid plot file signatures" in text
+    assert "report_index_plot_variants" in text
+    assert "PDF/PNG plot variants" in text
     assert "registered-only figure interpretation scope" in text
     assert "plot manifest and interpretation output path consistency" in text
     assert "complete per-figure close-reading text" in text
@@ -226,6 +228,8 @@ def test_readme_points_to_final_handoff_report():
     assert "all available indexed report paths exist" in readme
     assert "figure_interpretations.md" in readme
     assert "valid plot file signatures" in readme
+    assert "report_index_plot_variants" in readme
+    assert "PDF/PNG plot variants" in readme
     assert "registered-only figure interpretation scope" in readme
     assert "plot manifest and interpretation output path consistency" in readme
     assert "complete per-figure close-reading text" in readme

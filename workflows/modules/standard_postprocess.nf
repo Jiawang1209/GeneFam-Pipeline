@@ -68,6 +68,8 @@ process BUILD_STANDARD_REPORT_INDEX {
     path run_config_snapshot
     path family_candidates
     path family_counts
+    path family_counts_pdf
+    path family_counts_png
     path family_members_faa
     path gene_family_copy_number
     path gene_family_copy_number_summary
@@ -132,6 +134,8 @@ process BUILD_STANDARD_REPORT_INDEX {
       --run-config-snapshot ${run_config_snapshot} \\
       --family-candidates ${family_candidates} \\
       --family-counts ${family_counts} \\
+      --family-counts-pdf ${family_counts_pdf} \\
+      --family-counts-png ${family_counts_png} \\
       --family-members-faa ${family_members_faa} \\
       --gene-family-copy-number ${gene_family_copy_number} \\
       --gene-family-copy-number-summary ${gene_family_copy_number_summary} \\

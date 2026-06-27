@@ -161,6 +161,112 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
     }
 
 
+def test_publication_report_audit_requires_report_index_png_variant_for_each_plot(tmp_path):
+    plot_manifest = tmp_path / "report/plot_manifest.tsv"
+    figure_interpretations = tmp_path / "report/figure_interpretations.tsv"
+    software_versions = tmp_path / "report/software_versions.tsv"
+    report_index = tmp_path / "report/report_index.tsv"
+    final_report = tmp_path / "report/final_report.md"
+    (tmp_path / "plots").mkdir()
+    (tmp_path / "plots/tree_features.pdf").write_bytes(b"%PDF tree")
+
+    _write_tsv(
+        plot_manifest,
+        ["plot_key", "path", "description"],
+        [["tree_features", "plots/tree_features.pdf", "Tree and feature architecture"]],
+    )
+    _write_tsv(
+        report_index,
+        ["key", "path", "status", "description"],
+        [
+            ["tree_features_pdf", str(tmp_path / "plots/tree_features.pdf"), "available", "Tree feature PDF"],
+            ["tree_features_png", str(tmp_path / "plots/tree_features.png"), "available", "Tree feature PNG"],
+        ],
+    )
+    _write_tsv(
+        figure_interpretations,
+        [
+            "figure_key",
+            "input_data",
+            "what_figure_shows",
+            "key_observations",
+            "biological_interpretation",
+            "qc_warnings",
+            "qc_tables",
+            "method_and_software",
+            "reproducibility",
+            "result_reading_status",
+            "output_path",
+        ],
+        [[
+            "tree_features",
+            "tree and feature tables",
+            "tree-ordered feature tracks",
+            "clades share motif/domain architecture",
+            "conserved clade features support structural conservation",
+            "QC tables record missing feature rows",
+            "tables/tree_feature_matrix.tsv",
+            "FastTree; MAFFT; plot_tree_features.R; /usr/local/bin/R",
+            "python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
+            "figure-specific close reading",
+            "plots/tree_features.pdf",
+        ]],
+    )
+    _write_tsv(
+        software_versions,
+        ["component", "kind", "version", "status", "source"],
+        [
+            ["FastTree", "command", "2.1.11", "detected", "fasttree -help"],
+            ["MAFFT", "command", "7.520", "detected", "mafft --version"],
+            ["R", "command", "4.4.0", "detected", "/usr/local/bin/R --version"],
+            ["ggplot2", "R_package", "4.0.3", "detected", "packageVersion(\"ggplot2\")"],
+        ],
+    )
+    final_report.write_text(
+        "\n".join(
+            [
+                "# GeneFam-Pipeline Final Report",
+                "## Methods Summary",
+                "Family members are identified with HMMER and DIAMOND evidence. MCScanX synteny and Ka/Ks evidence support gamma, beta, alpha, and theta WGD interpretations.",
+                "### Software Versions",
+                "| FastTree | command | 2.1.11 | detected | fasttree -help |",
+                "| MAFFT | command | 7.520 | detected | mafft --version |",
+                "| R | command | 4.4.0 | detected | /usr/local/bin/R --version |",
+                "| ggplot2 | R_package | 4.0.3 | detected | packageVersion(\"ggplot2\") |",
+                "## Figure Traceability Matrix",
+                "| figure_key | plot_path | interpretation_status | qc_tables | method_and_software | reproducibility |",
+                "| --- | --- | --- | --- | --- | --- |",
+                "| tree_features | plots/tree_features.pdf | figure-specific close reading | tables/tree_feature_matrix.tsv | FastTree; MAFFT; plot_tree_features.R; /usr/local/bin/R | python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke |",
+                "## Figure Result Interpretations",
+                "### tree_features: Tree, motif, gene-structure, and domain composite",
+                "- Input data: tree and feature tables",
+                "- What the figure shows: tree-ordered feature tracks",
+                "- Key observations: clades share motif/domain architecture",
+                "- Biological interpretation: conserved clade features support structural conservation",
+                "- QC warnings / limitations: QC tables record missing feature rows",
+                "- QC tables: tables/tree_feature_matrix.tsv",
+                "- Method/software: FastTree; MAFFT; plot_tree_features.R; /usr/local/bin/R",
+                "- Reproducibility: python bin/genefam/run_tree_feature_smoke.py --r-bin /usr/local/bin/R --outdir results/tree_feature_smoke",
+                "- Result reading status: figure-specific close reading",
+                "- Output path: `plots/tree_features.pdf`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    rows = audit_publication_report(
+        plot_manifest=plot_manifest,
+        figure_interpretations=figure_interpretations,
+        software_versions=software_versions,
+        final_report=final_report,
+        report_index=report_index,
+    )
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["report_index_plot_variants"]["status"] == "failed"
+    assert "tree_features:png:missing_file" in by_check["report_index_plot_variants"]["note"]
+
+
 def test_publication_report_audit_flags_missing_figure_interpretation(tmp_path):
     plot_manifest = tmp_path / "plot_manifest.tsv"
     figure_interpretations = tmp_path / "figure_interpretations.tsv"

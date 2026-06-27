@@ -11,6 +11,8 @@ def test_build_standard_report_index_marks_core_outputs_available():
             "run_config_snapshot": "tables/run_config_snapshot.tsv",
             "family_candidates": "tables/family_candidates.tsv",
             "family_counts": "tables/family_counts.tsv",
+            "family_counts_pdf": "plots/family_counts.pdf",
+            "family_counts_png": "plots/family_counts.png",
             "family_members_faa": "sequences/family_members.faa",
             "gene_family_copy_number": "tables/gene_family_copy_number.tsv",
             "gene_family_copy_number_summary": "tables/gene_family_copy_number_summary.tsv",
@@ -79,6 +81,8 @@ def test_build_standard_report_index_marks_core_outputs_available():
     assert {row["key"] for row in rows} >= {
         "run_config_snapshot",
         "family_members_faa",
+        "family_counts_pdf",
+        "family_counts_png",
         "gene_family_copy_number",
         "gene_family_copy_number_summary",
         "gene_family_species_order",
@@ -159,6 +163,8 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
         "run_config_snapshot": "results/nextflow_standard_smoke/standard/tables/run_config_snapshot.tsv",
         "family_candidates": "results/nextflow_standard_smoke/standard/tables/family_candidates.tsv",
         "family_counts": "results/nextflow_standard_smoke/standard/tables/family_counts.tsv",
+        "family_counts_pdf": "results/nextflow_standard_smoke/standard/plots/family_counts.pdf",
+        "family_counts_png": "results/nextflow_standard_smoke/standard/plots/family_counts.png",
         "family_members_faa": "results/nextflow_standard_smoke/standard/sequences/family_members.faa",
         "gene_family_copy_number": "results/nextflow_standard_smoke/standard/tables/gene_family_copy_number.tsv",
         "gene_family_copy_number_summary": "results/nextflow_standard_smoke/standard/tables/gene_family_copy_number_summary.tsv",
@@ -235,6 +241,10 @@ def test_build_standard_report_index_cli_writes_tsv(tmp_path):
             "family_candidates.tsv",
             "--family-counts",
             "family_counts.tsv",
+            "--family-counts-pdf",
+            "family_counts.pdf",
+            "--family-counts-png",
+            "family_counts.png",
             "--family-members-faa",
             "family_members.faa",
             "--gene-family-copy-number",
@@ -329,6 +339,10 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
             "family_candidates.tsv",
             "--family-counts",
             "family_counts.tsv",
+            "--family-counts-pdf",
+            "family_counts.pdf",
+            "--family-counts-png",
+            "family_counts.png",
             "--family-members-faa",
             "family_members.faa",
             "--gene-family-copy-number",
@@ -405,6 +419,8 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
     rows = {row["key"]: row for row in read_tsv(out)}
     assert rows["family_candidates"]["path"] == "results/demo/tables/family_candidates.tsv"
     assert rows["run_config_snapshot"]["path"] == "results/demo/tables/run_config_snapshot.tsv"
+    assert rows["family_counts_pdf"]["path"] == "results/demo/plots/family_counts.pdf"
+    assert rows["family_counts_png"]["path"] == "results/demo/plots/family_counts.png"
     assert rows["family_members_faa"]["path"] == "results/demo/sequences/family_members.faa"
     assert rows["gene_family_info_pdf"]["path"] == "results/demo/plots/gene_family_info_summary.pdf"
     assert rows["gene_family_species_order"]["path"] == "results/demo/tables/gene_family_species_order.tsv"
