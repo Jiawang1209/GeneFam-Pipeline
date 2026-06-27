@@ -34,6 +34,45 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 15:30 - Synchronize Chinese README acceptance entrypoints
+
+Context:
+- The English README and quickstart now document report-index path closure, figure-gallery audit, and delivery-manifest audit, but the Chinese README was still missing those newest MVP acceptance entrypoints.
+- The active `/goal` requires a polished MVP that users can understand from the Chinese entrypoint without opening the English documentation first.
+
+Decisions:
+- Treat `README.zh-CN.md` as a tested user-facing contract, not an informal summary.
+- Keep local acceptance as the main Chinese entrypoint and list report-index, figure-gallery, and delivery-manifest audits directly under it.
+- Explain the Docker / Apptainer blocker as a final packaging/runtime verification blocker, not a core analysis-flow failure.
+
+Added:
+- Test assertions requiring the Chinese README to mention standard/WGD report-index audits, `figure_gallery_audit`, `delivery_manifest_audit`, and the available indexed-path closure.
+
+Modified:
+- `README.zh-CN.md`
+- `tests/test_runtime_environment_files.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_runtime_environment_files.py::test_chinese_readme_points_to_publication_audit_acceptance -q` first failed because `README.zh-CN.md` did not mention `results/report_index_audit/standard_report_index_audit.md`.
+- `python -m pytest tests/test_runtime_environment_files.py::test_chinese_readme_points_to_publication_audit_acceptance -q` passed after updating the Chinese README.
+- `python -m pytest tests/test_runtime_environment_files.py -q` passed with 14 tests.
+- `python -m pytest tests -q` passed with 445 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and wrote `Passed: 50`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed the final handoff, delivery bundle, report-index audits, figure-gallery audit, delivery-manifest audit, and local acceptance summary.
+- `sed -n '1,80p' results/local_acceptance/local_acceptance_summary.md` confirmed release, publication report, report-index, figure-gallery, delivery-manifest, quickstart, and delivery-bundle steps passed, with only `final_stage_blocker` blocked by Docker/Apptainer reproducibility.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: Chinese README acceptance documentation, runtime-environment doc test, and history entry.
+
+Next:
+- Commit this documentation hardening, then backfill the commit hash in a follow-up history entry.
+
 ## 2026-06-27 13:17 - Require traceability evidence in objective audit
 
 Context:

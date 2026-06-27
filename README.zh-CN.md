@@ -171,13 +171,23 @@ bash scripts/run_local_acceptance.sh
 ```text
 results/local_acceptance/local_acceptance_summary.md
 results/publication_report_audit/publication_report_audit.md
+results/report_index_audit/standard_report_index_audit.md
+results/report_index_audit/wgd_report_index_audit.md
 results/delivery_bundle/figure_gallery.tsv
 results/delivery_bundle/figure_gallery.md
+results/delivery_bundle_smoke/figure_gallery_audit.md
+results/delivery_bundle_smoke/delivery_manifest_audit.md
 ```
 
-`results/local_acceptance/local_acceptance_summary.md` 是最短的通过/失败/阻塞索引；`results/publication_report_audit/publication_report_audit.md` 用来确认最终报告是否真的把图件格式、只精读已注册图件、图件清单与精读表路径一致性、QC、逐图方法/软件版本和复现命令闭环。
+`results/local_acceptance/local_acceptance_summary.md` 是最短的通过/失败/阻塞索引；它会单独列出 release gate、quickstart、publication_report_audit、report-index audit、`figure_gallery_audit`、`delivery_manifest_audit` 和 delivery bundle 的状态。
+
+`results/publication_report_audit/publication_report_audit.md` 用来确认最终报告是否真的把图件格式、只精读已注册图件、图件清单与精读表路径一致性、QC、逐图方法/软件版本和复现命令闭环。
+
+`results/report_index_audit/standard_report_index_audit.md` 和 `results/report_index_audit/wgd_report_index_audit.md` 用来检查标准分析分支和 WGD 分支的 report-index 是否把 plot_manifest、software_versions、figure_interpretations、`final_report.md` 和 figure_traceability_matrix 都挂到索引里，并确认所有 available 索引路径都真实存在。
 
 `results/delivery_bundle/figure_gallery.tsv` 和 `results/delivery_bundle/figure_gallery.md` 是全局论文图件目录：每一行把标准分析和 WGD 分支的图件 PDF 连接到逐图精读、软件/R 包版本表和最终报告，适合交付时快速定位所有图。
+
+`results/delivery_bundle_smoke/figure_gallery_audit.md` 是全局图件目录的链接检查，确认 figure gallery 里的图件、精读、软件版本、最终报告和 traceability anchor 都能找到；`results/delivery_bundle_smoke/delivery_manifest_audit.md` 是最终交付清单路径检查，确认 available 和 blocked 的 handoff index 路径都能解析到真实文件或被接受的运行时定位符。
 
 如果当前机器还没有 Docker / Apptainer，`local_acceptance_summary.md` 可能显示 `Overall status: blocked`。这不是说分析流程失败，而是表示分析证据已经达到 release-ready，剩余的是最终容器封装验证。此时优先查看 `final_stage_blocker` 行；当前预期 blocker 是 Docker / Apptainer 运行时验证，对应的解除入口在 `results/readiness/runtime_bootstrap.sh`。
 
@@ -399,7 +409,10 @@ python bin/genefam/run_release_checks.py --outdir results/release_checks
 results/release_checks/release_checks.md
 results/objective_audit/objective_audit.md
 results/handoff/handoff_report.md
+results/local_acceptance/local_acceptance_summary.md
 ```
+
+如果 release gate 里 required failed 为 0，但总目标仍显示 blocked，优先看 `results/local_acceptance/local_acceptance_summary.md` 里的 `final_stage_blocker`，再看 `results/delivery_bundle_smoke/figure_gallery_audit.md` 和 `results/delivery_bundle_smoke/delivery_manifest_audit.md`。前者确认论文级图件目录可导航，后者确认最终交付清单路径可解析。
 
 ## 重要文件
 
