@@ -74,6 +74,29 @@ def _validate_species_manifest_paths(manifest: Path, input_required: dict[str, b
     return errors
 
 
+def _validate_auto_species_bank_paths(
+    root: Path,
+    patterns: dict[str, list[str]],
+    input_required: dict[str, bool],
+) -> list[str]:
+    errors: list[str] = []
+    if not root.is_dir():
+        return errors
+    for species_dir in sorted(path for path in root.iterdir() if path.is_dir()):
+        species_id = species_dir.name
+        for file_type in ("pep", "gff3", "cds", "genome"):
+            matches = []
+            for pattern in patterns.get(file_type, []):
+                matches.extend(species_dir.glob(pattern))
+            unique_matches = sorted(set(path for path in matches if path.is_file()))
+            if input_required.get(file_type, False) and not unique_matches:
+                errors.append(f"input.root missing required {file_type} file for species {species_id}")
+            if len(unique_matches) > 1:
+                names = ", ".join(path.name for path in unique_matches)
+                errors.append(f"input.root multiple {file_type} files for species {species_id}: {names}")
+    return errors
+
+
 def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir: Path | None = None) -> list[str]:
     errors: list[str] = []
     base_dir = Path(".") if base_dir is None else base_dir
@@ -91,8 +114,18 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
         errors.append("input.manifest is required when input.mode is manifest")
     input_required = input_config.get("required", {}) or {}
     if check_paths:
-        if input_mode == "auto" and input_config.get("root") and not _path_exists(str(input_config["root"]), base_dir):
-            errors.append(f"input.root path does not exist: {input_config['root']}")
+        if input_mode == "auto" and input_config.get("root"):
+            root_path = _resolve_path(str(input_config["root"]), base_dir)
+            if not root_path.exists():
+                errors.append(f"input.root path does not exist: {input_config['root']}")
+            else:
+                errors.extend(
+                    _validate_auto_species_bank_paths(
+                        root_path,
+                        input_config.get("patterns", {}) or {},
+                        input_required,
+                    )
+                )
         if (
             input_mode == "manifest"
             and input_config.get("manifest")

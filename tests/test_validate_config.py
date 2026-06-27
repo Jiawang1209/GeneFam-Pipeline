@@ -213,6 +213,28 @@ def test_validate_config_check_paths_reports_missing_manifest_file_paths(tmp_pat
     assert "input.manifest gff3 path does not exist for species Arabidopsis: missing/ath.gff3" in errors
 
 
+def test_validate_config_check_paths_reports_missing_auto_species_required_files(tmp_path):
+    species_dir = tmp_path / "species_bank" / "Arabidopsis"
+    species_dir.mkdir(parents=True)
+    (species_dir / "Arabidopsis.gff3").write_text("##gff-version 3\n", encoding="utf-8")
+    config = _valid_base_config()
+    config["input"] = {
+        "mode": "auto",
+        "root": "species_bank",
+        "required": {"pep": True, "gff3": True, "cds": False, "genome": False},
+        "patterns": {
+            "pep": ["*.pep.fa"],
+            "gff3": ["*.gff3"],
+            "cds": ["*.cds.fa"],
+            "genome": ["*.genome.fa"],
+        },
+    }
+
+    errors = validate_config(config, check_paths=True, base_dir=tmp_path)
+
+    assert "input.root missing required pep file for species Arabidopsis" in errors
+
+
 def test_validate_config_reports_promoter_cis_requires_annotation_table_and_missing_path(tmp_path):
     config = _valid_base_config()
     config["input"]["root"] = "tests/fixtures/species_bank"
