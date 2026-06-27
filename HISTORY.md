@@ -71,7 +71,7 @@ Verification:
 - `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
 
 Commit:
-- hash: pending
+- hash: 2d7e4e770d46b6683ab5eba7981473bda5d9df5c
 - message: `test: report malformed WGD event config`
 - files: WGD event-map root validation, config validation coverage, and history entry.
 
