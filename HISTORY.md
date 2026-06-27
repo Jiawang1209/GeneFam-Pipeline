@@ -68,7 +68,7 @@ Verification:
 - `rg -n "Overall status: blocked|final_stage_blocker|Docker / Apptainer|Docker/Apptainer reproducibility|runtime_bootstrap" README.zh-CN.md results/local_acceptance/local_acceptance_summary.md results/delivery_bundle/delivery_bundle.md` confirmed the Chinese README and generated handoff artifacts describe the same final-stage blocker.
 
 Commit:
-- hash: pending
+- hash: 2f727abb61ca1447bffe774080da4ecfac3c0901
 - message: `docs: explain local blocker status in Chinese README`
 - files: Chinese README, runtime environment doc test, and history entry.
 
