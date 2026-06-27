@@ -82,12 +82,11 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` completed; release gate reported `Release ready: true`, `Required failed: 0`, `Optional failed: 2`; local acceptance remains blocked only by the final-stage Docker/Apptainer runtime availability.
 
 Commit:
-- hash: pending
-- message: pending
+- hash: d193567
+- message: feat: add reference-safe apptainer definition
 - files: Apptainer definition, container audits, objective audit, runtime docs, gitignore, tests, and history
 
 Next:
-- Backfill this entry with the commit hash after committing.
 - When Docker/Apptainer commands are available, run `bash results/readiness/runtime_bootstrap.sh` to build images, run container profile smokes, and clear the final-stage blocker.
 
 ## 2026-06-27 22:00 - Make delivery bundle paths clickable and audited
