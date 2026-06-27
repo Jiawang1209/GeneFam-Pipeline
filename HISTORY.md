@@ -66,12 +66,11 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` completed; release gate reported `Release ready: true`, `Required failed: 0`, `Optional failed: 2`; local acceptance remains blocked only by Docker/Apptainer runtime availability.
 
 Commit:
-- hash: pending
-- message: pending
+- hash: bcacff4
+- message: feat: add native apptainer bootstrap path
 - files: runtime bootstrap planner, bootstrap tests, and history
 
 Next:
-- Backfill this entry with the commit hash after committing.
 - When Docker/Apptainer commands are available, run `bash results/readiness/runtime_bootstrap.sh` to build Docker and Apptainer images, run both container profile smokes, and clear the final-stage blocker.
 
 ## 2026-06-27 22:20 - Add Reference-safe Apptainer definition
