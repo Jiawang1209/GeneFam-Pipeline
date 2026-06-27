@@ -12517,6 +12517,47 @@ Commit:
 Next:
 - Commit this YAML-only release-gate hardening and backfill the commit hash in this history entry.
 
+## 2026-06-27 - Require publication YAML evidence in objective audit
+
+Timestamp:
+- 2026-06-27 20:31 CST
+
+Context:
+- The release gate now validates `configs/publication_modules.example.yaml` and runs the formal standard visualization smoke from that YAML-only entrypoint.
+- The long-form objective audit still marked `paper-level visualization modules` achieved from visualization smoke rows alone, so the objective evidence did not explicitly require the YAML-driven publication-module proof.
+
+Decisions:
+- Require `validate publication modules config` before objective audit marks `paper-level visualization modules` as achieved.
+- Update the objective note to name `configs/publication_modules.example.yaml` as the YAML-driven standard publication visualization branch.
+
+Added:
+- Regression test proving `paper-level visualization modules` is missing when all figure smokes pass but the publication YAML validation row is absent.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_paper_level_visualization_modules_require_publication_yaml_validation -q` first failed because objective audit still marked `paper-level visualization modules` achieved without `validate publication modules config`.
+- `python -m pytest tests/test_audit_objective_completion.py::test_paper_level_visualization_modules_require_publication_yaml_validation -q` passed after adding the objective-audit requirement.
+- `python -m pytest tests/test_audit_objective_completion.py tests/test_run_release_checks.py::test_write_objective_audit_reads_publication_detail_audits -q` passed with 49 tests.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --publication-audit results/publication_report_audit/publication_report_audit.tsv --wgd-publication-audit results/publication_report_audit/wgd_publication_report_audit.tsv --outdir results/objective_audit` exited 0.
+- `rg -n "paper-level visualization modules|validate publication modules config|publication_modules.example" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed objective evidence now includes `validate publication modules config` and `configs/publication_modules.example.yaml`.
+- `python -m pytest tests -q` passed with 468 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and wrote `Passed: 52`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`.
+- `rg -n "paper-level visualization modules|validate publication modules config|publication_modules.example|Release ready|Required failed|Optional failed" results/release_checks/release_checks.md results/objective_audit/objective_audit.md` confirmed release/objective evidence stayed aligned.
+- `bash scripts/run_local_acceptance.sh` exited 0, refreshed the delivery bundle, and reported the expected `final_stage_blocker`: Docker/Apptainer reproducibility.
+
+Commit:
+- pending
+
+Next:
+- Commit this objective-audit hardening and backfill the commit hash in this history entry.
+
 ## 2026-06-27 - Drive publication visualization modules from YAML
 
 Timestamp:

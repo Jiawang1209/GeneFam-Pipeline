@@ -66,6 +66,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
         _release_row("standard branch smoke"),
         _release_row("gene structure smoke"),
         _release_row("chromosome location smoke"),
+        _release_row("validate publication modules config"),
         _release_row("gene family information visualization smoke"),
         _release_row("feature summary visualization smoke"),
         _release_row("promoter smoke"),
@@ -131,6 +132,8 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
     assert "docker, apptainer" in by_requirement["Docker/Apptainer reproducibility"]["note"]
     assert by_requirement["WGD gamma beta alpha theta evidence"]["status"] == "achieved"
     assert by_requirement["paper-level visualization modules"]["status"] == "achieved"
+    assert "validate publication modules config" in by_requirement["paper-level visualization modules"]["evidence"]
+    assert "configs/publication_modules.example.yaml" in by_requirement["paper-level visualization modules"]["note"]
     assert "gene family information visualization smoke" in by_requirement["paper-level visualization modules"]["evidence"]
     assert "promoter smoke" in by_requirement["paper-level visualization modules"]["evidence"]
     assert "promoter cis-element visualization smoke" in by_requirement["paper-level visualization modules"]["evidence"]
@@ -221,6 +224,44 @@ def test_paper_level_visualization_modules_require_promoter_extraction_smoke():
 
     assert by_requirement["paper-level visualization modules"]["status"] == "missing"
     assert "promoter smoke" in by_requirement["paper-level visualization modules"]["evidence"]
+
+
+def test_paper_level_visualization_modules_require_publication_yaml_validation():
+    release_rows = [
+        _release_row("gene family information visualization smoke"),
+        _release_row("feature summary visualization smoke"),
+        _release_row("promoter smoke"),
+        _release_row("promoter cis-element visualization smoke"),
+        _release_row("tree feature visualization smoke"),
+        _release_row("MCScanX circlize visualization smoke"),
+        _release_row("Nextflow standard visualization smoke"),
+        _release_row("PPI ggNetView smoke"),
+        _release_row("PPI ggNetView plot smoke"),
+        _release_row("standard branch expression smoke"),
+        _release_row("expression heatmap visualization smoke"),
+        _release_row("Ka/Ks WGD annotation plot smoke"),
+        _release_row("duplicate-type Ka/Ks visualization smoke"),
+        _release_row("pangenome-class Ka/Ks visualization smoke"),
+        _release_row("Nextflow WGD event smoke"),
+        _release_row("WGD publication report audit"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(release_rows, readiness_rows)
+    by_requirement = {row["requirement"]: row for row in rows}
+
+    assert by_requirement["paper-level visualization modules"]["status"] == "missing"
+    assert "validate publication modules config" in by_requirement["paper-level visualization modules"]["evidence"]
 
 
 def test_paper_level_visualization_modules_require_expression_heatmap_smoke():
