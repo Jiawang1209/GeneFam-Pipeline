@@ -69,12 +69,12 @@ Verification:
 - `python bin/genefam/audit_figure_gallery.py --figure-gallery results/delivery_bundle/figure_gallery.tsv --plot-manifest standard=results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --plot-manifest wgd=results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --out-tsv results/delivery_bundle_smoke/figure_gallery_audit.tsv --out-md results/delivery_bundle_smoke/figure_gallery_audit.md` exited 0 and reported `Passed: 4`, `Failed: 0`, `Complete: true`.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: cba706742eb65ccb13cd05dd821ae984a2683b31
+- message: test: enforce figure gallery traceability targets
 - files: figure gallery audit, gallery tests, release/quickstart/readiness docs, README, and history entry.
 
 Next:
-- Run full tests and release/local acceptance checks, then commit and backfill this history entry.
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
 
 ## 2026-06-27 17:25 - Require report-index traceability anchor target
 
