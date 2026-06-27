@@ -131,6 +131,19 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
     assert "| family_event_retention_summary | tables/family_event_retention_summary.tsv | Family gene counts by duplicate type and WGD event |" in report
     assert "### Figures" in report
     assert "| kaks | plots/ks_distribution.pdf | Ks distribution |" in report
+    assert "## Figure Traceability Matrix" in report
+    assert (
+        "| figure_key | plot_path | interpretation_status | qc_tables | method_and_software | reproducibility |"
+        in report
+    )
+    assert (
+        "| family_counts | plots/family_counts.pdf | template-guided close reading; validate against QC tables before manuscript use | tables/gene_family_copy_number.tsv; tables/gene_family_pangenome_summary.tsv | build_gene_family_info.py; plot_gene_family_info.R; /usr/local/bin/R | python bin/genefam/run_gene_family_info_smoke.py --r-bin /usr/local/bin/R --outdir results/gene_family_info_smoke |"
+        in report
+    )
+    assert (
+        "| kaks | plots/ks_distribution.pdf | interpretation_not_provided | not provided | not provided | not provided |"
+        in report
+    )
     assert "## Reproducibility Note" in report
     assert "GeneFamilyFlow" in report
     assert "/usr/local/bin/R" in report
@@ -224,6 +237,11 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
     assert "## Results Package Inventory" in text
     assert "### Software Versions" in text
     assert "## Figure Result Interpretations" in text
+    assert "## Figure Traceability Matrix" in text
+    assert (
+        "| family_counts | plots/family_counts.pdf | template-guided close reading | tables/gene_family_copy_number.tsv | plot_gene_family_info.R; /usr/local/bin/R | nextflow run main.nf -profile conda --branch standard |"
+        in text
+    )
     assert "- QC tables: tables/gene_family_copy_number.tsv" in text
     assert "- Method/software: plot_gene_family_info.R; /usr/local/bin/R" in text
     assert "- Reproducibility: nextflow run main.nf -profile conda --branch standard" in text
@@ -272,4 +290,6 @@ def test_assemble_report_cli_supports_standard_branch_without_wgd_tables(tmp_pat
     text = out_path.read_text(encoding="utf-8")
     assert "Project: GDSL demo" in text
     assert "| family_members_faa | available | family_members.faa | Family member peptide FASTA |" in text
+    assert "## Figure Traceability Matrix" in text
+    assert "| family_counts | plots/family_counts.pdf | interpretation_not_provided | not provided | not provided | not provided |" in text
     assert "No WGD event evidence table was available for this run." in text

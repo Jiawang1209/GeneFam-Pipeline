@@ -34,6 +34,54 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 12:58 - Add final report figure traceability matrix
+
+Context:
+- The active `/goal` requires final reports to support paper-level reading of every figure, including plot path, close-reading status, QC evidence, methods/software, versions, and reproducibility.
+- The final report already had separate figure inventory and figure interpretation sections, but there was no compact matrix linking each registered plot to its interpretation/QC/method/reproducibility evidence.
+
+Decisions:
+- Add a `Figure Traceability Matrix` to the assembled final report.
+- Build the matrix from existing `plot_manifest` and `figure_interpretations` rows so no new input file contract is needed.
+- Mark registered plot artifacts without matching interpretation rows as `interpretation_not_provided` so missing interpretation coverage is visible.
+- Document the matrix as part of the release-audit contract.
+
+Added:
+- Final report section `Figure Traceability Matrix`.
+- Per-figure matrix columns for `figure_key`, `plot_path`, `interpretation_status`, `qc_tables`, `method_and_software`, and `reproducibility`.
+- Tests covering interpreted figures and missing-interpretation fallback rows.
+- Release-audit documentation requirement for the matrix.
+
+Modified:
+- `bin/genefam/assemble_report.py`
+- `tests/test_assemble_report.py`
+- `tests/test_release_audit_docs.py`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_assemble_report.py -q` first failed with 3 expected failures because `Figure Traceability Matrix` was missing from the assembled report.
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because `docs/release_audit.md` did not mention `Figure Traceability Matrix`.
+- `python -m pytest tests/test_assemble_report.py tests/test_release_audit_docs.py -q` passed with 4 tests after the implementation and docs update.
+- `python bin/genefam/run_standard_smoke.py --config configs/example.config.yaml --groups configs/species_groups.yaml --mock-evidence-dir tests/fixtures/mock_evidence --expression-matrix tests/fixtures/expression/family_expression.tsv --expression-metadata tests/fixtures/expression/sample_metadata.tsv --r-bin /usr/local/bin/R --outdir results/standard_traceability_smoke` exited 0 and generated `results/standard_traceability_smoke/report/final_report.md`.
+- `python bin/genefam/run_wgd_smoke.py --events-config configs/wgd_events.brassicaceae.yaml --outdir results/wgd_traceability_smoke` exited 0 and generated `results/wgd_traceability_smoke/report/final_report.md`.
+- `python -m pytest tests -q` passed with 432 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 48`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `rg -n "Figure Traceability Matrix|family_counts|gene_family_info_summary|ppi_ggnetview|expression_heatmap|ks_distribution|duplicate_type_kaks|pangenome_kaks|interpretation_not_provided" results/nextflow_standard_feature_smoke/standard/report/final_report.md results/nextflow_wgd_smoke/wgd/report/final_report.md` confirmed formal standard and WGD final reports include the matrix and expose interpreted and fallback rows.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed delivery bundle outputs while keeping only the final-stage Docker/Apptainer blocker.
+- `sed -n '1,28p' results/local_acceptance/local_acceptance_summary.md` confirmed local acceptance steps passed except `final_stage_blocker`.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: report assembler, assemble-report tests, release audit docs/tests, and history entry.
+
+Next:
+- Backfill this entry with the commit hash after the commit is created.
+
 ## 2026-06-27 13:05 - Expose figure gallery in handoff and release audit
 
 Context:

@@ -120,6 +120,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "QC tables and warnings" in text
     assert "software/R package versions" in text
     assert "per-figure method/software version coverage" in text
+    assert "Figure Traceability Matrix" in text
     assert "reproducibility commands" in text
     assert "report indexes expose plot manifests, software versions, figure interpretations in TSV/Markdown, and final reports" in text
     assert "docs/quickstart.md" in text

@@ -49,6 +49,26 @@ def _report_figure_rows(
     return rows
 
 
+def _figure_traceability_rows(
+    figure_rows: list[list[str]], figure_interpretations: list[dict[str, str]]
+) -> list[list[str]]:
+    interpretations_by_key = {row.get("figure_key", ""): row for row in figure_interpretations}
+    rows: list[list[str]] = []
+    for figure_key, plot_path, _description in figure_rows:
+        interpretation = interpretations_by_key.get(figure_key, {})
+        rows.append(
+            [
+                figure_key,
+                plot_path,
+                interpretation.get("result_reading_status", "interpretation_not_provided"),
+                interpretation.get("qc_tables", "not provided"),
+                interpretation.get("method_and_software", "not provided"),
+                interpretation.get("reproducibility", "not provided"),
+            ]
+        )
+    return rows
+
+
 def assemble_report(
     project_name: str,
     gene_family: str,
@@ -219,6 +239,14 @@ def assemble_report(
                 for row in (plot_manifest or [])
             ],
             "No plot manifest was available for this run.",
+        )
+    )
+    lines.extend(
+        _section_or_empty(
+            "Figure Traceability Matrix",
+            ["figure_key", "plot_path", "interpretation_status", "qc_tables", "method_and_software", "reproducibility"],
+            _figure_traceability_rows(figure_rows, figure_interpretations or []),
+            "No figure traceability rows were available for this run.",
         )
     )
     lines.extend(["## Figure Result Interpretations", ""])
