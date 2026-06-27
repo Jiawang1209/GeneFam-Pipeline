@@ -34,6 +34,45 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 10:04 - Reject placeholder text in final reports
+
+Context:
+- The active `/goal` requires the final report to provide publication-style, figure-by-figure close reading.
+- The previous audit rejected placeholder words inside `figure_interpretations.tsv`, but final report Markdown text itself could still contain draft markers such as `TODO`, `TBD`, or `placeholder`.
+
+Decisions:
+- Add a dedicated `final_report_placeholder_text` publication-report audit row.
+- Treat `TODO`, `TBD`, and `placeholder` as invalid anywhere in `final_report.md`.
+- Keep figure interpretation detail validation separate so TSV-level and Markdown-level failures are easy to diagnose.
+
+Added:
+- Regression test proving a clean interpretation table still fails the publication report audit when the final report Markdown contains `TODO`.
+- Final report placeholder-text audit check.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `tests/test_audit_publication_report.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_flags_placeholder_text_in_final_report -q` first failed with `KeyError: 'final_report_placeholder_text'`.
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_flags_placeholder_text_in_final_report tests/test_audit_publication_report.py::test_publication_report_audit_flags_placeholder_interpretation_text tests/test_audit_publication_report.py::test_publication_report_audit_requires_reading_status_embedded_in_final_report -q` passed.
+- `python -m pytest tests/test_audit_publication_report.py -q` passed with 15 tests.
+- `python -m pytest tests -q` passed with 423 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
+- hash: pending
+- message: `test: reject placeholder final reports`
+- files: publication report audit final-report placeholder check, regression tests, and history entry.
+
+Next:
+- Continue final MVP hardening while keeping Docker/Apptainer verification as the final-stage external blocker.
+
 ## 2026-06-27 10:01 - Reject placeholder text in figure close readings
 
 Context:

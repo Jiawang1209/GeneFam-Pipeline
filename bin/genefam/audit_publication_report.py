@@ -168,6 +168,11 @@ def _missing_detail_fields(rows: list[dict[str, str]]) -> list[str]:
     return missing
 
 
+def _placeholder_text_issues(text: str, source: str) -> list[str]:
+    lowered = text.lower()
+    return [f"{source}:{token}" for token in PLACEHOLDER_TOKENS if token in lowered]
+
+
 def _report_contains(report_text: str, needle: str) -> bool:
     return needle in report_text
 
@@ -252,6 +257,7 @@ def audit_publication_report(
     detail_rows = [interpretation_rows[key] for key in plot_keys if key in interpretation_rows]
     missing_details = _missing_detail_fields(detail_rows)
     missing_method_component_versions = _missing_method_component_versions(detail_rows, software)
+    final_report_placeholder_issues = _placeholder_text_issues(report_text, "final_report")
 
     version_rows = [
         row
@@ -353,6 +359,14 @@ def audit_publication_report(
             "final report includes software versions and complete per-figure interpretation sections"
             if not missing_report_sections
             else "missing report sections/details: " + ", ".join(missing_report_sections),
+        ),
+        _row(
+            "final_report_placeholder_text",
+            not final_report_placeholder_issues,
+            str(final_report),
+            "final report has no TODO/TBD/placeholder text"
+            if not final_report_placeholder_issues
+            else "final report contains placeholder text: " + ", ".join(final_report_placeholder_issues),
         ),
     ]
 
