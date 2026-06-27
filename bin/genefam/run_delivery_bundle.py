@@ -42,6 +42,15 @@ FIGURE_GALLERY_ROWS = [
     },
     {
         "branch": "standard",
+        "plot_key": "gene_family_pangenome_summary",
+        "plot_path": "results/nextflow_standard_feature_smoke/standard/plots/gene_family_info_summary.pdf",
+        "plot_description": "Gene family pangenome presence and copy-number balance",
+        "figure_interpretations": "results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md",
+        "software_versions": "results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv",
+        "final_report": "results/nextflow_standard_feature_smoke/standard/report/final_report.md",
+    },
+    {
+        "branch": "standard",
         "plot_key": "tree_features",
         "plot_path": "results/nextflow_standard_feature_smoke/standard/plots/tree_features.pdf",
         "plot_description": "Tree, motif, gene-structure, and domain composite plot",

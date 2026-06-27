@@ -788,6 +788,8 @@ def test_default_checks_include_delivery_bundle_gallery_audit_after_smoke():
     command = " ".join(audit.command)
     assert "bin/genefam/audit_figure_gallery.py" in command
     assert "--figure-gallery results/delivery_bundle_smoke/delivery_bundle/figure_gallery.tsv" in command
+    assert "--plot-manifest standard=results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv" in command
+    assert "--plot-manifest wgd=results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv" in command
     assert "--out-tsv results/delivery_bundle_smoke/figure_gallery_audit.tsv" in command
     assert "--out-md results/delivery_bundle_smoke/figure_gallery_audit.md" in command
 

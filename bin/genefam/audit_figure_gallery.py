@@ -111,10 +111,56 @@ def _linked_file_issues(gallery: Path, rows: list[dict[str, str]]) -> list[str]:
     return issues
 
 
-def audit_figure_gallery(figure_gallery: Path) -> list[dict[str, str]]:
+def _manifest_expected_plot_path(plot_manifest: Path, manifest_path: str) -> str:
+    path = Path(manifest_path)
+    if path.is_absolute():
+        return str(path.resolve())
+    return str((plot_manifest.parent.parent / path).resolve())
+
+
+def _manifest_coverage_issues(
+    rows: list[dict[str, str]],
+    plot_manifests: dict[str, Path],
+) -> list[str]:
+    if not plot_manifests:
+        return []
+    gallery_by_key = {
+        (row.get("branch", "").strip(), row.get("plot_key", "").strip()): row
+        for row in rows
+        if row.get("branch", "").strip() and row.get("plot_key", "").strip()
+    }
+    issues: list[str] = []
+    for branch, plot_manifest in plot_manifests.items():
+        manifest_rows = read_tsv(plot_manifest)
+        if not manifest_rows:
+            issues.append(f"{branch}:plot_manifest:no_rows")
+            continue
+        for manifest_row in manifest_rows:
+            plot_key = manifest_row.get("plot_key", "").strip()
+            if not plot_key:
+                issues.append(f"{branch}:plot_manifest:missing_plot_key")
+                continue
+            gallery_row = gallery_by_key.get((branch, plot_key))
+            if gallery_row is None:
+                issues.append(f"{branch}:{plot_key}:missing_gallery_row")
+                continue
+            manifest_plot = _manifest_expected_plot_path(plot_manifest, manifest_row.get("path", "").strip())
+            gallery_plot = str(_resolve_path(plot_manifest, gallery_row.get("plot_path", "").strip()).resolve())
+            if Path(gallery_plot) != Path(manifest_plot):
+                issues.append(f"{branch}:{plot_key}:plot_path_mismatch:{gallery_row.get('plot_path', '')}")
+    return issues
+
+
+def audit_figure_gallery(
+    figure_gallery: Path,
+    plot_manifests: dict[str, Path] | None = None,
+) -> list[dict[str, str]]:
     rows = read_tsv(figure_gallery)
     column_issues = _required_column_issues(rows)
     link_issues = _linked_file_issues(figure_gallery, rows) if not column_issues else []
+    coverage_issues = (
+        _manifest_coverage_issues(rows, plot_manifests or {}) if not column_issues else []
+    )
     return [
         _row(
             "figure_gallery_required_columns",
@@ -131,6 +177,16 @@ def audit_figure_gallery(figure_gallery: Path) -> list[dict[str, str]]:
             "figure gallery linked plot, interpretation, version, report, and traceability targets exist"
             if not link_issues
             else "missing, empty, or unresolved figure gallery targets: " + ", ".join(link_issues),
+        ),
+        _row(
+            "figure_gallery_manifest_coverage",
+            not coverage_issues,
+            "; ".join(f"{branch}={path}" for branch, path in sorted((plot_manifests or {}).items()))
+            if plot_manifests
+            else str(figure_gallery),
+            "figure gallery covers all registered standard/WGD plot_manifest rows"
+            if not coverage_issues
+            else "missing or mismatched plot_manifest gallery rows: " + ", ".join(coverage_issues),
         ),
     ]
 
@@ -175,10 +231,23 @@ def write_markdown(rows: list[dict[str, str]], out_path: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--figure-gallery", required=True, type=Path)
+    parser.add_argument(
+        "--plot-manifest",
+        action="append",
+        default=[],
+        metavar="BRANCH=PATH",
+        help="optional branch=plot_manifest.tsv coverage source; repeat for standard and WGD",
+    )
     parser.add_argument("--out-tsv", required=True, type=Path)
     parser.add_argument("--out-md", required=True, type=Path)
     args = parser.parse_args()
-    rows = audit_figure_gallery(args.figure_gallery)
+    plot_manifests = {}
+    for item in args.plot_manifest:
+        if "=" not in item:
+            raise SystemExit(f"--plot-manifest must be BRANCH=PATH, got: {item}")
+        branch, path = item.split("=", 1)
+        plot_manifests[branch] = Path(path)
+    rows = audit_figure_gallery(args.figure_gallery, plot_manifests=plot_manifests)
     write_tsv(rows, args.out_tsv)
     write_markdown(rows, args.out_md)
     raise SystemExit(0 if summarize_audit(rows)["complete"] else 1)

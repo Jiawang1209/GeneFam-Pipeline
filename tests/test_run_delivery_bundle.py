@@ -294,6 +294,10 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         in gallery_text
     )
     assert (
+        "standard\tgene_family_pangenome_summary\tresults/nextflow_standard_feature_smoke/standard/plots/gene_family_info_summary.pdf\tGene family pangenome presence and copy-number balance\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md"
+        in gallery_text
+    )
+    assert (
         "standard\tppi_ggnetview\tresults/nextflow_standard_feature_smoke/standard/plots/ppi_ggnetview.pdf\tPPI network generated with ggNetView\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md"
         in gallery_text
     )
@@ -309,6 +313,7 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     gallery_md_text = gallery_md.read_text(encoding="utf-8")
     assert "# GeneFam-Pipeline Figure Gallery" in gallery_md_text
     assert "tree_features" in gallery_md_text
+    assert "gene_family_pangenome_summary" in gallery_md_text
     assert "ks_distribution" in gallery_md_text
     assert "software_versions.tsv" in gallery_md_text
     assert "traceability_matrix" in gallery_md_text

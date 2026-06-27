@@ -12055,6 +12055,59 @@ Commit:
 Next:
 - Continue final MVP hardening with container/runtime packaging still intentionally deferred until the analysis flow and report gates are fully stable.
 
+## 2026-06-27 - Audit delivery figure gallery against plot manifests
+
+Timestamp:
+- 2026-06-27 14:37 CST
+
+Context:
+- The delivery figure gallery linked existing rows to plots, figure interpretations, software versions, final reports, and traceability anchors.
+- The standard report `plot_manifest.tsv` also registered `gene_family_pangenome_summary`, but the delivery gallery did not list that plot key, and the gallery audit did not compare gallery coverage against the standard/WGD plot manifests.
+
+Decisions:
+- Make `figure_gallery_audit` verify plot_manifest coverage for the standard and WGD report manifests.
+- Add `gene_family_pangenome_summary` to the delivery figure gallery so the global plot index covers the pangenome/copy-number balance figure registered by the standard report.
+- Run the gallery audit in release checks with explicit `standard=.../plot_manifest.tsv` and `wgd=.../plot_manifest.tsv` coverage inputs.
+- Update README, release-audit, and readiness docs to describe plot_manifest coverage as part of the gallery audit contract.
+
+Added:
+- `figure_gallery_manifest_coverage` audit check.
+- CLI support for repeated `--plot-manifest BRANCH=PATH` arguments in `bin/genefam/audit_figure_gallery.py`.
+- Regression test proving a missing `gene_family_pangenome_summary` gallery row fails manifest coverage.
+- Delivery-bundle test assertions for the `gene_family_pangenome_summary` TSV/Markdown gallery entry.
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `bin/genefam/audit_figure_gallery.py`
+- `bin/genefam/run_delivery_bundle.py`
+- `bin/genefam/run_release_checks.py`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `tests/test_audit_figure_gallery.py`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_runtime_environment_files.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_figure_gallery.py::test_figure_gallery_audit_requires_manifest_plot_coverage tests/test_run_release_checks.py::test_default_checks_include_delivery_bundle_gallery_audit_after_smoke tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index -q` first failed because `audit_figure_gallery` did not accept plot manifests, the release check did not pass them, and the delivery gallery lacked `gene_family_pangenome_summary`.
+- `python -m pytest tests/test_audit_figure_gallery.py tests/test_run_release_checks.py::test_default_checks_include_delivery_bundle_gallery_audit_after_smoke tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index tests/test_runtime_environment_files.py::test_readiness_checklist_documents_command_audit tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report -q` passed with 7 tests after implementation and docs updates.
+- `python -m pytest tests -q` passed with 440 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and wrote `Passed: 49`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+- `cat results/delivery_bundle_smoke/figure_gallery_audit.tsv` confirmed `figure_gallery_manifest_coverage` passed for `standard=results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv` and `wgd=results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv`.
+- `rg -n "gene_family_pangenome_summary|figure_gallery_manifest_coverage|delivery bundle figure gallery audit|plot_manifest coverage" results/delivery_bundle_smoke/delivery_bundle/figure_gallery.tsv results/delivery_bundle_smoke/figure_gallery_audit.md results/release_checks/release_checks.tsv results/delivery_bundle/figure_gallery.tsv README.md docs/release_audit.md docs/readiness_checklist.md` confirmed the gallery row, release command, audit output, and docs all expose the new coverage contract.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed release checks, quickstart, delivery bundle, and local acceptance outputs; it reported the expected final-stage blocker: Docker/Apptainer reproducibility.
+- `python -m pytest tests -q` passed again with 440 tests after local acceptance refreshed the generated handoff outputs.
+
+Commit:
+- pending
+
+Next:
+- Continue final MVP hardening by looking for remaining places where report/generated inventories can drift apart, while leaving Docker/Apptainer runtime verification for the final packaging stage.
+
 ## 2026-06-27 - Require figure gallery audit in final objective reports
 
 Timestamp:
