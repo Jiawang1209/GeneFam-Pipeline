@@ -12092,7 +12092,9 @@ Verification:
 - `python -m pytest tests -q` passed again with 444 tests after local acceptance refreshed generated outputs.
 
 Commit:
-- pending
+- hash: 84cbf57357fff90c07d61f08101445a73beb57d8
+- message: feat: surface delivery audits in handoff
+- files: handoff report builder, handoff tests, history
 
 Next:
 - Continue final MVP hardening by checking any remaining top-level documentation or generated summaries for missing report/visualization evidence; Docker/Apptainer remains the final packaging-stage runtime blocker.
