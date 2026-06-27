@@ -34,6 +34,53 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 12:37 - Document figure gallery in README and quickstart
+
+Context:
+- The active `/goal` now has a release-checked global paper-level figure gallery.
+- The delivery bundle and local acceptance output exposed `figure_gallery.tsv` and `figure_gallery.md`, but README and quickstart docs still described only the delivery manifest and bundle.
+- A user following the docs could miss the fastest plot-navigation entry for standard and WGD figures.
+
+Decisions:
+- Document `results/delivery_bundle/figure_gallery.tsv` and `results/delivery_bundle/figure_gallery.md` in the English README, Chinese README, and quickstart.
+- Describe the gallery as the global paper-level figure gallery connecting plot PDFs to figure interpretations, software/R package versions, and final reports.
+- Keep the wording aligned with the existing local acceptance and delivery-bundle sections.
+
+Added:
+- English README references to the global paper-level figure gallery and its TSV/Markdown outputs.
+- Chinese README references to the `figure_gallery.tsv` and `figure_gallery.md` outputs as `全局论文图件目录`.
+- Quickstart references to the gallery in key outputs and delivery-bundle inspection.
+- Docs tests requiring the gallery paths and descriptions.
+
+Modified:
+- `README.md`
+- `README.zh-CN.md`
+- `docs/quickstart.md`
+- `tests/test_quickstart_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_quickstart_docs.py tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report tests/test_runtime_environment_files.py::test_chinese_readme_points_to_publication_audit_acceptance -q` first failed because the docs did not mention `figure_gallery.tsv` and `figure_gallery.md`.
+- `python -m pytest tests/test_quickstart_docs.py tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report tests/test_runtime_environment_files.py::test_chinese_readme_points_to_publication_audit_acceptance -q` passed with 4 tests after the docs update.
+- `python -m pytest tests -q` passed with 432 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 48`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `rg -n "figure_gallery|global paper-level figure gallery|全局论文图件目录" README.md README.zh-CN.md docs/quickstart.md results/release_checks/release_checks.md` confirmed the docs and release evidence expose the gallery entrypoint.
+- `bash scripts/run_local_acceptance.sh` exited 0 and printed both `results/delivery_bundle/figure_gallery.tsv` and `results/delivery_bundle/figure_gallery.md` under primary handoff files.
+- `sed -n '1,16p' results/local_acceptance/local_acceptance_summary.md` confirmed local acceptance keeps `Overall status: blocked` only for `final_stage_blocker`.
+- `sed -n '1,10p' results/objective_audit/objective_audit.md` confirmed objective audit remains `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
+- hash: pending
+- message: `docs: document delivery figure gallery`
+- files: English README, Chinese README, quickstart, docs tests, and history entry.
+
+Next:
+- Continue final MVP hardening while Docker/Apptainer remain the final-stage runtime blocker.
+
 ## 2026-06-27 12:26 - Add release smoke for delivery figure gallery
 
 Context:

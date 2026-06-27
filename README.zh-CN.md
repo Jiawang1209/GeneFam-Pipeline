@@ -171,9 +171,13 @@ bash scripts/run_local_acceptance.sh
 ```text
 results/local_acceptance/local_acceptance_summary.md
 results/publication_report_audit/publication_report_audit.md
+results/delivery_bundle/figure_gallery.tsv
+results/delivery_bundle/figure_gallery.md
 ```
 
 `results/local_acceptance/local_acceptance_summary.md` 是最短的通过/失败/阻塞索引；`results/publication_report_audit/publication_report_audit.md` 用来确认最终报告是否真的把图件格式、只精读已注册图件、图件清单与精读表路径一致性、QC、逐图方法/软件版本和复现命令闭环。
+
+`results/delivery_bundle/figure_gallery.tsv` 和 `results/delivery_bundle/figure_gallery.md` 是全局论文图件目录：每一行把标准分析和 WGD 分支的图件 PDF 连接到逐图精读、软件/R 包版本表和最终报告，适合交付时快速定位所有图。
 
 如果当前机器还没有 Docker / Apptainer，`local_acceptance_summary.md` 可能显示 `Overall status: blocked`。这不是说分析流程失败，而是表示分析证据已经达到 release-ready，剩余的是最终容器封装验证。此时优先查看 `final_stage_blocker` 行；当前预期 blocker 是 Docker / Apptainer 运行时验证，对应的解除入口在 `results/readiness/runtime_bootstrap.sh`。
 
