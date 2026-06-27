@@ -78,12 +78,20 @@ def _validate_auto_species_bank_paths(
     root: Path,
     patterns: dict[str, list[str]],
     input_required: dict[str, bool],
+    include: str | list[str],
+    exclude: list[str],
 ) -> list[str]:
     errors: list[str] = []
     if not root.is_dir():
         return errors
+    include_set = None if include == "all" else set(include)
+    exclude_set = set(exclude or [])
     for species_dir in sorted(path for path in root.iterdir() if path.is_dir()):
         species_id = species_dir.name
+        if include_set is not None and species_id not in include_set:
+            continue
+        if species_id in exclude_set:
+            continue
         for file_type in ("pep", "gff3", "cds", "genome"):
             matches = []
             for pattern in patterns.get(file_type, []):
@@ -105,6 +113,9 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
             errors.append(f"Missing required section: {section}")
 
     input_config = config.get("input", {}) or {}
+    species_config = config.get("species", {}) or {}
+    include = species_config.get("include", "all")
+    exclude = species_config.get("exclude", []) or []
     input_mode = input_config.get("mode")
     if input_mode not in {"auto", "manifest"}:
         errors.append("input.mode must be 'auto' or 'manifest'")
@@ -124,6 +135,8 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
                         root_path,
                         input_config.get("patterns", {}) or {},
                         input_required,
+                        include,
+                        exclude,
                     )
                 )
         if (

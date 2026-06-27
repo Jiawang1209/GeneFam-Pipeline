@@ -34,6 +34,48 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 08:46 - Limit auto species-bank validation to selected species
+
+Context:
+- The active `/goal` requires YAML-driven species selection from very large species banks.
+- Auto species-bank preflight was hardened to validate required pep/gff3/cds/genome files, but it checked every species directory under `input.root`.
+- In a large bank, users may include only a subset of species; unselected incomplete species should not block a selected-species run.
+
+Decisions:
+- Keep auto species-bank deep validation enabled by default.
+- Respect `species.include` and `species.exclude` when validating auto species-bank required files.
+- Continue validating all species when `species.include` is omitted or set to `all`.
+
+Added:
+- Regression test that auto species-bank validation passes when the selected species has required pep/gff3 evidence and an unselected species is incomplete.
+
+Modified:
+- `bin/genefam/validate_config.py`
+- `tests/test_validate_config.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_validate_config.py::test_validate_config_check_paths_only_checks_included_auto_species -q` first failed because validation still checked an unselected incomplete species.
+- `python -m pytest tests/test_validate_config.py::test_validate_config_check_paths_only_checks_included_auto_species tests/test_validate_config.py::test_validate_config_check_paths_reports_missing_auto_species_required_files -q` passed after applying include/exclude filtering to auto species-bank validation.
+- `python -m pytest tests/test_validate_config.py -q` passed with 32 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/manifest.example.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python -m pytest tests -q` passed with 406 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 after the fresh release check run.
+- `rg -n "YAML-driven species selection|validate example config|validate manifest config" results/objective_audit/objective_audit.md results/release_checks/release_checks.md` confirmed the objective audit still names both config validation checks as YAML-driven species-selection evidence.
+
+Commit:
+- hash: pending
+- message: `test: validate selected auto species only`
+- files: auto species-bank validation selection filtering, regression tests, and history entry.
+
+Next:
+- Continue strengthening large-input preflight behavior and final report evidence gates without weakening selected-species ergonomics.
+
 ## 2026-06-27 08:41 - Validate auto species-bank required files
 
 Context:

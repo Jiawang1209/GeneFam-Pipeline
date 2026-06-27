@@ -235,6 +235,33 @@ def test_validate_config_check_paths_reports_missing_auto_species_required_files
     assert "input.root missing required pep file for species Arabidopsis" in errors
 
 
+def test_validate_config_check_paths_only_checks_included_auto_species(tmp_path):
+    ath_dir = tmp_path / "species_bank" / "Arabidopsis"
+    ath_dir.mkdir(parents=True)
+    (ath_dir / "Arabidopsis.pep.fa").write_text(">AT1\nMA\n", encoding="utf-8")
+    (ath_dir / "Arabidopsis.gff3").write_text("##gff-version 3\n", encoding="utf-8")
+    bra_dir = tmp_path / "species_bank" / "Brassica"
+    bra_dir.mkdir(parents=True)
+    (bra_dir / "Brassica.gff3").write_text("##gff-version 3\n", encoding="utf-8")
+    config = _valid_base_config()
+    config["species"] = {"include": ["Arabidopsis"]}
+    config["input"] = {
+        "mode": "auto",
+        "root": "species_bank",
+        "required": {"pep": True, "gff3": True, "cds": False, "genome": False},
+        "patterns": {
+            "pep": ["*.pep.fa"],
+            "gff3": ["*.gff3"],
+            "cds": ["*.cds.fa"],
+            "genome": ["*.genome.fa"],
+        },
+    }
+
+    errors = validate_config(config, check_paths=True, base_dir=tmp_path)
+
+    assert errors == []
+
+
 def test_validate_config_reports_promoter_cis_requires_annotation_table_and_missing_path(tmp_path):
     config = _valid_base_config()
     config["input"]["root"] = "tests/fixtures/species_bank"
