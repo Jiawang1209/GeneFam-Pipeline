@@ -32,6 +32,7 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
             "WGD publication report audit\ttrue\tpassed\t0\twgd publication report\twgd figures interpreted",
             "WGD report index audit\ttrue\tpassed\t0\twgd report index\tindexed WGD report artifacts",
             "readiness audit\ttrue\tpassed\t0\treadiness\tcore tools available",
+            "runtime bootstrap shell syntax\ttrue\tpassed\t0\tbash -n results/readiness/runtime_bootstrap.sh\truntime_bootstrap.sh syntax OK",
             "Docker profile smoke\tfalse\tfailed\t1\tdocker profile\tmissing runtime",
             "Apptainer profile smoke\tfalse\tfailed\t1\tapptainer profile\tmissing runtime",
         ],
@@ -211,6 +212,10 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     )
     assert (
         "runtime_recovery\tbootstrap_shell\tavailable\tresults/readiness/runtime_bootstrap.sh\texecutable recovery and verification script"
+        in manifest_text
+    )
+    assert (
+        "runtime_recovery\tbootstrap_shell_syntax\tavailable\tresults/readiness/runtime_bootstrap.sh\tbash -n syntax gate for generated runtime_bootstrap.sh"
         in manifest_text
     )
     assert (

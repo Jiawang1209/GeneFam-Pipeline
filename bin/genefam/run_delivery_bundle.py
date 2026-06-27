@@ -543,6 +543,13 @@ def build_delivery_manifest(
             },
             {
                 "section": "runtime_recovery",
+                "item": "bootstrap_shell_syntax",
+                "status": _status_from_check(release_rows, "runtime bootstrap shell syntax"),
+                "path": "results/readiness/runtime_bootstrap.sh",
+                "note": "bash -n syntax gate for generated runtime_bootstrap.sh",
+            },
+            {
+                "section": "runtime_recovery",
                 "item": "local_acceptance",
                 "status": "available",
                 "path": "scripts/run_local_acceptance.sh",

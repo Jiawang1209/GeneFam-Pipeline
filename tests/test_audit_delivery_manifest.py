@@ -100,6 +100,9 @@ def test_delivery_manifest_audit_requires_core_handoff_items(tmp_path):
     assert "status:r_runtime_health:missing_item" in by_check[
         "delivery_manifest_required_items"
     ]["note"]
+    assert "runtime_recovery:bootstrap_shell_syntax:missing_item" in by_check[
+        "delivery_manifest_required_items"
+    ]["note"]
     assert by_check["delivery_bundle_markdown_links"]["status"] == "failed"
     assert "delivery_bundle.md:missing_markdown" in by_check["delivery_bundle_markdown_links"]["note"]
     assert summarize_audit(rows) == {"passed": 2, "failed": 2, "complete": False}
@@ -126,6 +129,7 @@ def test_delivery_manifest_audit_cli_writes_outputs_for_complete_manifest(tmp_pa
         ["nextflow", "nextflow_single_tool_smoke", "available", str(existing), "ok"],
         ["wgd", "event_evidence", "available", str(existing), "ok"],
         ["governance", "reference_gitignore", "available", str(existing), "ok"],
+        ["runtime_recovery", "bootstrap_shell_syntax", "available", str(existing), "ok"],
         ["runtime_recovery", "local_acceptance", "available", str(existing), "ok"],
         ["docs", "history", "available", str(existing), "ok"],
         ["runtime", "docker", "missing", "", "container runtime"],

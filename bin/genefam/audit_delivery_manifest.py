@@ -29,6 +29,7 @@ REQUIRED_ITEMS = [
     ("nextflow", "nextflow_single_tool_smoke"),
     ("wgd", "event_evidence"),
     ("governance", "reference_gitignore"),
+    ("runtime_recovery", "bootstrap_shell_syntax"),
     ("runtime_recovery", "local_acceptance"),
     ("docs", "history"),
 ]

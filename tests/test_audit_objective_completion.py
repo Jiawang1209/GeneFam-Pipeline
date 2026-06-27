@@ -102,6 +102,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
         _release_row("Reference governance audit"),
         _release_row("readiness audit", status="failed"),
         _release_row("runtime bootstrap plan"),
+        _release_row("runtime bootstrap shell syntax"),
         _release_row("container materials audit"),
     ]
     readiness_rows = [
@@ -131,8 +132,10 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
     assert "container materials audit" in by_requirement["Docker/Apptainer reproducibility"]["evidence"]
     assert "Dockerfile default standard smoke" in by_requirement["Docker/Apptainer reproducibility"]["evidence"]
     assert "Apptainer.def" in by_requirement["Docker/Apptainer reproducibility"]["evidence"]
+    assert "runtime bootstrap shell syntax" in by_requirement["Docker/Apptainer reproducibility"]["evidence"]
     assert "results/container_default_smoke" in by_requirement["Docker/Apptainer reproducibility"]["note"]
     assert "Reference-safe Apptainer definition" in by_requirement["Docker/Apptainer reproducibility"]["note"]
+    assert "runtime_bootstrap.sh passed bash -n" in by_requirement["Docker/Apptainer reproducibility"]["note"]
     assert "docker, apptainer" in by_requirement["Docker/Apptainer reproducibility"]["note"]
     assert by_requirement["WGD gamma beta alpha theta evidence"]["status"] == "achieved"
     assert by_requirement["paper-level visualization modules"]["status"] == "achieved"

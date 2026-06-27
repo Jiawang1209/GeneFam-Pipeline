@@ -14116,3 +14116,52 @@ Commit:
 
 Next:
 - Continue final MVP polish around report navigation and evidence readability; Docker/Apptainer runtime verification remains the intentionally deferred final packaging stage.
+
+## 2026-06-27 - Trace runtime bootstrap shell syntax in final handoff
+
+Timestamp:
+- 2026-06-27 22:48 CST
+
+Context:
+- The release gate already checked `bash -n results/readiness/runtime_bootstrap.sh` through `runtime bootstrap shell syntax`.
+- The final objective audit and delivery bundle still needed to expose that gate as explicit handoff evidence, so reviewers can see the recovery script is both generated and syntax-checked.
+
+Decisions:
+- Treat `runtime_recovery/bootstrap_shell_syntax` as a required final delivery manifest item.
+- Keep the path anchored to `results/readiness/runtime_bootstrap.sh`, with release-check status determining whether the handoff row is available.
+- Add the shell syntax gate to the Docker/Apptainer reproducibility objective evidence while leaving missing Docker/Apptainer runtimes as the final-stage blocker.
+
+Added:
+- Required delivery manifest item: `runtime_recovery/bootstrap_shell_syntax`.
+- Delivery bundle row for `bootstrap_shell_syntax`.
+- Regression assertions for objective audit evidence, delivery bundle manifest output, and final delivery manifest required-item auditing.
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_delivery_bundle.py`
+- `bin/genefam/audit_delivery_manifest.py`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_audit_delivery_manifest.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_build_objective_audit_marks_goal_items_and_runtime_blockers tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index tests/test_audit_delivery_manifest.py::test_delivery_manifest_audit_requires_core_handoff_items tests/test_audit_delivery_manifest.py::test_delivery_manifest_audit_cli_writes_outputs_for_complete_manifest -q` first failed because objective audit evidence, delivery bundle rows, and required manifest items did not yet expose `runtime bootstrap shell syntax`.
+- The same focused test command passed after implementation with 4 tests.
+- `python -m pytest tests -q` passed with 481 tests.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed release checks, quickstart, delivery bundle, final delivery manifest audit, and local acceptance outputs; it reported the expected final-stage blocker: Docker/Apptainer reproducibility.
+- `results/release_checks/release_checks.md` reports `Passed: 53`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; `runtime bootstrap shell syntax` passed.
+- `results/objective_audit/objective_audit.md` now lists `runtime bootstrap shell syntax` and `runtime_bootstrap.sh passed bash -n` under Docker/Apptainer reproducibility.
+- `results/delivery_bundle/delivery_manifest.tsv` now contains `runtime_recovery	bootstrap_shell_syntax	available	results/readiness/runtime_bootstrap.sh`.
+- `results/delivery_bundle/final_delivery_manifest_audit.md` reports `Complete: true` and `delivery_manifest_required_items` passed.
+
+Commit:
+- hash: pending
+- message: feat: trace bootstrap syntax gate in handoff
+- files: objective audit, delivery bundle, delivery manifest audit, targeted tests, history
+
+Next:
+- Continue final MVP handoff polish; Docker/Apptainer runtime execution remains the intentionally deferred final packaging stage.

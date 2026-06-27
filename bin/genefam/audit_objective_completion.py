@@ -161,10 +161,10 @@ def build_objective_audit(
         _row(
             "Docker/Apptainer reproducibility",
             "achieved" if not missing_container_tools else "blocked",
-            "container materials audit, Dockerfile default standard smoke contract, Apptainer.def Reference-safe SIF contract, command readiness audit, and runtime bootstrap plan",
+            "container materials audit, Dockerfile default standard smoke contract, Apptainer.def Reference-safe SIF contract, command readiness audit, runtime bootstrap plan, and runtime bootstrap shell syntax",
             "Container runtime route is available."
             if not missing_container_tools
-            else "Dockerfile default standard smoke writes results/container_default_smoke; Reference-safe Apptainer definition can build genefam-pipeline_latest.sif; missing container commands: "
+            else "Dockerfile default standard smoke writes results/container_default_smoke; Reference-safe Apptainer definition can build genefam-pipeline_latest.sif; runtime_bootstrap.sh passed bash -n; missing container commands: "
             + ", ".join(missing_container_tools),
         ),
         _achieved_if(
