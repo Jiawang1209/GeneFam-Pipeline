@@ -9785,7 +9785,7 @@ Verification:
 - `rg -n "WGD gamma beta alpha theta evidence|Ka/Ks and retention analysis|Nextflow raw MCScanX/KaKs WGD smoke|raw MCScanX/KaKs" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed both WGD/KaKs audit rows now name the raw MCScanX/Ka/Ks Nextflow evidence.
 
 Commit:
-- hash: pending
+- hash: bec5eda5c4b5b0a70cb56c13e5fe34b415a3fb8b
 - message: test: require raw mcscanx kaks evidence for wgd audits
 - files: objective audit rule, objective audit tests, history
 
