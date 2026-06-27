@@ -71,12 +71,12 @@ Verification:
 - `sed -n '1,28p' results/local_acceptance/local_acceptance_summary.md` confirmed local acceptance steps passed except the final-stage Docker/Apptainer blocker.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: b83ed1a392c268078937152f08d3a3b3dcf6782a
+- message: `test: require final report traceability audit`
 - files: publication report audit, audit tests, and history entry.
 
 Next:
-- Backfill this entry with the commit hash after the commit is created.
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage blocker.
 
 ## 2026-06-27 12:58 - Add final report figure traceability matrix
 
