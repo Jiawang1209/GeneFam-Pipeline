@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import re
 from pathlib import Path
 
 
@@ -74,6 +75,29 @@ def _resolve_indexed_path(report_index: Path, indexed_path: str) -> Path:
     return report_index.parent / path
 
 
+def _anchor_from_indexed_path(indexed_path: str) -> str:
+    if "#" not in indexed_path:
+        return ""
+    return "#" + indexed_path.split("#", 1)[1]
+
+
+def _markdown_heading_slug(heading: str) -> str:
+    text = re.sub(r"^#+\s*", "", heading.strip()).lower()
+    text = re.sub(r"[^\w\s-]", "", text)
+    text = re.sub(r"[\s_]+", "-", text).strip("-")
+    return f"#{text}"
+
+
+def _markdown_has_anchor(path: Path, anchor: str) -> bool:
+    if not anchor:
+        return True
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except UnicodeDecodeError:
+        return False
+    return any(line.lstrip().startswith("#") and _markdown_heading_slug(line) == anchor for line in lines)
+
+
 def _artifact_file_issues(report_index: Path, rows: list[dict[str, str]], profile: str) -> list[str]:
     indexed = _rows_by_key(rows)
     issues: list[str] = []
@@ -89,6 +113,10 @@ def _artifact_file_issues(report_index: Path, rows: list[dict[str, str]], profil
             issues.append(f"{key}:missing_file:{indexed_path}")
         elif resolved.stat().st_size <= 0:
             issues.append(f"{key}:empty_file:{indexed_path}")
+        else:
+            anchor = _anchor_from_indexed_path(indexed_path)
+            if anchor and not _markdown_has_anchor(resolved, anchor):
+                issues.append(f"{key}:missing_anchor:{anchor}")
     return issues
 
 
