@@ -34,6 +34,48 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 17:36 - Require delivery gallery traceability targets
+
+Context:
+- The global figure gallery is the fastest user-facing entrypoint for paper-level standard and WGD figures.
+- `audit_figure_gallery.py` verified linked files, plot signatures, Markdown anchors, and plot-manifest coverage, but it did not prove that each row's `traceability_matrix` anchor belonged to the same file as that row's `final_report`.
+
+Decisions:
+- Add a dedicated `figure_gallery_traceability_targets` audit row.
+- Require each gallery row's `traceability_matrix` value to resolve to the same file as `final_report` and to use `#figure-traceability-matrix`.
+- Keep the existing linked-file and manifest-coverage checks as separate diagnostics for missing files, missing headings, invalid plot signatures, and missing plot rows.
+
+Added:
+- Red test covering a gallery row that points `traceability_matrix` at a detached Markdown page with a valid `Figure Traceability Matrix` heading.
+- `figure_gallery_traceability_targets` audit output in the figure-gallery audit Markdown/TSV.
+
+Modified:
+- `bin/genefam/audit_figure_gallery.py`
+- `tests/test_audit_figure_gallery.py`
+- `tests/test_release_audit_docs.py`
+- `docs/release_audit.md`
+- `README.md`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_figure_gallery.py::test_figure_gallery_audit_requires_traceability_matrix_on_final_report -q` first failed with `KeyError: 'figure_gallery_traceability_targets'`.
+- `python -m pytest tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands -q` first failed because `figure_gallery_traceability_targets` was not documented in `docs/release_audit.md`.
+- `python -m pytest tests/test_audit_figure_gallery.py tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_quickstart_docs.py tests/test_runtime_environment_files.py -q` passed with 22 tests.
+- `python bin/genefam/audit_figure_gallery.py --figure-gallery results/delivery_bundle/figure_gallery.tsv --plot-manifest standard=results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --plot-manifest wgd=results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --out-tsv results/delivery_bundle_smoke/figure_gallery_audit.tsv --out-md results/delivery_bundle_smoke/figure_gallery_audit.md` exited 0 and reported `Passed: 4`, `Failed: 0`, `Complete: true`.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: figure gallery audit, gallery tests, release/quickstart/readiness docs, README, and history entry.
+
+Next:
+- Run full tests and release/local acceptance checks, then commit and backfill this history entry.
+
 ## 2026-06-27 17:25 - Require report-index traceability anchor target
 
 Context:

@@ -116,6 +116,24 @@ def _linked_file_issues(gallery: Path, rows: list[dict[str, str]]) -> list[str]:
     return issues
 
 
+def _traceability_target_issues(gallery: Path, rows: list[dict[str, str]]) -> list[str]:
+    issues: list[str] = []
+    for row_number, row in enumerate(rows, start=2):
+        plot_key = row.get("plot_key", "").strip() or f"row_{row_number}"
+        final_report = row.get("final_report", "").strip()
+        traceability = row.get("traceability_matrix", "").strip()
+        if not final_report or not traceability:
+            continue
+        resolved_final = _resolve_path(gallery, final_report)
+        resolved_traceability = _resolve_path(gallery, traceability)
+        if (
+            resolved_final != resolved_traceability
+            or _anchor_from_path(traceability) != "#figure-traceability-matrix"
+        ):
+            issues.append(f"{plot_key}:traceability_matrix:not_final_report_anchor")
+    return issues
+
+
 def _plot_format_issue(plot_key: str, column: str, indexed_path: str, resolved: Path) -> str | None:
     suffix = resolved.suffix.lower()
     try:
@@ -180,6 +198,7 @@ def audit_figure_gallery(
     rows = read_tsv(figure_gallery)
     column_issues = _required_column_issues(rows)
     link_issues = _linked_file_issues(figure_gallery, rows) if not column_issues else []
+    traceability_target_issues = _traceability_target_issues(figure_gallery, rows) if not column_issues else []
     coverage_issues = (
         _manifest_coverage_issues(rows, plot_manifests or {}) if not column_issues else []
     )
@@ -199,6 +218,14 @@ def audit_figure_gallery(
             "figure gallery linked plot, interpretation, version, report, and traceability targets exist with valid plot file signatures"
             if not link_issues
             else "missing, empty, or unresolved figure gallery targets: " + ", ".join(link_issues),
+        ),
+        _row(
+            "figure_gallery_traceability_targets",
+            not traceability_target_issues,
+            str(figure_gallery),
+            "figure gallery traceability_matrix values point to final_report.md#figure-traceability-matrix"
+            if not traceability_target_issues
+            else "invalid figure gallery traceability targets: " + ", ".join(traceability_target_issues),
         ),
         _row(
             "figure_gallery_manifest_coverage",

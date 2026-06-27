@@ -59,7 +59,7 @@ def test_figure_gallery_audit_requires_files_and_traceability_anchor(tmp_path):
         by_check["figure_gallery_linked_files_exist"]["note"]
     )
     assert by_check["figure_gallery_manifest_coverage"]["status"] == "passed"
-    assert summarize_audit(rows) == {"passed": 2, "failed": 1, "complete": False}
+    assert summarize_audit(rows) == {"passed": 3, "failed": 1, "complete": False}
 
 
 def test_figure_gallery_audit_cli_writes_outputs_when_gallery_is_complete(tmp_path):
@@ -165,7 +165,57 @@ def test_figure_gallery_audit_rejects_invalid_plot_file_signatures(tmp_path):
 
     assert by_check["figure_gallery_linked_files_exist"]["status"] == "failed"
     assert "tree_features:plot_path:invalid_pdf" in by_check["figure_gallery_linked_files_exist"]["note"]
-    assert summarize_audit(rows) == {"passed": 2, "failed": 1, "complete": False}
+    assert summarize_audit(rows) == {"passed": 3, "failed": 1, "complete": False}
+
+
+def test_figure_gallery_audit_requires_traceability_matrix_on_final_report(tmp_path):
+    gallery = tmp_path / "figure_gallery.tsv"
+    report = tmp_path / "report"
+    plots = tmp_path / "plots"
+    report.mkdir()
+    plots.mkdir()
+    (plots / "tree_features.pdf").write_bytes(b"%PDF tree")
+    (report / "figure_interpretations.md").write_text("# Figure Interpretations\n", encoding="utf-8")
+    (report / "software_versions.tsv").write_text("component\tversion\nR\t4.4.0\n", encoding="utf-8")
+    final_report = report / "final_report.md"
+    detached_report = report / "traceability.md"
+    final_report.write_text("# Final Report\n\n## Figure Traceability Matrix\n", encoding="utf-8")
+    detached_report.write_text("# Traceability\n\n## Figure Traceability Matrix\n", encoding="utf-8")
+
+    _write_tsv(
+        gallery,
+        [
+            "branch",
+            "plot_key",
+            "plot_path",
+            "plot_description",
+            "figure_interpretations",
+            "software_versions",
+            "final_report",
+            "traceability_matrix",
+        ],
+        [
+            [
+                "standard",
+                "tree_features",
+                str(plots / "tree_features.pdf"),
+                "Tree, motif, gene-structure, and domain composite plot",
+                str(report / "figure_interpretations.md"),
+                str(report / "software_versions.tsv"),
+                str(final_report),
+                str(detached_report) + "#figure-traceability-matrix",
+            ],
+        ],
+    )
+
+    rows = audit_figure_gallery(gallery)
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["figure_gallery_traceability_targets"]["status"] == "failed"
+    assert "tree_features:traceability_matrix:not_final_report_anchor" in by_check[
+        "figure_gallery_traceability_targets"
+    ]["note"]
+    assert summarize_audit(rows) == {"passed": 3, "failed": 1, "complete": False}
 
 
 def test_figure_gallery_audit_requires_manifest_plot_coverage(tmp_path):
@@ -225,4 +275,4 @@ def test_figure_gallery_audit_requires_manifest_plot_coverage(tmp_path):
     assert "standard:gene_family_pangenome_summary:missing_gallery_row" in (
         by_check["figure_gallery_manifest_coverage"]["note"]
     )
-    assert summarize_audit(rows) == {"passed": 2, "failed": 1, "complete": False}
+    assert summarize_audit(rows) == {"passed": 3, "failed": 1, "complete": False}
