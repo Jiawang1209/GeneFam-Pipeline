@@ -12510,7 +12510,9 @@ Verification:
 - `sed -n '1,80p' results/local_acceptance/local_acceptance_summary.md` confirmed publication, WGD publication, report-index, figure-gallery, delivery-manifest, quickstart, and bundle steps passed, with only `final_stage_blocker` blocked.
 
 Commit:
-- pending
+- hash: 92cd60406022aa74c9b3437d92d69404b49cbd53
+- message: feat: drive publication modules from yaml
+- files: Nextflow standard smoke YAML parameter bridge, config validation, example YAML files, README/input-contract docs, tests, history
 
 Next:
 - Run full tests, release checks, and local acceptance; then commit and backfill this history entry with the commit hash.
