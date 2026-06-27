@@ -178,6 +178,41 @@ def test_validate_config_check_paths_reports_missing_runtime_inputs(tmp_path):
     assert "expression.matrix path does not exist: data/expression/family_expression.tsv" in errors
 
 
+def test_validate_config_check_paths_reports_invalid_manifest_columns(tmp_path):
+    manifest = tmp_path / "species_manifest.tsv"
+    manifest.write_text("species_id\tpep\nArabidopsis\tath.pep.fa\n", encoding="utf-8")
+    config = _valid_base_config()
+    config["input"] = {
+        "mode": "manifest",
+        "manifest": "species_manifest.tsv",
+        "required": {"pep": True, "gff3": True, "cds": False, "genome": False},
+    }
+
+    errors = validate_config(config, check_paths=True, base_dir=tmp_path)
+
+    assert "input.manifest is invalid: Species manifest is missing required columns: gff3, cds, genome" in errors
+
+
+def test_validate_config_check_paths_reports_missing_manifest_file_paths(tmp_path):
+    manifest = tmp_path / "species_manifest.tsv"
+    manifest.write_text(
+        "species_id\tpep\tgff3\tcds\tgenome\n"
+        "Arabidopsis\tmissing/ath.pep.fa\tmissing/ath.gff3\t\t\n",
+        encoding="utf-8",
+    )
+    config = _valid_base_config()
+    config["input"] = {
+        "mode": "manifest",
+        "manifest": "species_manifest.tsv",
+        "required": {"pep": True, "gff3": True, "cds": False, "genome": False},
+    }
+
+    errors = validate_config(config, check_paths=True, base_dir=tmp_path)
+
+    assert "input.manifest pep path does not exist for species Arabidopsis: missing/ath.pep.fa" in errors
+    assert "input.manifest gff3 path does not exist for species Arabidopsis: missing/ath.gff3" in errors
+
+
 def test_validate_config_reports_promoter_cis_requires_annotation_table_and_missing_path(tmp_path):
     config = _valid_base_config()
     config["input"]["root"] = "tests/fixtures/species_bank"

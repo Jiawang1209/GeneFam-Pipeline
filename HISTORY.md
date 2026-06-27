@@ -34,6 +34,49 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 08:35 - Validate species manifest contents and file paths
+
+Context:
+- The active `/goal` requires a robust multi-species input system driven by YAML.
+- `validate_config --check-paths` checked that `input.manifest` existed, but did not validate the manifest TSV columns or the per-species pep/gff3/cds/genome paths declared inside it.
+- The downstream species discovery code already expected a strict manifest shape, so config preflight could pass even when the actual manifest would fail later.
+
+Decisions:
+- Add deep manifest validation to `validate_config --check-paths` for manifest-mode inputs.
+- Require manifest TSV columns `species_id`, `pep`, `gff3`, `cds`, and `genome`.
+- Check declared manifest file paths, with required empty paths reported as missing and non-empty paths required to exist relative to `--base-dir`.
+
+Added:
+- Regression test for invalid manifest columns during config path validation.
+- Regression test for missing per-species pep/gff3 manifest paths during config path validation.
+
+Modified:
+- `bin/genefam/validate_config.py`
+- `tests/test_validate_config.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_validate_config.py::test_validate_config_check_paths_reports_invalid_manifest_columns tests/test_validate_config.py::test_validate_config_check_paths_reports_missing_manifest_file_paths -q` first failed because config validation returned no errors for invalid manifest contents.
+- `python -m pytest tests/test_validate_config.py::test_validate_config_check_paths_reports_invalid_manifest_columns tests/test_validate_config.py::test_validate_config_check_paths_reports_missing_manifest_file_paths -q` passed after adding deep manifest validation.
+- `python -m pytest tests/test_validate_config.py -q` passed with 30 tests.
+- `python bin/genefam/validate_config.py configs/manifest.example.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/example.config.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python -m pytest tests -q` passed with 404 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 after the fresh release check run.
+- `rg -n "YAML-driven species selection|validate manifest config|species manifest" results/objective_audit/objective_audit.md results/release_checks/release_checks.md` confirmed the objective audit still uses the now-deeper manifest config validation as YAML-driven species-selection evidence.
+
+Commit:
+- hash: pending
+- message: `test: validate species manifest contents`
+- files: manifest-mode config validation, regression tests, and history entry.
+
+Next:
+- Continue strengthening input and report gates where broad MVP promises depend on weak preflight checks.
+
 ## 2026-06-27 08:29 - Require command and R package versions in publication audits
 
 Context:

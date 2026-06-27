@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import csv
 from pathlib import Path
 from typing import Any
 
@@ -19,6 +20,7 @@ except ImportError:  # pragma: no cover
 
 
 REQUIRED_SECTIONS = ("project", "runtime", "input", "species", "gene_family", "identification", "modules")
+MANIFEST_FIELDNAMES = ("species_id", "pep", "gff3", "cds", "genome")
 
 
 def load_config(path: Path) -> dict[str, Any]:
@@ -38,6 +40,40 @@ def _path_exists(value: str, base_dir: Path) -> bool:
     return (base_dir / path).exists()
 
 
+def _resolve_path(value: str, base_dir: Path) -> Path:
+    path = Path(value)
+    if path.is_absolute():
+        return path
+    return base_dir / path
+
+
+def _validate_species_manifest_paths(manifest: Path, input_required: dict[str, bool], base_dir: Path) -> list[str]:
+    errors: list[str] = []
+    try:
+        with manifest.open("r", encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle, delimiter="\t")
+            missing_columns = [field for field in MANIFEST_FIELDNAMES if field not in (reader.fieldnames or [])]
+            if missing_columns:
+                return [
+                    "input.manifest is invalid: Species manifest is missing required columns: "
+                    + ", ".join(missing_columns)
+                ]
+            rows = list(reader)
+    except OSError as exc:
+        return [f"input.manifest is invalid: {exc}"]
+
+    for row in rows:
+        species_id = row.get("species_id", "").strip() or "unknown"
+        for file_type in ("pep", "gff3", "cds", "genome"):
+            value = row.get(file_type, "").strip()
+            if input_required.get(file_type, False) and not value:
+                errors.append(f"input.manifest missing required {file_type} path for species {species_id}")
+                continue
+            if value and not _resolve_path(value, base_dir).exists():
+                errors.append(f"input.manifest {file_type} path does not exist for species {species_id}: {value}")
+    return errors
+
+
 def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir: Path | None = None) -> list[str]:
     errors: list[str] = []
     base_dir = Path(".") if base_dir is None else base_dir
@@ -53,15 +89,19 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
         errors.append("input.root is required when input.mode is auto")
     if input_mode == "manifest" and not input_config.get("manifest"):
         errors.append("input.manifest is required when input.mode is manifest")
+    input_required = input_config.get("required", {}) or {}
     if check_paths:
         if input_mode == "auto" and input_config.get("root") and not _path_exists(str(input_config["root"]), base_dir):
             errors.append(f"input.root path does not exist: {input_config['root']}")
         if (
             input_mode == "manifest"
             and input_config.get("manifest")
-            and not _path_exists(str(input_config["manifest"]), base_dir)
         ):
-            errors.append(f"input.manifest path does not exist: {input_config['manifest']}")
+            manifest_path = _resolve_path(str(input_config["manifest"]), base_dir)
+            if not manifest_path.exists():
+                errors.append(f"input.manifest path does not exist: {input_config['manifest']}")
+            else:
+                errors.extend(_validate_species_manifest_paths(manifest_path, input_required, base_dir))
 
     runtime = config.get("runtime", {}) or {}
     if runtime.get("environment") != "GeneFamilyFlow":
@@ -130,7 +170,6 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
         if identification.get("use_hmmer", True) is False and identification.get("use_diamond", True) is False:
             errors.append("identification requires at least one enabled search tool: use_hmmer or use_diamond")
 
-    input_required = (config.get("input", {}) or {}).get("required", {}) or {}
     expression = config.get("expression", {}) or {}
     promoter = config.get("promoter", {}) or {}
     ppi = config.get("ppi", {}) or {}
