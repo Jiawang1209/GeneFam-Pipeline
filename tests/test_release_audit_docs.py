@@ -81,7 +81,16 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/delivery_bundle/delivery_bundle.md" in text
     assert "final_stage_blocker" in text
     assert "audit_publication_report.py" in text
+    assert "audit_report_index.py" in text
     assert "publication report audit" in text
+    assert "standard report index audit" in text
+    assert "WGD report index audit" in text
+    assert "results/report_index_audit/standard_report_index_audit.tsv" in text
+    assert "results/report_index_audit/standard_report_index_audit.md" in text
+    assert "results/report_index_audit/wgd_report_index_audit.tsv" in text
+    assert "results/report_index_audit/wgd_report_index_audit.md" in text
+    assert "figure_interpretations.md" in text
+    assert "final_report.md" in text
     assert "family_counts" in text
     assert "gene_family_info_summary" in text
     assert "member totals" in text
@@ -109,6 +118,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "software/R package versions" in text
     assert "per-figure method/software version coverage" in text
     assert "reproducibility commands" in text
+    assert "report indexes expose plot manifests, software versions, figure interpretations in TSV/Markdown, and final reports" in text
     assert "docs/quickstart.md" in text
     assert "run_species_selection_smoke.py" in text
     assert "configs/manifest.example.yaml" in text

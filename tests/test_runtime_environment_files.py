@@ -193,8 +193,12 @@ def test_readme_points_to_final_handoff_report():
     assert "results/handoff/handoff_summary.tsv" in readme
     assert "results/local_acceptance/local_acceptance_summary.md" in readme
     assert "results/publication_report_audit/publication_report_audit.md" in readme
+    assert "results/report_index_audit/standard_report_index_audit.md" in readme
+    assert "results/report_index_audit/wgd_report_index_audit.md" in readme
     assert "release, quickstart, publication-report audit, and delivery-bundle steps" in readme
     assert "paper-style report closure" in readme
+    assert "report-index closure" in readme
+    assert "figure_interpretations.md" in readme
     assert "valid plot file signatures" in readme
     assert "registered-only figure interpretation scope" in readme
     assert "plot manifest and interpretation output path consistency" in readme

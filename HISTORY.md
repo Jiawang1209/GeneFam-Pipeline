@@ -34,6 +34,52 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 10:38 - Document report-index audit gates
+
+Context:
+- The active `/goal` requires report indexes, final reports, smoke checks, release checks, and final objective audit to describe the same paper-level delivery contract.
+- The code now enforces standard and WGD report-index audits, but README, quickstart, and release-audit documentation still emphasized only publication report audits.
+- Users reading the docs could miss the new `report_index_audit` outputs and the distinction between content closure and index/navigation closure.
+
+Decisions:
+- Document publication-report audit as the content and figure close-reading gate.
+- Document report-index audit as the navigation and report-package artifact gate.
+- Surface both standard and WGD report-index audit outputs in README, quickstart, and release-audit evidence tables.
+
+Added:
+- README references to `results/report_index_audit/standard_report_index_audit.md` and `results/report_index_audit/wgd_report_index_audit.md`.
+- Quickstart entries for `standard_report_index_audit` and `wgd_report_index_audit`.
+- Release-audit evidence and commands for `bin/genefam/audit_report_index.py`.
+
+Modified:
+- `README.md`
+- `docs/quickstart.md`
+- `docs/release_audit.md`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_quickstart_docs.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report -q` first failed because the docs did not mention `results/report_index_audit/standard_report_index_audit.md`, `audit_report_index.py`, or report-index closure.
+- `python -m pytest tests/test_quickstart_docs.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report -q` passed with 4 tests after documentation updates.
+- `python -m pytest tests -q` passed with 429 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 47`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `rg -n "report index audit" results/release_checks/release_checks.md` confirmed both standard and WGD report-index audits are required release checks.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+- `rg -n "final reports|Report index audits" results/objective_audit/objective_audit.md` confirmed the high-level final-report objective still requires both report-index audits.
+
+Commit:
+- hash: pending
+- message: `docs: document report index audits`
+- files: README, quickstart, release audit docs, doc tests, and history entry.
+
+Next:
+- Continue final MVP hardening while keeping Docker/Apptainer verification as the final-stage external blocker.
+
 ## 2026-06-27 10:30 - Audit report-index delivery artifacts
 
 Context:
