@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import re
 import subprocess
 from pathlib import Path
 from typing import Callable
@@ -41,6 +42,15 @@ def _detect_r_package(package: str, r_bin: str) -> str | None:
 
 
 def _first_version_line(output: str) -> str:
+    candidates = [line.strip() for line in output.splitlines() if line.strip()]
+    version_like_words = ("version", "v", "release", "build")
+    for line in candidates:
+        normalized = line.lower()
+        if re.search(r"\d+(?:\.\d+)+", line) and any(word in normalized for word in version_like_words):
+            return line[:160]
+    for line in candidates:
+        if re.search(r"\d+(?:\.\d+)+", line):
+            return line[:160]
     for line in output.splitlines():
         stripped = line.strip()
         if stripped:

@@ -28,6 +28,31 @@ def test_collect_versions_records_detected_and_missing_tools():
     assert by_component["ggNetView"]["status"] == "version_not_detected"
 
 
+def test_collect_versions_extracts_nextflow_version_from_banner_output():
+    nextflow_banner = """
+      N E X T F L O W
+      version 26.04.4 build 12345
+      created 01-06-2026 10:00 UTC
+    """
+
+    rows = collect_versions(
+        command_runner=lambda command: (0, nextflow_banner),
+        r_package_runner=lambda package: None,
+        tool_commands={"Nextflow": ["nextflow", "-version"]},
+        r_packages=[],
+    )
+
+    assert rows == [
+        {
+            "component": "Nextflow",
+            "kind": "command",
+            "version": "version 26.04.4 build 12345",
+            "status": "detected",
+            "source": "nextflow -version",
+        }
+    ]
+
+
 def test_collect_versions_records_file_not_found_as_missing_tool():
     def missing_command_runner(command):
         raise FileNotFoundError(command[0])

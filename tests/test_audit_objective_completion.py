@@ -38,6 +38,7 @@ def _publication_audit_rows(omit=None):
         "figure_interpretation_detail",
         "figure_output_paths_match_manifest",
         "software_versions_present",
+        "software_detected_versions_parseable",
         "figure_method_software_versions",
         "final_report_embeds_publication_sections",
         "final_report_figure_traceability",
@@ -869,6 +870,7 @@ def test_final_reports_note_names_complete_publication_report_closure():
     assert "biological interpretation" in final_report_row["note"]
     assert "QC warnings" in final_report_row["note"]
     assert "software/R package versions" in final_report_row["note"]
+    assert "parseable detected version values" in final_report_row["note"]
     assert "Figure Traceability Matrix" in final_report_row["note"]
     assert "delivery figure gallery" in final_report_row["note"]
     assert "figure_gallery_audit" in final_report_row["note"]

@@ -1002,6 +1002,7 @@ def test_write_objective_audit_reads_publication_detail_audits(tmp_path):
         "figure_interpretation_detail\tpassed\tfigures\tok\n"
         "figure_output_paths_match_manifest\tpassed\tfigures\tok\n"
         "software_versions_present\tpassed\tversions\tok\n"
+        "software_detected_versions_parseable\tpassed\tversions\tok\n"
         "figure_method_software_versions\tpassed\tversions\tok\n"
         "final_report_embeds_publication_sections\tpassed\treport\tok\n"
         "final_report_figure_traceability\tpassed\treport\tok\n"

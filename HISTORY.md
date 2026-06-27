@@ -34,6 +34,61 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 18:48 - Make software versions parseable in publication reports
+
+Context:
+- The active `/goal` requires final reports to list software and R package versions in a paper-ready methods section.
+- Current generated standard and WGD reports showed `Nextflow` version as `N E X T F L O W`, which came from the ASCII banner rather than the actual version line.
+- The publication-report audit also allowed a row marked `detected` even when the version value had no numeric version token.
+
+Decisions:
+- Prefer version-like lines containing numeric version tokens when collecting command output, so Nextflow banner output resolves to its real `version ...` line.
+- Add a publication-report audit check, `software_detected_versions_parseable`, so detected software versions must contain a numeric token.
+- Include the new audit check in objective-audit final-report detail closure.
+
+Added:
+- Regression test for parsing Nextflow banner output into a real version line.
+- Regression test rejecting detected software version rows such as `N E X T F L O W`.
+
+Modified:
+- `bin/genefam/collect_software_versions.py`
+- `bin/genefam/audit_publication_report.py`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_collect_software_versions.py`
+- `tests/test_audit_publication_report.py`
+- `tests/test_audit_objective_completion.py`
+- `README.md`
+- `docs/release_audit.md`
+- `docs/readiness_checklist.md`
+- `docs/quickstart.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_collect_software_versions.py::test_collect_versions_extracts_nextflow_version_from_banner_output -q` first failed because the old parser returned `N E X T F L O W`.
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_rejects_detected_versions_without_numeric_version -q` first failed because `software_detected_versions_parseable` did not exist.
+- `python -m pytest tests/test_collect_software_versions.py tests/test_audit_publication_report.py::test_publication_report_audit_rejects_detected_versions_without_numeric_version -q` passed with 5 tests after implementation.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 47 tests after adding `software_detected_versions_parseable` to the objective detail checklist fixture.
+- `python -m pytest tests/test_collect_software_versions.py tests/test_audit_publication_report.py tests/test_audit_objective_completion.py tests/test_release_audit_docs.py tests/test_runtime_environment_files.py tests/test_quickstart_docs.py -q` passed with 87 tests after updating the publication-audit row count and docs.
+- `python -m pytest tests/test_run_release_checks.py::test_write_objective_audit_reads_publication_detail_audits -q` passed after adding `software_detected_versions_parseable` to the release-check fixture audit TSV.
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_note_names_complete_publication_report_closure -q` first failed because the final-report objective note did not yet mention parseable detected version values.
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_note_names_complete_publication_report_closure tests/test_audit_objective_completion.py tests/test_audit_publication_report.py tests/test_collect_software_versions.py tests/test_run_release_checks.py::test_write_objective_audit_reads_publication_detail_audits -q` passed with 71 tests after updating the objective note.
+- `python -m pytest tests -q` passed with 459 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 51`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `rg -n "Nextflow|N E X T F L O W|version 26|version" results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv results/nextflow_standard_feature_smoke/standard/report/final_report.md results/nextflow_wgd_smoke/wgd/report/software_versions.tsv results/nextflow_wgd_smoke/wgd/report/final_report.md` confirmed standard and WGD reports now record `Nextflow	command	version 26.04.4 build 12445	detected	nextflow -version`.
+- `rg -n "software_detected_versions_parseable|Passed:|Failed:" results/publication_report_audit/publication_report_audit.md results/publication_report_audit/wgd_publication_report_audit.md` confirmed both publication audits passed the new parseable-version check with `Passed: 14`, `Failed: 0`.
+- `bash scripts/run_local_acceptance.sh` exited 0; `results/local_acceptance/local_acceptance_summary.md` still reports `Overall status: blocked` only because `final_stage_blocker` remains `Docker/Apptainer reproducibility`.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: software version parser, publication/objective audits, docs, tests, history
+
+Next:
+- Commit the parser/audit/docs/test update, then backfill this entry with the commit hash.
+
 ## 2026-06-27 18:38 - Require R runtime health in objective audit
 
 Context:

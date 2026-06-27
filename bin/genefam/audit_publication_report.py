@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import re
 from pathlib import Path
 
 
@@ -263,6 +264,17 @@ def _version_kinds(version_rows: list[dict[str, str]]) -> set[str]:
     return {row.get("kind", "").strip() for row in version_rows if row.get("kind", "").strip()}
 
 
+def _detected_version_parse_issues(version_rows: list[dict[str, str]]) -> list[str]:
+    issues: list[str] = []
+    for row in version_rows:
+        component = row.get("component", "").strip() or "unknown"
+        version = row.get("version", "").strip()
+        status = row.get("status", "").strip()
+        if status == "detected" and not re.search(r"\d", version):
+            issues.append(f"detected_version_without_numeric_value:{component}:{version or 'missing_version'}")
+    return issues
+
+
 def _method_components(method_text: str) -> list[str]:
     normalized = method_text.replace("/usr/local/bin/R", " R ")
     components: list[str] = []
@@ -348,6 +360,7 @@ def audit_publication_report(
     required_version_kinds = {"command", "R_package"}
     version_kinds = _version_kinds(version_rows)
     missing_version_kinds = sorted(required_version_kinds - version_kinds)
+    detected_version_parse_issues = _detected_version_parse_issues(version_rows)
     non_detected_version_warning_issues = _non_detected_version_warning_issues(report_text, version_rows)
 
     missing_report_sections: list[str] = []
@@ -431,6 +444,15 @@ def audit_publication_report(
             if not non_detected_version_warning_issues
             else "non-detected software version statuses missing from final report: "
             + ", ".join(non_detected_version_warning_issues),
+        ),
+        _row(
+            "software_detected_versions_parseable",
+            not detected_version_parse_issues,
+            str(software_versions),
+            "all detected software version values contain a numeric version token"
+            if not detected_version_parse_issues
+            else "detected software version rows lack numeric version values: "
+            + ", ".join(detected_version_parse_issues),
         ),
         _row(
             "figure_method_software_versions",

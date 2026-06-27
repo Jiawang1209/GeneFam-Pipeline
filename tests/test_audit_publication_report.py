@@ -141,7 +141,7 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
     )
     summary = summarize_audit(rows)
 
-    assert summary == {"passed": 13, "failed": 0, "complete": True}
+    assert summary == {"passed": 14, "failed": 0, "complete": True}
     assert {row["check"] for row in rows} == {
         "plot_files_exist",
         "plot_file_format_valid",
@@ -150,6 +150,7 @@ def test_publication_report_audit_requires_figure_reading_versions_qc_and_reprod
         "figure_interpretation_detail",
         "figure_output_paths_match_manifest",
         "software_versions_present",
+        "software_detected_versions_parseable",
         "software_version_detection_warnings_visible",
         "figure_method_software_versions",
         "final_report_methods_summary",
@@ -709,6 +710,99 @@ def test_publication_report_audit_requires_non_detected_versions_visible_in_fina
     assert by_check["software_version_detection_warnings_visible"]["status"] == "failed"
     assert "software_version_warning:MCScanX:version_not_detected:version_not_detected" in by_check[
         "software_version_detection_warnings_visible"
+    ]["note"]
+
+
+def test_publication_report_audit_rejects_detected_versions_without_numeric_version(tmp_path):
+    plot_manifest = tmp_path / "plot_manifest.tsv"
+    figure_interpretations = tmp_path / "figure_interpretations.tsv"
+    software_versions = tmp_path / "software_versions.tsv"
+    final_report = tmp_path / "final_report.md"
+    (tmp_path / "plots").mkdir()
+    (tmp_path / "plots/family_counts.pdf").write_bytes(b"%PDF family")
+
+    _write_tsv(plot_manifest, ["plot_key", "path", "description"], [["family_counts", "plots/family_counts.pdf", "Family counts"]])
+    _write_tsv(
+        figure_interpretations,
+        [
+            "figure_key",
+            "input_data",
+            "what_figure_shows",
+            "key_observations",
+            "biological_interpretation",
+            "qc_warnings",
+            "qc_tables",
+            "method_and_software",
+            "reproducibility",
+            "result_reading_status",
+            "output_path",
+        ],
+        [[
+            "family_counts",
+            "family count table",
+            "member counts",
+            "copy-number shifts are visible",
+            "copy-number shifts suggest expansion candidates",
+            "review skipped rows",
+            "tables/family_counts.tsv",
+            "Nextflow; plot_family_counts.R; /usr/local/bin/R",
+            "python bin/genefam/run_standard_smoke.py --outdir results/standard_smoke",
+            "figure-specific close reading",
+            "plots/family_counts.pdf",
+        ]],
+    )
+    _write_tsv(
+        software_versions,
+        ["component", "kind", "version", "status", "source"],
+        [
+            ["Nextflow", "command", "N E X T F L O W", "detected", "nextflow -version"],
+            ["R", "command", "4.5.1", "detected", "/usr/local/bin/R --version"],
+            ["ggplot2", "R_package", "3.5.2", "detected", "packageVersion(\"ggplot2\")"],
+        ],
+    )
+    final_report.write_text(
+        "\n".join(
+            [
+                "## Methods Summary",
+                "HMMER DIAMOND MCScanX Ka/Ks gamma beta alpha theta.",
+                "### Software Versions",
+                "| component | kind | version | status | source |",
+                "| --- | --- | --- | --- | --- |",
+                "| Nextflow | command | N E X T F L O W | detected | nextflow -version |",
+                "| R | command | 4.5.1 | detected | /usr/local/bin/R --version |",
+                "| ggplot2 | R_package | 3.5.2 | detected | packageVersion(\"ggplot2\") |",
+                "## Figure Traceability Matrix",
+                "| figure_key | plot_path | interpretation_status | qc_tables | method_and_software | reproducibility |",
+                "| --- | --- | --- | --- | --- | --- |",
+                "| family_counts | plots/family_counts.pdf | figure-specific close reading | tables/family_counts.tsv | Nextflow; plot_family_counts.R; /usr/local/bin/R | python bin/genefam/run_standard_smoke.py --outdir results/standard_smoke |",
+                "## Figure Result Interpretations",
+                "### family_counts: Family counts",
+                "- Input data: family count table",
+                "- What the figure shows: member counts",
+                "- Key observations: copy-number shifts are visible",
+                "- Biological interpretation: copy-number shifts suggest expansion candidates",
+                "- QC warnings / limitations: review skipped rows",
+                "- QC tables: tables/family_counts.tsv",
+                "- Method/software: Nextflow; plot_family_counts.R; /usr/local/bin/R",
+                "- Reproducibility: python bin/genefam/run_standard_smoke.py --outdir results/standard_smoke",
+                "- Result reading status: figure-specific close reading",
+                "- Output path: `plots/family_counts.pdf`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    rows = audit_publication_report(
+        plot_manifest=plot_manifest,
+        figure_interpretations=figure_interpretations,
+        software_versions=software_versions,
+        final_report=final_report,
+    )
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["software_detected_versions_parseable"]["status"] == "failed"
+    assert "detected_version_without_numeric_value:Nextflow:N E X T F L O W" in by_check[
+        "software_detected_versions_parseable"
     ]["note"]
 
 
