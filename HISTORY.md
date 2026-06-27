@@ -93,12 +93,12 @@ Verification:
 - `results/nextflow_standard_feature_smoke/standard/report/report_index.tsv` now contains `family_counts_pdf` and `family_counts_png`.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: fe74a4b
+- message: test: audit report indexed plot variants
 - files: publication audit, standard report index, Nextflow standard report wiring, docs, tests, history
 
 Next:
-- Commit this change, then backfill this history entry with the commit hash.
+- Continue final-stage packaging only after Docker/Apptainer runtime access is available.
 
 ## 2026-06-27 20:04 - Link figure gallery rows to per-figure close-reading anchors
 
