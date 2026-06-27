@@ -75,12 +75,12 @@ Verification:
 - `sed -n '1,80p' results/local_acceptance/local_acceptance_summary.md` confirmed all analysis/report/delivery acceptance steps passed, with only `final_stage_blocker` blocked by Docker/Apptainer reproducibility.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: 362e90024431eb5e6389927eb340da84e5ed63df
+- message: `docs: surface reference gitignore in delivery bundle`
 - files: delivery bundle, release audit docs, tests, and history entry.
 
 Next:
-- Commit this delivery-bundle hardening, then backfill the commit hash in a follow-up history entry.
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage blocker.
 
 ## 2026-06-27 15:41 - Enforce Reference ignore governance
 
