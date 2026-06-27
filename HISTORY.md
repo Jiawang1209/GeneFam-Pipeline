@@ -76,12 +76,12 @@ Verification:
 - `sed -n '1,80p' results/local_acceptance/local_acceptance_summary.md` confirmed all analysis/report/delivery acceptance steps passed, with only `final_stage_blocker` blocked by Docker/Apptainer reproducibility.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: c1aa2daf3eab39f8824b4fd484ce01172f9abbaf
+- message: `test: enforce reference ignore governance`
 - files: Reference ignore governance, audit script, release-audit docs, tests, and history entry.
 
 Next:
-- Commit this governance hardening, then backfill the commit hash in a follow-up history entry.
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage blocker.
 
 ## 2026-06-27 15:30 - Synchronize Chinese README acceptance entrypoints
 
