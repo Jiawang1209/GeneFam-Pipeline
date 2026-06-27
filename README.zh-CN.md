@@ -158,6 +158,68 @@ Configuration OK
 
 如果失败，会直接告诉你缺哪个路径或哪个模块配置不合理。这个步骤的作用是避免 Nextflow 跑了很久之后才因为一个文件路径写错而失败。
 
+## 真实 3 物种第一轮测试
+
+你现在准备好的物种库可以直接作为第一轮真实测试输入：
+
+```text
+data/species_bank/
+  Arabidopsis_thaliana/
+    Arabidopsis_thaliana.pep.fa
+    Arabidopsis_thaliana.genome.fa
+    Arabidopsis_thaliana.cds.fa
+    Arabidopsis_thaliana.gff3
+  Brassica_rapa/
+    Brassica_rapa.pep.fa
+    Brassica_rapa.genome.fa
+    Brassica_rapa.cds.fa
+    Brassica_rapa.gff3
+  Capsella_rubella/
+    Capsella_rubella.pep.fa
+    Capsella_rubella.genome.fa
+    Capsella_rubella.cds.fa
+    Capsella_rubella.gff3
+```
+
+建议真实物种库统一使用 `.pep.fa` 命名；模板也保留了 `.protein.fa` 兼容模式。下一步先复制真实测试模板：
+
+```bash
+cp configs/real_3species.template.yaml configs/my_3species.yaml
+```
+
+然后先确认这两个真实输入文件已经准备好，并按你的基因家族改掉路径：
+
+```text
+data/hmm_profiles/PF00657.hmm
+data/reference/GDSL_reference.pep.fa
+```
+
+第一轮建议保持模板里的保守模块组合：打开 identification、domain_filtering、family_summary、phylogeny、chromosome_location 和 report；先不要打开 promoter_cis、ppi、synteny、kaks、duplication_retention。这样可以先确认物种名、GFF3 gene ID、蛋白 ID、HMM profile 和 reference peptide 都能对上。
+
+先做路径体检：
+
+```bash
+python bin/genefam/validate_config.py configs/my_3species.yaml --check-paths
+```
+
+如果返回 `Configuration OK`，再跑正式标准主线：
+
+```bash
+PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH" \
+nextflow run workflows/main.nf \
+  -c workflows/nextflow.config \
+  -profile activated \
+  --config configs/my_3species.yaml
+```
+
+第一轮重点查看：
+
+```text
+results/My_3species_GDSL/
+```
+
+如果第一轮能生成候选成员表、family members FASTA、FastTree 进化树、chromosome location 和 `final_report.md`，再进入第二轮，逐步打开 promoter、motif、expression、MCScanX/circlize、Ka/Ks/WGD 和论文级可视化模块。
+
 ## 本地验收入口
 
 如果你想快速判断当前仓库是不是已经达到 MVP 交付状态，优先运行：

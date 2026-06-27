@@ -34,6 +34,46 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 23:34 - Add real three-species test entrypoint
+
+Context:
+- User prepared real three-species test inputs under `data/species_bank/` and confirmed all peptide files use `.pep.fa` naming.
+- User requested that `data/species_bank/` must not be included in git because it contains local test data.
+- The Chinese README needed a concrete next-step guide for starting the first real 3-species family-analysis test.
+
+Decisions:
+- Keep real species data local-only by ignoring `data/species_bank/`.
+- Add a conservative first-round real-data YAML template that enables identification, domain filtering, summary, phylogeny, chromosome location, and report while leaving heavier downstream modules disabled until the entrypoint is validated.
+- Document that the first `--check-paths` gate should pass only after users provide both the family HMM profile and reference peptides.
+
+Added:
+- `configs/real_3species.template.yaml`
+- `tests/test_real_3species_template.py`
+
+Modified:
+- `.gitignore`
+- `README.zh-CN.md`
+- `tests/test_quickstart_docs.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_quickstart_docs.py::test_chinese_readme_documents_real_three_species_test_path tests/test_real_3species_template.py -q` passed with 2 tests.
+- `python bin/genefam/validate_config.py configs/real_3species.template.yaml` returned `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/real_3species.template.yaml --check-paths` failed as expected because `data/hmm_profiles/PF00657.hmm` and `data/reference/GDSL_reference.pep.fa` are not present yet.
+- `python -m pytest tests -q` passed with 486 tests.
+- `git status --short --untracked-files=all` no longer lists files under `data/species_bank/` after adding the ignore rule.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: real 3-species template, Chinese README guide, git ignore rule, documentation tests, and history
+
+Next:
+- Prepare the target gene-family HMM profile and reference peptide FASTA, then copy `configs/real_3species.template.yaml` to `configs/my_3species.yaml` and run `python bin/genefam/validate_config.py configs/my_3species.yaml --check-paths`.
+
 ## 2026-06-27 22:40 - Gate runtime bootstrap shell syntax in release checks
 
 Context:

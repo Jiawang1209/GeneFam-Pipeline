@@ -120,3 +120,26 @@ def test_quickstart_documents_minimum_verified_run_path():
     ]
     for snippet in required_snippets:
         assert snippet in text
+
+
+def test_chinese_readme_documents_real_three_species_test_path():
+    text = Path("README.zh-CN.md").read_text(encoding="utf-8")
+
+    required_snippets = [
+        "configs/real_3species.template.yaml",
+        "configs/my_3species.yaml",
+        "Arabidopsis_thaliana.pep.fa",
+        "Brassica_rapa.pep.fa",
+        "Capsella_rubella.pep.fa",
+        "data/hmm_profiles/PF00657.hmm",
+        "data/reference/GDSL_reference.pep.fa",
+        "python bin/genefam/validate_config.py configs/my_3species.yaml --check-paths",
+        'PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH"',
+        "nextflow run workflows/main.nf",
+        "-profile activated",
+        "--config configs/my_3species.yaml",
+        "results/My_3species_GDSL",
+        "先不要打开 promoter_cis、ppi、synteny、kaks、duplication_retention",
+    ]
+    for snippet in required_snippets:
+        assert snippet in text
