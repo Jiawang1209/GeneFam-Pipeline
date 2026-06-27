@@ -112,6 +112,9 @@ def test_write_handoff_markdown_contains_copyable_next_steps(tmp_path):
     assert "results/report_index_audit/wgd_report_index_audit.md" in text
     assert "results/delivery_bundle/delivery_manifest.tsv" in text
     assert "results/delivery_bundle/delivery_bundle.md" in text
+    assert "Global paper-level figure gallery" in text
+    assert "results/delivery_bundle/figure_gallery.tsv" in text
+    assert "results/delivery_bundle/figure_gallery.md" in text
     assert "Dockerfile" in text
     assert "results/container_default_smoke" in text
 
@@ -180,6 +183,10 @@ def test_write_handoff_summary_tsv_contains_stable_keys(tmp_path):
         {"section": "container_default_smoke", "summary": "Dockerfile -> results/container_default_smoke"},
         {"section": "standard_report_index_audit", "summary": "standard_report_index_audit=passed"},
         {"section": "wgd_report_index_audit", "summary": "wgd_report_index_audit=passed"},
+        {
+            "section": "figure_gallery",
+            "summary": "results/delivery_bundle/figure_gallery.tsv, results/delivery_bundle/figure_gallery.md",
+        },
     ]
 
 

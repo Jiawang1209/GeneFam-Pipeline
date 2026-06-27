@@ -79,6 +79,9 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/reference_governance/reference_governance.md" in text
     assert "results/delivery_bundle/delivery_manifest.tsv" in text
     assert "results/delivery_bundle/delivery_bundle.md" in text
+    assert "global paper-level figure gallery" in text
+    assert "results/delivery_bundle/figure_gallery.tsv" in text
+    assert "results/delivery_bundle/figure_gallery.md" in text
     assert "final_stage_blocker" in text
     assert "audit_publication_report.py" in text
     assert "audit_report_index.py" in text

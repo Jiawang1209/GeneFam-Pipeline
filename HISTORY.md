@@ -34,6 +34,52 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 13:05 - Expose figure gallery in handoff and release audit
+
+Context:
+- The active `/goal` requires a paper-level MVP handoff where every figure can be traced to plots, close-reading interpretation, software/R package versions, and final report context.
+- The delivery bundle already generated `figure_gallery.tsv` and `figure_gallery.md`, but the handoff report and release audit did not yet list them as first-class evidence.
+
+Decisions:
+- Treat the global paper-level figure gallery as a stable handoff section, not only a delivery-bundle byproduct.
+- Add tests that require both TSV and Markdown gallery paths in the generated handoff and release audit documentation.
+- Regenerate `results/handoff/handoff_report.md` and `results/handoff/handoff_summary.tsv` from the updated handoff builder.
+
+Added:
+- Handoff summary section `figure_gallery`.
+- Release audit evidence for `results/delivery_bundle/figure_gallery.tsv` and `results/delivery_bundle/figure_gallery.md`.
+- Test assertions for the global paper-level figure gallery handoff contract.
+
+Modified:
+- `bin/genefam/build_handoff_report.py`
+- `tests/test_build_handoff_report.py`
+- `tests/test_release_audit_docs.py`
+- `docs/release_audit.md`
+- `results/handoff/handoff_report.md`
+- `results/handoff/handoff_summary.tsv`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_handoff_report.py tests/test_release_audit_docs.py -q` first failed with 3 expected failures because the handoff report, handoff summary TSV, and release audit did not expose the global paper-level figure gallery.
+- `python -m pytest tests/test_build_handoff_report.py tests/test_release_audit_docs.py -q` passed with 6 tests after the implementation and docs update.
+- `python bin/genefam/build_handoff_report.py` regenerated the handoff report and summary TSV.
+- `python -m pytest tests -q` passed with 432 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 48`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `bash scripts/run_local_acceptance.sh` exited 0 and listed `results/delivery_bundle/figure_gallery.tsv` and `results/delivery_bundle/figure_gallery.md` under primary handoff files.
+- `sed -n '1,28p' results/local_acceptance/local_acceptance_summary.md` confirmed local acceptance keeps `Overall status: blocked` only for the final-stage `Docker/Apptainer reproducibility` blocker.
+- `sed -n '1,40p' results/handoff/handoff_report.md` and `tail -n 5 results/handoff/handoff_summary.tsv` confirmed the handoff outputs expose the global paper-level figure gallery.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: handoff builder, handoff tests, release audit docs/tests, generated handoff outputs, and history entry.
+
+Next:
+- Backfill this entry with the commit hash after the commit is created.
+
 ## 2026-06-27 12:37 - Document figure gallery in README and quickstart
 
 Context:

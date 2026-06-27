@@ -118,6 +118,7 @@ def build_handoff_sections(
             "WGD report index audit",
             "wgd_report_index_audit",
         ),
+        "figure_gallery": "results/delivery_bundle/figure_gallery.tsv, results/delivery_bundle/figure_gallery.md",
     }
 
 
@@ -154,6 +155,8 @@ def write_markdown(sections: dict[str, str], out_path: Path) -> None:
         "- `results/readiness/runtime_bootstrap.sh`",
         "- `results/delivery_bundle/delivery_manifest.tsv`",
         "- `results/delivery_bundle/delivery_bundle.md`",
+        "- Global paper-level figure gallery: `results/delivery_bundle/figure_gallery.tsv`",
+        "- Global paper-level figure gallery Markdown: `results/delivery_bundle/figure_gallery.md`",
         "- `Dockerfile`",
         "- `results/container_default_smoke`",
         "- `results/container_profile_smoke/docker/container_profile_smoke.md`",
@@ -192,6 +195,13 @@ def write_summary_tsv(sections: dict[str, str], out_path: Path) -> None:
         (
             "wgd_report_index_audit",
             sections.get("wgd_report_index_audit", "wgd_report_index_audit=missing"),
+        ),
+        (
+            "figure_gallery",
+            sections.get(
+                "figure_gallery",
+                "results/delivery_bundle/figure_gallery.tsv, results/delivery_bundle/figure_gallery.md",
+            ),
         ),
     ]
     out_path.parent.mkdir(parents=True, exist_ok=True)
