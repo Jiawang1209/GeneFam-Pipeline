@@ -87,6 +87,8 @@ def load_event_metadata(path: Path | None) -> dict[str, dict[str, str]]:
         raise RuntimeError("PyYAML is required to read WGD event configuration")
     with Path(path).open("r", encoding="utf-8") as handle:
         data: dict[str, Any] = yaml.safe_load(handle) or {}
+    if not isinstance(data, dict):
+        raise ValueError("WGD event configuration must be a mapping")
     events = data.get("wgd_events", []) or []
     if not isinstance(events, list):
         raise ValueError("wgd_events must be a list")

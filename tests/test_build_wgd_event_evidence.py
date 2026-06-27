@@ -194,3 +194,11 @@ def test_load_event_metadata_rejects_non_list_wgd_events(tmp_path):
 
     with pytest.raises(ValueError, match="wgd_events must be a list"):
         load_event_metadata(events_config)
+
+
+def test_load_event_metadata_rejects_non_mapping_config(tmp_path):
+    events_config = tmp_path / "wgd_events.yaml"
+    events_config.write_text("- alpha\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="WGD event configuration must be a mapping"):
+        load_event_metadata(events_config)
