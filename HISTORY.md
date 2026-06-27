@@ -34,6 +34,51 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 11:59 - Expose paper-level WGD handoff in delivery bundle
+
+Context:
+- The active `/goal` requires the final handoff to expose Ka/Ks/WGD and gamma beta alpha theta interpretation outputs as clearly as the standard visualization outputs.
+- The formal Nextflow WGD branch already writes `results/nextflow_wgd_smoke/wgd/report/final_report.md`, plot manifest, figure interpretations, and software versions.
+- The delivery bundle still pointed mainly to the quickstart prepared-WGD report and did not give direct first-class pointers to the formal Nextflow WGD report package.
+
+Decisions:
+- Keep the quickstart prepared-WGD report as the short reproducible WGD handoff.
+- Add separate `wgd` rows for the formal Nextflow WGD report, plot manifest, figure interpretations, and software/R package versions.
+- Describe the WGD handoff as covering Ka/Ks, Ks-derived WGD layers, gamma beta alpha theta event interpretation, retention enrichment, duplicate-type selection, and pangenome-class selection.
+
+Added:
+- Delivery manifest row `wgd/wgd_paper_level_visual_report`.
+- Delivery manifest row `wgd/wgd_paper_level_plot_manifest`.
+- Delivery manifest row `wgd/wgd_paper_level_figure_interpretations`.
+- Delivery manifest row `wgd/wgd_paper_level_software_versions`.
+- Test assertions that the delivery bundle Markdown and TSV expose the formal Nextflow WGD report package.
+
+Modified:
+- `bin/genefam/run_delivery_bundle.py`
+- `tests/test_run_delivery_bundle.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py -q` first failed because `wgd_paper_level_visual_report` was absent from the delivery manifest.
+- `python -m pytest tests/test_run_delivery_bundle.py -q` passed after adding the formal WGD handoff rows.
+- `python bin/genefam/run_delivery_bundle.py --outdir results/delivery_bundle` exited 0, and `rg -n "wgd_paper_level_visual_report|wgd_paper_level_plot_manifest|wgd_paper_level_figure_interpretations|wgd_paper_level_software_versions|nextflow_wgd_smoke" results/delivery_bundle/delivery_bundle.md results/delivery_bundle/delivery_manifest.tsv` confirmed the new handoff rows.
+- `python -m pytest tests -q` passed with 431 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 47`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `bash scripts/run_local_acceptance.sh` exited 0 and printed `Final-stage blocker: Docker/Apptainer reproducibility.`
+- `sed -n '1,16p' results/local_acceptance/local_acceptance_summary.md` confirmed local acceptance keeps `Overall status: blocked` only for `final_stage_blocker`.
+- `sed -n '1,10p' results/objective_audit/objective_audit.md` confirmed objective audit remains `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
+- hash: pending
+- message: `feat: expose paper-level WGD handoff`
+- files: delivery bundle builder, delivery bundle test, and history entry.
+
+Next:
+- Continue final MVP hardening while Docker/Apptainer remain the final-stage runtime blocker.
+
 ## 2026-06-27 11:50 - Expose paper-level standard visualization handoff in delivery bundle
 
 Context:

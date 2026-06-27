@@ -138,6 +138,22 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         in manifest_text
     )
     assert (
+        "wgd\twgd_paper_level_visual_report\tavailable\tresults/nextflow_wgd_smoke/wgd/report/final_report.md\tpaper-level Nextflow WGD report with Ka/Ks, Ks-derived WGD layers, gamma beta alpha theta event interpretation, retention enrichment, duplicate-type selection, and pangenome-class selection"
+        in manifest_text
+    )
+    assert (
+        "wgd\twgd_paper_level_plot_manifest\tavailable\tresults/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv\tregistered plot inventory for the formal Nextflow WGD branch"
+        in manifest_text
+    )
+    assert (
+        "wgd\twgd_paper_level_figure_interpretations\tavailable\tresults/nextflow_wgd_smoke/wgd/report/figure_interpretations.md\tper-figure close reading for the formal Nextflow WGD branch"
+        in manifest_text
+    )
+    assert (
+        "wgd\twgd_paper_level_software_versions\tavailable\tresults/nextflow_wgd_smoke/wgd/report/software_versions.tsv\tsoftware and R package versions for the formal Nextflow WGD branch"
+        in manifest_text
+    )
+    assert (
         "wgd\tevents_config\tavailable\tconfigs/wgd_events.brassicaceae.yaml\tgamma beta alpha theta named-event YAML mapping"
         in manifest_text
     )
@@ -220,6 +236,11 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "manifest-mode standard DSL2 smoke" in summary_text
     assert "strict config path preflight" in summary_text
     assert "gamma beta alpha theta named-event YAML mapping" in summary_text
+    assert "wgd_paper_level_visual_report" in summary_text
+    assert "results/nextflow_wgd_smoke/wgd/report/final_report.md" in summary_text
+    assert "Ka/Ks, Ks-derived WGD layers, gamma beta alpha theta event interpretation, retention enrichment, duplicate-type selection, and pangenome-class selection" in summary_text
+    assert "results/nextflow_wgd_smoke/wgd/report/figure_interpretations.md" in summary_text
+    assert "results/nextflow_wgd_smoke/wgd/report/software_versions.tsv" in summary_text
     assert "alpha, beta, gamma, theta" in summary_text
     assert "Reference governance" in summary_text
     assert "runtime recovery" in summary_text
