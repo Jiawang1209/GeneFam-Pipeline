@@ -34,6 +34,50 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 09:48 - Report non-list WGD event maps clearly
+
+Context:
+- The active `/goal` requires gamma/beta/alpha/theta WGD event interpretation to be robust for real YAML edits.
+- If a user wrote `wgd_events` as a mapping instead of a list, `load_event_metadata()` iterated over mapping keys and reported a misleading per-entry error.
+- The correct problem is the top-level event-map structure: `wgd_events` must be a list of event mappings.
+
+Decisions:
+- Validate that top-level `wgd_events` is a list before validating individual event entries.
+- Preserve the existing per-entry mapping, missing-name, duplicate-name, and missing-field checks.
+- Confirm `validate_config --check-paths` wraps the lower-level type error into `wgd_events.event_map is invalid: ...`.
+
+Added:
+- Regression test for non-list `wgd_events` in `load_event_metadata()`.
+- Regression test that config validation reports non-list `wgd_events` through `wgd_events.event_map`.
+
+Modified:
+- `bin/genefam/build_wgd_event_evidence.py`
+- `tests/test_build_wgd_event_evidence.py`
+- `tests/test_validate_config.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_wgd_event_evidence.py::test_load_event_metadata_rejects_non_list_wgd_events -q` first failed because the error was `WGD event entry 1 must be a mapping` instead of the top-level list error.
+- `python -m pytest tests/test_build_wgd_event_evidence.py::test_load_event_metadata_rejects_non_list_wgd_events tests/test_build_wgd_event_evidence.py::test_load_event_metadata_rejects_non_mapping_event_entries tests/test_build_wgd_event_evidence.py::test_load_event_metadata_rejects_events_missing_name tests/test_build_wgd_event_evidence.py::test_load_event_metadata_reads_brassicaceae_named_events -q` passed.
+- `python -m pytest tests/test_validate_config.py::test_validate_config_check_paths_reports_non_list_wgd_events tests/test_validate_config.py::test_validate_config_check_paths_reports_non_mapping_wgd_event_entry tests/test_build_wgd_event_evidence.py -q` passed with 11 tests.
+- `python -m pytest tests/test_validate_config.py -q` passed with 42 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/manifest.example.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python -m pytest tests -q` passed with 419 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 with `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`.
+
+Commit:
+- hash: pending
+- message: `test: report non-list WGD event maps`
+- files: WGD event-map top-level validation, config validation coverage, and history entry.
+
+Next:
+- Continue hardening WGD/report validation and handoff evidence before final Docker/Apptainer packaging.
+
 ## 2026-06-27 09:42 - Report non-mapping WGD event entries clearly
 
 Context:

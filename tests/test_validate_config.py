@@ -680,3 +680,28 @@ def test_validate_config_check_paths_reports_non_mapping_wgd_event_entry(tmp_pat
     errors = validate_config(config, check_paths=True, base_dir=tmp_path)
 
     assert "wgd_events.event_map is invalid: WGD event entry 1 must be a mapping" in errors
+
+
+def test_validate_config_check_paths_reports_non_list_wgd_events(tmp_path):
+    event_map = tmp_path / "non_list_events.yaml"
+    event_map.write_text(
+        "\n".join(
+            [
+                "wgd_events:",
+                "  name: alpha",
+                "  scope: Brassicaceae",
+                "  evidence: literature",
+                "  expected_relative_age: recent",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    config = _valid_base_config()
+    config["input"]["root"] = "species_bank"
+    config["wgd_events"] = {"named_event_annotation": True, "event_map": "non_list_events.yaml"}
+    (tmp_path / "species_bank").mkdir()
+
+    errors = validate_config(config, check_paths=True, base_dir=tmp_path)
+
+    assert "wgd_events.event_map is invalid: wgd_events must be a list" in errors

@@ -88,6 +88,8 @@ def load_event_metadata(path: Path | None) -> dict[str, dict[str, str]]:
     with Path(path).open("r", encoding="utf-8") as handle:
         data: dict[str, Any] = yaml.safe_load(handle) or {}
     events = data.get("wgd_events", []) or []
+    if not isinstance(events, list):
+        raise ValueError("wgd_events must be a list")
     metadata: dict[str, dict[str, str]] = {}
     for index, event in enumerate(events, start=1):
         if not isinstance(event, dict):
