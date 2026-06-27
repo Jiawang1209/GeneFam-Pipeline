@@ -9750,6 +9750,47 @@ Commit:
 Next:
 - Keep Docker/Apptainer runtime verification as the remaining final-stage external blocker; continue polishing Reference-level figure fidelity where useful.
 
+## 2026-06-27 - Require formal Nextflow sources for final report audit
+
+Timestamp:
+- 2026-06-27 08:02 CST
+
+Context:
+- The objective requires final reports to include every figure interpretation, software/R package versions, QC, and reproducibility information.
+- `final reports` already required standard report, prepared-WGD handoff, quickstart, and both publication report audits, but it did not explicitly require the formal Nextflow standard visualization or WGD branch smokes that produce the report packages being audited.
+
+Decisions:
+- Require `Nextflow standard visualization smoke` for the `final reports` objective row.
+- Require `Nextflow WGD event smoke` for the same row.
+- Update the final-report note so the standard and WGD Markdown report packages are tied to formal Nextflow standard visualization and WGD branch evidence.
+
+Added:
+- Regression test proving `final reports` remains `missing` when formal Nextflow standard visualization and WGD branch evidence are absent.
+
+Modified:
+- `HISTORY.md`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_require_nextflow_standard_and_wgd_report_sources -q` first failed with the old rule because final reports were `achieved` without `Nextflow standard visualization smoke` or `Nextflow WGD event smoke`.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 36 tests after implementation.
+- `python -m pytest tests -q` passed with 396 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 45`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` passed and reported `Achieved: 19`, `Blocked: 1`, `Missing: 0`, `Complete: false`.
+- `rg -n "final reports|Nextflow standard visualization smoke|Nextflow WGD event smoke|formal Nextflow standard visualization" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv` confirmed the final reports row now names the formal Nextflow sources.
+
+Commit:
+- hash: pending
+- message: test: require nextflow sources for final report audit
+- files: objective audit rule, objective audit tests, history
+
+Next:
+- Continue final MVP hardening with Docker/Apptainer packaging still intentionally deferred to the final runtime stage.
+
 ## 2026-06-27 - Require manifest Nextflow evidence for YAML species selection audit
 
 Timestamp:

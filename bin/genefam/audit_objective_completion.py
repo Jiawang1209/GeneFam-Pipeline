@@ -283,6 +283,8 @@ def build_objective_audit(
                 release,
                 [
                     "standard branch smoke",
+                    "Nextflow standard visualization smoke",
+                    "Nextflow WGD event smoke",
                     "prepared WGD handoff example",
                     "quickstart handoff",
                     "publication report audit",
@@ -290,8 +292,8 @@ def build_objective_audit(
                 ],
             ),
             "final reports",
-            "standard, prepared WGD, quickstart report outputs, standard publication report audit, and WGD publication report audit",
-            "Final Markdown reports are produced for standard and WGD handoff paths, while publication audits verify valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, and complete per-figure close-reading text: input data, what the figure shows, key observations, biological interpretation, QC warnings, QC tables, method/software entries, software/R package versions, reproducibility commands, reading status, output paths, and registered plot files for both report families.",
+            "standard branch smoke, Nextflow standard visualization smoke, Nextflow WGD event smoke, prepared WGD handoff example, quickstart report outputs, standard publication report audit, and WGD publication report audit",
+            "Final Markdown reports are produced for standard and WGD handoff paths from formal Nextflow standard visualization and WGD branch evidence, while publication audits verify valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, and complete per-figure close-reading text: input data, what the figure shows, key observations, biological interpretation, QC warnings, QC tables, method/software entries, software/R package versions, reproducibility commands, reading status, output paths, and registered plot files for both report families.",
         ),
         _achieved_if(
             _all_passed(release, ["pytest", "Reference governance audit"]),
