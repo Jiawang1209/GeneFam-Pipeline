@@ -71,7 +71,7 @@ Verification:
 - `head -n 8 results/objective_audit/objective_audit.md` reported `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the remaining blocked item is the intentionally deferred Docker/Apptainer reproducibility stage.
 
 Commit:
-- hash: pending
+- hash: 4533804e208add5feb61f77716534786521b2185
 - message: `test: require promoter extraction for promoter audit`
 - files: objective audit promoter evidence rule, regression tests, refreshed objective audit outputs, and history entry.
 
