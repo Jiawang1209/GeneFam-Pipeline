@@ -83,7 +83,7 @@ Verification:
 - `results/delivery_bundle/figure_gallery.tsv` now starts with `branch`, `plot_key`, `plot_path`, `plot_png_path`, and includes rows such as `tree_features.png` and `ks_distribution.png`.
 
 Commit:
-- hash: not created in this session
+- hash: cbc01ef
 - message: feat: expose png targets in figure gallery
 - files: delivery figure gallery, figure-gallery audit, docs, tests, history
 
