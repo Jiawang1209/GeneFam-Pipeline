@@ -13788,7 +13788,7 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` exited 0 and refreshed release checks, quickstart, delivery bundle, final delivery manifest audit, and local acceptance outputs; it reported the expected final-stage blocker: Docker/Apptainer reproducibility.
 
 Commit:
-- hash: pending
+- hash: 82aa8c61df96407ba22b1884e324684f7fad16dd
 - message: feat: embed plot previews in final reports
 - files: report assembler, publication/objective audits, tests, README/quickstart/readiness/release docs, history
 
