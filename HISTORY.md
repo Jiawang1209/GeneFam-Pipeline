@@ -75,12 +75,12 @@ Verification:
 - `sed -n '1,28p' results/local_acceptance/local_acceptance_summary.md` confirmed local acceptance steps passed except `final_stage_blocker`.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: 05fccf9ff01f2917154002540249fcfdafeecf2a
+- message: `feat: add final report figure traceability matrix`
 - files: report assembler, assemble-report tests, release audit docs/tests, and history entry.
 
 Next:
-- Backfill this entry with the commit hash after the commit is created.
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage blocker.
 
 ## 2026-06-27 13:05 - Expose figure gallery in handoff and release audit
 
