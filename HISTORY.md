@@ -77,7 +77,7 @@ Verification:
 - `rg -n "Overall status: blocked|final_stage_blocker|Docker/Apptainer reproducibility" results/local_acceptance/local_acceptance_summary.md results/local_acceptance/local_acceptance_summary.tsv results/handoff/handoff_report.md` confirmed local acceptance and handoff agree on the final-stage blocker.
 
 Commit:
-- hash: pending
+- hash: a29eec86b69ae40bf20c92d88b58e6cceff5553f
 - message: `feat: surface final stage blocker in local acceptance`
 - files: local acceptance summary, local acceptance wrapper, quickstart docs, tests, and history entry.
 
