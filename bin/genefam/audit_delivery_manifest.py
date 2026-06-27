@@ -24,6 +24,7 @@ REQUIRED_ITEMS = [
     ("status", "standard_report_index_audit"),
     ("status", "wgd_publication_report_audit"),
     ("status", "wgd_report_index_audit"),
+    ("status", "reference_visual_alignment"),
     ("standard", "mock_mvp"),
     ("nextflow", "nextflow_mock_mvp_smoke"),
     ("nextflow", "nextflow_single_tool_smoke"),

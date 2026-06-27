@@ -31,6 +31,7 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
             "standard report index audit\ttrue\tpassed\t0\tstandard report index\tindexed standard report artifacts",
             "WGD publication report audit\ttrue\tpassed\t0\twgd publication report\twgd figures interpreted",
             "WGD report index audit\ttrue\tpassed\t0\twgd report index\tindexed WGD report artifacts",
+            "Reference visual alignment audit\ttrue\tpassed\t0\treference visual alignment\tstandard and WGD figure modules aligned",
             "readiness audit\ttrue\tpassed\t0\treadiness\tcore tools available",
             "runtime bootstrap shell syntax\ttrue\tpassed\t0\tbash -n results/readiness/runtime_bootstrap.sh\truntime_bootstrap.sh syntax OK",
             "Docker profile smoke\tfalse\tfailed\t1\tdocker profile\tmissing runtime",
@@ -244,6 +245,10 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     )
     assert (
         "status\twgd_report_index_audit\tavailable\tresults/report_index_audit/wgd_report_index_audit.md\treport-index closure: WGD report index exposes plot manifest, software versions, figure interpretations in TSV/Markdown, and final report"
+        in manifest_text
+    )
+    assert (
+        "status\treference_visual_alignment\tavailable\tresults/reference_visual_alignment/reference_visual_alignment.md\tReference-paper visual alignment closure: standard and WGD plot manifests cover family information, tree/motif/gene-structure/domain, MCScanX/synteny/circlize, promoter cis-elements, expression heatmap, ggNetView PPI, and Ka/Ks/WGD figure modules"
         in manifest_text
     )
     assert (

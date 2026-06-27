@@ -578,6 +578,25 @@ def default_checks() -> list[CheckSpec]:
             ],
         ),
         CheckSpec(
+            "Reference visual alignment audit",
+            [
+                python,
+                "bin/genefam/audit_reference_visual_alignment.py",
+                "--standard-plot-manifest",
+                "results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv",
+                "--standard-figure-interpretations",
+                "results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv",
+                "--wgd-plot-manifest",
+                "results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv",
+                "--wgd-figure-interpretations",
+                "results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv",
+                "--out-tsv",
+                "results/reference_visual_alignment/reference_visual_alignment.tsv",
+                "--out-md",
+                "results/reference_visual_alignment/reference_visual_alignment.md",
+            ],
+        ),
+        CheckSpec(
             "Nextflow raw MCScanX/KaKs WGD smoke",
             [
                 python,

@@ -14165,3 +14165,58 @@ Commit:
 
 Next:
 - Continue final MVP handoff polish; Docker/Apptainer runtime execution remains the intentionally deferred final packaging stage.
+
+## 2026-06-27 - Add Reference visual alignment audit
+
+Timestamp:
+- 2026-06-27 22:56 CST
+
+Context:
+- The standard and WGD reports already had plot manifests, per-figure close readings, software versions, report indexes, and delivery-gallery links.
+- The objective "align to the Reference paper-level visualization standard" still needed a named, machine-readable audit that checks the expected visual modules directly instead of relying only on scattered smoke evidence.
+
+Decisions:
+- Add a dedicated `Reference visual alignment audit` release gate.
+- Audit the standard plot manifest for family counts, gene-family/copy-number/pangenome summaries, tree/motif/gene-structure/domain, feature summary, MCScanX/synteny/circlize, promoter cis-elements, ggNetView PPI, and expression heatmap modules.
+- Audit the WGD plot manifest for Ks/WGD gamma beta alpha theta, duplicate-type Ka/Ks, and pangenome-class Ka/Ks modules.
+- Require matching per-figure interpretation rows for every Reference-level plot module.
+- Surface the audit in objective completion, delivery bundle, and final delivery manifest required items.
+
+Added:
+- `bin/genefam/audit_reference_visual_alignment.py`
+- `tests/test_audit_reference_visual_alignment.py`
+- Release check: `Reference visual alignment audit`
+- Delivery manifest item: `status/reference_visual_alignment`
+
+Modified:
+- `bin/genefam/run_release_checks.py`
+- `bin/genefam/audit_objective_completion.py`
+- `bin/genefam/run_delivery_bundle.py`
+- `bin/genefam/audit_delivery_manifest.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_audit_delivery_manifest.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_reference_visual_alignment.py tests/test_run_release_checks.py::test_default_checks_include_reference_visual_alignment_after_publication_audits tests/test_audit_objective_completion.py::test_build_objective_audit_marks_goal_items_and_runtime_blockers tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index tests/test_audit_delivery_manifest.py::test_delivery_manifest_audit_requires_core_handoff_items tests/test_audit_delivery_manifest.py::test_delivery_manifest_audit_cli_writes_outputs_for_complete_manifest -q` first failed because the Reference visual alignment audit script, release gate, objective evidence, delivery-bundle row, and required manifest item did not exist yet.
+- The same focused test command passed after implementation with 7 tests.
+- `python -m pytest tests -q` passed with 484 tests.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed release checks, quickstart, delivery bundle, final delivery manifest audit, and local acceptance outputs; it reported the expected final-stage blocker: Docker/Apptainer reproducibility.
+- `results/reference_visual_alignment/reference_visual_alignment.md` reports `Passed: 3`, `Failed: 0`, `Complete: true`.
+- `results/release_checks/release_checks.md` reports `Passed: 54`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; `Reference visual alignment audit` passed.
+- `results/objective_audit/objective_audit.md` lists `Reference visual alignment audit` under `paper-level visualization modules`.
+- `results/delivery_bundle/delivery_manifest.tsv` contains `status	reference_visual_alignment	available	results/reference_visual_alignment/reference_visual_alignment.md`.
+- `results/delivery_bundle/final_delivery_manifest_audit.md` reports `Complete: true` and `delivery_manifest_required_items` passed.
+
+Commit:
+- hash: pending
+- message: feat: audit reference visual alignment
+- files: Reference visual alignment audit, release/objective/delivery integration, targeted tests, history
+
+Next:
+- Continue final MVP handoff polish; Docker/Apptainer runtime execution remains the intentionally deferred final packaging stage.

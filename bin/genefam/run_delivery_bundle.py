@@ -296,6 +296,13 @@ def build_delivery_manifest(
             "note": "report-index closure: WGD report index exposes plot manifest, software versions, figure interpretations in TSV/Markdown, and final report",
         },
         {
+            "section": "status",
+            "item": "reference_visual_alignment",
+            "status": _status_from_check(release_rows, "Reference visual alignment audit"),
+            "path": "results/reference_visual_alignment/reference_visual_alignment.md",
+            "note": "Reference-paper visual alignment closure: standard and WGD plot manifests cover family information, tree/motif/gene-structure/domain, MCScanX/synteny/circlize, promoter cis-elements, expression heatmap, ggNetView PPI, and Ka/Ks/WGD figure modules",
+        },
+        {
             "section": "input",
             "item": "manifest_config",
             "status": "available",

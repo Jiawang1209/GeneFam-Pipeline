@@ -346,6 +346,24 @@ def test_default_checks_include_report_index_audits_after_report_generation():
     assert "--out-md results/report_index_audit/wgd_report_index_audit.md" in wgd_command
 
 
+def test_default_checks_include_reference_visual_alignment_after_publication_audits():
+    checks = default_checks()
+    names = [check.name for check in checks]
+
+    assert names.index("Reference visual alignment audit") > names.index("publication report audit")
+    assert names.index("Reference visual alignment audit") > names.index("WGD publication report audit")
+    assert names.index("Reference visual alignment audit") < names.index("delivery bundle figure gallery smoke")
+    audit = next(check for check in checks if check.name == "Reference visual alignment audit")
+    command = " ".join(audit.command)
+    assert "bin/genefam/audit_reference_visual_alignment.py" in command
+    assert "--standard-plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv" in command
+    assert "--standard-figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv" in command
+    assert "--wgd-plot-manifest results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv" in command
+    assert "--wgd-figure-interpretations results/nextflow_wgd_smoke/wgd/report/figure_interpretations.tsv" in command
+    assert "--out-tsv results/reference_visual_alignment/reference_visual_alignment.tsv" in command
+    assert "--out-md results/reference_visual_alignment/reference_visual_alignment.md" in command
+
+
 def test_default_checks_do_not_include_handoff_report_as_a_stale_input_check():
     checks = default_checks()
     names = [check.name for check in checks]

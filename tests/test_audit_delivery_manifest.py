@@ -100,6 +100,9 @@ def test_delivery_manifest_audit_requires_core_handoff_items(tmp_path):
     assert "status:r_runtime_health:missing_item" in by_check[
         "delivery_manifest_required_items"
     ]["note"]
+    assert "status:reference_visual_alignment:missing_item" in by_check[
+        "delivery_manifest_required_items"
+    ]["note"]
     assert "runtime_recovery:bootstrap_shell_syntax:missing_item" in by_check[
         "delivery_manifest_required_items"
     ]["note"]
@@ -124,6 +127,7 @@ def test_delivery_manifest_audit_cli_writes_outputs_for_complete_manifest(tmp_pa
         ["status", "standard_report_index_audit", "available", str(existing), "ok"],
         ["status", "wgd_publication_report_audit", "available", str(existing), "ok"],
         ["status", "wgd_report_index_audit", "available", str(existing), "ok"],
+        ["status", "reference_visual_alignment", "available", str(existing), "ok"],
         ["standard", "mock_mvp", "available", str(existing), "ok"],
         ["nextflow", "nextflow_mock_mvp_smoke", "available", str(existing), "ok"],
         ["nextflow", "nextflow_single_tool_smoke", "available", str(existing), "ok"],

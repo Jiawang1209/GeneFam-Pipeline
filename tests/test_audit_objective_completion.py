@@ -96,6 +96,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
         _release_row("Nextflow raw MCScanX/KaKs WGD smoke"),
         _release_row("prepared WGD handoff example"),
         _release_row("WGD publication report audit"),
+        _release_row("Reference visual alignment audit"),
         _release_row("delivery bundle figure gallery audit"),
         _release_row("delivery bundle manifest audit"),
         _release_row("quickstart handoff"),
@@ -139,6 +140,7 @@ def test_build_objective_audit_marks_goal_items_and_runtime_blockers():
     assert "docker, apptainer" in by_requirement["Docker/Apptainer reproducibility"]["note"]
     assert by_requirement["WGD gamma beta alpha theta evidence"]["status"] == "achieved"
     assert by_requirement["paper-level visualization modules"]["status"] == "achieved"
+    assert "Reference visual alignment audit" in by_requirement["paper-level visualization modules"]["evidence"]
     assert "validate publication modules config" in by_requirement["paper-level visualization modules"]["evidence"]
     assert "configs/publication_modules.example.yaml" in by_requirement["paper-level visualization modules"]["note"]
     assert "gene family information visualization smoke" in by_requirement["paper-level visualization modules"]["evidence"]
