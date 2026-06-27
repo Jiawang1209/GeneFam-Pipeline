@@ -45,6 +45,8 @@ def test_quickstart_documents_minimum_verified_run_path():
         "plot manifest and interpretation output path consistency",
         "complete per-figure close-reading text",
         "result-statement interpretation narratives, including QC warnings and reading status, rather than instructional prompts",
+        "figure_interpretation_qc_specificity",
+        "figure-specific QC warnings",
         "QC tables and warnings",
         "software/R package versions",
         "per-figure method/software version coverage",

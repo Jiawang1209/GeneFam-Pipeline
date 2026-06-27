@@ -114,6 +114,8 @@ def test_readiness_checklist_documents_command_audit():
     assert "plot manifest and interpretation output path consistency" in text
     assert "complete per-figure close-reading text" in text
     assert "result-statement interpretation narratives, including QC warnings and reading status, rather than instructional prompts" in text
+    assert "figure_interpretation_qc_specificity" in text
+    assert "figure-specific QC warnings" in text
     assert "QC tables and warnings" in text
     assert "software/R package versions" in text
     assert "per-figure method/software version coverage" in text
@@ -236,6 +238,8 @@ def test_readme_points_to_final_handoff_report():
     assert "plot manifest and interpretation output path consistency" in readme
     assert "complete per-figure close-reading text" in readme
     assert "result-statement interpretation narratives, including QC warnings and reading status, rather than instructional prompts" in readme
+    assert "figure_interpretation_qc_specificity" in readme
+    assert "figure-specific QC warnings" in readme
     assert "QC tables and warnings" in readme
     assert "software/R package versions" in readme
     assert "per-figure method/software version coverage" in readme

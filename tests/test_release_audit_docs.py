@@ -154,6 +154,8 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "plot manifest and interpretation output path consistency" in text
     assert "complete per-figure close-reading text" in text
     assert "result-statement interpretation narratives, including QC warnings and reading status, rather than instructional prompts" in text
+    assert "figure_interpretation_qc_specificity" in text
+    assert "figure-specific QC warnings" in text
     assert "QC tables and warnings" in text
     assert "software/R package versions" in text
     assert "software_version_detection_warnings_visible" in text

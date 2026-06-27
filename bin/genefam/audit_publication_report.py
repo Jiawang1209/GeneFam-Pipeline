@@ -255,6 +255,21 @@ def _instructional_reading_issues(rows: list[dict[str, str]]) -> list[str]:
     return issues
 
 
+def _qc_specificity_issues(rows: list[dict[str, str]]) -> list[str]:
+    by_warning: dict[str, list[str]] = {}
+    for row in rows:
+        figure_key = row.get("figure_key", "").strip() or "unknown"
+        warning = " ".join(row.get("qc_warnings", "").strip().lower().split())
+        if not warning:
+            continue
+        by_warning.setdefault(warning, []).append(figure_key)
+    return [
+        "reused_qc_warning:" + ",".join(figure_keys)
+        for figure_keys in by_warning.values()
+        if len(figure_keys) > 1
+    ]
+
+
 def _placeholder_text_issues(text: str, source: str) -> list[str]:
     lowered = text.lower()
     return [f"{source}:{token}" for token in PLACEHOLDER_TOKENS if token in lowered]
@@ -465,6 +480,7 @@ def audit_publication_report(
     detail_rows = [interpretation_rows[key] for key in plot_keys if key in interpretation_rows]
     missing_details = _missing_detail_fields(detail_rows)
     instructional_reading_issues = _instructional_reading_issues(detail_rows)
+    qc_specificity_issues = _qc_specificity_issues(detail_rows)
     missing_method_component_versions = _missing_method_component_versions(detail_rows, software)
     methods_summary_issues = _methods_summary_issues(report_text)
     traceability_matrix_issues = _traceability_matrix_issues(report_text, detail_rows)
@@ -562,6 +578,14 @@ def audit_publication_report(
             if not instructional_reading_issues and detail_rows
             else "instructional interpretation text: "
             + ", ".join(instructional_reading_issues or ["no interpretation rows"]),
+        ),
+        _row(
+            "figure_interpretation_qc_specificity",
+            not qc_specificity_issues and bool(detail_rows),
+            str(figure_interpretations),
+            "figure interpretation QC warnings are figure-specific and not reused across plots"
+            if not qc_specificity_issues and detail_rows
+            else "generic or reused QC warnings: " + ", ".join(qc_specificity_issues or ["no interpretation rows"]),
         ),
         _row(
             "figure_output_paths_match_manifest",

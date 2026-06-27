@@ -198,6 +198,24 @@ READING_STATUS = {
 }
 
 
+QC_WARNINGS = {
+    "family": "Family copy-number interpretation depends on complete candidate recovery and species sampling; missing candidates are checked in copy-number and protein-property tables.",
+    "family_counts": "Family member-count contrasts depend on selected-species completeness, candidate filtering, and zero-count species handling recorded in the species manifest and copy-number tables.",
+    "gene_family_info": "Gene-family information panels should be read with species-order, pangenome-class, expansion, and protein-property table completeness before dosage-balance conclusions.",
+    "mcscanx": "MCScanX circlize interpretation depends on chromosome coordinate coverage, skipped links, and link-density table completeness before inferring duplicated blocks.",
+    "kaks": "Ka/Ks layer interpretation depends on pair filtering, Ks interval boundaries, sparse bins, and whether configured WGD labels are supported by enough retained pairs.",
+    "ks_distribution": "Ks interval interpretation depends on configured event windows, retained-pair counts per layer, sparse bins, and synteny/phylogeny support before naming gamma/beta/alpha/theta layers.",
+    "duplicate_type_kaks": "Duplicate-type Ka/Ks interpretation depends on MCScanX class assignment completeness, skipped pair counts, and per-class sample sizes.",
+    "pangenome_kaks": "Pangenome-class Ka/Ks interpretation depends on pangenome class thresholds, skipped pair counts, and class sample sizes before retention-breadth contrasts.",
+    "expression": "Expression heatmap interpretation depends on sample metadata completeness, normalization consistency, replicate structure, and low-expression gene filtering.",
+    "promoter": "Promoter cis-element interpretation depends on promoter window settings, genome coordinate completeness, cis-element annotation source, and category mapping coverage.",
+    "ppi": "PPI network interpretation depends on edge evidence source, isolated nodes, hub ranking stability, and ggNetView rendering status.",
+    "pangenome": "Pangenome and copy-number balance interpretation depends on class threshold settings, missing species, high-copy outliers, and protein-property table completeness.",
+    "feature": "Feature-summary interpretation depends on source-table completeness across domain, motif, gene-structure, synteny, promoter, and expression modules.",
+    "tree": "Tree-feature interpretation depends on alignment/tree support, motif/domain detection completeness, and gene-structure track coverage before clade-level conclusions.",
+}
+
+
 def _template_key(plot_key: str, path: str) -> str:
     value = f"{plot_key} {path}".lower()
     normalized_plot_key = plot_key.lower()
@@ -227,6 +245,7 @@ def build_figure_interpretations(plots: list[dict[str, str]]) -> list[dict[str, 
         path = plot.get("path", "")
         template_key = _template_key(key, path)
         template = TEMPLATES[template_key]
+        qc_warning = _qc_warning(path) if any(token in path for token in ["smoke", "fixtures", "demo"]) else QC_WARNINGS[template_key]
         rows.append(
             {
                 "figure_key": key,
@@ -235,7 +254,7 @@ def build_figure_interpretations(plots: list[dict[str, str]]) -> list[dict[str, 
                 "what_figure_shows": template[2],
                 "key_observations": template[3],
                 "biological_interpretation": template[4],
-                "qc_warnings": _qc_warning(path),
+                "qc_warnings": qc_warning,
                 "qc_tables": QC_TABLES[template_key],
                 "method_and_software": METHOD_AND_SOFTWARE[template_key],
                 "reproducibility": REPRODUCIBILITY[template_key],

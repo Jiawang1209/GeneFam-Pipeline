@@ -34,6 +34,65 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 21:11 - Require figure-specific QC warnings in publication reports
+
+Context:
+- The active `/goal` requires the final report to include close reading for every figure, including QC and limitations.
+- Existing `qc_warnings` fields were present, but standard and WGD report outputs reused the same generic QC sentence across multiple figures.
+- That made the report structurally complete but weaker as a paper-style result interpretation package.
+
+Decisions:
+- Add a dedicated `figure_interpretation_qc_specificity` publication-audit check.
+- Treat reused `qc_warnings` text across multiple figures as a report-closure failure.
+- Generate figure-specific QC/limitations text for copy number, gene-family information, pangenome, tree/features, feature summary, MCScanX/circlize, promoter cis-elements, PPI, expression, Ks/WGD, duplicate-type Ka/Ks, and pangenome-class Ka/Ks.
+- Make objective-audit and documentation contracts name `figure_interpretation_qc_specificity` explicitly.
+
+Added:
+- Regression test proving publication audit rejects reused generic QC warnings across figures.
+- Regression test proving generated standard/WGD figure interpretations use unique, figure-specific QC warnings.
+- Documentation/test coverage for `figure_interpretation_qc_specificity` and figure-specific QC warnings.
+
+Modified:
+- `bin/genefam/audit_publication_report.py`
+- `bin/genefam/build_figure_interpretations.py`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_publication_report.py`
+- `tests/test_build_figure_interpretations.py`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_run_release_checks.py`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `README.md`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `docs/release_audit.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_rejects_reused_generic_qc_warnings -q` first failed because `figure_interpretation_qc_specificity` did not exist.
+- `python -m pytest tests/test_build_figure_interpretations.py::test_standard_registered_plots_use_figure_specific_qc_warnings -q` first failed because generated QC warnings reused the same generic sentence across 10 figures.
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_rejects_reused_generic_qc_warnings tests/test_build_figure_interpretations.py::test_standard_registered_plots_use_figure_specific_qc_warnings -q` passed after adding the audit check and figure-specific QC templates.
+- `python -m pytest tests/test_audit_publication_report.py tests/test_build_figure_interpretations.py tests/test_audit_objective_completion.py tests/test_release_audit_docs.py tests/test_quickstart_docs.py tests/test_runtime_environment_files.py -q` passed with 95 tests.
+- `python bin/genefam/audit_publication_report.py --plot-manifest results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --figure-interpretations results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.tsv --software-versions results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv --final-report results/nextflow_standard_feature_smoke/standard/report/final_report.md --report-index results/nextflow_standard_feature_smoke/standard/report/report_index.tsv --out-tsv results/publication_report_audit/publication_report_audit.tsv --out-md results/publication_report_audit/publication_report_audit.md` initially failed on old generated outputs with reused QC warnings.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --config configs/publication_modules.example.yaml --outdir results/nextflow_standard_feature_smoke` exited 0 and refreshed standard report outputs with figure-specific QC warnings.
+- `python bin/genefam/run_nextflow_wgd_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_wgd_smoke` exited 0 and refreshed WGD report outputs with figure-specific QC warnings.
+- Standard and WGD publication audits both exited 0 after refresh and reported `Passed: 17`, `Failed: 0`, `Complete: true`, including `figure_interpretation_qc_specificity`.
+- `python -m pytest tests -q` passed with 473 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 52`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed the delivery bundle; `results/local_acceptance/local_acceptance_summary.md` still reports `Overall status: blocked` only because `final_stage_blocker` remains `Docker/Apptainer reproducibility`.
+
+Commit:
+- hash: not created in this session
+- message: test: require figure-specific qc warnings
+- files: publication audit, figure interpretation templates, objective audit, docs, tests, history
+
+Next:
+- Continue final-stage packaging only after Docker/Apptainer runtime access is available.
+
 ## 2026-06-27 20:56 - Expose PNG plot targets in the delivery figure gallery
 
 Context:

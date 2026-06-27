@@ -131,3 +131,25 @@ def test_standard_registered_plots_use_figure_specific_close_reading_status():
 
     for row in rows:
         assert row["result_reading_status"].startswith("figure-specific close reading"), row
+
+
+def test_standard_registered_plots_use_figure_specific_qc_warnings():
+    plots = [
+        {"plot_key": "family_counts", "path": "plots/family_counts.pdf"},
+        {"plot_key": "gene_family_info_summary", "path": "plots/gene_family_info_summary.pdf"},
+        {"plot_key": "tree_features", "path": "plots/tree_features.pdf"},
+        {"plot_key": "mcscanx_circlize", "path": "plots/mcscanx_circlize.pdf"},
+        {"plot_key": "promoter_cis_elements", "path": "plots/promoter_cis_elements.pdf"},
+        {"plot_key": "ppi_ggnetview", "path": "plots/ppi_ggnetview.pdf"},
+        {"plot_key": "expression_heatmap", "path": "plots/expression_heatmap.pdf"},
+        {"plot_key": "ks_distribution", "path": "plots/ks_distribution.pdf"},
+        {"plot_key": "duplicate_type_kaks", "path": "plots/duplicate_type_kaks.pdf"},
+        {"plot_key": "pangenome_kaks", "path": "plots/pangenome_kaks.pdf"},
+    ]
+
+    rows = build_figure_interpretations(plots)
+    qc_warnings = [row["qc_warnings"] for row in rows]
+
+    assert len(qc_warnings) == len(set(qc_warnings))
+    assert "member-count" in rows[0]["qc_warnings"]
+    assert "Ks interval" in {row["figure_key"]: row for row in rows}["ks_distribution"]["qc_warnings"]
