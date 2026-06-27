@@ -66,6 +66,7 @@ def test_build_standard_report_index_marks_core_outputs_available():
             "figure_interpretations": "report/figure_interpretations.tsv",
             "figure_interpretations_md": "report/figure_interpretations.md",
             "final_report": "report/final_report.md",
+            "figure_traceability_matrix": "report/final_report.md#figure-traceability-matrix",
         }
     )
 
@@ -131,6 +132,13 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "figure_interpretations",
         "figure_interpretations_md",
         "final_report",
+        "figure_traceability_matrix",
+    }
+    assert next(row for row in rows if row["key"] == "figure_traceability_matrix") == {
+        "key": "figure_traceability_matrix",
+        "path": "report/final_report.md#figure-traceability-matrix",
+        "status": "available",
+        "description": "Final report Figure Traceability Matrix linking every registered plot to close-reading, QC, software, and reproducibility evidence",
     }
     assert next(row for row in rows if row["key"] == "family_expression")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "expression_heatmap_pdf")["status"] == "missing"
@@ -206,6 +214,9 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
         "figure_interpretations": "results/nextflow_standard_smoke/standard/report/figure_interpretations.tsv",
         "figure_interpretations_md": "results/nextflow_standard_smoke/standard/report/figure_interpretations.md",
         "final_report": "results/nextflow_standard_smoke/standard/report/final_report.md",
+        "figure_traceability_matrix": (
+            "results/nextflow_standard_smoke/standard/report/final_report.md#figure-traceability-matrix"
+        ),
     }
 
 
@@ -296,10 +307,10 @@ def test_build_standard_report_index_cli_writes_tsv(tmp_path):
 
     assert completed.returncode == 0, completed.stderr
     assert read_tsv(out)[-1] == {
-        "key": "final_report",
-        "path": "final_report.md",
+        "key": "figure_traceability_matrix",
+        "path": "final_report.md#figure-traceability-matrix",
         "status": "available",
-        "description": "Final Markdown report with methods, software versions, QC, and per-figure result interpretation",
+        "description": "Final report Figure Traceability Matrix linking every registered plot to close-reading, QC, software, and reproducibility evidence",
     }
 
 
@@ -415,3 +426,6 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
     assert rows["figure_interpretations"]["path"] == "results/demo/report/figure_interpretations.tsv"
     assert rows["figure_interpretations_md"]["path"] == "results/demo/report/figure_interpretations.md"
     assert rows["final_report"]["path"] == "results/demo/report/final_report.md"
+    assert rows["figure_traceability_matrix"]["path"] == (
+        "results/demo/report/final_report.md#figure-traceability-matrix"
+    )

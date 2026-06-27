@@ -69,6 +69,7 @@ DESCRIPTIONS = {
     "figure_interpretations": "Structured per-figure result interpretation notes",
     "figure_interpretations_md": "Markdown per-figure result interpretation notes",
     "final_report": "Final Markdown report with methods, software versions, QC, and per-figure result interpretation",
+    "figure_traceability_matrix": "Final report Figure Traceability Matrix linking every registered plot to close-reading, QC, software, and reproducibility evidence",
 }
 OPTIONAL_KEYS = {
     "promoters_bed",
@@ -103,10 +104,17 @@ OPTIONAL_KEYS = {
     "expression_heatmap_png",
     "figure_interpretations_md",
     "final_report",
+    "figure_traceability_matrix",
 }
 
 
+def _traceability_anchor(final_report: str) -> str:
+    return f"{final_report}#figure-traceability-matrix" if final_report else ""
+
+
 def build_report_index(paths: dict[str, str]) -> list[dict[str, str]]:
+    paths = dict(paths)
+    paths.setdefault("figure_traceability_matrix", _traceability_anchor(paths.get("final_report", "")))
     return [
         {
             "key": key,
@@ -188,6 +196,7 @@ def published_paths(
         "figure_interpretations": str(outdir / "report/figure_interpretations.tsv"),
         "figure_interpretations_md": str(outdir / "report/figure_interpretations.md"),
         "final_report": str(outdir / "report/final_report.md"),
+        "figure_traceability_matrix": _traceability_anchor(str(outdir / "report/final_report.md")),
     }
 
 
@@ -212,6 +221,7 @@ def main() -> None:
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
     paths = {key: getattr(args, key) for key in DESCRIPTIONS}
+    paths["figure_traceability_matrix"] = paths["figure_traceability_matrix"] or _traceability_anchor(paths["final_report"])
     if args.published_outdir:
         paths = published_paths(
             args.published_outdir,

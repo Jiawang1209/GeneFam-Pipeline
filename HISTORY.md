@@ -11456,6 +11456,53 @@ Commit:
 Next:
 - Keep Docker/Apptainer runtime verification as the remaining final-stage external blocker; continue polishing Reference-level figure fidelity where useful.
 
+## 2026-06-27 - Index final-report figure traceability matrix
+
+Timestamp:
+- 2026-06-27 13:39 CST
+
+Context:
+- The standard and WGD final reports contain a `Figure Traceability Matrix`, and the delivery gallery now links to it.
+- The per-branch `report_index.tsv` files still exposed only `final_report`, so a user or audit script entering through the report index did not get a direct traceability-matrix entry.
+
+Decisions:
+- Add `figure_traceability_matrix` as a first-class report-index key for both standard and WGD branches.
+- Derive the path from `final_report.md#figure-traceability-matrix` so the index stays synchronized with the final report path.
+- Teach `audit_report_index.py` to require the traceability key and to validate anchor paths by checking the underlying Markdown file.
+
+Added:
+- Standard report-index row `figure_traceability_matrix`.
+- WGD report-index row `figure_traceability_matrix`.
+- Report-index audit requirement for the traceability matrix anchor.
+
+Modified:
+- `bin/genefam/audit_report_index.py`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/build_wgd_report_index.py`
+- `tests/test_audit_report_index.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_wgd_report_index.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_report_index.py tests/test_standard_branch_report_index.py tests/test_wgd_report_index.py -q` first failed with 7 failures because report indexes and audits did not yet require or emit `figure_traceability_matrix`.
+- After implementation, `python -m pytest tests/test_audit_report_index.py tests/test_standard_branch_report_index.py tests/test_wgd_report_index.py -q` passed with 9 tests.
+- `python -m pytest tests/test_audit_report_index.py tests/test_standard_branch_report_index.py tests/test_wgd_report_index.py tests/test_run_release_checks.py tests/test_workflow_modules.py -q` passed with 81 tests.
+- `python -m pytest tests -q` passed with 434 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0; the generated TSV reported 50 total checks, 0 required failures, and 2 optional failures for missing Docker and Apptainer runtimes.
+- `rg -n "figure_traceability_matrix|figure-traceability-matrix" results/nextflow_standard_feature_smoke/standard/report/report_index.tsv results/nextflow_wgd_smoke/wgd/report/report_index.tsv results/report_index_audit/standard_report_index_audit.md results/report_index_audit/wgd_report_index_audit.md` confirmed standard and WGD report indexes expose the final-report traceability anchor.
+- `cat results/report_index_audit/standard_report_index_audit.tsv` and `cat results/report_index_audit/wgd_report_index_audit.tsv` showed both report-index audit checks passed.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed handoff, delivery bundle, release checks, report-index audits, quickstart, and local acceptance summaries; final-stage blocker remains Docker/Apptainer reproducibility.
+
+Commit:
+- pending; hash will be backfilled after the code commit.
+
+Next:
+- Continue final MVP hardening while Docker/Apptainer packaging remains the intentionally deferred final stage.
+
 ## 2026-06-27 - Expose figure traceability links in delivery gallery
 
 Timestamp:

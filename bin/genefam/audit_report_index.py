@@ -16,6 +16,7 @@ REQUIRED_ARTIFACT_KEYS = {
         "figure_interpretations",
         "figure_interpretations_md",
         "final_report",
+        "figure_traceability_matrix",
     ],
     "wgd": [
         "plot_manifest",
@@ -23,6 +24,7 @@ REQUIRED_ARTIFACT_KEYS = {
         "figure_interpretations",
         "figure_interpretations_md",
         "final_report",
+        "figure_traceability_matrix",
     ],
 }
 
@@ -63,7 +65,7 @@ def _required_artifact_issues(rows: list[dict[str, str]], profile: str) -> list[
 
 
 def _resolve_indexed_path(report_index: Path, indexed_path: str) -> Path:
-    path = Path(indexed_path)
+    path = Path(indexed_path.split("#", 1)[0])
     if path.is_absolute():
         return path
     cwd_path = Path.cwd() / path

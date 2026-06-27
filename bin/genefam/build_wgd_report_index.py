@@ -36,6 +36,7 @@ DESCRIPTIONS = {
     "figure_interpretations": "Structured per-figure WGD result interpretation notes",
     "figure_interpretations_md": "Markdown per-figure WGD result interpretation notes",
     "final_report": "Final WGD Markdown report with methods, software versions, QC, and per-figure result interpretation",
+    "figure_traceability_matrix": "Final WGD report Figure Traceability Matrix linking every WGD plot to close-reading, QC, software, and reproducibility evidence",
 }
 
 
@@ -68,6 +69,7 @@ def build_report_index(published_outdir: str) -> list[dict[str, str]]:
         "figure_interpretations": outdir / "report/figure_interpretations.tsv",
         "figure_interpretations_md": outdir / "report/figure_interpretations.md",
         "final_report": outdir / "report/final_report.md",
+        "figure_traceability_matrix": Path(f"{outdir / 'report/final_report.md'}#figure-traceability-matrix"),
     }
     return [
         {

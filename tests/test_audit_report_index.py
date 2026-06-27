@@ -20,6 +20,7 @@ def test_report_index_audit_requires_core_standard_report_artifacts(tmp_path):
         "software_versions.tsv",
         "figure_interpretations.tsv",
         "figure_interpretations.md",
+        "final_report.md",
     ]:
         (report_dir / name).parent.mkdir(parents=True, exist_ok=True)
         (report_dir / name).write_text("ok\n", encoding="utf-8")
@@ -42,6 +43,7 @@ def test_report_index_audit_requires_core_standard_report_artifacts(tmp_path):
                 "available",
                 "Figure interpretations Markdown",
             ],
+            ["final_report", str(report_dir / "final_report.md"), "available", "Final report"],
         ],
     )
 
@@ -49,7 +51,7 @@ def test_report_index_audit_requires_core_standard_report_artifacts(tmp_path):
     by_check = {row["check"]: row for row in rows}
 
     assert by_check["report_index_required_artifacts"]["status"] == "failed"
-    assert "final_report:missing_row" in by_check["report_index_required_artifacts"]["note"]
+    assert "figure_traceability_matrix:missing_row" in by_check["report_index_required_artifacts"]["note"]
     assert summarize_audit(rows) == {"passed": 1, "failed": 1, "complete": False}
 
 
@@ -85,6 +87,12 @@ def test_report_index_audit_passes_when_core_wgd_report_artifacts_are_indexed(tm
                 "Figure interpretations Markdown",
             ],
             ["final_report", str(report_dir / "final_report.md"), "available", "Final report"],
+            [
+                "figure_traceability_matrix",
+                str(report_dir / "final_report.md") + "#figure-traceability-matrix",
+                "available",
+                "Figure traceability matrix",
+            ],
         ],
     )
 

@@ -70,6 +70,12 @@ def test_build_wgd_report_index_points_to_published_outputs():
         "status": "available",
         "description": "Final WGD Markdown report with methods, software versions, QC, and per-figure result interpretation",
     }
+    assert by_key["figure_traceability_matrix"] == {
+        "key": "figure_traceability_matrix",
+        "path": "results/nextflow_wgd_smoke/wgd/report/final_report.md#figure-traceability-matrix",
+        "status": "available",
+        "description": "Final WGD report Figure Traceability Matrix linking every WGD plot to close-reading, QC, software, and reproducibility evidence",
+    }
 
 
 def test_build_wgd_report_index_cli_writes_tsv(tmp_path):
@@ -103,3 +109,6 @@ def test_build_wgd_report_index_cli_writes_tsv(tmp_path):
     assert rows["figure_interpretations"]["path"] == "results/demo_wgd/report/figure_interpretations.tsv"
     assert rows["figure_interpretations_md"]["path"] == "results/demo_wgd/report/figure_interpretations.md"
     assert rows["final_report"]["path"] == "results/demo_wgd/report/final_report.md"
+    assert rows["figure_traceability_matrix"]["path"] == (
+        "results/demo_wgd/report/final_report.md#figure-traceability-matrix"
+    )
