@@ -70,7 +70,7 @@ Verification:
 - `head -n 8 results/objective_audit/objective_audit.md` reported `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the remaining blocked item is the intentionally deferred Docker/Apptainer reproducibility stage.
 
 Commit:
-- hash: pending
+- hash: e408383ea562e96f7774614e180f94b2818acbe6
 - message: `test: require r package versions in publication audit`
 - files: publication report audit version-category rule, regression tests, and history entry.
 
