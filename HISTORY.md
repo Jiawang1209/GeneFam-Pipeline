@@ -11491,7 +11491,9 @@ Verification:
 - `head -n 3 results/delivery_bundle/figure_gallery.tsv` and `rg -n "traceability_matrix|figure-traceability-matrix" results/delivery_bundle/figure_gallery.md results/delivery_bundle/figure_gallery.tsv` confirmed every standard/WGD figure row exposes the traceability anchor.
 
 Commit:
-- pending; hash will be backfilled after the code commit.
+- hash: 6c8a5552aeab707220d776dbb7e8eac39fda3f9a
+- message: feat: expose figure traceability in delivery gallery
+- files: delivery bundle figure gallery, delivery bundle test, history
 
 Next:
 - Continue final MVP hardening with Docker/Apptainer packaging intentionally deferred until the analysis/report flow remains stable.
