@@ -69,12 +69,12 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` exited 0; `results/local_acceptance/local_acceptance_summary.md` reported `Overall status: blocked` only because `final_stage_blocker` remains `Docker/Apptainer reproducibility`, and `results/delivery_bundle/delivery_manifest.tsv` includes `status/r_runtime_health`.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: 62d7c9e
+- message: test: require r runtime health in objective audit
 - files: objective audit R runtime health rule, docs, tests, history
 
 Next:
-- Commit the rule/docs/test update, then backfill this entry with the commit hash.
+- Continue closing remaining MVP evidence gaps; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
 
 ## 2026-06-27 18:34 - Expose R runtime health in final delivery bundle
 
