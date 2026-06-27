@@ -12103,7 +12103,9 @@ Verification:
 - `python -m pytest tests -q` passed again with 440 tests after local acceptance refreshed the generated handoff outputs.
 
 Commit:
-- pending
+- hash: 36d0a6dffb66e1ac9434f9379c5a36610bd26790
+- message: test: audit figure gallery manifest coverage
+- files: figure gallery audit, delivery gallery, release gate, docs, tests, history
 
 Next:
 - Continue final MVP hardening by looking for remaining places where report/generated inventories can drift apart, while leaving Docker/Apptainer runtime verification for the final packaging stage.
