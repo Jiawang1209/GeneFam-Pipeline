@@ -47,7 +47,21 @@ def _resolve_path(value: str, base_dir: Path) -> Path:
     return base_dir / path
 
 
-def _validate_species_manifest_paths(manifest: Path, input_required: dict[str, bool], base_dir: Path) -> list[str]:
+def _normalize_include(include: str | list[str]) -> set[str] | None:
+    if include == "all":
+        return None
+    if isinstance(include, str):
+        return {include}
+    return set(include)
+
+
+def _validate_species_manifest_paths(
+    manifest: Path,
+    input_required: dict[str, bool],
+    base_dir: Path,
+    include: str | list[str],
+    exclude: list[str],
+) -> list[str]:
     errors: list[str] = []
     try:
         with manifest.open("r", encoding="utf-8", newline="") as handle:
@@ -62,8 +76,16 @@ def _validate_species_manifest_paths(manifest: Path, input_required: dict[str, b
     except OSError as exc:
         return [f"input.manifest is invalid: {exc}"]
 
+    include_set = _normalize_include(include)
+    exclude_set = set(exclude or [])
+    discovered_species: set[str] = set()
     for row in rows:
         species_id = row.get("species_id", "").strip() or "unknown"
+        discovered_species.add(species_id)
+        if include_set is not None and species_id not in include_set:
+            continue
+        if species_id in exclude_set:
+            continue
         for file_type in ("pep", "gff3", "cds", "genome"):
             value = row.get(file_type, "").strip()
             if input_required.get(file_type, False) and not value:
@@ -71,15 +93,11 @@ def _validate_species_manifest_paths(manifest: Path, input_required: dict[str, b
                 continue
             if value and not _resolve_path(value, base_dir).exists():
                 errors.append(f"input.manifest {file_type} path does not exist for species {species_id}: {value}")
+    if include_set is not None:
+        missing = sorted(include_set - discovered_species - exclude_set)
+        if missing:
+            errors.append(f"input.manifest requested species not found: {', '.join(missing)}")
     return errors
-
-
-def _normalize_include(include: str | list[str]) -> set[str] | None:
-    if include == "all":
-        return None
-    if isinstance(include, str):
-        return {include}
-    return set(include)
 
 
 def _validate_auto_species_bank_paths(
@@ -161,7 +179,7 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
             if not manifest_path.exists():
                 errors.append(f"input.manifest path does not exist: {input_config['manifest']}")
             else:
-                errors.extend(_validate_species_manifest_paths(manifest_path, input_required, base_dir))
+                errors.extend(_validate_species_manifest_paths(manifest_path, input_required, base_dir, include, exclude))
 
     runtime = config.get("runtime", {}) or {}
     if runtime.get("environment") != "GeneFamilyFlow":

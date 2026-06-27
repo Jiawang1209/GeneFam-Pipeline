@@ -213,6 +213,31 @@ def test_validate_config_check_paths_reports_missing_manifest_file_paths(tmp_pat
     assert "input.manifest gff3 path does not exist for species Arabidopsis: missing/ath.gff3" in errors
 
 
+def test_validate_config_check_paths_only_checks_included_manifest_species(tmp_path):
+    pep = tmp_path / "ath.pep.fa"
+    gff3 = tmp_path / "ath.gff3"
+    pep.write_text(">AT1\nMA\n", encoding="utf-8")
+    gff3.write_text("##gff-version 3\n", encoding="utf-8")
+    manifest = tmp_path / "species_manifest.tsv"
+    manifest.write_text(
+        "species_id\tpep\tgff3\tcds\tgenome\n"
+        f"Arabidopsis\t{pep.name}\t{gff3.name}\t\t\n"
+        "Brassica\tmissing/br.pep.fa\tmissing/br.gff3\t\t\n",
+        encoding="utf-8",
+    )
+    config = _valid_base_config()
+    config["species"] = {"include": ["Arabidopsis"]}
+    config["input"] = {
+        "mode": "manifest",
+        "manifest": "species_manifest.tsv",
+        "required": {"pep": True, "gff3": True, "cds": False, "genome": False},
+    }
+
+    errors = validate_config(config, check_paths=True, base_dir=tmp_path)
+
+    assert errors == []
+
+
 def test_validate_config_check_paths_reports_missing_auto_species_required_files(tmp_path):
     species_dir = tmp_path / "species_bank" / "Arabidopsis"
     species_dir.mkdir(parents=True)

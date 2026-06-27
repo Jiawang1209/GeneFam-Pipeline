@@ -34,6 +34,48 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 08:59 - Limit manifest validation to selected species
+
+Context:
+- The active `/goal` requires YAML-driven species selection from large species banks and prebuilt species manifests.
+- Auto species-bank validation already respects `species.include` and `species.exclude`.
+- Manifest-mode deep validation still checked every row in the manifest, so an unselected incomplete species could block a selected-species run.
+
+Decisions:
+- Apply the same selected-species filtering to manifest-mode path validation.
+- Reuse the include normalization helper for both auto and manifest input modes.
+- Report missing included species from manifest preflight as `input.manifest requested species not found`.
+
+Added:
+- Regression test that manifest-mode validation passes when the included species has valid paths and an unselected manifest row points to missing files.
+
+Modified:
+- `bin/genefam/validate_config.py`
+- `tests/test_validate_config.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_validate_config.py::test_validate_config_check_paths_only_checks_included_manifest_species -q` first failed because manifest validation checked an unselected incomplete species.
+- `python -m pytest tests/test_validate_config.py::test_validate_config_check_paths_only_checks_included_manifest_species tests/test_validate_config.py::test_validate_config_check_paths_reports_missing_manifest_file_paths -q` passed after applying include/exclude filtering to manifest validation.
+- `python -m pytest tests/test_validate_config.py -q` passed with 34 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python bin/genefam/validate_config.py configs/manifest.example.yaml --check-paths` exited 0 with `Configuration OK`.
+- `python -m pytest tests -q` passed with 408 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 with `Passed: 45`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`; optional failures remain Docker and Apptainer profile smokes because those runtimes are not installed/exposed.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --outdir results/objective_audit` exited 0 after the fresh release check run.
+- `rg -n "YAML-driven species selection|validate manifest config|species manifest" results/objective_audit/objective_audit.md results/release_checks/release_checks.md` confirmed manifest-mode validation remains part of YAML-driven species-selection evidence.
+
+Commit:
+- hash: pending
+- message: `test: validate selected manifest species only`
+- files: manifest-mode selected-species path validation, regression tests, and history entry.
+
+Next:
+- Continue hardening input preflight and report evidence while preserving selected-species ergonomics for large datasets.
+
 ## 2026-06-27 08:52 - Report missing included auto species during preflight
 
 Context:
