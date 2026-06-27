@@ -34,6 +34,66 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 20:04 - Link figure gallery rows to per-figure close-reading anchors
+
+Context:
+- The active `/goal` requires the final delivery package to support paper-level per-figure close reading.
+- The delivery-bundle figure gallery linked each plot to the shared `figure_interpretations.md` file, but not to the specific figure section.
+- This made the gallery useful as a file index but weaker as a paper-style figure-reading navigator.
+
+Decisions:
+- Add stable HTML anchors to generated `figure_interpretations.md` sections using each `figure_key`.
+- Write delivery-gallery `figure_interpretations` targets as `figure_interpretations.md#plot_key`.
+- Extend `audit_figure_gallery.py` with `figure_gallery_per_figure_interpretation_targets`.
+- Keep `traceability_matrix` anchored to `final_report.md#figure-traceability-matrix`, while close-reading navigation uses the per-figure interpretation anchor.
+
+Added:
+- Regression test proving the figure-gallery audit rejects rows that link only to `figure_interpretations.md` without a per-figure anchor.
+- Documentation/test coverage for per-figure close-reading anchors in README, release audit, runtime docs, and objective-audit final-report notes.
+
+Modified:
+- `bin/genefam/build_figure_interpretations.py`
+- `bin/genefam/run_delivery_bundle.py`
+- `bin/genefam/audit_figure_gallery.py`
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_figure_gallery.py`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_audit_objective_completion.py`
+- `README.md`
+- `docs/release_audit.md`
+- `docs/readiness_checklist.md`
+- `docs/quickstart.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_figure_gallery.py::test_figure_gallery_audit_requires_per_figure_interpretation_anchor -q` first failed because `figure_gallery_per_figure_interpretation_targets` did not exist.
+- `python -m pytest tests/test_audit_figure_gallery.py::test_figure_gallery_audit_requires_per_figure_interpretation_anchor -q` passed after adding the audit row.
+- `python -m pytest tests/test_audit_figure_gallery.py -q` passed after updating gallery fixtures to use per-figure anchors.
+- `python -m pytest tests/test_run_delivery_bundle.py tests/test_audit_figure_gallery.py -q` passed after writing `figure_interpretations.md#plot_key` targets from the delivery bundle.
+- `python -m pytest tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report -q` first failed because docs did not mention per-figure close-reading anchors.
+- `python -m pytest tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_runtime_environment_files.py::test_readme_points_to_final_handoff_report -q` passed after updating README and release docs.
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_note_names_complete_publication_report_closure -q` first failed because the objective-audit final-report note did not mention per-figure close-reading anchors.
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_note_names_complete_publication_report_closure tests/test_run_delivery_bundle.py tests/test_audit_figure_gallery.py -q` passed after updating the objective-audit note.
+- `python -m pytest tests/test_release_audit_docs.py tests/test_runtime_environment_files.py tests/test_quickstart_docs.py -q` passed after documentation synchronization.
+- `python -m pytest tests -q` passed with 462 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 51`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `results/delivery_bundle_smoke/figure_gallery_audit.md` reported `Passed: 5`, `Failed: 0`, `Complete: true`, including `figure_gallery_per_figure_interpretation_targets`.
+- `results/delivery_bundle/figure_gallery.tsv` now contains per-figure targets such as `figure_interpretations.md#tree_features` and `figure_interpretations.md#ks_distribution`.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed the delivery bundle; `results/local_acceptance/local_acceptance_summary.md` still reports `Overall status: blocked` only because `final_stage_blocker` remains `Docker/Apptainer reproducibility`.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: figure gallery audit/navigation, figure interpretation Markdown anchors, delivery bundle, docs, tests, history
+
+Next:
+- Commit this change, then backfill this history entry with the commit hash.
+
 ## 2026-06-27 19:32 - Extend result-statement close reading to QC and status fields
 
 Context:

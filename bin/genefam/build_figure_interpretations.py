@@ -264,6 +264,7 @@ def write_markdown(rows: list[dict[str, str]], out_path: Path) -> None:
     for row in rows:
         lines.extend(
             [
+                f'<a id="{row["figure_key"]}"></a>',
                 f"## {row['figure_key']}: {row['title']}",
                 "",
                 f"- Input data: {row['input_data']}",

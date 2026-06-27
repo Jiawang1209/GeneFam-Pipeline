@@ -209,6 +209,7 @@ def test_readme_points_to_final_handoff_report():
     assert "results/delivery_bundle/figure_gallery.md" in readme
     assert "figure_gallery_audit" in readme
     assert "valid gallery plot file signatures" in readme
+    assert "per-figure close-reading anchors" in readme
     assert "mock_mvp" in readme
     assert "nextflow_mock_mvp_smoke" in readme
     assert "nextflow_single_tool_smoke" in readme

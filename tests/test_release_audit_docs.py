@@ -102,6 +102,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "results/delivery_bundle_smoke/figure_gallery_audit.md" in text
     assert "valid gallery plot file signatures" in text
     assert "figure_gallery_traceability_targets" in text
+    assert "per-figure close-reading anchors" in text
     assert "audit_delivery_manifest.py" in text
     assert "results/delivery_bundle_smoke/delivery_manifest_audit.tsv" in text
     assert "results/delivery_bundle_smoke/delivery_manifest_audit.md" in text

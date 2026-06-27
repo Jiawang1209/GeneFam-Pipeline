@@ -642,6 +642,7 @@ def _figure_gallery_rows_with_traceability() -> list[dict[str, str]]:
     rows = []
     for row in FIGURE_GALLERY_ROWS:
         enriched = dict(row)
+        enriched["figure_interpretations"] = f"{row['figure_interpretations']}#{row['plot_key']}"
         enriched["traceability_matrix"] = f"{row['final_report']}#figure-traceability-matrix"
         rows.append(enriched)
     return rows

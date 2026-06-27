@@ -79,7 +79,13 @@ def _markdown_has_anchor(path: Path, anchor: str) -> bool:
         lines = path.read_text(encoding="utf-8").splitlines()
     except UnicodeDecodeError:
         return False
-    return any(line.lstrip().startswith("#") and _markdown_heading_slug(line) == anchor for line in lines)
+    html_anchor = anchor.lstrip("#")
+    html_id_re = re.compile(rf"""<a\s+[^>]*(?:id|name)=["']{re.escape(html_anchor)}["']""")
+    return any(
+        (line.lstrip().startswith("#") and _markdown_heading_slug(line) == anchor)
+        or html_id_re.search(line)
+        for line in lines
+    )
 
 
 def _required_column_issues(rows: list[dict[str, str]]) -> list[str]:
@@ -131,6 +137,20 @@ def _traceability_target_issues(gallery: Path, rows: list[dict[str, str]]) -> li
             or _anchor_from_path(traceability) != "#figure-traceability-matrix"
         ):
             issues.append(f"{plot_key}:traceability_matrix:not_final_report_anchor")
+    return issues
+
+
+def _per_figure_interpretation_target_issues(rows: list[dict[str, str]]) -> list[str]:
+    issues: list[str] = []
+    for row_number, row in enumerate(rows, start=2):
+        plot_key = row.get("plot_key", "").strip() or f"row_{row_number}"
+        interpretation_target = row.get("figure_interpretations", "").strip()
+        anchor = _anchor_from_path(interpretation_target)
+        if not anchor:
+            issues.append(f"{plot_key}:figure_interpretations:missing_per_figure_anchor")
+            continue
+        if plot_key.lower() not in anchor.lower():
+            issues.append(f"{plot_key}:figure_interpretations:anchor_not_plot_specific:{anchor}")
     return issues
 
 
@@ -199,6 +219,9 @@ def audit_figure_gallery(
     column_issues = _required_column_issues(rows)
     link_issues = _linked_file_issues(figure_gallery, rows) if not column_issues else []
     traceability_target_issues = _traceability_target_issues(figure_gallery, rows) if not column_issues else []
+    per_figure_interpretation_target_issues = (
+        _per_figure_interpretation_target_issues(rows) if not column_issues else []
+    )
     coverage_issues = (
         _manifest_coverage_issues(rows, plot_manifests or {}) if not column_issues else []
     )
@@ -226,6 +249,15 @@ def audit_figure_gallery(
             "figure gallery traceability_matrix values point to final_report.md#figure-traceability-matrix"
             if not traceability_target_issues
             else "invalid figure gallery traceability targets: " + ", ".join(traceability_target_issues),
+        ),
+        _row(
+            "figure_gallery_per_figure_interpretation_targets",
+            not per_figure_interpretation_target_issues,
+            str(figure_gallery),
+            "figure gallery interpretation links point to per-figure close-reading anchors"
+            if not per_figure_interpretation_target_issues
+            else "missing or non-specific figure interpretation anchors: "
+            + ", ".join(per_figure_interpretation_target_issues),
         ),
         _row(
             "figure_gallery_manifest_coverage",
