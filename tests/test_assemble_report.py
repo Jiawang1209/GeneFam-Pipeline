@@ -295,3 +295,52 @@ def test_assemble_report_cli_supports_standard_branch_without_wgd_tables(tmp_pat
     assert "## Figure Traceability Matrix" in text
     assert "| family_counts | plots/family_counts.pdf | interpretation_not_provided | not provided | not provided | not provided |" in text
     assert "No WGD event evidence table was available for this run." in text
+
+
+def test_assemble_report_traceability_uses_plot_manifest_not_report_index_variants():
+    report_index = [
+        {
+            "key": "family_counts_pdf",
+            "path": "results/standard/plots/family_counts.pdf",
+            "status": "available",
+            "description": "PDF copy of family counts",
+        },
+        {
+            "key": "family_counts_png",
+            "path": "results/standard/plots/family_counts.png",
+            "status": "available",
+            "description": "PNG copy of family counts",
+        },
+    ]
+    plot_manifest = [
+        {"plot_key": "family_counts", "path": "plots/family_counts.pdf", "description": "Family counts"},
+    ]
+    figure_interpretations = [
+        {
+            "figure_key": "family_counts",
+            "title": "Family member count overview",
+            "input_data": "Family member count table",
+            "what_figure_shows": "Per-species member totals",
+            "key_observations": "Copy-number contrasts are visible across species",
+            "biological_interpretation": "High-copy species may indicate family expansion",
+            "qc_warnings": "Review selected species and missing candidate rows",
+            "qc_tables": "tables/family_counts.tsv",
+            "method_and_software": "plot_gene_family_info.R; /usr/local/bin/R",
+            "reproducibility": "nextflow run main.nf -profile conda --branch standard",
+            "result_reading_status": "figure-specific close reading",
+            "output_path": "plots/family_counts.pdf",
+        }
+    ]
+
+    report = assemble_report(
+        project_name="GeneFam demo",
+        gene_family="GDSL",
+        report_index_rows=report_index,
+        plot_manifest=plot_manifest,
+        figure_interpretations=figure_interpretations,
+    )
+
+    assert "| family_counts | plots/family_counts.pdf | figure-specific close reading |" in report
+    assert "| family_counts_pdf | results/standard/plots/family_counts.pdf | interpretation_not_provided |" not in report
+    assert "| family_counts_png | results/standard/plots/family_counts.png | interpretation_not_provided |" not in report
+    assert "interpretation_not_provided" not in report

@@ -40,13 +40,7 @@ def _named_wgd_events(wgd_event_evidence: list[dict[str, str]]) -> list[str]:
 def _report_figure_rows(
     report_index_rows: list[dict[str, str]], plot_manifest: list[dict[str, str]]
 ) -> list[list[str]]:
-    rows = [[row["plot_key"], row.get("path", ""), row.get("description", "")] for row in plot_manifest]
-    existing_paths = {row[1] for row in rows}
-    for row in report_index_rows:
-        path = row.get("path", "")
-        if row.get("status") == "available" and path.lower().endswith((".pdf", ".png", ".svg")) and path not in existing_paths:
-            rows.append([row["key"], path, row.get("description", "")])
-    return rows
+    return [[row["plot_key"], row.get("path", ""), row.get("description", "")] for row in plot_manifest]
 
 
 def _figure_traceability_rows(

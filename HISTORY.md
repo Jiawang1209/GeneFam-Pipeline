@@ -13794,3 +13794,53 @@ Commit:
 
 Next:
 - Continue final MVP polish from the report package outward; Docker/Apptainer runtime verification remains the intentionally deferred final packaging stage.
+
+## 2026-06-27 - Keep traceability matrices focused on interpreted figures
+
+Timestamp:
+- 2026-06-27 05:28 CST
+
+Context:
+- Standard and WGD final reports embedded plot previews and passed publication audits.
+- A close read of generated final reports showed that the Figure Traceability Matrix could include report-index PDF/PNG variant rows such as `family_counts_pdf` or `ks_distribution_png` with `interpretation_not_provided`.
+- These rows are valid output-file inventory entries, but they are not independent paper figures and should not appear as uninterpreted figure rows in the traceability matrix.
+
+Decisions:
+- Treat `plot_manifest.tsv` as the authoritative list of formal interpreted figures.
+- Keep report-index PDF/PNG variants in Output Availability, but exclude them from the Figures inventory and Figure Traceability Matrix.
+- Extend the publication-report audit so `final_report_figure_traceability` fails if a traceability matrix contains uninterpreted variant rows.
+
+Added:
+- Regression test proving report-index plot variants do not create traceability rows.
+- Publication-audit regression test rejecting `interpretation_not_provided` rows in the Figure Traceability Matrix.
+
+Modified:
+- `bin/genefam/assemble_report.py`
+- `bin/genefam/audit_publication_report.py`
+- `tests/test_assemble_report.py`
+- `tests/test_audit_publication_report.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_assemble_report.py::test_assemble_report_traceability_uses_plot_manifest_not_report_index_variants -q` first failed because report-index PDF/PNG variants were included as traceability rows.
+- `python -m pytest tests/test_audit_publication_report.py::test_publication_report_audit_rejects_uninterpreted_traceability_variant_rows -q` first failed because the audit still allowed uninterpreted traceability rows.
+- `python -m pytest tests/test_assemble_report.py tests/test_audit_publication_report.py -q` passed with 29 tests after implementation.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --config configs/publication_modules.example.yaml --outdir results/nextflow_standard_feature_smoke` exited 0 and refreshed the standard final report.
+- `python bin/genefam/run_nextflow_wgd_smoke.py --conda-env GeneFamilyFlow --outdir results/nextflow_wgd_smoke` exited 0 and refreshed the WGD final report.
+- Standard and WGD publication report audits passed with `final_report_figure_traceability`.
+- `sed -n '226,246p' results/nextflow_standard_feature_smoke/standard/report/final_report.md` confirmed the standard Figure Traceability Matrix contains the 9 formal plot-manifest figures and no PDF/PNG variant rows.
+- `sed -n '155,166p' results/nextflow_wgd_smoke/wgd/report/final_report.md` confirmed the WGD Figure Traceability Matrix contains the 3 formal plot-manifest figures and no PDF/PNG variant rows.
+- `python -m pytest tests -q` passed with 476 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed release checks, quickstart, delivery bundle, final delivery manifest audit, and local acceptance outputs; it reported the expected final-stage blocker: Docker/Apptainer reproducibility.
+
+Commit:
+- hash: pending
+- message: fix: keep traceability focused on interpreted figures
+- files: report assembler, publication audit, targeted tests, history
+
+Next:
+- Continue final MVP polish around report readability and evidence navigation; Docker/Apptainer runtime verification remains the intentionally deferred final packaging stage.

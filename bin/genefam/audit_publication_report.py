@@ -437,7 +437,8 @@ def _missing_method_component_versions(
 
 def _traceability_matrix_issues(report_text: str, detail_rows: list[dict[str, str]]) -> list[str]:
     issues: list[str] = []
-    if "## Figure Traceability Matrix" not in report_text:
+    section = _markdown_section(report_text, "Figure Traceability Matrix")
+    if not section:
         issues.append("missing_section:Figure Traceability Matrix")
     header = "| figure_key | plot_path | interpretation_status | qc_tables | method_and_software | reproducibility |"
     if header not in report_text:
@@ -453,6 +454,15 @@ def _traceability_matrix_issues(report_text: str, detail_rows: list[dict[str, st
         )
         if expected not in report_text:
             issues.append(f"{figure_key}:traceability_row")
+    for line in section.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|") or not stripped.endswith("|"):
+            continue
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        if len(cells) < 6 or cells[0] in {"figure_key", "---"}:
+            continue
+        if cells[2] == "interpretation_not_provided" or cells[3:] == ["not provided", "not provided", "not provided"]:
+            issues.append(f"uninterpreted_traceability_row:{cells[0]}")
     return issues
 
 

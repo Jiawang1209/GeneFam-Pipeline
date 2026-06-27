@@ -2152,6 +2152,103 @@ def test_publication_report_audit_rejects_unregistered_figure_interpretations(tm
     assert "orphan_plot" in by_check["figure_interpretation_scope"]["note"]
 
 
+def test_publication_report_audit_rejects_uninterpreted_traceability_variant_rows(tmp_path):
+    plot_manifest = tmp_path / "report/plot_manifest.tsv"
+    figure_interpretations = tmp_path / "report/figure_interpretations.tsv"
+    software_versions = tmp_path / "report/software_versions.tsv"
+    final_report = tmp_path / "report/final_report.md"
+    (tmp_path / "plots").mkdir()
+    (tmp_path / "plots/family_counts.pdf").write_bytes(b"%PDF counts")
+
+    _write_tsv(
+        plot_manifest,
+        ["plot_key", "path", "description"],
+        [["family_counts", "plots/family_counts.pdf", "Family counts"]],
+    )
+    _write_tsv(
+        figure_interpretations,
+        [
+            "figure_key",
+            "title",
+            "input_data",
+            "what_figure_shows",
+            "key_observations",
+            "biological_interpretation",
+            "qc_warnings",
+            "qc_tables",
+            "method_and_software",
+            "reproducibility",
+            "result_reading_status",
+            "output_path",
+        ],
+        [[
+            "family_counts",
+            "Family counts",
+            "family count table",
+            "member counts by species",
+            "copy numbers differ among species",
+            "copy-number shifts may indicate expansion or contraction",
+            "review selected species and missing candidates",
+            "tables/family_counts.tsv",
+            "plot_family_counts.R; /usr/local/bin/R",
+            "python bin/genefam/run_standard_smoke.py --outdir results/standard_smoke",
+            "figure-specific close reading",
+            "plots/family_counts.pdf",
+        ]],
+    )
+    _write_tsv(
+        software_versions,
+        ["component", "kind", "version", "status", "source"],
+        [
+            ["R", "command", "4.5.1", "detected", "/usr/local/bin/R --version"],
+            ["ggplot2", "R_package", "4.0.0", "detected", "packageVersion"],
+        ],
+    )
+    final_report.write_text(
+        "\n".join(
+            [
+                "## Methods Summary",
+                "Family members are identified with HMMER and DIAMOND evidence. MCScanX synteny and Ka/Ks evidence support gamma, beta, alpha, and theta WGD interpretations.",
+                "### Software Versions",
+                "| component | kind | version | status | source |",
+                "| --- | --- | --- | --- | --- |",
+                "| R | command | 4.5.1 | detected | /usr/local/bin/R --version |",
+                "| ggplot2 | R_package | 4.0.0 | detected | packageVersion |",
+                "## Figure Traceability Matrix",
+                "| figure_key | plot_path | interpretation_status | qc_tables | method_and_software | reproducibility |",
+                "| --- | --- | --- | --- | --- | --- |",
+                "| family_counts | plots/family_counts.pdf | figure-specific close reading | tables/family_counts.tsv | plot_family_counts.R; /usr/local/bin/R | python bin/genefam/run_standard_smoke.py --outdir results/standard_smoke |",
+                "| family_counts_pdf | results/standard/plots/family_counts.pdf | interpretation_not_provided | not provided | not provided | not provided |",
+                "## Figure Result Interpretations",
+                "### family_counts: Family counts",
+                "![family_counts: Family counts](../plots/family_counts.png)",
+                "- Input data: family count table",
+                "- What the figure shows: member counts by species",
+                "- Key observations: copy numbers differ among species",
+                "- Biological interpretation: copy-number shifts may indicate expansion or contraction",
+                "- QC warnings / limitations: review selected species and missing candidates",
+                "- QC tables: tables/family_counts.tsv",
+                "- Method/software: plot_family_counts.R; /usr/local/bin/R",
+                "- Reproducibility: python bin/genefam/run_standard_smoke.py --outdir results/standard_smoke",
+                "- Result reading status: figure-specific close reading",
+                "- Output path: `plots/family_counts.pdf`",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    rows = audit_publication_report(
+        plot_manifest=plot_manifest,
+        figure_interpretations=figure_interpretations,
+        software_versions=software_versions,
+        final_report=final_report,
+    )
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["final_report_figure_traceability"]["status"] == "failed"
+    assert "uninterpreted_traceability_row:family_counts_pdf" in by_check["final_report_figure_traceability"]["note"]
+
+
 def test_publication_report_audit_requires_command_and_r_package_versions(tmp_path):
     plot_manifest = tmp_path / "report/plot_manifest.tsv"
     figure_interpretations = tmp_path / "report/figure_interpretations.tsv"
