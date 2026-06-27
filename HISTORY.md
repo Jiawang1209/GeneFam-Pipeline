@@ -75,8 +75,8 @@ Verification:
 - `git diff --check && python -m pytest tests/test_audit_publication_report.py tests/test_release_audit_docs.py tests/test_quickstart_docs.py tests/test_runtime_environment_files.py -q` passed with 35 tests.
 
 Commit:
-- hash: pending
-- message: pending
+- hash: 1804d4a0d648622d2dbdc941d412f7a81336553c
+- message: test: require final report methods summary
 - files: publication report audit, publication audit tests, release/quickstart/readiness docs, README, and history entry.
 
 Next:
