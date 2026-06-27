@@ -29,6 +29,14 @@ LINK_COLUMNS = [
     "final_report",
     "traceability_matrix",
 ]
+MARKDOWN_LINK_LABELS = {
+    "plot_path": "PDF",
+    "plot_png_path": "PNG",
+    "figure_interpretations": "close reading",
+    "software_versions": "versions",
+    "final_report": "final report",
+    "traceability_matrix": "traceability",
+}
 
 
 def read_tsv(path: Path) -> list[dict[str, str]]:
@@ -156,6 +164,25 @@ def _per_figure_interpretation_target_issues(rows: list[dict[str, str]]) -> list
     return issues
 
 
+def _markdown_link_issues(figure_gallery: Path, rows: list[dict[str, str]]) -> list[str]:
+    markdown_path = figure_gallery.with_suffix(".md")
+    if not markdown_path.exists():
+        return [f"{markdown_path}:missing_markdown"]
+    text = markdown_path.read_text(encoding="utf-8")
+    issues: list[str] = []
+    for row_number, row in enumerate(rows, start=2):
+        plot_key = row.get("plot_key", "").strip() or f"row_{row_number}"
+        for column, label in MARKDOWN_LINK_LABELS.items():
+            target = row.get(column, "").strip()
+            if not target:
+                issues.append(f"{plot_key}:{column}:missing_target")
+                continue
+            expected = f"[{label}]({target})"
+            if expected not in text:
+                issues.append(f"{plot_key}:{column}:missing_markdown_link")
+    return issues
+
+
 def _plot_format_issue(plot_key: str, column: str, indexed_path: str, resolved: Path) -> str | None:
     suffix = resolved.suffix.lower()
     try:
@@ -224,6 +251,7 @@ def audit_figure_gallery(
     per_figure_interpretation_target_issues = (
         _per_figure_interpretation_target_issues(rows) if not column_issues else []
     )
+    markdown_link_issues = _markdown_link_issues(figure_gallery, rows) if not column_issues else []
     coverage_issues = (
         _manifest_coverage_issues(rows, plot_manifests or {}) if not column_issues else []
     )
@@ -260,6 +288,14 @@ def audit_figure_gallery(
             if not per_figure_interpretation_target_issues
             else "missing or non-specific figure interpretation anchors: "
             + ", ".join(per_figure_interpretation_target_issues),
+        ),
+        _row(
+            "figure_gallery_markdown_links",
+            not markdown_link_issues,
+            str(figure_gallery.with_suffix(".md")),
+            "figure gallery Markdown exposes clickable PDF, PNG, close-reading, version, final-report, and traceability links"
+            if not markdown_link_issues
+            else "missing clickable figure gallery Markdown links: " + ", ".join(markdown_link_issues),
         ),
         _row(
             "figure_gallery_manifest_coverage",

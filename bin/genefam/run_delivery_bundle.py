@@ -650,6 +650,10 @@ def _figure_gallery_rows_with_traceability() -> list[dict[str, str]]:
     return rows
 
 
+def _markdown_link(label: str, target: str) -> str:
+    return f"[{label}]({target})"
+
+
 def write_figure_gallery_markdown(out_path: Path) -> None:
     lines = [
         "# GeneFam-Pipeline Figure Gallery",
@@ -661,8 +665,16 @@ def write_figure_gallery_markdown(out_path: Path) -> None:
     ]
     for row in _figure_gallery_rows_with_traceability():
         lines.append(
-            "| {branch} | {plot_key} | `{plot_path}` | `{plot_png_path}` | {plot_description} | `{figure_interpretations}` | `{software_versions}` | `{final_report}` | `{traceability_matrix}` |".format(
-                **row
+            "| {branch} | {plot_key} | {plot_path} | {plot_png_path} | {plot_description} | {figure_interpretations} | {software_versions} | {final_report} | {traceability_matrix} |".format(
+                branch=row["branch"],
+                plot_key=row["plot_key"],
+                plot_path=_markdown_link("PDF", row["plot_path"]),
+                plot_png_path=_markdown_link("PNG", row["plot_png_path"]),
+                plot_description=row["plot_description"],
+                figure_interpretations=_markdown_link("close reading", row["figure_interpretations"]),
+                software_versions=_markdown_link("versions", row["software_versions"]),
+                final_report=_markdown_link("final report", row["final_report"]),
+                traceability_matrix=_markdown_link("traceability", row["traceability_matrix"]),
             )
         )
     out_path.parent.mkdir(parents=True, exist_ok=True)

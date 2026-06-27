@@ -13844,3 +13844,53 @@ Commit:
 
 Next:
 - Continue final MVP polish around report readability and evidence navigation; Docker/Apptainer runtime verification remains the intentionally deferred final packaging stage.
+
+## 2026-06-27 - Make the figure gallery Markdown clickable
+
+Timestamp:
+- 2026-06-27 05:56 CST
+
+Context:
+- `figure_gallery.tsv` already exposed PDF, PNG, close-reading, software-version, final-report, and traceability targets for standard and WGD figures.
+- `figure_gallery.md` still rendered those targets as backticked paths, so the human-facing gallery was readable but not a convenient click-through navigation page.
+
+Decisions:
+- Keep `figure_gallery.tsv` as the stable machine-readable table.
+- Render `figure_gallery.md` with Markdown links for PDF, PNG, close-reading, versions, final report, and traceability targets.
+- Extend `audit_figure_gallery.py` with a `figure_gallery_markdown_links` check so clickable Markdown navigation is release-audited.
+
+Added:
+- `figure_gallery_markdown_links` audit row.
+- Regression test for clickable Markdown links in the delivery-bundle figure gallery.
+- Regression test that rejects backticked-only gallery Markdown.
+
+Modified:
+- `bin/genefam/run_delivery_bundle.py`
+- `bin/genefam/audit_figure_gallery.py`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_audit_figure_gallery.py`
+- `README.md`
+- `docs/quickstart.md`
+- `docs/readiness_checklist.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index tests/test_audit_figure_gallery.py::test_figure_gallery_audit_requires_clickable_markdown_links -q` first failed because `figure_gallery.md` still used backticked paths and the audit lacked `figure_gallery_markdown_links`.
+- `python -m pytest tests/test_audit_figure_gallery.py tests/test_run_delivery_bundle.py tests/test_runtime_environment_files.py tests/test_quickstart_docs.py -q` passed with 25 tests after implementation and documentation updates.
+- `python -m pytest tests -q` passed with 477 tests.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` exited 0 and refreshed `results/delivery_bundle/figure_gallery.md`.
+- `python bin/genefam/audit_figure_gallery.py --figure-gallery results/delivery_bundle/figure_gallery.tsv --plot-manifest standard=results/nextflow_standard_feature_smoke/standard/report/plot_manifest.tsv --plot-manifest wgd=results/nextflow_wgd_smoke/wgd/report/plot_manifest.tsv --out-tsv results/delivery_bundle_smoke/figure_gallery_audit.tsv --out-md results/delivery_bundle_smoke/figure_gallery_audit.md` exited 0 and reported `figure_gallery_markdown_links` passed.
+- `rg -n "\\[PDF\\]|\\[PNG\\]|\\[close reading\\]|\\[versions\\]|\\[final report\\]|\\[traceability\\]|figure_gallery_markdown_links|Complete:|Failed:" results/delivery_bundle/figure_gallery.md results/delivery_bundle_smoke/figure_gallery_audit.md` confirmed clickable gallery links and a complete audit.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Required failed: 0`, `Optional failed: 2`, `Release ready: true`; only optional Docker and Apptainer profile smokes failed because those runtimes are not installed.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed release checks, quickstart, delivery bundle, final delivery manifest audit, and local acceptance outputs; it reported the expected final-stage blocker: Docker/Apptainer reproducibility.
+
+Commit:
+- hash: pending
+- message: feat: make figure gallery markdown clickable
+- files: delivery-bundle gallery rendering, figure-gallery audit, tests, README/quickstart/readiness docs, history
+
+Next:
+- Continue final MVP polish around report navigation and evidence readability; Docker/Apptainer runtime verification remains the intentionally deferred final packaging stage.

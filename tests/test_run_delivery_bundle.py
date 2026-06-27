@@ -350,6 +350,17 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     gallery_md_text = gallery_md.read_text(encoding="utf-8")
     assert "# GeneFam-Pipeline Figure Gallery" in gallery_md_text
     assert "tree_features" in gallery_md_text
+    assert "[PDF](results/nextflow_standard_feature_smoke/standard/plots/tree_features.pdf)" in gallery_md_text
+    assert "[PNG](results/nextflow_standard_feature_smoke/standard/plots/tree_features.png)" in gallery_md_text
+    assert (
+        "[close reading](results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md#tree_features)"
+        in gallery_md_text
+    )
+    assert (
+        "[traceability](results/nextflow_standard_feature_smoke/standard/report/final_report.md#figure-traceability-matrix)"
+        in gallery_md_text
+    )
+    assert "`results/nextflow_standard_feature_smoke/standard/plots/tree_features.pdf`" not in gallery_md_text
     assert "gene_family_pangenome_summary" in gallery_md_text
     assert "ks_distribution" in gallery_md_text
     assert "software_versions.tsv" in gallery_md_text
