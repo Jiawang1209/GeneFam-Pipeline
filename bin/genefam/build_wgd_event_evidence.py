@@ -89,13 +89,15 @@ def load_event_metadata(path: Path | None) -> dict[str, dict[str, str]]:
         data: dict[str, Any] = yaml.safe_load(handle) or {}
     events = data.get("wgd_events", []) or []
     metadata: dict[str, dict[str, str]] = {}
-    for event in events:
-        name = event["name"]
-        if name in metadata:
-            raise ValueError(f"Duplicate WGD event name: {name}")
+    for index, event in enumerate(events, start=1):
+        name = event.get("name")
         for field in EVENT_METADATA_REQUIRED_FIELDS:
             if not event.get(field):
+                if field == "name":
+                    raise ValueError(f"WGD event entry {index} is missing required field: name")
                 raise ValueError(f"WGD event {name} is missing required field: {field}")
+        if name in metadata:
+            raise ValueError(f"Duplicate WGD event name: {name}")
         metadata[name] = event
     return metadata
 

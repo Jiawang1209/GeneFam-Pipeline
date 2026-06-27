@@ -643,3 +643,27 @@ def test_validate_config_check_paths_rejects_duplicate_wgd_event_names(tmp_path)
     errors = validate_config(config, check_paths=True, base_dir=tmp_path)
 
     assert "wgd_events.event_map is invalid: Duplicate WGD event name: alpha" in errors
+
+
+def test_validate_config_check_paths_reports_wgd_event_missing_name(tmp_path):
+    event_map = tmp_path / "missing_name_events.yaml"
+    event_map.write_text(
+        "\n".join(
+            [
+                "wgd_events:",
+                "  - scope: Brassicaceae",
+                "    evidence: literature",
+                "    expected_relative_age: recent",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    config = _valid_base_config()
+    config["input"]["root"] = "species_bank"
+    config["wgd_events"] = {"named_event_annotation": True, "event_map": "missing_name_events.yaml"}
+    (tmp_path / "species_bank").mkdir()
+
+    errors = validate_config(config, check_paths=True, base_dir=tmp_path)
+
+    assert "wgd_events.event_map is invalid: WGD event entry 1 is missing required field: name" in errors
