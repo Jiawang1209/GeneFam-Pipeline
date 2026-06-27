@@ -148,9 +148,9 @@ Verification:
 - `python -m pytest tests -q` passed with 493 tests.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
-- files: not committed yet
+- hash: 09b1684
+- message: feat: add species preprocessing and PF reference generation
+- files: 00_preprocess scripts and Nextflow module, automatic PF reference generation, reproducibility Markdown builder, YAML/README updates, tests, and history
 
 Next:
 - Copy `all.domains.txt` into `data/domain_annotations/all.domains.txt`, generate `data/reference/GDSL_reference.pep.fa` with `build_reference_from_tair_domains.py`, then rerun `python bin/genefam/validate_config.py configs/my_3species.yaml --check-paths`.
