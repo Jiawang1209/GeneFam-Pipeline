@@ -70,7 +70,7 @@ Verification:
 - `head -n 8 results/objective_audit/objective_audit.md` reported `Achieved: 19`, `Blocked: 1`, `Missing: 0`, and `Complete: false`; the remaining blocked item is the intentionally deferred Docker/Apptainer reproducibility stage.
 
 Commit:
-- hash: pending
+- hash: 476f75bbeda4c6c39568d5e53f9b25f23fac3c17
 - message: `test: require ggnetview status for ppi audit`
 - files: objective audit PPI evidence rule, regression tests, refreshed objective audit outputs, and history entry.
 
