@@ -12107,7 +12107,9 @@ Verification:
 - `python -m pytest tests -q` passed again with 444 tests after local acceptance refreshed generated outputs.
 
 Commit:
-- pending
+- hash: 3823576983e398867a98a3f3ce63ec0e223a800b
+- message: test: audit delivery manifest handoff paths
+- files: delivery manifest audit, release gate, objective audit, docs, tests, history
 
 Next:
 - Continue final MVP hardening by checking remaining generated handoff/report artifacts for drift, while keeping Docker/Apptainer runtime verification as the final packaging-stage blocker.
