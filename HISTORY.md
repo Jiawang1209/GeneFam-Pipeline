@@ -127,12 +127,12 @@ Verification:
 - `python -m pytest tests/test_audit_figure_gallery.py -q` passed with 4 tests after the audit note was updated.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: ac37791b91e12fd1a9b5d0c70d3f28ad76ec28ef
+- message: test: verify gallery plot file signatures
 - files: figure gallery audit, documentation contracts, README surfaces, and history entry.
 
 Next:
-- Run full tests and release/local acceptance checks, then commit and backfill this history entry.
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
 
 ## 2026-06-27 15:51 - Surface Reference gitignore evidence in delivery bundle
 
