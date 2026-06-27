@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import re
 from pathlib import Path
 
 
@@ -31,17 +32,43 @@ def _parse_attributes(value: str) -> dict[str, str]:
     return attributes
 
 
+def _clean_attr_id(value: str) -> str:
+    return value.split()[0].split("|", 1)[0] if value else ""
+
+
+def _strip_common_gene_version(value: str) -> str:
+    stripped = re.sub(r"\.v\d+(?:\.\d+)*$", "", value, flags=re.IGNORECASE)
+    if stripped != value:
+        return stripped
+    return re.sub(r"\.\d+$", "", value)
+
+
+def _aliases_for_id(value: str) -> set[str]:
+    clean_value = _clean_attr_id(value)
+    if not clean_value:
+        return set()
+    return {clean_value, _strip_common_gene_version(clean_value)}
+
+
+def _gene_aliases(attributes: dict[str, str]) -> set[str]:
+    aliases: set[str] = set()
+    for key in ("ID", "Name", "gene_id", "locus", "locus_tag"):
+        aliases.update(_aliases_for_id(attributes.get(key, "")))
+    return {alias for alias in aliases if alias}
+
+
 def _feature_length(start: str, end: str) -> int:
     return int(end) - int(start) + 1
 
 
 def _parent_ids(attributes: dict[str, str]) -> list[str]:
-    return [part for part in attributes.get("Parent", "").split(",") if part]
+    return [_clean_attr_id(part) for part in attributes.get("Parent", "").split(",") if part]
 
 
 def extract_structure(gff3_path: Path, species_id: str, gene_ids: set[str]) -> list[dict[str, str]]:
     gene_rows: dict[str, dict[str, int]] = {}
     transcript_to_gene: dict[str, str] = {}
+    gene_alias_to_target: dict[str, str] = {}
     transcript_ids_by_gene: dict[str, set[str]] = {gene_id: set() for gene_id in gene_ids}
 
     with Path(gff3_path).open("r", encoding="utf-8") as handle:
@@ -57,8 +84,8 @@ def extract_structure(gff3_path: Path, species_id: str, gene_ids: set[str]) -> l
             parents = _parent_ids(attributes)
 
             if feature_type == "gene":
-                gene_id = feature_id
-                if gene_id in gene_ids:
+                matched_gene_ids = sorted(gene_ids & _gene_aliases(attributes))
+                for gene_id in matched_gene_ids:
                     gene_rows[gene_id] = {
                         "gene_length": _feature_length(fields[3], fields[4]),
                         "exon_count": 0,
@@ -66,23 +93,37 @@ def extract_structure(gff3_path: Path, species_id: str, gene_ids: set[str]) -> l
                         "exon_total_length": 0,
                         "cds_total_length": 0,
                     }
+                    for alias in _gene_aliases(attributes):
+                        gene_alias_to_target[alias] = gene_id
                 continue
 
             if feature_type in TRANSCRIPT_TYPES and feature_id:
                 for parent in parents:
-                    if parent in gene_ids:
-                        transcript_to_gene[feature_id] = parent
-                        transcript_ids_by_gene[parent].add(feature_id)
+                    target_gene = gene_alias_to_target.get(parent)
+                    if not target_gene:
+                        for alias in _aliases_for_id(parent):
+                            target_gene = gene_alias_to_target.get(alias) or (alias if alias in gene_ids else "")
+                            if target_gene:
+                                break
+                    if target_gene:
+                        transcript_to_gene[_clean_attr_id(feature_id)] = target_gene
+                        for alias in _aliases_for_id(feature_id):
+                            transcript_to_gene[alias] = target_gene
+                        transcript_ids_by_gene[target_gene].add(feature_id)
                 continue
 
             if feature_type not in {"exon", "CDS"}:
                 continue
 
-            target_genes = {
-                transcript_to_gene.get(parent, parent)
-                for parent in parents
-                if transcript_to_gene.get(parent, parent) in gene_ids
-            }
+            target_genes: set[str] = set()
+            for parent in parents:
+                parent_targets = {transcript_to_gene.get(parent, ""), gene_alias_to_target.get(parent, "")}
+                for alias in _aliases_for_id(parent):
+                    parent_targets.add(transcript_to_gene.get(alias, ""))
+                    parent_targets.add(gene_alias_to_target.get(alias, ""))
+                    if alias in gene_ids:
+                        parent_targets.add(alias)
+                target_genes.update(target for target in parent_targets if target in gene_ids)
             for gene_id in target_genes:
                 gene_rows.setdefault(
                     gene_id,

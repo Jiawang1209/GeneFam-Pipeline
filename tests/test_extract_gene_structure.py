@@ -62,6 +62,34 @@ def test_summarize_structure_reads_manifest_and_family_candidates(tmp_path):
     assert rows[0]["exon_count"] == "1"
 
 
+def test_extract_gene_structure_matches_phytozome_versioned_gene_ids(tmp_path):
+    gff3 = tmp_path / "brassica.gff3"
+    gff3.write_text(
+        "Chr01\tphytozomev13\tgene\t1629\t3263\t.\t+\t.\t"
+        "ID=BrO_302V.01G000100.v1.1;Name=BrO_302V.01G000100\n"
+        "Chr01\tphytozomev13\tmRNA\t1629\t3263\t.\t+\t.\t"
+        "ID=BrO_302V.01G000100.1.v1.1;Name=BrO_302V.01G000100.1;Parent=BrO_302V.01G000100.v1.1\n"
+        "Chr01\tphytozomev13\tCDS\t1629\t3263\t.\t+\t0\t"
+        "ID=BrO_302V.01G000100.1.v1.1.CDS.1;Parent=BrO_302V.01G000100.1.v1.1\n",
+        encoding="utf-8",
+    )
+
+    rows = extract_structure(gff3, species_id="Brassica_rapa", gene_ids={"BrO_302V.01G000100"})
+
+    assert rows == [
+        {
+            "species_id": "Brassica_rapa",
+            "gene_id": "BrO_302V.01G000100",
+            "gene_length": "1635",
+            "transcript_count": "1",
+            "exon_count": "0",
+            "cds_count": "1",
+            "exon_total_length": "0",
+            "cds_total_length": "1635",
+        }
+    ]
+
+
 def test_extract_gene_structure_cli_writes_tsv(tmp_path):
     gff3 = tmp_path / "species.gff3"
     gff3.write_text("Chr1\ttest\tgene\t100\t500\t.\t+\t.\tID=gene1\n", encoding="utf-8")

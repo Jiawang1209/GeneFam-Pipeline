@@ -34,6 +34,57 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-28 00:57 - Harden real-species GFF3 alias matching and reproducibility code
+
+Context:
+- User emphasized that Brassica/Capsella-style annotation differences will be common at 1000-species scale, so `00_preprocess` and downstream feature extraction must generalize beyond one species.
+- Real three-species standard Nextflow testing exposed GFF3 gene ID mismatches where cleaned FASTA gene IDs such as `BrO_302V.01G083700` correspond to versioned GFF3 gene IDs such as `BrO_302V.01G083700.v1.1` or to the GFF3 `Name` attribute.
+- User also required the final analysis to include a Markdown file collecting all reproduction code.
+
+Decisions:
+- Keep cleaned FASTA gene IDs stable and user-facing, then make downstream GFF3 readers resolve common aliases from `ID`, `Name`, `gene_id`, `locus`, and `locus_tag`.
+- Strip common gene-version suffixes such as `.v1.1` during GFF3 matching without exposing this as YAML configuration.
+- Preserve strict failure on genuinely missing GFF3 genes, but avoid false failures caused by versioned annotation IDs.
+- Make `report/reproducibility_code.md` report final result paths and the real Nextflow command instead of workdir-staged file names.
+
+Added:
+- Phytozome/JGI-style regression tests for chromosome-location extraction.
+- Phytozome/JGI-style regression tests for gene-structure extraction.
+- Reproducibility-code tests covering real config, outdir, preprocess outdir, and final `family_candidates.tsv` paths.
+
+Modified:
+- `bin/genefam/extract_chromosome_locations.py`
+- `bin/genefam/extract_gene_structure.py`
+- `bin/genefam/build_reproducibility_code.py`
+- `workflows/modules/standard_postprocess.nf`
+- `tests/test_extract_chromosome_locations.py`
+- `tests/test_extract_gene_structure.py`
+- `tests/test_build_reproducibility_code.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_extract_chromosome_locations.py tests/test_run_chromosome_smoke.py -q` passed with 6 tests.
+- `python bin/genefam/extract_chromosome_locations.py --family-candidates results/real_3species_full_standard/tables/family_candidates.tsv --species-manifest results/00_preprocess/species_manifest.clean.tsv --out /tmp/real_3species_chromosome_locations.tsv` produced 369 lines including the header.
+- `python -m pytest tests/test_extract_gene_structure.py tests/test_run_gene_structure_smoke.py tests/test_extract_chromosome_locations.py -q` passed with 10 tests.
+- `python bin/genefam/extract_gene_structure.py --family-candidates results/real_3species_full_standard/tables/family_candidates.tsv --species-manifest results/00_preprocess/species_manifest.clean.tsv --out /tmp/real_3species_gene_structure_summary.tsv` produced 369 lines including the header.
+- `PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH" nextflow run workflows/main.nf -c workflows/nextflow.config -profile activated --config configs/real_3species.template.yaml --groups configs/species_groups.yaml --run_identification true --use_hmmer true --use_diamond true --final_rule intersection --mock_external_tools false --standard_stop_after_family_candidates false --outdir results/real_3species_full_standard --preprocess_outdir results/00_preprocess` completed successfully after the alias fixes.
+- `PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH" nextflow run workflows/main.nf -resume -c workflows/nextflow.config -profile activated --config configs/real_3species.template.yaml --groups configs/species_groups.yaml --run_identification true --use_hmmer true --use_diamond true --final_rule intersection --mock_external_tools false --standard_stop_after_family_candidates false --outdir results/real_3species_full_standard --preprocess_outdir results/00_preprocess` completed successfully and refreshed `report/reproducibility_code.md`.
+- `results/real_3species_full_standard/tables/family_candidates.tsv`, `chromosome_locations.tsv`, and `gene_structure_summary.tsv` each contain 369 lines including the header.
+- `results/real_3species_full_standard/report/final_report.md` contains 273 lines.
+- `python -m pytest tests -q` passed with 507 tests.
+- `git status --short --untracked-files=all` lists only tracked code/test/workflow/history changes; local data and result directories remain ignored.
+
+Commit:
+- hash: pending
+- message: feat: harden real species gff3 matching
+- files: GFF3 alias matching, gene-structure/chromosome tests, reproducibility-code labels, workflow wiring, history
+
+Next:
+- Continue expanding real-data acceptance toward larger species sets; MCScanX and Ka/Ks full execution still depend on installed external tools and selected downstream configuration.
+
 ## 2026-06-27 23:34 - Add real three-species test entrypoint
 
 Context:

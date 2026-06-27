@@ -42,6 +42,28 @@ def test_extract_locations_fails_for_missing_gene_ids(tmp_path):
         extract_locations(gff3, species_id="Test_species", gene_ids={"gene2"})
 
 
+def test_extract_locations_matches_phytozome_gene_name_and_versioned_id(tmp_path):
+    gff3 = tmp_path / "brassica.gff3"
+    gff3.write_text(
+        "Chr01\tphytozomev13\tgene\t1629\t3263\t.\t+\t.\t"
+        "ID=BrO_302V.01G000100.v1.1;Name=BrO_302V.01G000100\n",
+        encoding="utf-8",
+    )
+
+    rows = extract_locations(gff3, species_id="Brassica_rapa", gene_ids={"BrO_302V.01G000100"})
+
+    assert rows == [
+        {
+            "species_id": "Brassica_rapa",
+            "gene_id": "BrO_302V.01G000100",
+            "seqid": "Chr01",
+            "start": "1629",
+            "end": "3263",
+            "strand": "+",
+        }
+    ]
+
+
 def test_extract_locations_for_manifest_reads_multiple_species_gff3(tmp_path):
     species_a_gff3 = tmp_path / "species_a.gff3"
     species_b_gff3 = tmp_path / "species_b.gff3"

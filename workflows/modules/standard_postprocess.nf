@@ -279,6 +279,13 @@ process BUILD_REPRODUCIBILITY_CODE {
       --clean-species-manifest ${clean_species_manifest} \\
       --reference-manifest ${reference_manifest} \\
       --family-candidates ${family_candidates} \\
+      --config-label ${params.config} \\
+      --groups-label ${params.groups} \\
+      --outdir ${params.outdir} \\
+      --preprocess-outdir ${params.preprocess_outdir} \\
+      --clean-species-manifest-label ${params.preprocess_outdir}/species_manifest.clean.tsv \\
+      --reference-manifest-label ${params.preprocess_outdir}/reference/reference_generation.tsv \\
+      --family-candidates-label ${params.outdir}/tables/family_candidates.tsv \\
       --out reproducibility_code.md
     """
 }

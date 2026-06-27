@@ -29,6 +29,20 @@ def test_build_reproducibility_code_md_collects_analysis_commands(tmp_path):
             str(reference_manifest),
             "--family-candidates",
             str(family_candidates),
+            "--config-label",
+            "configs/real_3species.template.yaml",
+            "--groups-label",
+            "configs/species_groups.yaml",
+            "--outdir",
+            "results/real_3species_full_standard",
+            "--preprocess-outdir",
+            "results/00_preprocess",
+            "--clean-species-manifest-label",
+            "results/00_preprocess/species_manifest.clean.tsv",
+            "--reference-manifest-label",
+            "results/00_preprocess/reference/reference_generation.tsv",
+            "--family-candidates-label",
+            "results/real_3species_full_standard/tables/family_candidates.tsv",
             "--out",
             str(out),
         ],
@@ -42,5 +56,9 @@ def test_build_reproducibility_code_md_collects_analysis_commands(tmp_path):
     assert "python bin/genefam/preprocess_species.py" in text
     assert "python bin/genefam/build_reference_from_config.py" in text
     assert "nextflow run workflows/main.nf" in text
+    assert "--config configs/real_3species.template.yaml" in text
+    assert "--outdir results/real_3species_full_standard" in text
+    assert "--preprocess_outdir results/00_preprocess" in text
     assert "results/00_preprocess/reference/PF00657.reference.pep.fa" in text
-    assert str(family_candidates) in text
+    assert "results/real_3species_full_standard/tables/family_candidates.tsv" in text
+    assert str(family_candidates) not in text
