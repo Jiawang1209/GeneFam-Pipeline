@@ -12102,7 +12102,9 @@ Verification:
 - `python -m pytest tests -q` passed again with 444 tests after local acceptance refreshed generated outputs.
 
 Commit:
-- pending
+- hash: c4e648c122a6cb65d8c9cb5333af15e793de85d7
+- message: feat: surface delivery audits in acceptance
+- files: local acceptance summary, local acceptance wrapper, README/quickstart docs, tests, history
 
 Next:
 - Continue final MVP hardening by making the final handoff/report surfaces easier to audit end to end; Docker/Apptainer remains the final packaging-stage runtime blocker.
