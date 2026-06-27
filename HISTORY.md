@@ -71,12 +71,12 @@ Verification:
 - `sed -n '1,28p' results/local_acceptance/local_acceptance_summary.md` confirmed local acceptance steps passed except the final-stage Docker/Apptainer blocker.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: 7976f3f3d698f01c9eb7a0a1ddd7ed70b2f82312
+- message: `test: require traceability in objective audit`
 - files: objective audit, objective/release-check tests, and history entry.
 
 Next:
-- Backfill this entry with the commit hash after the commit is created.
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage blocker.
 
 ## 2026-06-27 13:07 - Require figure traceability in publication audit
 
