@@ -11542,7 +11542,9 @@ Verification:
 - `bash scripts/run_local_acceptance.sh` exited 0 and refreshed handoff, delivery bundle, release checks, report-index audits, quickstart, and local acceptance summaries; final-stage blocker remains Docker/Apptainer reproducibility.
 
 Commit:
-- pending; hash will be backfilled after the code commit.
+- hash: 7f81ef92cab2bdb787ebd7972aceaaff235e77a3
+- message: test: validate report index traceability anchors
+- files: report-index audit, report-index audit tests, history
 
 Next:
 - Continue final MVP hardening with report and audit evidence increasingly tied to concrete generated artifacts.
