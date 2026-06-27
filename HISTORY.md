@@ -12100,7 +12100,9 @@ Verification:
 - `python -m pytest tests -q` passed again with 445 tests after local acceptance refreshed generated outputs.
 
 Commit:
-- pending
+- hash: 2a12e4a4e94c129f63478353dcc8530d2d141e7f
+- message: test: audit report index available paths
+- files: report-index audit, README/quickstart/release/readiness docs, tests, history
 
 Next:
 - Continue final MVP hardening by checking remaining report/summary surfaces for drift between generated inventories and top-level evidence; Docker/Apptainer remains the final packaging-stage runtime blocker.
