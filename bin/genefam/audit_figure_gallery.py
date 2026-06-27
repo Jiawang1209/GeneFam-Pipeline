@@ -105,10 +105,32 @@ def _linked_file_issues(gallery: Path, rows: list[dict[str, str]]) -> list[str]:
             if resolved.stat().st_size <= 0:
                 issues.append(f"{plot_key}:{column}:empty_file:{indexed_path}")
                 continue
+            if column == "plot_path":
+                format_issue = _plot_format_issue(plot_key, column, indexed_path, resolved)
+                if format_issue:
+                    issues.append(format_issue)
+                    continue
             anchor = _anchor_from_path(indexed_path)
             if anchor and not _markdown_has_anchor(resolved, anchor):
                 issues.append(f"{plot_key}:{column}:missing_anchor:{anchor}")
     return issues
+
+
+def _plot_format_issue(plot_key: str, column: str, indexed_path: str, resolved: Path) -> str | None:
+    suffix = resolved.suffix.lower()
+    try:
+        header = resolved.read_bytes()[:256]
+    except OSError:
+        return f"{plot_key}:{column}:unreadable:{indexed_path}"
+    if suffix == ".pdf" and not header.startswith(b"%PDF"):
+        return f"{plot_key}:{column}:invalid_pdf:{indexed_path}"
+    if suffix == ".png" and not header.startswith(b"\x89PNG\r\n\x1a\n"):
+        return f"{plot_key}:{column}:invalid_png:{indexed_path}"
+    if suffix == ".svg":
+        stripped = header.lstrip()
+        if not (stripped.startswith(b"<svg") or stripped.startswith(b"<?xml")):
+            return f"{plot_key}:{column}:invalid_svg:{indexed_path}"
+    return None
 
 
 def _manifest_expected_plot_path(plot_manifest: Path, manifest_path: str) -> str:
@@ -174,7 +196,7 @@ def audit_figure_gallery(
             "figure_gallery_linked_files_exist",
             not link_issues,
             str(figure_gallery),
-            "figure gallery linked plot, interpretation, version, report, and traceability targets exist"
+            "figure gallery linked plot, interpretation, version, report, and traceability targets exist with valid plot file signatures"
             if not link_issues
             else "missing, empty, or unresolved figure gallery targets: " + ", ".join(link_issues),
         ),

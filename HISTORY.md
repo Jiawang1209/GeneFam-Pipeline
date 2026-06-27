@@ -88,6 +88,52 @@ Commit:
 Next:
 - Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
 
+## 2026-06-27 16:18 - Enforce gallery plot file signatures
+
+Context:
+- The global figure gallery already checked that delivery-bundle plot links, close-reading reports, software version tables, final reports, traceability anchors, and plot-manifest coverage existed.
+- The active `/goal` requires paper-level visualization outputs to be publication-grade, so the gallery audit should not pass corrupted or placeholder plot files merely because their paths exist.
+
+Decisions:
+- Extend `figure_gallery_audit` to validate PDF, PNG, and SVG signatures for `plot_path` targets.
+- Keep non-plot gallery links under the existing existence, non-empty, and Markdown anchor checks.
+- Document the new gallery-level plot-signature contract in the quickstart, release-audit map, and bilingual README surfaces.
+
+Added:
+- Red test coverage for invalid gallery plot file signatures.
+- Documentation contract assertions for valid gallery plot file signatures.
+
+Modified:
+- `bin/genefam/audit_figure_gallery.py`
+- `tests/test_audit_figure_gallery.py`
+- `tests/test_quickstart_docs.py`
+- `tests/test_release_audit_docs.py`
+- `tests/test_runtime_environment_files.py`
+- `docs/quickstart.md`
+- `docs/release_audit.md`
+- `README.md`
+- `README.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_figure_gallery.py::test_figure_gallery_audit_rejects_invalid_plot_file_signatures -q` first failed because invalid PDF content was accepted when the file existed.
+- `python -m pytest tests/test_audit_figure_gallery.py -q` passed with 4 tests after adding signature checks.
+- `python -m pytest tests/test_quickstart_docs.py::test_quickstart_documents_minimum_verified_run_path tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_runtime_environment_files.py::test_chinese_readme_points_to_publication_audit_acceptance -q` first failed because quickstart and release-audit docs did not describe valid gallery plot file signatures.
+- `python -m pytest tests/test_audit_figure_gallery.py tests/test_quickstart_docs.py::test_quickstart_documents_minimum_verified_run_path tests/test_release_audit_docs.py::test_release_audit_maps_goal_requirements_to_evidence_and_commands tests/test_runtime_environment_files.py::test_chinese_readme_points_to_publication_audit_acceptance -q` passed with 7 tests after the docs were updated.
+- `python -m pytest tests/test_audit_figure_gallery.py::test_figure_gallery_audit_cli_writes_outputs_when_gallery_is_complete -q` first failed because the Markdown audit note did not mention valid plot file signatures.
+- `python -m pytest tests/test_audit_figure_gallery.py -q` passed with 4 tests after the audit note was updated.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: figure gallery audit, documentation contracts, README surfaces, and history entry.
+
+Next:
+- Run full tests and release/local acceptance checks, then commit and backfill this history entry.
+
 ## 2026-06-27 15:51 - Surface Reference gitignore evidence in delivery bundle
 
 Context:

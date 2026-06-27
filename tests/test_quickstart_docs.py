@@ -62,6 +62,7 @@ def test_quickstart_documents_minimum_verified_run_path():
         "results/delivery_bundle/final_delivery_manifest_audit.md",
         "local acceptance summary",
         "figure_gallery_audit",
+        "valid gallery plot file signatures",
         "delivery_manifest_audit",
         "final_delivery_manifest_audit",
         "figure_traceability_matrix",

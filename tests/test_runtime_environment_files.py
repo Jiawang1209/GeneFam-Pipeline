@@ -207,6 +207,7 @@ def test_readme_points_to_final_handoff_report():
     assert "results/delivery_bundle/figure_gallery.tsv" in readme
     assert "results/delivery_bundle/figure_gallery.md" in readme
     assert "figure_gallery_audit" in readme
+    assert "valid gallery plot file signatures" in readme
     assert "delivery_manifest_audit" in readme
     assert "local acceptance summary" in readme
     assert "plot_manifest coverage" in readme
@@ -250,6 +251,7 @@ def test_chinese_readme_points_to_publication_audit_acceptance():
     assert "report-index" in readme
     assert "所有 available 索引路径都真实存在" in readme
     assert "figure_gallery_audit" in readme
+    assert "全局图件文件签名" in readme
     assert "delivery_manifest_audit" in readme
     assert "final_delivery_manifest_audit" in readme
     assert "final_stage_blocker" in readme

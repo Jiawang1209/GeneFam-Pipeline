@@ -118,7 +118,54 @@ def test_figure_gallery_audit_cli_writes_outputs_when_gallery_is_complete(tmp_pa
 
     assert completed.returncode == 0, completed.stderr
     assert "figure_gallery_linked_files_exist\tpassed" in out_tsv.read_text(encoding="utf-8")
-    assert "Complete: true" in out_md.read_text(encoding="utf-8")
+    audit_md = out_md.read_text(encoding="utf-8")
+    assert "Complete: true" in audit_md
+    assert "valid plot file signatures" in audit_md
+
+
+def test_figure_gallery_audit_rejects_invalid_plot_file_signatures(tmp_path):
+    gallery = tmp_path / "figure_gallery.tsv"
+    report = tmp_path / "report"
+    plots = tmp_path / "plots"
+    report.mkdir()
+    plots.mkdir()
+    (plots / "tree_features.pdf").write_bytes(b"not a real pdf")
+    (report / "figure_interpretations.md").write_text("# Figure Interpretations\n", encoding="utf-8")
+    (report / "software_versions.tsv").write_text("component\tversion\nR\t4.4.0\n", encoding="utf-8")
+    (report / "final_report.md").write_text("# Final Report\n\n## Figure Traceability Matrix\n", encoding="utf-8")
+
+    _write_tsv(
+        gallery,
+        [
+            "branch",
+            "plot_key",
+            "plot_path",
+            "plot_description",
+            "figure_interpretations",
+            "software_versions",
+            "final_report",
+            "traceability_matrix",
+        ],
+        [
+            [
+                "standard",
+                "tree_features",
+                str(plots / "tree_features.pdf"),
+                "Tree, motif, gene-structure, and domain composite plot",
+                str(report / "figure_interpretations.md"),
+                str(report / "software_versions.tsv"),
+                str(report / "final_report.md"),
+                str(report / "final_report.md") + "#figure-traceability-matrix",
+            ],
+        ],
+    )
+
+    rows = audit_figure_gallery(gallery)
+    by_check = {row["check"]: row for row in rows}
+
+    assert by_check["figure_gallery_linked_files_exist"]["status"] == "failed"
+    assert "tree_features:plot_path:invalid_pdf" in by_check["figure_gallery_linked_files_exist"]["note"]
+    assert summarize_audit(rows) == {"passed": 2, "failed": 1, "complete": False}
 
 
 def test_figure_gallery_audit_requires_manifest_plot_coverage(tmp_path):
