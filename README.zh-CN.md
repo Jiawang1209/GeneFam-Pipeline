@@ -231,25 +231,54 @@ nextflow run workflows/main.nf \
 
 如果你已经准备好了规范化的 MCScanX syntenic pair 表，也可以在正式标准分支里打开 feature summary 和 MCScanX circlize 图：
 
+```yaml
+modules:
+  feature_summary: true
+  synteny: true
+plotting:
+  syntenic_pairs: path/to/syntenic_pairs.tsv
+```
+
 ```bash
 nextflow run workflows/main.nf \
   -c workflows/nextflow.config \
   -profile activated \
   --config configs/my_3species.yaml \
   --run_identification true \
-  --tree_builder fasttree \
-  --run_feature_summary true \
-  --run_mcscanx_circlize true \
-  --syntenic_pairs path/to/syntenic_pairs.tsv
+  --tree_builder fasttree
 ```
 
-如果要在正式标准分支里提取启动子，需要每个物种都有 genome FASTA，并打开：
+如果要在正式标准分支里提取启动子，需要每个物种都有 genome FASTA。启动子提取仍可以用 CLI 打开；如果你已经有 PlantCARE 等 cis-element 注释表，则建议直接写进 YAML：
+
+```yaml
+modules:
+  promoter: true
+  promoter_cis: true
+promoter:
+  cis_elements: path/to/plantcare_cis_elements.tsv
+```
 
 ```bash
 --run_promoter true \
 --promoter_upstream_bp 2000 \
 --promoter_downstream_bp 0
 ```
+
+PPI 和表达谱也可以从 YAML 驱动：
+
+```yaml
+modules:
+  ppi: true
+  expression: true
+ppi:
+  edges: path/to/ppi_edges.tsv
+  nodes: path/to/ppi_nodes.tsv
+expression:
+  matrix: path/to/family_expression.tsv
+  metadata: path/to/sample_metadata.tsv
+```
+
+`bin/genefam/run_nextflow_standard_smoke.py` 会读取这些 YAML 字段并自动转成 Nextflow 参数，用于验证正式标准分支的论文级图件链路。
 
 ## 结果在哪里看
 

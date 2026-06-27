@@ -229,13 +229,13 @@ def test_load_standard_params_reads_yaml_tool_and_mock_flags(tmp_path):
         encoding="utf-8",
     )
 
-    assert load_standard_params(config) == {
-        "use_hmmer": "false",
-        "use_diamond": "true",
-        "final_rule": "union",
-        "mock_external_tools": "false",
-        "gene_family_species_order": "",
-    }
+    params = load_standard_params(config)
+
+    assert params["use_hmmer"] == "false"
+    assert params["use_diamond"] == "true"
+    assert params["final_rule"] == "union"
+    assert params["mock_external_tools"] == "false"
+    assert params["gene_family_species_order"] == ""
 
 
 def test_load_standard_params_reads_yaml_species_order_for_copy_number_plots(tmp_path):
@@ -265,6 +265,52 @@ def test_load_standard_params_resolves_yaml_species_order_relative_to_repo_root(
     assert params["gene_family_species_order"] == str(
         Path("tests/fixtures/species_order/species_tree_order.tsv").resolve()
     )
+
+
+def test_load_standard_params_reads_yaml_publication_module_inputs(tmp_path):
+    config = tmp_path / "publication_modules.yaml"
+    config.write_text(
+        "\n".join(
+            [
+                "identification:",
+                "  final_rule: intersection",
+                "modules:",
+                "  feature_summary: true",
+                "  synteny: true",
+                "  promoter: true",
+                "  promoter_cis: true",
+                "  ppi: true",
+                "  expression: true",
+                "promoter:",
+                "  cis_elements: tests/fixtures/promoter_cis/plantcare.tsv",
+                "ppi:",
+                "  edges: tests/fixtures/ppi/ppi_edges.tsv",
+                "  nodes: tests/fixtures/ppi/ppi_nodes.tsv",
+                "expression:",
+                "  matrix: tests/fixtures/expression/family_expression.tsv",
+                "  metadata: tests/fixtures/expression/sample_metadata.tsv",
+                "plotting:",
+                "  syntenic_pairs: tests/fixtures/mcscanx/syntenic_pairs.tsv",
+                "dev:",
+                "  mock_external_tools: true",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    params = load_standard_params(config)
+
+    assert params["run_feature_summary"] == "true"
+    assert params["run_mcscanx_circlize"] == "true"
+    assert params["syntenic_pairs"] == str(Path("tests/fixtures/mcscanx/syntenic_pairs.tsv").resolve())
+    assert params["run_promoter"] == "true"
+    assert params["run_promoter_cis"] == "true"
+    assert params["promoter_cis_elements"] == str(Path("tests/fixtures/promoter_cis/plantcare.tsv").resolve())
+    assert params["run_ppi"] == "true"
+    assert params["ppi_edges"] == str(Path("tests/fixtures/ppi/ppi_edges.tsv").resolve())
+    assert params["ppi_nodes"] == str(Path("tests/fixtures/ppi/ppi_nodes.tsv").resolve())
+    assert params["expression_matrix"] == str(Path("tests/fixtures/expression/family_expression.tsv").resolve())
+    assert params["expression_metadata"] == str(Path("tests/fixtures/expression/sample_metadata.tsv").resolve())
 
 
 def test_expected_published_outputs_cover_standard_user_results(tmp_path):

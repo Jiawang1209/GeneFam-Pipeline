@@ -556,6 +556,16 @@ def test_validate_config_checks_gene_family_species_order_path_when_provided():
     assert "plotting.gene_family_species_order path does not exist: missing_species_order.tsv" in errors
 
 
+def test_validate_config_checks_syntenic_pairs_path_when_provided():
+    config = _valid_base_config()
+    config["input"]["root"] = "tests/fixtures/species_bank"
+    config["plotting"]["syntenic_pairs"] = "missing_syntenic_pairs.tsv"
+
+    errors = validate_config(config, check_paths=True)
+
+    assert "plotting.syntenic_pairs path does not exist: missing_syntenic_pairs.tsv" in errors
+
+
 def test_validate_config_reports_ppi_requires_edge_table_and_missing_paths():
     config = _valid_base_config()
     config["modules"]["ppi"] = True

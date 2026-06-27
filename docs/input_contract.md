@@ -50,7 +50,7 @@ Later modules add more requirements:
 - `modules.motif: true` requires `modules.family_summary: true`.
 - `modules.duplication_retention: true` requires both `modules.synteny: true` and `modules.kaks: true`.
 
-Use `python bin/genefam/validate_config.py <config.yaml> --check-paths` before a real run to require configured runtime inputs to exist. This strict mode checks `input.root` or `input.manifest`, enabled HMMER profiles, DIAMOND reference peptides, `expression.matrix`, optional `expression.metadata`, `promoter.cis_elements`, `ppi.edges`, and optional `ppi.nodes` when present. The Nextflow entrypoint runs the same strict preflight through `workflows/modules/config_validation.nf` before species discovery or identification starts.
+Use `python bin/genefam/validate_config.py <config.yaml> --check-paths` before a real run to require configured runtime inputs to exist. This strict mode checks `input.root` or `input.manifest`, enabled HMMER profiles, DIAMOND reference peptides, `expression.matrix`, optional `expression.metadata`, `plotting.syntenic_pairs`, `promoter.cis_elements`, `ppi.edges`, and optional `ppi.nodes` when present. The Nextflow entrypoint runs the same strict preflight through `workflows/modules/config_validation.nf` before species discovery or identification starts.
 
 wgd_events.named_event_annotation requires modules.duplication_retention: true. When `wgd_events.named_event_annotation: true`, `wgd_events.event_map` is required. In strict `--check-paths` mode the event-map path must exist and duplicate WGD event names are rejected before the WGD branch interprets gamma, beta, alpha, theta, or custom labels.
 
@@ -155,7 +155,7 @@ cold_6h_rep1 cold 6h 1 cold_6h
 cold_24h_rep1 cold 24h 1 cold_24h
 ```
 
-The `sample_id` values must match expression matrix columns. `group` is used for replicate averaging and treatment/timepoint ordering in `expression_group_matrix.tsv`; `condition`, `timepoint`, and `replicate` are used for plot labels. Set `expression.metadata: <path>` in YAML or pass `--expression_metadata <path>` to Nextflow. The expression plot module writes `expression_sample_metadata.tsv`, `expression_group_matrix.tsv`, `expression_gene_summary.tsv`, and `expression_heatmap.pdf/png`.
+The `sample_id` values must match expression matrix columns. `group` is used for replicate averaging and treatment/timepoint ordering in `expression_group_matrix.tsv`; `condition`, `timepoint`, and `replicate` are used for plot labels. Set `modules.expression: true`, `expression.matrix: <path>`, and optional `expression.metadata: <path>` in YAML, or pass `--expression_matrix <path> --expression_metadata <path>` to Nextflow. The expression plot module writes `expression_sample_metadata.tsv`, `expression_group_matrix.tsv`, `expression_gene_summary.tsv`, and `expression_heatmap.pdf/png`.
 
 ## Promoter Cis-Elements
 
@@ -167,7 +167,7 @@ species_id gene_id element category position strand description
 
 Common PlantCARE-like aliases are also accepted, including `Species`, `Gene ID`, `CAREs`, `Function`, and `Site`. When `category` is absent, elements and descriptions are mapped into broad report groups such as `hormone_responsive`, `stress_responsive`, `light_responsive`, `growth_development`, `core_promoter`, or `other`.
 
-Set `modules.promoter_cis: true` with `promoter.cis_elements: <path>` in YAML, or pass `--run_promoter_cis true --promoter_cis_elements <path>` to Nextflow. The module writes `promoter_cis_elements.tsv`, `promoter_cis_gene_matrix.tsv`, `promoter_cis_category_summary.tsv`, and `promoter_cis_elements.pdf/png`.
+Set `modules.promoter_cis: true` with `promoter.cis_elements: <path>` in YAML, or pass `--run_promoter_cis true --promoter_cis_elements <path>` to Nextflow. `bin/genefam/run_nextflow_standard_smoke.py` reads the YAML values and forwards them to the standard Nextflow branch. The module writes `promoter_cis_elements.tsv`, `promoter_cis_gene_matrix.tsv`, `promoter_cis_category_summary.tsv`, and `promoter_cis_elements.pdf/png`.
 
 ## PPI Network
 
@@ -185,7 +185,7 @@ node type species domain
 AT1G01010 GDSL Arabidopsis_thaliana PF00657
 ```
 
-The PPI module writes normalized edge, node, and hub tables before `scripts/plot_ppi_ggnetview.R` renders `ppi_ggnetview.pdf/png` with `ggNetView`. If `ggNetView` is missing, the status table reports `missing_dependency` and the plot files are explicit placeholders rather than silent fallback plots.
+Set `modules.ppi: true` with `ppi.edges: <path>` and optional `ppi.nodes: <path>` in YAML, or pass `--run_ppi true --ppi_edges <path> --ppi_nodes <path>` to Nextflow. The PPI module writes normalized edge, node, and hub tables before `scripts/plot_ppi_ggnetview.R` renders `ppi_ggnetview.pdf/png` with `ggNetView`. If `ggNetView` is missing, the status table reports `missing_dependency` and the plot files are explicit placeholders rather than silent fallback plots.
 
 ## Large-Scale Copy-Number Species Order
 
@@ -199,6 +199,17 @@ Brassica_rapa 3 brassicaceae
 ```
 
 Set `params.gene_family_species_order` in Nextflow or `plotting.gene_family_species_order` in YAML to point at this table. The builder writes the normalized order to `gene_family_species_order.tsv`; rows sourced from the external table are marked `order_source=external`, while selected species absent from the external table are appended after the tree-ordered rows as `order_source=copy_number_append`.
+
+## MCScanX Syntenic Pairs For Circlize
+
+The standard report circlize module expects a normalized syntenic-pair table such as the output from `bin/genefam/parse_mcscanx_collinearity.py`:
+
+```text
+block_id species_a gene_a species_b gene_b score
+block0001 Arabidopsis_thaliana AT1G01010 Brassica_rapa BraA01g000010 120
+```
+
+Set `modules.synteny: true` and `plotting.syntenic_pairs: <path>` in YAML to enable the MCScanX + `circlize` visualization in the standard Nextflow smoke, or pass `--run_mcscanx_circlize true --syntenic_pairs <path>` directly.
 
 ## Motif Summary
 

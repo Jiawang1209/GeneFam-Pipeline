@@ -13,7 +13,7 @@ input:
     pep: true
     gff3: true
     cds: true
-    genome: false
+    genome: true
   patterns:
     pep:
       - "*.pep.fa"
@@ -72,10 +72,18 @@ wgd_events:
 plotting:
   reuse_reference_scripts: true
   gene_family_species_order: data/metadata/species_tree_order.tsv
+  syntenic_pairs: data/mcscanx/syntenic_pairs.tsv
   reference_script_roots:
     - Reference/Long_Weixiong_20240323_1_GDSL/R
     - Reference/Large-Scale Plant Genomic Identification and Analysis Uncover ASMT:COMT Copy Number Variation Driving Melatonin Dosage Balance./source_code
   reuse_policy: adapt_not_modify
+
+promoter:
+  cis_elements: data/promoter/plantcare_cis_elements.tsv
+
+ppi:
+  edges: data/ppi/ppi_edges.tsv
+  nodes: data/ppi/ppi_nodes.tsv
 
 dev:
   mock_external_tools: false
@@ -88,6 +96,9 @@ modules:
   phylogeny: true
   motif: true
   synteny: true
+  promoter: true
+  promoter_cis: true
+  ppi: true
   duplication_retention: true
   kaks: true
   chromosome_location: true

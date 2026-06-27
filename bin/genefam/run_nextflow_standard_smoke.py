@@ -43,11 +43,26 @@ def load_standard_params(config_path: Path) -> dict[str, str]:
     identification = config.get("identification", {}) or {}
     dev = config.get("dev", {}) or {}
     plotting = config.get("plotting", {}) or {}
+    modules = config.get("modules", {}) or {}
+    promoter = config.get("promoter", {}) or {}
+    ppi = config.get("ppi", {}) or {}
+    expression = config.get("expression", {}) or {}
     return {
         "use_hmmer": _bool_param(identification.get("use_hmmer", True)),
         "use_diamond": _bool_param(identification.get("use_diamond", True)),
         "final_rule": str(identification.get("final_rule", "intersection")),
         "mock_external_tools": _bool_param(dev.get("mock_external_tools", True)),
+        "run_feature_summary": _bool_param(modules.get("feature_summary", False)),
+        "run_mcscanx_circlize": _bool_param(modules.get("synteny", False) and plotting.get("syntenic_pairs")),
+        "syntenic_pairs": _resolve_optional_path(plotting.get("syntenic_pairs")),
+        "run_promoter": _bool_param(modules.get("promoter", False)),
+        "run_promoter_cis": _bool_param(modules.get("promoter_cis", False)),
+        "promoter_cis_elements": _resolve_optional_path(promoter.get("cis_elements")),
+        "run_ppi": _bool_param(modules.get("ppi", False)),
+        "ppi_edges": _resolve_optional_path(ppi.get("edges")),
+        "ppi_nodes": _resolve_optional_path(ppi.get("nodes")),
+        "expression_matrix": _resolve_optional_path(expression.get("matrix") if modules.get("expression") else None),
+        "expression_metadata": _resolve_optional_path(expression.get("metadata") if modules.get("expression") else None),
         "gene_family_species_order": _resolve_optional_path(plotting.get("gene_family_species_order")),
     }
 
@@ -293,6 +308,26 @@ def run_nextflow_standard_smoke(
 ) -> dict[str, str]:
     resolved_nextflow = resolve_nextflow_binary(nextflow_bin, conda_env=conda_env)
     standard_params = load_standard_params(Path(config))
+    runtime_params = dict(standard_params)
+    override_candidates = {
+        "run_feature_summary": run_feature_summary,
+        "run_mcscanx_circlize": run_mcscanx_circlize,
+        "syntenic_pairs": syntenic_pairs,
+        "run_promoter": run_promoter,
+        "run_promoter_cis": run_promoter_cis,
+        "promoter_cis_elements": promoter_cis_elements,
+        "run_ppi": run_ppi,
+        "ppi_edges": ppi_edges,
+        "ppi_nodes": ppi_nodes,
+        "expression_matrix": expression_matrix,
+        "expression_metadata": expression_metadata,
+    }
+    for key, value in override_candidates.items():
+        if isinstance(value, bool):
+            if value:
+                runtime_params[key] = _bool_param(value)
+        elif value not in {None, ""}:
+            runtime_params[key] = str(value)
     command_nextflow = resolved_nextflow or nextflow_bin
     profile = "activated" if conda_env and resolved_nextflow else None
     command = build_nextflow_command(
@@ -303,18 +338,7 @@ def run_nextflow_standard_smoke(
         outdir=str(outdir / "standard"),
         profile=profile,
         stop_after_family_candidates=stop_after_family_candidates,
-        run_feature_summary=run_feature_summary,
-        run_mcscanx_circlize=run_mcscanx_circlize,
-        syntenic_pairs=syntenic_pairs,
-        run_promoter=run_promoter,
-        run_promoter_cis=run_promoter_cis,
-        promoter_cis_elements=promoter_cis_elements,
-        run_ppi=run_ppi,
-        ppi_edges=ppi_edges,
-        ppi_nodes=ppi_nodes,
-        expression_matrix=expression_matrix,
-        expression_metadata=expression_metadata,
-        **standard_params,
+        **runtime_params,
     )
     if not resolved_nextflow:
         return {
@@ -336,12 +360,12 @@ def run_nextflow_standard_smoke(
         if _bool_param(stop_after_family_candidates) == "true"
         else expected_published_outputs(
             standard_outdir,
-            feature_summary=_bool_param(run_feature_summary) == "true",
-            mcscanx_circlize=_bool_param(run_mcscanx_circlize) == "true",
-            promoter=_bool_param(run_promoter) == "true",
-            promoter_cis=_bool_param(run_promoter_cis) == "true",
-            ppi=_bool_param(run_ppi) == "true",
-            expression=bool(expression_matrix),
+            feature_summary=runtime_params["run_feature_summary"] == "true",
+            mcscanx_circlize=runtime_params["run_mcscanx_circlize"] == "true",
+            promoter=runtime_params["run_promoter"] == "true",
+            promoter_cis=runtime_params["run_promoter_cis"] == "true",
+            ppi=runtime_params["run_ppi"] == "true",
+            expression=bool(runtime_params["expression_matrix"]),
         )
     )
     missing_outputs = [path for path in expected_outputs if not path.exists()]

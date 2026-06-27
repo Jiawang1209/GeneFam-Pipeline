@@ -70,10 +70,18 @@ wgd_events:
 plotting:
   reuse_reference_scripts: true
   gene_family_species_order: tests/fixtures/species_order/species_tree_order.tsv
+  syntenic_pairs: null
   reference_script_roots:
     - Reference/Long_Weixiong_20240323_1_GDSL/R
     - Reference/Large-Scale Plant Genomic Identification and Analysis Uncover ASMT:COMT Copy Number Variation Driving Melatonin Dosage Balance./source_code
   reuse_policy: adapt_not_modify
+
+promoter:
+  cis_elements: null
+
+ppi:
+  edges: null
+  nodes: null
 
 dev:
   mock_external_tools: true
@@ -86,6 +94,9 @@ modules:
   phylogeny: false
   motif: false
   synteny: false
+  promoter: false
+  promoter_cis: false
+  ppi: false
   duplication_retention: false
   kaks: false
   chromosome_location: false

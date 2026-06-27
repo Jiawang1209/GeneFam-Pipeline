@@ -196,6 +196,12 @@ def validate_config(config: dict[str, Any], check_paths: bool = False, base_dir:
         and not _path_exists(str(plotting["gene_family_species_order"]), base_dir)
     ):
         errors.append(f"plotting.gene_family_species_order path does not exist: {plotting['gene_family_species_order']}")
+    if (
+        check_paths
+        and plotting.get("syntenic_pairs")
+        and not _path_exists(str(plotting["syntenic_pairs"]), base_dir)
+    ):
+        errors.append(f"plotting.syntenic_pairs path does not exist: {plotting['syntenic_pairs']}")
 
     dev = config.get("dev", {}) or {}
     if dev.get("mock_external_tools") is True and not dev.get("mock_evidence_dir"):

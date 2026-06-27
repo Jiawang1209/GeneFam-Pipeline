@@ -12460,6 +12460,61 @@ Commit:
 Next:
 - Keep Docker/Apptainer runtime verification as the remaining final-stage external blocker; continue polishing Reference-level figure fidelity where useful.
 
+## 2026-06-27 - Drive publication visualization modules from YAML
+
+Timestamp:
+- 2026-06-27 20:00 CST
+
+Context:
+- The standard Nextflow smoke already accepted CLI switches for promoter cis-element, MCScanX circlize, PPI ggNetView, and expression heatmap modules.
+- The long-term user-facing contract is YAML-driven analysis, so these publication visualization modules needed to be discoverable from YAML instead of requiring a long manual CLI argument list.
+
+Decisions:
+- Extend the standard Nextflow smoke parameter loader so YAML can drive report-scale visualization modules.
+- Keep explicit CLI switches as additive overrides for smoke/debug runs.
+- Validate `plotting.syntenic_pairs` in strict config checks when the field is present.
+- Document the YAML fields in the example configs, input contract, advanced-module guide, and Chinese/English README surfaces.
+
+Added:
+- YAML-driven standard-smoke parameters for `modules.feature_summary`, `modules.synteny` with `plotting.syntenic_pairs`, `modules.promoter`, `modules.promoter_cis` with `promoter.cis_elements`, `modules.ppi` with `ppi.edges`/`ppi.nodes`, and `modules.expression` with expression matrix/metadata.
+- Config validation coverage for missing `plotting.syntenic_pairs` paths.
+- Example YAML entries for promoter cis-element, MCScanX circlize, PPI, and expression publication modules.
+
+Modified:
+- `HISTORY.md`
+- `README.md`
+- `README.zh-CN.md`
+- `bin/genefam/run_nextflow_standard_smoke.py`
+- `bin/genefam/validate_config.py`
+- `configs/example.config.yaml`
+- `configs/advanced_modules.example.yaml`
+- `docs/advanced_module_examples.md`
+- `docs/input_contract.md`
+- `tests/test_run_nextflow_standard_smoke.py`
+- `tests/test_validate_config.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py::test_load_standard_params_reads_yaml_publication_module_inputs -q` first failed with `KeyError: 'run_feature_summary'`, proving the YAML publication-module bridge was absent.
+- `python -m pytest tests/test_validate_config.py::test_validate_config_checks_syntenic_pairs_path_when_provided -q` first failed because strict config validation did not report `plotting.syntenic_pairs`.
+- `python -m pytest tests/test_run_nextflow_standard_smoke.py -q` passed with 19 tests after updating the YAML loader and legacy assertion.
+- `python -m pytest tests/test_validate_config.py::test_validate_config_checks_syntenic_pairs_path_when_provided -q` passed after adding the strict path check.
+- `python -m pytest tests/test_validate_config.py tests/test_run_nextflow_standard_smoke.py -q` passed with 63 tests.
+- `python bin/genefam/validate_config.py configs/example.config.yaml && python bin/genefam/validate_config.py configs/advanced_modules.example.yaml` reported `Configuration OK` for both example YAML files.
+- `python -m pytest tests -q` passed with 465 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and wrote `Passed: 51`, `Required failed: 0`, `Optional failed: 2`, `Release ready: true`.
+- `bash scripts/run_local_acceptance.sh` exited 0, refreshed the delivery bundle, and reported the expected `final_stage_blocker`: Docker/Apptainer reproducibility.
+- `sed -n '1,45p' results/release_checks/release_checks.md` confirmed `Release ready: true`, `Required failed: 0`, and `Optional failed: 2`.
+- `sed -n '1,80p' results/local_acceptance/local_acceptance_summary.md` confirmed publication, WGD publication, report-index, figure-gallery, delivery-manifest, quickstart, and bundle steps passed, with only `final_stage_blocker` blocked.
+
+Commit:
+- pending
+
+Next:
+- Run full tests, release checks, and local acceptance; then commit and backfill this history entry with the commit hash.
+
 ## 2026-06-27 - Index final-report figure traceability matrix
 
 Timestamp:
