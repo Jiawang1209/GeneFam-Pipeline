@@ -173,6 +173,10 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         in manifest_text
     )
     assert (
+        "governance\treference_gitignore\tavailable\t.gitignore\tReference/ ignored so paper PDFs, source data, and plotting templates are not accidentally staged"
+        in manifest_text
+    )
+    assert (
         "governance\treference_governance_tsv\tavailable\tresults/reference_governance/reference_governance.tsv\tmachine-readable Reference/ status"
         in manifest_text
     )
@@ -255,6 +259,8 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
     assert "results/nextflow_wgd_smoke/wgd/report/software_versions.tsv" in summary_text
     assert "alpha, beta, gamma, theta" in summary_text
     assert "Reference governance" in summary_text
+    assert "reference_gitignore" in summary_text
+    assert "Reference/ ignored so paper PDFs, source data, and plotting templates are not accidentally staged" in summary_text
     assert "runtime recovery" in summary_text
     assert "results/container_default_smoke" in summary_text
     assert "compact local acceptance pass/fail index" in summary_text

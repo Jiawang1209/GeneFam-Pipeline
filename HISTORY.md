@@ -34,6 +34,54 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 15:51 - Surface Reference gitignore evidence in delivery bundle
+
+Context:
+- Reference governance now requires `.gitignore` to ignore `Reference/`, but the final delivery bundle still only exposed the older tracked-change audit row.
+- The active `/goal` treats the delivery bundle as the final user-facing handoff index, so it should surface the `.gitignore` protection directly.
+
+Decisions:
+- Add a `governance/reference_gitignore` row to the delivery manifest.
+- Keep the row as an explicit pointer to `.gitignore` so users can verify that Reference PDFs, source data, and plotting templates are not accidentally staged.
+- Extend the release-audit documentation contract so the final goal evidence mentions this delivery-manifest row.
+
+Added:
+- `reference_gitignore` delivery-manifest row.
+- Test coverage requiring the delivery manifest and Markdown bundle to include the `.gitignore` Reference protection.
+- Release-audit documentation assertions for `reference_gitignore`.
+
+Modified:
+- `bin/genefam/run_delivery_bundle.py`
+- `docs/release_audit.md`
+- `tests/test_run_delivery_bundle.py`
+- `tests/test_release_audit_docs.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index -q` first failed because the delivery manifest did not include `governance/reference_gitignore`.
+- `python -m pytest tests/test_run_delivery_bundle.py::test_run_delivery_bundle_cli_writes_user_facing_index -q` passed after adding the delivery-manifest row.
+- `python -m pytest tests/test_release_audit_docs.py -q` first failed because `docs/release_audit.md` did not mention `reference_gitignore`.
+- `python -m pytest tests/test_run_delivery_bundle.py tests/test_release_audit_docs.py -q` passed with 2 tests after updating the release audit documentation.
+- `python bin/genefam/run_delivery_bundle.py --release-checks results/release_checks/release_checks.tsv --objective-audit results/objective_audit/objective_audit.tsv --readiness results/readiness/command_readiness.tsv --quickstart results/quickstart/quickstart_summary.tsv --outdir results/delivery_bundle` refreshed `results/delivery_bundle/delivery_manifest.tsv` and `results/delivery_bundle/delivery_bundle.md`.
+- `python bin/genefam/audit_delivery_manifest.py --delivery-manifest results/delivery_bundle/delivery_manifest.tsv --out-tsv results/delivery_bundle_smoke/delivery_manifest_audit.tsv --out-md results/delivery_bundle_smoke/delivery_manifest_audit.md` exited 0; the audit reported `Failed: 0` and `Complete: true`.
+- `rg -n "reference_gitignore|Reference/ ignored|Complete:|Failed:" results/delivery_bundle/delivery_manifest.tsv results/delivery_bundle/delivery_bundle.md results/delivery_bundle_smoke/delivery_manifest_audit.md` confirmed the new delivery row and complete manifest audit.
+- `python -m pytest tests -q` passed with 447 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and wrote `Passed: 50`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `rg -n "Passed:|Failed:|Required failed:|Optional failed:|Release ready:|delivery bundle manifest audit" results/release_checks/release_checks.md results/release_checks/release_checks.tsv` confirmed the delivery manifest audit passed in the release gate.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed the final handoff, delivery bundle, report-index audits, figure-gallery audit, delivery-manifest audit, and local acceptance summary.
+- `sed -n '1,80p' results/local_acceptance/local_acceptance_summary.md` confirmed all analysis/report/delivery acceptance steps passed, with only `final_stage_blocker` blocked by Docker/Apptainer reproducibility.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: delivery bundle, release audit docs, tests, and history entry.
+
+Next:
+- Commit this delivery-bundle hardening, then backfill the commit hash in a follow-up history entry.
+
 ## 2026-06-27 15:41 - Enforce Reference ignore governance
 
 Context:

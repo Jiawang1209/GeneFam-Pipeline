@@ -465,6 +465,13 @@ def build_delivery_manifest(
         },
         {
             "section": "governance",
+            "item": "reference_gitignore",
+            "status": "available",
+            "path": ".gitignore",
+            "note": "Reference/ ignored so paper PDFs, source data, and plotting templates are not accidentally staged",
+        },
+        {
+            "section": "governance",
             "item": "reference_governance_tsv",
             "status": "available",
             "path": "results/reference_governance/reference_governance.tsv",

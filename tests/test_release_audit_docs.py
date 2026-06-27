@@ -76,6 +76,8 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "Reference/ must also be ignored" in text
     assert "Reference/` is ignored by `.gitignore`" in text
     assert "tracked `Reference/` changes are release-blocking" in text
+    assert "reference_gitignore" in text
+    assert "Reference/ ignored so paper PDFs, source data, and plotting templates are not accidentally staged" in text
     assert "results/handoff/handoff_report.md" in text
     assert "results/handoff/handoff_summary.tsv" in text
     assert "run_delivery_bundle.py" in text
