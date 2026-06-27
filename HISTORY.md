@@ -69,7 +69,7 @@ Verification:
 - `rg -n "promoter cis-element visualization|promoter smoke|validate example config" results/objective_audit/objective_audit.md results/release_checks/release_checks.md` confirmed promoter smoke and promoter cis-element visualization evidence remain in the release/objective gates.
 
 Commit:
-- hash: pending
+- hash: 6fe969c3a2af10525d664e1894c7224632250b02
 - message: `test: require promoter genome inputs`
 - files: promoter cis-element config validation, regression tests, and history entry.
 
