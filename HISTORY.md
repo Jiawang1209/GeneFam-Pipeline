@@ -81,12 +81,12 @@ Verification:
 - `sed -n '1,30p' results/delivery_bundle/final_delivery_manifest_audit.md` confirmed `Failed: 0` and `Complete: true`.
 
 Commit:
-- hash: not created in this session
-- message: not created in this session
+- hash: c17fde61c1efa7ac0fd502af8392e0af2fe058ec
+- message: test: audit final delivery manifest locally
 - files: local acceptance script, acceptance summary builder, README/quickstart/release docs, tests, and history entry.
 
 Next:
-- Commit this final delivery manifest audit wiring, then backfill the commit hash in a follow-up history entry.
+- Continue final MVP hardening; Docker/Apptainer reproducibility remains the final-stage packaging blocker.
 
 ## 2026-06-27 15:51 - Surface Reference gitignore evidence in delivery bundle
 
