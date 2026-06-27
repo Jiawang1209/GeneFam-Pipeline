@@ -20,6 +20,7 @@ PUBLICATION_AUDIT_CHECKS = [
     "software_versions_present",
     "figure_method_software_versions",
     "final_report_embeds_publication_sections",
+    "final_report_figure_traceability",
     "final_report_placeholder_text",
 ]
 
@@ -83,7 +84,7 @@ def build_objective_audit(
         not missing_publication_audit_checks and not missing_wgd_publication_audit_checks
     )
     final_report_detail_note = (
-        "Publication audit detail checks passed for standard and WGD reports, including no TODO/TBD/placeholder text."
+        "Publication audit detail checks passed for standard and WGD reports, including Figure Traceability Matrix coverage and no TODO/TBD/placeholder text."
         if final_report_audit_details_ok
         else "Publication audit detail gaps: "
         + "; ".join(
@@ -351,7 +352,7 @@ def build_objective_audit(
             and final_report_audit_details_ok,
             "final reports",
             "standard branch smoke, Nextflow standard visualization smoke, Nextflow WGD event smoke, prepared WGD handoff example, quickstart report outputs, standard publication report audit, WGD publication report audit, standard report index audit, and WGD report index audit",
-            "Final Markdown reports are produced for standard and WGD handoff paths from formal Nextflow standard visualization and WGD branch evidence, while publication audits verify valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, and complete per-figure close-reading text: input data, what the figure shows, key observations, biological interpretation, QC warnings, QC tables, method/software entries, software/R package versions, reproducibility commands, reading status, output paths, registered plot files, and no TODO/TBD/placeholder text for both report families. Report index audits verify that standard and WGD report indexes expose plot manifests, software versions, figure interpretations in TSV/Markdown, and final reports. "
+            "Final Markdown reports are produced for standard and WGD handoff paths from formal Nextflow standard visualization and WGD branch evidence, while publication audits verify valid plot file signatures, registered-only figure interpretation scope, plot manifest and interpretation output path consistency, Figure Traceability Matrix rows, and complete per-figure close-reading text: input data, what the figure shows, key observations, biological interpretation, QC warnings, QC tables, method/software entries, software/R package versions, reproducibility commands, reading status, output paths, registered plot files, and no TODO/TBD/placeholder text for both report families. Report index audits verify that standard and WGD report indexes expose plot manifests, software versions, figure interpretations in TSV/Markdown, and final reports. "
             + final_report_detail_note,
         ),
         _achieved_if(

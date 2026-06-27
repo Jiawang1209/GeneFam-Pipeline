@@ -34,6 +34,50 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-27 13:17 - Require traceability evidence in objective audit
+
+Context:
+- Publication report audit now checks `final_report_figure_traceability`, but the long-form objective audit still used the older publication-audit check list.
+- The active `/goal` requires final goal evidence to prove every figure has close-reading status, QC evidence, method/software, and reproducibility context, not only that release checks passed.
+
+Decisions:
+- Add `final_report_figure_traceability` to the objective-audit publication detail checks.
+- Make the `final reports` objective mention `Figure Traceability Matrix` rows explicitly.
+- Keep objective audit failure messages pointing to the standard or WGD publication audit check that is missing or pending.
+
+Added:
+- Objective-audit test coverage for missing `final_report_figure_traceability`.
+- Release-check bridge fixture coverage for the new publication-audit row.
+
+Modified:
+- `bin/genefam/audit_objective_completion.py`
+- `tests/test_audit_objective_completion.py`
+- `tests/test_run_release_checks.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_note_names_complete_publication_report_closure tests/test_audit_objective_completion.py::test_final_reports_require_traceability_matrix_checks_in_publication_audits -q` first failed because `final reports` did not mention or require `Figure Traceability Matrix`.
+- `python -m pytest tests/test_audit_objective_completion.py::test_final_reports_note_names_complete_publication_report_closure tests/test_audit_objective_completion.py::test_final_reports_require_traceability_matrix_checks_in_publication_audits -q` passed after updating the objective-audit check list and final-report note.
+- `python -m pytest tests/test_audit_objective_completion.py -q` passed with 44 tests.
+- `python -m pytest tests -q` first failed because `tests/test_run_release_checks.py::test_write_objective_audit_reads_publication_detail_audits` used an older publication-audit TSV fixture without `final_report_figure_traceability`.
+- `python -m pytest tests/test_run_release_checks.py::test_write_objective_audit_reads_publication_detail_audits tests/test_audit_objective_completion.py -q` passed with 45 tests after updating the fixture.
+- `python -m pytest tests -q` passed with 434 tests.
+- `python bin/genefam/run_release_checks.py --outdir results/release_checks` exited 0 and reported `Passed: 48`, `Failed: 2`, `Required failed: 0`, `Optional failed: 2`, and `Release ready: true`.
+- `rg -n "final reports|Figure Traceability Matrix|final_report_figure_traceability|Achieved:|Blocked:|Missing:|Complete:" results/objective_audit/objective_audit.md results/objective_audit/objective_audit.tsv results/publication_report_audit/publication_report_audit.md results/publication_report_audit/wgd_publication_report_audit.md` confirmed objective audit and standard/WGD publication audits expose traceability evidence.
+- `bash scripts/run_local_acceptance.sh` exited 0 and refreshed final handoff outputs.
+- `sed -n '1,28p' results/local_acceptance/local_acceptance_summary.md` confirmed local acceptance steps passed except the final-stage Docker/Apptainer blocker.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: objective audit, objective/release-check tests, and history entry.
+
+Next:
+- Backfill this entry with the commit hash after the commit is created.
+
 ## 2026-06-27 13:07 - Require figure traceability in publication audit
 
 Context:

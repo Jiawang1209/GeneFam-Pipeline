@@ -40,6 +40,7 @@ def _publication_audit_rows(omit=None):
         "software_versions_present",
         "figure_method_software_versions",
         "final_report_embeds_publication_sections",
+        "final_report_figure_traceability",
         "final_report_placeholder_text",
     ]
     return [
@@ -771,8 +772,45 @@ def test_final_reports_note_names_complete_publication_report_closure():
     assert "biological interpretation" in final_report_row["note"]
     assert "QC warnings" in final_report_row["note"]
     assert "software/R package versions" in final_report_row["note"]
+    assert "Figure Traceability Matrix" in final_report_row["note"]
     assert "reproducibility commands" in final_report_row["note"]
     assert "no TODO/TBD/placeholder text" in final_report_row["note"]
+
+
+def test_final_reports_require_traceability_matrix_checks_in_publication_audits():
+    release_rows = [
+        _release_row("standard branch smoke"),
+        _release_row("Nextflow standard visualization smoke"),
+        _release_row("Nextflow WGD event smoke"),
+        _release_row("prepared WGD handoff example"),
+        _release_row("quickstart handoff"),
+        _release_row("publication report audit"),
+        _release_row("WGD publication report audit"),
+        _release_row("standard report index audit"),
+        _release_row("WGD report index audit"),
+    ]
+    readiness_rows = [
+        _readiness_row("nextflow"),
+        _readiness_row("/usr/local/bin/R", "available", "/usr/local/bin/R"),
+        _readiness_row("hmmsearch"),
+        _readiness_row("diamond"),
+        _readiness_row("mafft"),
+        _readiness_row("iqtree2", "available_in_conda", "GeneFamilyFlow:/bin/iqtree"),
+        _readiness_row("meme"),
+        _readiness_row("docker", "missing", ""),
+        _readiness_row("apptainer", "missing", ""),
+    ]
+
+    rows = build_objective_audit(
+        release_rows,
+        readiness_rows,
+        publication_audit_rows=_publication_audit_rows(omit={"final_report_figure_traceability"}),
+        wgd_publication_audit_rows=_publication_audit_rows(),
+    )
+    final_report_row = {row["requirement"]: row for row in rows}["final reports"]
+
+    assert final_report_row["status"] == "missing"
+    assert "standard publication audit missing/pending: final_report_figure_traceability" in final_report_row["note"]
 
 
 def test_final_reports_require_placeholder_text_checks_in_publication_audits():
