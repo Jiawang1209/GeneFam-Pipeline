@@ -7,6 +7,8 @@ import argparse
 import csv
 import re
 import statistics
+import zipfile
+import xml.etree.ElementTree as ET
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -69,6 +71,53 @@ def read_tsv(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle, delimiter="\t"))
 
 
+def read_xlsx(path: Path) -> list[dict[str, str]]:
+    ns = {"main": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+    with zipfile.ZipFile(path) as archive:
+        shared_strings: list[str] = []
+        if "xl/sharedStrings.xml" in archive.namelist():
+            shared_root = ET.fromstring(archive.read("xl/sharedStrings.xml"))
+            for item in shared_root.findall("main:si", ns):
+                text_parts = [node.text or "" for node in item.findall(".//main:t", ns)]
+                shared_strings.append("".join(text_parts))
+        sheet_root = ET.fromstring(archive.read("xl/worksheets/sheet1.xml"))
+
+    parsed_rows: list[list[str]] = []
+    for row_node in sheet_root.findall(".//main:sheetData/main:row", ns):
+        values: list[str] = []
+        for cell in row_node.findall("main:c", ns):
+            value_node = cell.find("main:v", ns)
+            raw_value = value_node.text if value_node is not None else ""
+            if cell.attrib.get("t") == "s" and raw_value:
+                value = shared_strings[int(raw_value)]
+            elif cell.attrib.get("t") == "inlineStr":
+                value = "".join(node.text or "" for node in cell.findall(".//main:t", ns))
+            else:
+                value = raw_value
+            values.append(value.strip())
+        if any(values):
+            parsed_rows.append(values)
+    if not parsed_rows:
+        return []
+    headers = [value.strip() for value in parsed_rows[0]]
+    rows: list[dict[str, str]] = []
+    for values in parsed_rows[1:]:
+        row = {
+            header: value.strip() if value is not None else ""
+            for header, value in zip(headers, values)
+            if header
+        }
+        if any(row.values()):
+            rows.append(row)
+    return rows
+
+
+def read_table(path: Path) -> list[dict[str, str]]:
+    if Path(path).suffix.lower() in {".xlsx", ".xlsm"}:
+        return read_xlsx(path)
+    return read_tsv(path)
+
+
 def _clean_header(header: str) -> str:
     return re.sub(r"\s+", " ", header.strip().lower().replace("_", " "))
 
@@ -91,6 +140,26 @@ def _get(row: dict[str, str], mapping: dict[str, str], target: str) -> str:
     return (row.get(source) or "").strip()
 
 
+def _split_promoter_header(value: str) -> tuple[str, str]:
+    parts = [part.strip() for part in (value or "").split("|")]
+    if len(parts) >= 2 and parts[0] and parts[1]:
+        return parts[0], parts[1]
+    return "", value.strip()
+
+
+def _description_map(rows: list[dict[str, str]] | None) -> dict[str, str]:
+    if not rows:
+        return {}
+    mapping = _alias_map(list(rows[0].keys()))
+    descriptions: dict[str, str] = {}
+    for row in rows:
+        element = _get(row, mapping, "element")
+        description = _get(row, mapping, "description")
+        if element and description:
+            descriptions[element] = description
+    return descriptions
+
+
 def infer_category(element: str, description: str) -> str:
     haystack = f"{element} {description}".lower()
     for category, terms in CATEGORY_RULES:
@@ -99,21 +168,26 @@ def infer_category(element: str, description: str) -> str:
     return "other"
 
 
-def _normalize_rows(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+def _normalize_rows(rows: list[dict[str, str]], element_descriptions: list[dict[str, str]] | None = None) -> list[dict[str, str]]:
     if not rows:
         return []
     mapping = _alias_map(list(rows[0].keys()))
+    descriptions_by_element = _description_map(element_descriptions)
     normalized: list[dict[str, str]] = []
     for row in rows:
         gene_id = _get(row, mapping, "gene_id")
         element = _get(row, mapping, "element")
         if not gene_id or not element:
             continue
-        description = _get(row, mapping, "description")
+        header_species, header_gene = _split_promoter_header(gene_id)
+        if header_gene != gene_id:
+            gene_id = header_gene
+        species_id = _get(row, mapping, "species_id") or header_species
+        description = _get(row, mapping, "description") or descriptions_by_element.get(element, "")
         category = _get(row, mapping, "category") or infer_category(element, description)
         normalized.append(
             {
-                "species_id": _get(row, mapping, "species_id"),
+                "species_id": species_id,
                 "gene_id": gene_id,
                 "element": element,
                 "category": category,
@@ -229,8 +303,11 @@ def _element_annotations(rows: list[dict[str, str]]) -> list[dict[str, str]]:
     return annotations
 
 
-def build_promoter_cis_tables(rows: list[dict[str, str]]) -> PromoterCisTables:
-    normalized = _normalize_rows(rows)
+def build_promoter_cis_tables(
+    rows: list[dict[str, str]],
+    element_descriptions: list[dict[str, str]] | None = None,
+) -> PromoterCisTables:
+    normalized = _normalize_rows(rows, element_descriptions=element_descriptions)
     return PromoterCisTables(
         normalized=normalized,
         gene_category_matrix=_gene_category_matrix(normalized),
@@ -268,9 +345,11 @@ def write_tables(tables: PromoterCisTables, outdir: Path) -> dict[str, Path]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cis-elements", required=True, type=Path)
+    parser.add_argument("--element-descriptions", default=None, type=Path)
     parser.add_argument("--outdir", required=True, type=Path)
     args = parser.parse_args()
-    tables = build_promoter_cis_tables(read_tsv(args.cis_elements))
+    descriptions = read_table(args.element_descriptions) if args.element_descriptions else None
+    tables = build_promoter_cis_tables(read_table(args.cis_elements), element_descriptions=descriptions)
     write_tables(tables, args.outdir)
 
 

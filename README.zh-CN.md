@@ -310,7 +310,7 @@ results/delivery_bundle/final_delivery_manifest_audit.md
 
 `results/publication_report_audit/publication_report_audit.md` 用来确认最终报告是否真的把图件格式、只精读已注册图件、图件清单与精读表路径一致性、QC、逐图方法/软件版本和复现命令闭环。
 
-`results/report_index_audit/standard_report_index_audit.md` 和 `results/report_index_audit/wgd_report_index_audit.md` 用来检查标准分析分支和 WGD 分支的 report-index 是否把 plot_manifest、software_versions、figure_interpretations、`final_report.md` 和 figure_traceability_matrix 都挂到索引里，并确认所有 available 索引路径都真实存在。
+`results/report_index_audit/standard_report_index_audit.md` 和 `results/report_index_audit/wgd_report_index_audit.md` 用来检查标准分析分支和 WGD 分支的 report-index 是否把 plot_manifest、software_versions、figure_interpretations、`final_report.md` 和 figure_traceability_matrix 都挂到索引里，并确认所有 available 索引路径都真实存在。标准分支还要求索引中包含 `reference_mvp_package_audit.tsv` 和 `reference_mvp_package_audit.md`，用于记录 MCScanX self 物种内分析与 JCVI 物种间分析的最终 MVP 验收边界。
 
 `results/reference_visual_alignment/reference_visual_alignment.md` 是 Reference visual alignment audit 的人工入口；它会检查 `reference_visual_alignment` 交付行，确认标准分支和 WGD 分支的 plot manifest 覆盖论文级图件模块，包括 gene family information、tree+motif+gene structure+domain、MCScanX/synteny/circlize、promoter cis-element、expression heatmap、ggNetView PPI，以及 Ka/Ks/WGD gamma beta alpha theta 图件，并确认对应图件都有逐图精读解释。
 
@@ -437,7 +437,12 @@ results/My_gene_family/
 
 - `tables/promoters.bed`
 - `sequences/promoters.fa`
+- `plantcare_submission/plantcare_submission_manifest.tsv`
+- `plantcare_submission/plantcare_submission_status.tsv`
+- `plantcare_submission/*.fa`
 - `plots/feature_summary.pdf`
+
+`plantcare_submission/*.fa` 是按 `plantcare.records_per_file` 分片后的启动子 FASTA，可用于上传 PlantCARE。拿到 PlantCARE 的 gene-level 结果表后，再把它写入 YAML 的 `promoter.cis_elements`，重新运行即可生成 promoter cis-element 统计表和图。
 
 如果运行 MCScanX + circlize 可视化，会看到：
 
@@ -544,6 +549,27 @@ python bin/genefam/run_mcscanx_circlize_smoke.py \
 - `results/mcscanx_circlize_smoke/plots/mcscanx_circlize.png`
 
 真实数据中，如果某些 MCScanX gene pair 找不到坐标，不会直接崩掉，而是写入 `circlize_skipped_links.tsv`，方便你检查是不是 gene ID 不一致。
+
+在正式标准分支中，`modules.synteny: true` 会同时启用两条不同的共线性分支：JCVI 负责物种间共线性比较，MCScanX self 负责每个物种内部的 duplication / tandem / WGD/segmental 分类。后续 `circlize` 画的是每个物种内部的 MCScanX self 共线性图，不是物种间 JCVI 图。
+
+MCScanX self 分支会为每个物种生成 genome-wide GFF 和 self protein search / MCScanX 命令。默认使用 DIAMOND 生成 MCScanX 需要的 outfmt 6 `.blast` 文件，再运行 `MCScanX`；如果需要严格使用 NCBI BLAST，可以把 `mcscanx.search_tool` 设置为 `blastp`，流程会改用 `makeblastdb` 和 `blastp`。
+
+结果包会在 `analysis_modules/11_mcscanx/mcscanx_execution_status.tsv` 中记录 `executed`、`missing_dependency` 或 `failed`。默认配置为执行：
+
+```yaml
+mcscanx:
+  self_dir: null
+  execute_self: true
+  search_tool: diamond
+```
+
+如需临时跳过 MCScanX self 执行，可在命令行传入：
+
+```bash
+--mcscanx_execute_self false
+```
+
+如果你已经有外部跑好的 `.gene_type`、`.tandem2`、`.collinearity2`，也可以把目录填到 `mcscanx.self_dir`，流程会解析这些结果并继续生成物种内 circlize 与 Ka/Ks 输入。
 
 ## 开发和验收状态
 

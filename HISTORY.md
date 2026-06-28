@@ -34,6 +34,1772 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-28 16:45 - Commit Reference-level pipeline progress through PPI
+
+Context:
+- User requested a local commit for the current development progress and clarified that PPI visualization should use `ggNetView` directly.
+- Before committing, full pytest exposed one smoke test still depending on deleted `results/*_smoke` artifacts from disk cleanup.
+
+Decisions:
+- Keep PPI visualization as `ggNetView` only; `ppi.pdf/png` are Reference-named aliases of `ppi_ggnetview.pdf/png`.
+- Make the feature-summary smoke test self-contained by creating minimal TSV inputs under `tmp_path` instead of depending on generated `results/*_smoke` directories.
+- Do not include `data/species_bank/`; it remains ignored by `.gitignore`.
+
+Added:
+- Self-contained feature-summary smoke-test fixtures generated inside the test temporary directory.
+
+Modified:
+- `tests/test_run_feature_summary_smoke.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_feature_summary_smoke.py -q` passed with 1 test.
+- `python -m pytest tests -q` passed with 579 tests.
+
+Commit:
+- hash: self-referential; see the commit containing this HISTORY entry
+- message: feat: align reference workflow through ppi
+- files: current Reference-level pipeline progress through PPI, including this smoke-test hardening
+
+Next:
+- Stop after PPI as requested; resume only after module-by-module constraints are provided.
+
+## 2026-06-28 16:35 - Add Reference-style PPI annotation outputs
+
+Context:
+- Active Reference-level goal requires `Reference/Long_Weixiong_20240323_1_GDSL/R/11.ppi.R` to be mapped more faithfully into the pipeline.
+- The existing PPI branch already transferred AraNet through Arabidopsis reciprocal BLAST and plotted with `ggNetView`, but it did not expose Reference-style node/species PPI annotation tables or the Reference-named `ppi.pdf/png` overview in the final module/report surfaces.
+
+Decisions:
+- Keep AraNet handling as orthology transfer from Arabidopsis instead of treating `AraNet.txt` as a direct all-species PPI network.
+- Add TSV equivalents of the Reference `node_annotation.xlsx` and `species10_ppi_annotation.xlsx` outputs so they are reproducible in the Nextflow/report package.
+- Add Reference-named `ppi.pdf/png` as aliases of the required `ggNetView` PPI output, because the project policy is to use `ggNetView` directly for PPI visualization.
+- Keep mapping status as `partial` because the raw Pfam-scan domain source still needs exact Reference-level replication.
+
+Added:
+- `node_annotation.tsv` with `ID`, `Domain`, `species`, `Type`, `degree`, and `weighted_degree`.
+- `species_ppi_annotation.tsv` with source/target domain annotations for transferred same-species PPI edges.
+- Reference-named `ppi.pdf/png` aliases of the `ggNetView` PPI plots.
+- `ppi_overview_status.tsv` recording that Reference-named PPI plots are `ggNetView` aliases.
+- Standard report-index keys for `ppi_node_annotation`, `ppi_species_annotation`, `ppi_overview_status`, `ppi_pdf`, and `ppi_png`.
+- Focused tests for PPI table construction, PPI smoke output, Nextflow output wiring, report index wiring, and module-folder packaging.
+
+Modified:
+- `bin/genefam/build_ppi_tables.py`
+- `bin/genefam/run_ppi_ggnetview_plot_smoke.py`
+- `workflows/modules/plots.nf`
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/organize_module_results.py`
+- `scripts/plot_ppi_ggnetview.R`
+- `docs/reference_to_pipeline_mapping.md`
+- PPI/report/module focused tests
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_ppi_tables.py tests/test_run_ppi_ggnetview_plot_smoke.py tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_standard_branch_report_index.py::test_build_standard_report_index_marks_core_outputs_available tests/test_standard_branch_report_index.py::test_published_paths_map_standard_outputs_to_user_results_tree tests/test_organize_module_results.py -q` failed first with the expected missing PPI annotation outputs and report/module wiring.
+- The same focused test command passed after implementation with 18 tests.
+- A second RED pass for `ppi.pdf/png` failed first with the expected missing plot/report/module outputs; after implementation, `python -m pytest tests/test_run_ppi_ggnetview_plot_smoke.py tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_standard_branch_report_index.py::test_build_standard_report_index_marks_core_outputs_available tests/test_standard_branch_report_index.py::test_published_paths_map_standard_outputs_to_user_results_tree tests/test_organize_module_results.py -q` passed with 15 tests.
+- User clarified that PPI visualization should use `ggNetView` directly; the temporary ggraph/ggplot2 overview path was removed, `ppi.pdf/png` now copy the `ggNetView` outputs, and `ppi_overview_status.tsv` reports `ready_ggnetview_alias`.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: PPI table builder, PPI smoke runner, PPI R plotting script, Nextflow plot/main/report modules, report index, module organizer, mapping doc, history, tests
+
+Next:
+- Continue Reference `11.ppi.R` exactness by adding the Pfam-scan-derived domain annotation input path; do not add a separate ggraph PPI visualization branch.
+
+## 2026-06-28 16:20 - Add Reference-style PlantCARE promoter plots
+
+Context:
+- Active Reference-level goal requires `Step10: promoter` to follow `Reference/Long_Weixiong_20240323_1_GDSL/R/10.promoter.R`.
+- The workflow already normalized PlantCARE-style gene-level cis-element hits and produced a generic `promoter_cis_elements.pdf/png`, but it did not yet generate Reference-named `promoter1.pdf` and `species_promoter2.pdf`.
+
+Decisions:
+- Keep the existing generic `promoter_cis_elements.pdf/png` for report compatibility.
+- Add Reference-style `promoter1.pdf/png` for gene-level cis-element category and element matrices.
+- Add Reference-style `species_promoter2.pdf/png` for species-level cis-element category summaries.
+- Keep the status honest: PlantCARE gene-level hit table is still required for these plots; if only `cir_element.desc*.xlsx` exists, the module remains `missing_input` and the workflow continues.
+
+Added:
+- Promoter smoke assertions for `promoter1.pdf/png` and `species_promoter2.pdf/png`.
+- Standard report-index keys for `promoter1_pdf`, `promoter1_png`, `species_promoter2_pdf`, and `species_promoter2_png`.
+- Nextflow plot-manifest entries for `promoter1` and `species_promoter2`.
+- Module-package test ensuring Reference promoter plots are copied into `analysis_modules/09_promoter_cis/`.
+
+Modified:
+- `scripts/plot_promoter_cis_elements.R`
+- `bin/genefam/run_promoter_cis_smoke.py`
+- `workflows/modules/plots.nf`
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/organize_module_results.py`
+- `docs/reference_to_pipeline_mapping.md`
+- `tests/test_run_promoter_cis_smoke.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_workflow_modules.py`
+- `tests/test_organize_module_results.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Red test: `python -m pytest tests/test_run_promoter_cis_smoke.py::test_run_promoter_cis_smoke_writes_tables_and_plots -q` first failed because `plots/promoter1.pdf` was missing.
+- Green focused tests: `python -m pytest tests/test_run_promoter_cis_smoke.py tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_workflow_modules.py::test_main_workflow_includes_plot_processes tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_standard_branch_report_index.py::test_build_standard_report_index_marks_core_outputs_available -q` passed with 5 tests.
+- Broader promoter/report tests: `python -m pytest tests/test_run_promoter_cis_smoke.py tests/test_build_promoter_cis_elements.py tests/test_standard_branch_report_index.py tests/test_workflow_modules.py tests/test_organize_module_results.py tests/test_build_figure_interpretations.py -q` passed with 52 tests.
+- Final focused tests: `python -m pytest tests/test_reference_to_pipeline_mapping.py tests/test_run_promoter_cis_smoke.py tests/test_standard_branch_report_index.py tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_workflow_modules.py::test_main_workflow_includes_plot_processes tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_organize_module_results.py -q` passed with 24 tests.
+- Real smoke generation: `python bin/genefam/run_promoter_cis_smoke.py --r-bin /usr/local/bin/R --outdir /tmp/genefam_promoter_reference_check` generated `promoter_cis_elements.pdf/png`, `promoter1.pdf/png`, and `species_promoter2.pdf/png`.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: Reference-style promoter plots, report index wiring, plot manifest wiring, module package copy rules, mapping, tests, history
+
+Next:
+- Continue Reference visual alignment with `11.ppi.R`: reciprocal BLAST/AraNet ortholog transfer, node annotation tables, and ggNetView outputs.
+
+## 2026-06-28 16:05 - Add Reference-style per-species MCScanX circos outputs
+
+Context:
+- Active Reference-level goal requires `Step9: mcscanx` to follow `Reference/Long_Weixiong_20240323_1_GDSL/R/9.Circos_*.R`, where each species has its own circos PDF and gene-pair outputs.
+- The pipeline already generated a global MCScanX self/circlize plot, but the formal output package did not yet expose per-species `circos_<species>.pdf/png` files.
+
+Decisions:
+- Keep the existing global `plots/mcscanx_circlize.pdf/png` for report compatibility.
+- Add Reference-style per-species outputs under `plots/species/<species>/circos_<species>.pdf/png`.
+- Preserve the existing top-level plot-copy behavior in `organize_module_results.py`, but keep nested `plots/species/...` paths intact so per-species plots remain clearly grouped.
+
+Added:
+- Per-species circos output assertions in `tests/test_run_mcscanx_circlize_smoke.py`.
+- Formal Nextflow module assertions for `plots/species` in `tests/test_workflow_modules.py`.
+- Module-package copy assertion for nested per-species MCScanX plots in `tests/test_organize_module_results.py`.
+
+Modified:
+- `scripts/plot_mcscanx_circlize.R`
+- `bin/genefam/run_mcscanx_circlize_smoke.py`
+- `workflows/modules/mcscanx_self_circos.nf`
+- `bin/genefam/organize_module_results.py`
+- `docs/reference_to_pipeline_mapping.md`
+- `tests/test_run_mcscanx_circlize_smoke.py`
+- `tests/test_workflow_modules.py`
+- `tests/test_organize_module_results.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Red test: `python -m pytest tests/test_run_mcscanx_circlize_smoke.py::test_run_mcscanx_circlize_smoke_writes_inputs_and_plots -q` first failed because `plots/species/Arabidopsis_thaliana/circos_Arabidopsis_thaliana.pdf` did not exist.
+- Red tests: `python -m pytest tests/test_workflow_modules.py::test_mcscanx_self_circos_module_prepares_and_plots_self_outputs tests/test_organize_module_results.py::test_organize_module_results_marks_mcscanx_available_when_circlize_available -q` first failed because `plots/species` was not a Nextflow module output and nested per-species plots were not copied into `analysis_modules/11_mcscanx/plots/species/`.
+- Green tests: `python -m pytest tests/test_workflow_modules.py::test_mcscanx_self_circos_module_prepares_and_plots_self_outputs tests/test_organize_module_results.py::test_organize_module_results_marks_mcscanx_available_when_circlize_available tests/test_run_mcscanx_circlize_smoke.py tests/test_reference_to_pipeline_mapping.py -q` passed with 8 tests.
+- Green tests: `python -m pytest tests/test_organize_module_results.py -q` passed with 9 tests.
+- Real-data check: `/usr/local/bin/R --vanilla --slave -f scripts/plot_mcscanx_circlize.R --args results/real_3species_reference_goal_run_kaks_clean/analysis_modules/11_mcscanx/tables/circlize_chromosomes.tsv results/real_3species_reference_goal_run_kaks_clean/analysis_modules/11_mcscanx/tables/circlize_links.tsv results/real_3species_reference_goal_run_kaks_clean/analysis_modules/11_mcscanx/tables/circlize_link_density.tsv results/real_3species_reference_goal_run_kaks_clean/analysis_modules/11_mcscanx/tables/circlize_duplicate_type_tracks.tsv /tmp/genefam_reference_circlize_species_check` exited 0 and generated global plots plus per-species circos plots for `Arabidopsis_thaliana`, `Brassica_rapa`, and `Capsella_rubella`.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: per-species MCScanX circos plotting, Nextflow output exposure, module-package copy rules, strict mapping, tests, history
+
+Next:
+- Continue Reference visual alignment with `10.promoter.R` PlantCARE plots and `11.ppi.R` ggNetView/node-annotation outputs.
+
+## 2026-06-28 15:55 - Clean generated smoke/probe data to recover disk space
+
+Context:
+- User reported the project directory was approaching 40G and asked to delete smoke-generated data that was occupying too much disk space.
+- The cleanup needed to preserve source code, configuration, Reference files, local input data, and current formal result evidence.
+
+Decisions:
+- Delete Nextflow `work/` cache because it is generated intermediate data and can be recreated by rerunning the workflow.
+- Delete only `results/` directories whose names clearly indicate generated smoke/mock/probe/test output.
+- Preserve formal result directories such as `results/real_3species_reference_goal_run*`, `results/00_preprocess`, and report/audit directories.
+
+Added:
+- none
+
+Modified:
+- `HISTORY.md`
+
+Deleted:
+- `work/`
+- Generated result directories matching smoke/mock/probe/test patterns, including `results/*smoke*`, `results/mock_mvp`, `results/real_3species_all_modules_probe*`, `results/real_3species_twopass_hmmer_probe*`, `results/real_3species_nf_test`, and `results/real_3species_yaml_parse_probe`.
+
+Verification:
+- Before cleanup, `du -sh .` reported `36G`.
+- Before cleanup, `du -sh work .nextflow` reported `25G work` and `98M .nextflow`.
+- After cleanup, `du -sh . results .nextflow` reported `5.7G .`, `2.8G results`, and `98M .nextflow`.
+- Remaining largest result directories are formal three-species outputs: `results/real_3species_reference_goal_run*` at about `670M` each and `results/00_preprocess` at about `203M`.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: generated data cleanup and history
+
+Next:
+- If more space is needed, keep only the latest formal run `results/real_3species_reference_goal_run_kaks_clean` and delete older duplicate formal run directories after explicit confirmation.
+
+## 2026-06-28 15:40 - Re-anchor workflow development to the user's Reference scripts
+
+Context:
+- User pointed out that the current visualizations and analysis flow were still too generic and were not faithfully following `Reference/Long_Weixiong_20240323_1_GDSL/Evolution_LWX_GDSL_2024.md` or the R scripts under `Reference/Long_Weixiong_20240323_1_GDSL/R/`.
+- The immediate correction was to stop treating broad module availability as Reference-level completion and create a strict Reference-to-Pipeline mapping that distinguishes exact reuse, adapted implementation, partial coverage, and missing inputs.
+
+Decisions:
+- Make `docs/reference_to_pipeline_mapping.md` a development constraint, not a success report.
+- Mark modules honestly as `adapted`, `partial`, or `skip-by-input` unless the command route, outputs, and figure structure match the Reference.
+- Keep the corrected biological boundary explicit: JCVI is for inter-species collinearity, while MCScanX self plus circlize is mandatory for intra-species duplication/circos visualization.
+- Treat `9.Circos_*.R` as the canonical visual target for MCScanX self plots: chromosome track, family gene labels, 500 kb density track, duplicate-type track, collinearity/tandem links, and ComplexHeatmap legends.
+
+Added:
+- Strict audit requirements in `tests/test_reference_to_pipeline_mapping.py` requiring all Reference steps and R scripts to be represented.
+- Real-data Reference-style circlize verification output under `/tmp/genefam_reference_circlize_check/`.
+
+Modified:
+- `docs/reference_to_pipeline_mapping.md`
+- `tests/test_reference_to_pipeline_mapping.py`
+- `scripts/plot_mcscanx_circlize.R`
+- `tests/test_run_mcscanx_circlize_smoke.py`
+- `bin/genefam/prepare_reference_kaks_inputs.py`
+- `tests/test_prepare_reference_kaks_inputs.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `/usr/local/bin/R --vanilla --slave -f scripts/plot_mcscanx_circlize.R --args results/real_3species_reference_goal_run_kaks_clean/analysis_modules/11_mcscanx/tables/circlize_chromosomes.tsv results/real_3species_reference_goal_run_kaks_clean/analysis_modules/11_mcscanx/tables/circlize_links.tsv results/real_3species_reference_goal_run_kaks_clean/analysis_modules/11_mcscanx/tables/circlize_link_density.tsv results/real_3species_reference_goal_run_kaks_clean/analysis_modules/11_mcscanx/tables/circlize_duplicate_type_tracks.tsv /tmp/genefam_reference_circlize_check` exited 0 and wrote `mcscanx_circlize.pdf` plus `mcscanx_circlize.png`.
+- `python -m pytest tests/test_run_mcscanx_circlize_smoke.py -q` passed with 3 tests.
+- `python -m pytest tests/test_prepare_reference_kaks_inputs.py tests/test_run_reference_kaks_calculator.py -q` passed with 9 tests.
+- `python -m pytest tests/test_reference_to_pipeline_mapping.py tests/test_run_mcscanx_circlize_smoke.py tests/test_prepare_reference_kaks_inputs.py tests/test_run_reference_kaks_calculator.py -q` passed with 15 tests.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: strict Reference mapping, Reference-style MCScanX circlize plotting, Ka/Ks terminal-stop cleanup tests, history
+
+Next:
+- Continue by converting the remaining partial Reference R scripts into module outputs: per-species MCScanX circos PDFs, PlantCARE promoter plots, ggNetView PPI with node annotations, gene-family info plots, tree clade/support plots, and JCVI/MCScanX Ka/Ks plots.
+
+## 2026-06-28 15:22 - Validate real three-species Reference workflow with MCScanX self and JCVI separation
+
+Context:
+- User corrected the synteny boundary: MCScanX self is mandatory for intra-species duplication and circlize visualization, while JCVI is the inter-species collinearity branch.
+- The workflow needed current evidence from real three-species data, not only mock smoke output.
+- The report package needed to keep `reference_mvp_package_audit` files in both the top-level `report/` folder and the modular `analysis_modules/report/` folder.
+
+Decisions:
+- Treat `modules.synteny: true` as the switch that runs both JCVI inter-species collinearity and MCScanX self intra-species duplication/circlize.
+- Make `AUDIT_REAL_REFERENCE_PACKAGE` the final module-package closure step: it republishes an audited `analysis_modules` directory and the top-level `report/reference_mvp_package_audit.*` files.
+- Rewrite module-package `report_index.tsv` plot paths as `../plots/*.pdf/png` so the report index is self-contained from `analysis_modules/report/`.
+- Let YAML `project.name` and `gene_family.name` drive the report identity unless the command line explicitly overrides the default `--project_name` or `--gene_family`.
+
+Added:
+- Fresh real-output evidence in `results/real_3species_reference_goal_run_final/`.
+
+Modified:
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `bin/genefam/organize_module_results.py`
+- `tests/test_workflow_modules.py`
+- `tests/test_organize_module_results.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python bin/genefam/validate_config.py configs/real_3species.template.yaml --check-paths` returned `Configuration OK`.
+- Environment check in `GeneFamilyFlow` found `MCScanX`, `diamond`, `blastp`, `makeblastdb`, `KaKs_Calculator`, and Python `jcvi`; `ParaAT.pl` was not found.
+- Fresh real run:
+  `nextflow run workflows/main.nf -c workflows/nextflow.config -profile activated --config configs/real_3species.template.yaml --groups configs/species_groups.yaml --run_identification true --use_hmmer true --use_diamond true --final_rule intersection --mock_external_tools false --standard_stop_after_family_candidates false --outdir results/real_3species_reference_goal_run_final --preprocess_outdir results/00_preprocess`
+  exited 0.
+- `results/real_3species_reference_goal_run_final/analysis_modules/report/reference_mvp_package_audit.tsv` passed all checks, including `jcvi_interspecies_required`, `mcscanx_self_intraspecies_required`, and `overall_reference_mvp_package`.
+- MCScanX self evidence: `mcscanx_execution_status.tsv` reports `executed true exit_code 0`, `mcscanx_circlize_status.tsv` reports `available` with 37 links, and `mcscanx_gene_pairs.tsv` has 43 lines including the header.
+- JCVI evidence: `jcvi_run_status.tsv` reports `available`, 5 commands, 5 succeeded, 0 failed; `jcvi_pair_manifest.tsv` includes Arabidopsis-Brassica and Brassica-Capsella inter-species pairs.
+- Ka/Ks evidence: `kaks_calculator_status.tsv` reports `partial`, 230 pairs, 125 succeeded, 105 failed with diagnostics; `wgd_layers.tsv` contains configured `gamma` layer rows.
+- Publication report audit passed with all final rows passed, including methods summary, report identity `Project: My_3species_GDSL`, figure traceability, PNG previews, and no placeholder text.
+- Standard report-index audit passed all four checks, including available paths and `reference_mvp_package_audit` entries.
+- `python -m pytest tests/test_organize_module_results.py tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q` passed with 11 tests.
+- `python -m pytest tests -q` passed with 574 tests.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: standard workflow wiring, module package audit publishing, module-package report-index rewriting, YAML report identity, tests, real three-species output evidence, and history
+
+Next:
+- Review whether Ka/Ks failure rate can be reduced by trimming terminal stop codons or normalizing CDS lengths before KaKs_Calculator, while keeping current partial-with-diagnostics behavior as acceptable MVP evidence.
+
+## 2026-06-28 14:47 - Make Reference MVP package audit a report-index gate
+
+Context:
+- The real Reference MVP package audit existed and passed, but it was only an
+  extra report artifact and was not yet part of the standard report-index
+  closure contract.
+- The Reference-level workflow needs a durable machine-readable gate proving
+  the final modular package preserves the MCScanX self intra-species and JCVI
+  inter-species boundary.
+
+Decisions:
+- Add `reference_mvp_package_audit_tsv` and
+  `reference_mvp_package_audit_md` as formal standard report-index artifacts.
+- Make the standard `audit_report_index.py` profile require both Reference MVP
+  audit artifacts.
+- Keep the WGD report-index profile unchanged.
+- Document that the standard report-index audit now verifies the real modular
+  package audit generated by `audit_real_reference_package.py`.
+
+Added:
+- Regression assertions in:
+  `tests/test_standard_branch_report_index.py`
+  `tests/test_audit_report_index.py`
+  `tests/test_release_audit_docs.py`
+
+Modified:
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/audit_report_index.py`
+- `README.md`
+- `README.zh-CN.md`
+- `docs/release_audit.md`
+- `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/report_index.tsv`
+- Refreshed real audit outputs:
+  `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/reference_mvp_package_audit.tsv`
+  `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/reference_mvp_package_audit.md`
+  `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/report_index_audit.tsv`
+  `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/report_index_audit.md`
+  `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/publication_report_audit.tsv`
+  `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/publication_report_audit.md`
+
+Deleted:
+- none
+
+Verification:
+- Red check:
+  `python -m pytest tests/test_standard_branch_report_index.py -q` first
+  failed because `build_standard_report_index.py` did not know the
+  `reference_mvp_package_audit_*` keys.
+- Red check:
+  `python -m pytest tests/test_audit_report_index.py -q` first failed because
+  the standard report-index audit did not require
+  `reference_mvp_package_audit_tsv`.
+- Red check:
+  `python -m pytest tests/test_release_audit_docs.py -q` first failed because
+  `docs/release_audit.md` did not mention `reference_mvp_package_audit`.
+- Real Reference MVP package audit:
+  `python bin/genefam/audit_real_reference_package.py --analysis-modules results/real_3species_twopass_hmmer_probe_diamond/analysis_modules --out-tsv results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/reference_mvp_package_audit.tsv --out-md results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/reference_mvp_package_audit.md`
+  exited 0.
+- Real report-index audit:
+  `python bin/genefam/audit_report_index.py --report-index results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/report_index.tsv --profile standard --out-tsv results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/report_index_audit.tsv --out-md results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/report_index_audit.md`
+  exited 0 with all four checks passed.
+- Real publication-report audit:
+  `python bin/genefam/audit_publication_report.py --plot-manifest results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/plot_manifest.tsv --figure-interpretations results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/figure_interpretations.tsv --software-versions results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/software_versions.tsv --final-report results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/final_report.md --report-index results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/report_index.tsv --out-tsv results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/publication_report_audit.tsv --out-md results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/publication_report_audit.md`
+  exited 0.
+- Targeted tests:
+  `python -m pytest tests/test_audit_real_reference_package.py tests/test_audit_report_index.py tests/test_standard_branch_report_index.py tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index -q`
+  passed with 17 tests.
+- Documentation tests:
+  `python -m pytest tests/test_release_audit_docs.py tests/test_quickstart_docs.py -q`
+  passed with 4 tests.
+- Full test suite:
+  `python -m pytest tests -q` passed with 573 tests.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: report-index generator, report-index audit, docs, tests, refreshed
+  real three-species report audit outputs, and history entry
+
+Next:
+- The Reference MVP audit is now part of report-index closure. Continue
+  checking whether it should also be invoked automatically by a dedicated
+  Nextflow process after `ORGANIZE_MODULE_RESULTS`, instead of only as a
+  post-run command for the real package.
+
+## 2026-06-28 14:41 - Add real Reference MVP package audit with MCScanX self boundary
+
+Context:
+- User corrected the synteny boundary again: MCScanX self is mandatory and is
+  the intra-species duplication/circlize branch; JCVI is the inter-species
+  collinearity branch.
+- Individual report audits were passing, but there was no single real-package
+  audit that enforced this separation across `analysis_modules/`.
+
+Decisions:
+- Add a strict real Reference MVP package audit over
+  `results/*/analysis_modules`.
+- Treat `11_mcscanx` as a required MCScanX self intra-species branch with
+  execution status, gene-pair table, circlize link table, and PDF/PNG plots.
+- Treat `10_synteny_jcvi` as a separate required JCVI inter-species branch with
+  run status and pair manifest.
+- Keep PlantCARE missing-input and expression skipped-optional statuses
+  acceptable only when their handoff/status files exist.
+- Keep partial Ka/Ks acceptable only when failure diagnostics are present.
+
+Added:
+- `bin/genefam/audit_real_reference_package.py`
+- `tests/test_audit_real_reference_package.py`
+- Real audit outputs:
+  `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/reference_mvp_package_audit.tsv`
+  and
+  `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/reference_mvp_package_audit.md`
+
+Modified:
+- Refreshed real package report audits:
+  `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/report_index_audit.tsv`
+  `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/report_index_audit.md`
+  `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/publication_report_audit.tsv`
+  `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/publication_report_audit.md`
+
+Deleted:
+- none
+
+Verification:
+- Red check:
+  `python -m pytest tests/test_audit_real_reference_package.py -q` first failed
+  because `bin.genefam.audit_real_reference_package` did not exist.
+- Targeted tests:
+  `python -m pytest tests/test_audit_real_reference_package.py -q` passed with
+  3 tests.
+- Real package audit:
+  `python bin/genefam/audit_real_reference_package.py --analysis-modules results/real_3species_twopass_hmmer_probe_diamond/analysis_modules --out-tsv results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/reference_mvp_package_audit.tsv --out-md results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/reference_mvp_package_audit.md`
+  exited 0. The audit passed `jcvi_interspecies_required`,
+  `mcscanx_self_intraspecies_required`, and
+  `overall_reference_mvp_package`.
+- Report-index audit:
+  `python bin/genefam/audit_report_index.py --report-index results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/report_index.tsv --profile standard --out-tsv results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/report_index_audit.tsv --out-md results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/report_index_audit.md`
+  exited 0.
+- Publication-report audit:
+  `python bin/genefam/audit_publication_report.py --plot-manifest results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/plot_manifest.tsv --figure-interpretations results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/figure_interpretations.tsv --software-versions results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/software_versions.tsv --final-report results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/final_report.md --report-index results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/report_index.tsv --out-tsv results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/publication_report_audit.tsv --out-md results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/publication_report_audit.md`
+  exited 0.
+- Full test suite:
+  `python -m pytest tests -q` passed with 573 tests.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: real Reference MVP audit script, audit tests, refreshed real audit
+  outputs, and history entry
+
+Next:
+- Consider adding `reference_mvp_package_audit.tsv/md` to the standard report
+  index generation so future reruns expose it automatically from
+  `report_index.tsv`.
+
+## 2026-06-28 15:12 - Make module-package report plots self-contained
+
+Context:
+- A real audit of
+  `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/`
+  found that `plot_manifest.tsv` used `plots/*.pdf` paths, while the module
+  package did not contain a top-level `plots/` mirror.
+- As a result, `audit_publication_report.py` failed for the real
+  `analysis_modules/report` package even though the original run-level
+  `results/.../plots/` files existed.
+
+Decisions:
+- Keep per-module plot copies in their module folders.
+- Add a top-level `analysis_modules/plots/` mirror for report/plot-manifest
+  compatibility.
+- Rewrite plot rows in `analysis_modules/report/report_index.tsv` to point to
+  the module-package plot mirror, so both report-index and publication audits
+  can validate the self-contained package.
+
+Added:
+- Regression coverage in `tests/test_organize_module_results.py` for
+  top-level plot mirroring and report-index plot path rewriting.
+
+Modified:
+- `bin/genefam/organize_module_results.py`
+- `tests/test_organize_module_results.py`
+- Refreshed
+  `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/`.
+
+Deleted:
+- none
+
+Verification:
+- Red check:
+  `python -m pytest tests/test_organize_module_results.py -q` first failed
+  because `analysis_modules/plots/family_counts.pdf` was not created.
+- After implementation, `python -m pytest tests/test_organize_module_results.py -q`
+  passed with 9 tests.
+- Real package audit:
+  `python bin/genefam/audit_report_index.py --report-index results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/report_index.tsv --profile standard --out-tsv /tmp/real3_report_index_audit_final.tsv --out-md /tmp/real3_report_index_audit_final.md`
+  exited 0 and all checks passed.
+- Real publication audit:
+  `python bin/genefam/audit_publication_report.py --plot-manifest results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/plot_manifest.tsv --figure-interpretations results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/figure_interpretations.tsv --software-versions results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/software_versions.tsv --final-report results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/final_report.md --report-index results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/report_index.tsv --out-tsv /tmp/real3_publication_audit_final.tsv --out-md /tmp/real3_publication_audit_final.md`
+  exited 0 and all checks passed.
+- Full test suite:
+  `python -m pytest tests -q` passed with 570 tests.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: module organizer, organizer regression tests, refreshed real
+  analysis_modules package, and history entry
+
+Next:
+- Continue final Reference-level MVP checks against the real
+  `analysis_modules/` package before declaring the analysis-flow objective
+  complete.
+
+## 2026-06-28 14:58 - Expand Reference-level reproducibility code Markdown
+
+Context:
+- User previously required the final analysis to collect the analysis code in
+  one Markdown file for full-text reproducibility.
+- `report/reproducibility_code.md` existed, but it only documented
+  preprocess/reference generation and the main Nextflow command. It did not
+  expose the Reference-level module handoffs for MEME, JCVI, MCScanX self,
+  Ka/Ks/WGD, PlantCARE, PPI, and module packaging.
+
+Decisions:
+- Keep the main Nextflow command as the authoritative reproduction command.
+- Add script-level module handoff snippets and key output paths so users can
+  debug or rerun individual Reference modules without reverse-engineering the
+  Nextflow internals.
+- Include PlantCARE upload/reimport guidance and Ka/Ks failure-summary outputs
+  in the same Markdown file.
+
+Added:
+- Reference-level module command and handoff sections in
+  `report/reproducibility_code.md`.
+- Regression assertions covering MEME, JCVI, MCScanX self, Ka/Ks/WGD,
+  PlantCARE, PPI, and final module packaging entries.
+
+Modified:
+- `bin/genefam/build_reproducibility_code.py`
+- `tests/test_build_reproducibility_code.py`
+- Refreshed
+  `results/real_3species_twopass_hmmer_probe_diamond/report/reproducibility_code.md`
+  and
+  `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/reproducibility_code.md`.
+
+Deleted:
+- none
+
+Verification:
+- Red check:
+  `python -m pytest tests/test_build_reproducibility_code.py -q` first failed
+  because the Reference-level module handoff sections were absent.
+- Targeted tests:
+  `python -m pytest tests/test_build_reproducibility_code.py tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q`
+  passed with 3 tests.
+- Real output evidence:
+  both `report/reproducibility_code.md` and
+  `analysis_modules/report/reproducibility_code.md` now contain
+  `Reference-Level Module Commands And Handoffs`, `MEME motif analysis`,
+  `JCVI inter-species collinearity`, `MCScanX self intra-species duplication
+  and circlize`, `JCVI/MCScanX KaKs and WGD layers`, `Promoter and PlantCARE
+  handoff`, `AraNet PPI transfer and ggNetView`, and final module packaging
+  sections.
+- Full test suite:
+  `python -m pytest tests -q` passed with 570 tests.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: reproducibility-code builder, regression test, refreshed real
+  reproducibility Markdown, and history entry
+
+Next:
+- Continue auditing whether the real three-species result package has enough
+  module-level guidance and report-index coverage to be treated as a complete
+  Reference-level MVP.
+
+## 2026-06-28 14:45 - Align Reference mapping with current real KaKs evidence
+
+Context:
+- The real three-species result package now reports 213 prepared Ka/Ks pairs,
+  119 successful calculator outputs, and 94 empty-output failures.
+- `docs/reference_to_pipeline_mapping.md` still described an older run with
+  289 pairs, 150 successes, and 139 failures, which could mislead downstream
+  validation of the Reference-level workflow.
+
+Decisions:
+- Treat the current real three-species output as the authoritative evidence for
+  the Reference mapping status section.
+- Add a regression test so the mapping does not silently drift back to stale
+  Ka/Ks counts.
+
+Added:
+- `tests/test_reference_to_pipeline_mapping.py`
+
+Modified:
+- `docs/reference_to_pipeline_mapping.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Red check:
+  `python -m pytest tests/test_reference_to_pipeline_mapping.py -q` first
+  failed because the mapping did not include the current 213/119/94 evidence.
+- Targeted docs tests:
+  `python -m pytest tests/test_reference_to_pipeline_mapping.py tests/test_reference_plotting_reuse.py tests/test_release_audit_docs.py -q`
+  passed with 3 tests.
+- Real output cross-check:
+  `analysis_modules/14_duplication_retention_kaks/kaks_input_manifest.tsv`
+  has 213 rows: 41 from MCScanX self and 172 from JCVI.
+- `analysis_modules/14_duplication_retention_kaks/kaks_calculator_status.tsv`
+  reports `partial`, 213 pairs, 119 succeeded, and 94 failed.
+- Full test suite:
+  `python -m pytest tests -q` passed with 570 tests.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: Reference mapping doc, regression test, and history entry
+
+Next:
+- Continue checking that Reference mapping, real output status, and final report
+  wording remain synchronized as more modules are closed.
+
+## 2026-06-28 14:35 - Expose PlantCARE submission handoff in reports
+
+Context:
+- The Reference workflow expects promoter FASTA to be split for PlantCARE
+  submission before gene-level cis-element results are imported.
+- The real three-species run already generated
+  `08_promoter/plantcare_submission/`, but the report index and final report
+  did not expose the manifest/status files, so users had to inspect module
+  folders manually to find the PlantCARE handoff.
+
+Decisions:
+- Treat PlantCARE submission FASTA parts as a formal promoter-module handoff
+  output whenever promoter extraction is available.
+- Keep promoter cis-element plotting gated on a user-provided gene-level
+  PlantCARE result table; when that table is absent, `09_promoter_cis` remains
+  `missing_input`, but the report now points to the prepared upload files.
+
+Added:
+- `plantcare_submission_manifest` and `plantcare_submission_status` report
+  index keys.
+- README guidance that `plantcare_submission/*.fa` should be uploaded to
+  PlantCARE and the returned gene-level table should be configured through
+  `promoter.cis_elements`.
+- Regression test coverage for PlantCARE submission handoff paths.
+
+Modified:
+- `bin/genefam/build_standard_report_index.py`
+- `tests/test_standard_branch_report_index.py`
+- `README.zh-CN.md`
+- Refreshed `results/real_3species_twopass_hmmer_probe_diamond/report/`
+  and `analysis_modules/`.
+
+Deleted:
+- none
+
+Verification:
+- Red check:
+  `python -m pytest tests/test_standard_branch_report_index.py -q` first
+  failed because `plantcare_submission_manifest` and
+  `plantcare_submission_status` were not registered.
+- Targeted tests after implementation:
+  `python -m pytest tests/test_standard_branch_report_index.py tests/test_organize_module_results.py -q`
+  passed with 16 tests.
+- Refreshed the real three-species report outputs with the project's own
+  report index, report assembly, and module organizer scripts because Nextflow
+  `-resume` reused the cached report process.
+- Real output evidence:
+  `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/report_index.tsv`
+  now marks `plantcare_submission_manifest` and
+  `plantcare_submission_status` as available.
+- Full test suite:
+  `python -m pytest tests -q` passed with 569 tests.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: PlantCARE handoff report index keys, README guidance, tests, refreshed
+  real outputs, and history entry
+
+Next:
+- Continue Reference-level completion checks, especially places where module
+  status is correct but final report/result-package guidance can still be made
+  more manuscript-ready.
+
+## 2026-06-28 14:23 - Add KaKs partial-failure diagnostics to report package
+
+Context:
+- The real three-species run can execute KaKs_Calculator, but the standard
+  duplication-retention module remains `partial` because some JCVI and
+  MCScanX self pair jobs produce empty Ka/Ks output files.
+- The final report previously exposed the partial status without a compact
+  source/QC breakdown that explains why those pairs failed.
+
+Decisions:
+- Keep Ka/Ks failure handling non-fatal: successful pair results still feed
+  WGD-layer and duplicate-type analyses.
+- Add a machine-readable `kaks_failure_summary.tsv` grouped by pair source,
+  calculator status/note, and CDS QC flags.
+- Register the summary in the standard report index and final Markdown report
+  as `Ka/Ks Calculator Diagnostics`.
+
+Added:
+- `kaks_failure_summary.tsv` output from
+  `bin/genefam/run_reference_kaks_calculator.py`.
+- Final report `Ka/Ks Calculator Diagnostics` section.
+- Regression tests for Ka/Ks failure grouping, report index registration, final
+  report rendering, and Nextflow wiring.
+
+Modified:
+- `bin/genefam/run_reference_kaks_calculator.py`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/assemble_report.py`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/main.nf`
+- `tests/test_run_reference_kaks_calculator.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_assemble_report.py`
+- `tests/test_workflow_modules.py`
+- Refreshed real three-species outputs under
+  `results/real_3species_twopass_hmmer_probe_diamond/`.
+
+Deleted:
+- none
+
+Verification:
+- TDD red check:
+  `python -m pytest tests/test_run_reference_kaks_calculator.py -q` first
+  failed because `failure_summary` was not produced.
+- Targeted tests after implementation:
+  `python -m pytest tests/test_run_reference_kaks_calculator.py tests/test_standard_branch_report_index.py tests/test_assemble_report.py tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q`
+  passed with 16 tests.
+- Real three-species Nextflow refresh:
+  `PATH=/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH /Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin/nextflow run workflows/main.nf -c workflows/nextflow.config -profile activated -resume --config configs/real_3species.template.yaml --run_identification true --hmmer_two_pass true --outdir results/real_3species_twopass_hmmer_probe_diamond --project_name My_3species_GDSL --gene_family GDSL`
+  completed successfully.
+- Real output evidence:
+  `analysis_modules/14_duplication_retention_kaks/kaks_failure_summary.tsv`
+  reports four failure groups: JCVI length_mismatch+terminal_stop 65, JCVI
+  terminal_stop 12, MCScanX self length_mismatch+terminal_stop 16, and MCScanX
+  self terminal_stop 1.
+- `analysis_modules/report/report_index.tsv` marks `kaks_failure_summary`
+  available, and `analysis_modules/report/final_report.md` includes the
+  `Ka/Ks Calculator Diagnostics` section.
+- Full test suite:
+  `python -m pytest tests -q` passed with 568 tests.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: Ka/Ks diagnostics, report integration, Nextflow wiring, tests,
+  refreshed real outputs, and history entry
+
+Next:
+- Continue Reference-level audit for remaining report-quality gaps without
+  changing the confirmed MCScanX self intra-species and JCVI inter-species
+  boundary.
+
+## 2026-06-28 13:42 - Clarify MCScanX self and JCVI responsibility boundary
+
+Context:
+- User corrected the synteny design again: MCScanX self must run and is the
+  required intra-species branch; circlize draws within-species MCScanX self
+  links; JCVI is the inter-species collinearity branch.
+- The workflow mapping already followed this split, but the Chinese README
+  still had an older sentence that made the MCScanX self search tool look fixed
+  to NCBI BLAST instead of the current DIAMOND default.
+
+Decisions:
+- Keep `modules.synteny: true` as the switch that enables both branches:
+  JCVI for inter-species collinearity and MCScanX self for intra-species
+  duplication/circlize.
+- Keep `mcscanx.execute_self: true` as the formal-analysis default.
+- Keep DIAMOND as the default MCScanX self search backend for large
+  all-vs-all searches, with `mcscanx.search_tool: blastp` as the NCBI BLAST
+  compatibility mode.
+
+Added:
+- none
+
+Modified:
+- `README.zh-CN.md`
+
+Deleted:
+- none
+
+Verification:
+- Reviewed workflow/module references for MCScanX self, JCVI, DIAMOND,
+  `blastp`, intra-species, and inter-species wording.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: README clarification and history entry
+
+Next:
+- Continue the active Reference-level validation by improving Ka/Ks partial
+  failure diagnostics and final report wording.
+
+## 2026-06-28 13:34 - Tighten MCScanX self duplicate-type report methods
+
+Context:
+- After wiring standard-branch duplicate-type Ka/Ks from MCScanX self, the
+  final report still described the method as generic MCScanX duplicate classes.
+- The Reference-level report should make the evidence chain explicit:
+  MCScanX self pairs -> gene-level duplicate types -> duplicate-type Ka/Ks
+  table and plot.
+
+Decisions:
+- Keep the computation unchanged.
+- Update per-figure method/software text so `duplicate_type_kaks` explicitly
+  names `build_mcscanx_duplicate_types.py` and MCScanX self duplicate classes.
+- Refresh the real three-species `current4` report and module report copies.
+
+Added:
+- Regression assertions that `duplicate_type_kaks` figure interpretation
+  includes `build_mcscanx_duplicate_types.py` and `MCScanX self duplicate
+  classes`.
+
+Modified:
+- `bin/genefam/build_figure_interpretations.py`
+- `tests/test_build_figure_interpretations.py`
+- `results/real_3species_all_modules_probe_current4/report/`
+- `results/real_3species_all_modules_probe_current4/analysis_modules/report/`
+
+Deleted:
+- none
+
+Verification:
+- Refreshed `figure_interpretations.tsv`, `figure_interpretations.md`,
+  `final_report.md`, and `analysis_modules/report/final_report.md` for
+  `results/real_3species_all_modules_probe_current4`.
+- The refreshed reports now include
+  `MCScanX self duplicate classes; build_mcscanx_duplicate_types.py;
+  build_duplicate_type_kaks.py; plot_duplicate_type_kaks.R; /usr/local/bin/R;
+  GeneFamilyFlow`.
+- `python -m pytest tests/test_build_figure_interpretations.py tests/test_build_mcscanx_duplicate_types.py tests/test_organize_module_results.py tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_standard_branch_report_index.py -q`
+  passed with 24 tests.
+- `python -m pytest tests -q` passed with 561 tests.
+- `python bin/genefam/audit_objective_completion.py --release-checks results/release_checks/release_checks.tsv --readiness results/readiness/command_readiness.tsv --publication-audit results/publication_report_audit/publication_report_audit.tsv --wgd-publication-audit results/publication_report_audit/wgd_publication_report_audit.tsv --outdir results/objective_audit_current_check`
+  reported `Missing: 0`; the only blocked row is Docker/Apptainer
+  reproducibility because `docker` and `apptainer` commands are absent locally.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: not created in this session
+
+Next:
+- The analysis-flow MVP is effectively covered by current audits; the remaining
+  blocked evidence is runtime container execution, which remains deferred until
+  the packaging phase.
+
+## 2026-06-28 13:31 - Enforce MCScanX self duplicate-type KaKs in standard branch
+
+Context:
+- User clarified the required collinearity boundary: MCScanX self must run for
+  intra-species duplication and circlize plots, while JCVI is for inter-species
+  collinearity.
+- The standard branch already produced MCScanX self/circlize and JCVI outputs,
+  but duplicate-type Ka/Ks summaries were not derived from MCScanX self and were
+  not packaged into `14_duplication_retention_kaks/`.
+
+Decisions:
+- Derive gene-level duplicate types only from MCScanX self
+  `mcscanx_gene_pairs.tsv`; JCVI remains the inter-species collinearity source.
+- Feed MCScanX self duplicate types plus normalized Ka/Ks pairs into a
+  standard-branch duplicate-type Ka/Ks process.
+- Register `duplicate_type_kaks` in the standard plot manifest and expose all
+  duplicate-type Ka/Ks tables/plots in the standard report index.
+- Package `mcscanx_duplicate_types.tsv` together with Ka/Ks/WGD outputs in
+  `14_duplication_retention_kaks/`.
+
+Added:
+- `bin/genefam/build_mcscanx_duplicate_types.py`
+- `BUILD_STANDARD_MCSCANX_DUPLICATE_TYPES`
+- `PLOT_STANDARD_DUPLICATE_TYPE_KAKS`
+- `tests/test_build_mcscanx_duplicate_types.py`
+- Organizer coverage for placing `mcscanx_duplicate_types.tsv` in
+  `14_duplication_retention_kaks/`.
+
+Modified:
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/modules/plots.nf`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/build_figure_interpretations.py`
+- `bin/genefam/organize_module_results.py`
+- `tests/test_workflow_modules.py`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_organize_module_results.py`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_mcscanx_duplicate_types.py tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_standard_branch_report_index.py -q`
+  passed with 10 tests.
+- `python -m pytest tests/test_build_figure_interpretations.py tests/test_build_mcscanx_duplicate_types.py tests/test_organize_module_results.py tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_standard_branch_report_index.py -q`
+  passed with 25 tests.
+- Real three-species Nextflow run completed in
+  `results/real_3species_all_modules_probe_current4`.
+- `analysis_modules/11_mcscanx/mcscanx_execution_status.tsv` reports
+  `executed`, exit code `0`; `mcscanx_circlize_status.tsv` reports 94 links.
+- `analysis_modules/10_synteny_jcvi/jcvi_run_status.tsv` reports 5 commands
+  succeeded and 0 failed.
+- `analysis_modules/14_duplication_retention_kaks/` now contains
+  `mcscanx_duplicate_types.tsv`, `duplicate_type_kaks.tsv`,
+  `duplicate_type_kaks_summary.tsv`, `duplicate_type_kaks_skipped.tsv`,
+  `duplicate_type_kaks.pdf`, and `duplicate_type_kaks.png`.
+- Duplicate-type Ka/Ks summary contains WGD/segmental, mixed, and tandem rows;
+  the plot files are valid PDF/PNG files.
+- `python -m pytest tests -q` passed with 561 tests.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: not created in this session
+
+Next:
+- Continue tightening final report wording so every duplicate-type figure
+  explicitly says the class source is MCScanX self and not JCVI.
+- Decide whether skipped Ka/Ks pairs should be repaired by sequence/alignment
+  preprocessing or retained as QC exclusions.
+
+## 2026-06-28 13:23 - Wire standard KaKs results into WGD event interpretation
+
+Context:
+- The real three-species standard result package had normalized Ka/Ks pairs,
+  but it did not yet turn those pairs into WGD layers, named event evidence, or
+  a Ks distribution figure inside `14_duplication_retention_kaks/`.
+- The final report still showed no WGD event evidence even though the standard
+  branch now had enough Ka/Ks data to classify configured layers.
+
+Decisions:
+- Keep the full independent `--run_duplication_retention` branch unchanged.
+- Add standard-branch-specific WGD helper processes that reuse the same
+  `classify_wgd_layers.py`, `build_kaks_plot_annotations.py`,
+  `build_wgd_event_evidence.py`, and `plot_kaks.R` logic without reusing the
+  same DSL2 process names.
+- Register standard-branch WGD outputs in the standard report index and pass
+  `wgd_event_evidence.tsv` into the standard final report.
+- Treat WGD layer names as configured interpretations of Ks-supported layers,
+  not as raw tool output.
+
+Added:
+- `CLASSIFY_STANDARD_WGD_LAYERS`
+- `BUILD_STANDARD_KAKS_WGD_ANNOTATIONS`
+- `BUILD_STANDARD_WGD_EVENT_EVIDENCE`
+- `PLOT_STANDARD_KAKS_WGD`
+- Standard report-index entries for `wgd_layers`,
+  `kaks_wgd_annotations`, `wgd_event_evidence`, `ks_distribution_pdf`, and
+  `ks_distribution_png`.
+- Regression coverage for standard-branch WGD outputs and optional
+  `published_paths(..., wgd_available=True)` behavior.
+
+Modified:
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/modules/plots.nf`
+- `bin/genefam/build_standard_report_index.py`
+- `bin/genefam/organize_module_results.py`
+- `tests/test_workflow_modules.py`
+- `tests/test_standard_branch_report_index.py`
+
+Deleted:
+- none
+
+Verification:
+- Real three-species Nextflow run completed with `-resume` in
+  `results/real_3species_all_modules_probe_current2`.
+- `analysis_modules/14_duplication_retention_kaks/wgd_layers.tsv` contains
+  150 classified Ka/Ks pairs.
+- `analysis_modules/14_duplication_retention_kaks/wgd_event_evidence.tsv`
+  reports `WGD_layer_3`, `gamma`, 150 pairs, median Ks `1.0603`,
+  `configured_named_event`, evidence `literature`, scope `core_eudicots`, and
+  expected age `ancient`.
+- `analysis_modules/14_duplication_retention_kaks/ks_distribution.pdf` and
+  `ks_distribution.png` are present and valid plot files.
+- `report/final_report.md` now reports `Named WGD events with evidence: 1` and
+  lists `gamma`.
+- `python -m pytest tests -q` passed with 558 tests.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: not created in this session
+
+Next:
+- Investigate whether the 139 skipped KaKs pairs should be repaired by CDS
+  preprocessing/alignment filtering or kept as explicit QC exclusions.
+- Consider adding duplicate-type retention summaries for the standard branch
+  using MCScanX self duplicate classifications, so `14_duplication_retention_kaks`
+  can include both Ks-layer evidence and duplicate-class retention statistics
+  without requiring a separate WGD-only run.
+
+## 2026-06-28 13:16 - Fix MCScanX self/JCVI separation and KaKs normalization handoff
+
+Context:
+- User corrected the analysis design: MCScanX self is required and must run for
+  intra-species duplication/circlize plots, while JCVI is responsible for
+  inter-species collinearity.
+- The real three-species run also exposed a Ka/Ks normalization handoff bug:
+  `kaks_calculator_results.tsv` contained relative paths into `kaks_results/`,
+  but the normalization process had only received the TSV file, so available
+  KaKs outputs were treated as missing.
+
+Decisions:
+- Keep the formal standard branch circlize source tied to MCScanX self outputs.
+- Remove the formal Nextflow branch that let external
+  `plotting.syntenic_pairs` override MCScanX self/circlize outputs.
+- Keep standalone circlize smoke support for script-level testing, but document
+  it separately from the formal result package behavior.
+- Make `NORMALIZE_REFERENCE_KAKS_RESULTS` receive both
+  `kaks_calculator_results.tsv` and the `kaks_results/` directory.
+- Make `ORGANIZE_MODULE_RESULTS` use a staged source overlay so published
+  JCVI/MCScanX directories are not missed due to publishDir timing.
+
+Added:
+- Regression coverage that formal `main.nf` no longer calls the old external
+  `PLOT_MCSCANX_CIRCLIZE` branch.
+- Workflow coverage that KaKs normalization receives `kaks_results/` as an
+  input.
+- Result-package overlay logic for staged `mcscanx_self_circos` and
+  `jcvi_collinearity` directories.
+
+Modified:
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/modules/plots.nf`
+- `bin/genefam/build_figure_interpretations.py`
+- `bin/genefam/run_delivery_bundle.py`
+- `bin/genefam/run_nextflow_standard_smoke.py`
+- `docs/input_contract.md`
+- `docs/release_audit.md`
+- `docs/reference_plotting_reuse.md`
+- `docs/advanced_module_examples.md`
+- Related workflow, report, release-audit, and plotting-reuse tests.
+
+Deleted:
+- The formal standard-branch call that used external `syntenic_pairs` to rerun
+  circlize and overwrite MCScanX self/circlize outputs.
+
+Verification:
+- Real three-species Nextflow run completed with `-resume` in
+  `results/real_3species_all_modules_probe_current2`.
+- `analysis_modules/10_synteny_jcvi/jcvi_run_status.tsv` reports 5 commands,
+  5 succeeded, 0 failed.
+- `analysis_modules/11_mcscanx/mcscanx_execution_status.tsv` reports
+  `executed=true` with exit code 0.
+- `analysis_modules/11_mcscanx/mcscanx_circlize_status.tsv` reports 94 links.
+- `analysis_modules/14_duplication_retention_kaks/kaks_pairs_summary.tsv`
+  reports 289 inputs, 150 available KaKs pairs, and 139 skipped pairs.
+- Normalized KaKs rows include 101 JCVI-derived pairs and 49 MCScanX-self pairs.
+- `python -m pytest tests -q` passed with 557 tests.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: not created in this session
+
+Next:
+- Investigate whether the 139 skipped KaKs pairs should be repaired by CDS
+  preprocessing/alignment filtering or kept as explicit QC exclusions.
+- Decide how to feed the normalized 150-pair Ka/Ks table into the named
+  gamma/beta/alpha/theta WGD branch for the next real-data run.
+
+## 2026-06-28 13:04 - Add pair-level KaKs calculator QC for empty outputs
+
+Context:
+- After installing `kakscalculator2` and wiring `pair_fastas/` into the
+  Nextflow Ka/Ks process, the real three-species run produced partial results:
+  150 non-empty KaKs outputs and 139 zero-byte outputs.
+- The workflow needed to explain those failures at pair level instead of only
+  reporting `empty KaKs output`.
+
+Decisions:
+- Keep zero-byte KaKs outputs classified as failed, even when the executable
+  exits with code 0.
+- Add `kaks_calculator_qc.tsv` as a formal output of
+  `RUN_REFERENCE_KAKS_CALCULATOR`.
+- Record sequence count, gene IDs, CDS lengths, frame remainder, terminal stop,
+  internal stop count, ambiguous base count, length delta, QC flags, calculator
+  status, and calculator note for every attempted pair.
+- Preserve the module-level state as `partial` when some pairs succeed and
+  others fail.
+
+Added:
+- Pair-level QC output in `bin/genefam/run_reference_kaks_calculator.py`.
+- Nextflow output declaration for `kaks_calculator_qc.tsv`.
+- Regression tests for QC output and workflow publication.
+
+Modified:
+- `bin/genefam/run_reference_kaks_calculator.py`
+- `workflows/modules/standard_postprocess.nf`
+- `tests/test_run_reference_kaks_calculator.py`
+- `tests/test_workflow_modules.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Real three-species Nextflow probe completed in
+  `results/real_3species_all_modules_probe_current2`.
+- `analysis_modules/14_duplication_retention_kaks/kaks_calculator_qc.tsv`
+  exists and contains 289 pair-level QC rows.
+- QC summary for the real run:
+  131 available pairs with `length_mismatch,terminal_stop`,
+  19 available pairs with `terminal_stop`,
+  120 failed pairs with `length_mismatch,terminal_stop`, and
+  19 failed pairs with `terminal_stop`.
+- `analysis_modules/14_duplication_retention_kaks/kaks_calculator_status.tsv`
+  reports `partial`, 289 pairs, 150 succeeded, and 139 failed.
+- `analysis_modules/module_manifest.tsv` reports
+  `10_synteny_jcvi=available`, `11_mcscanx=available`, and
+  `14_duplication_retention_kaks=partial`.
+- Full test suite passed:
+  `python -m pytest tests -q` passed with 556 tests.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: not created in this session
+
+Next:
+- Decide whether to repair Ka/Ks failures through codon-aligned CDS inputs
+  such as ParaAT/pal2nal-style preparation, or keep empty-output pairs as QC
+  exclusions for WGD plots.
+- Normalize the 150 non-empty KaKs outputs into WGD-ready `kaks_pairs.tsv`
+  evidence for gamma/beta/alpha/theta layer interpretation.
+
+## 2026-06-28 12:58 - Install KaKs_Calculator and make real KaKs execution status honest
+
+Context:
+- The Reference-level objective requires real Ka/Ks execution after JCVI and
+  MCScanX self gene-pair preparation.
+- The previous real three-species package stopped at
+  `prepared_missing_dependency` because `KaKs_Calculator` was not installed.
+- After installing the Bioconda package, a deeper issue appeared: the Nextflow
+  Ka/Ks execution process staged the manifest but not the `pair_fastas/`
+  directory referenced by that manifest.
+
+Decisions:
+- Use Bioconda package `kakscalculator2`, which provides the runtime command
+  `KaKs_Calculator`.
+- Keep workflow parameters and output names based on `KaKs_Calculator` because
+  that is the executable and report-facing software name.
+- Stage `pair_fastas/` into `RUN_REFERENCE_KAKS_CALCULATOR` together with
+  `kaks_input_manifest.tsv`.
+- Treat a zero-byte KaKs output as failed, even when `KaKs_Calculator` exits
+  with code 0.
+- Mark the duplication/KaKs module as `partial` when some real calculator jobs
+  succeed and others fail.
+
+Added:
+- `kakscalculator2` to both local and Linux Conda environment files.
+- Regression coverage for empty KaKs outputs.
+- Regression coverage for `partial` Ka/Ks module status.
+
+Modified:
+- `envs/GeneFamilyFlow.conda.yaml`
+- `envs/GeneFamilyFlow.linux-64.conda.yaml`
+- `docs/runtime_environment.md`
+- `docs/reference_to_pipeline_mapping.md`
+- `docs/release_audit.md`
+- `bin/genefam/run_reference_kaks_calculator.py`
+- `bin/genefam/organize_module_results.py`
+- `bin/genefam/audit_container_materials.py`
+- `bin/genefam/plan_runtime_bootstrap.py`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/main.nf`
+- `tests/test_run_reference_kaks_calculator.py`
+- `tests/test_organize_module_results.py`
+- `tests/test_runtime_environment_files.py`
+- `tests/test_audit_container_materials.py`
+- `tests/test_workflow_modules.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Installed runtime package:
+  `/Users/liuyue/miniforge3/bin/mamba install -n GeneFamilyFlow -c conda-forge -c bioconda -y kakscalculator2`.
+- Confirmed `/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin/KaKs_Calculator`
+  is available and reports `Version: 2.0, June. 2009`.
+- Manual Ka/Ks execution from the complete module directory proved the
+  calculator can run when `pair_fastas/` is present.
+- Real three-species Nextflow probe completed in
+  `results/real_3species_all_modules_probe_current2` after staging
+  `pair_fastas/` into `RUN_REFERENCE_KAKS_CALCULATOR`.
+- `analysis_modules/14_duplication_retention_kaks/kaks_calculator_status.tsv`
+  reports `partial`, with 289 pairs, 150 succeeded, and 139 failed because the
+  generated KaKs files were empty.
+- `analysis_modules/module_manifest.tsv` reports
+  `10_synteny_jcvi=available`, `11_mcscanx=available`, and
+  `14_duplication_retention_kaks=partial`.
+- `report/software_versions.tsv` detects
+  `KaKs_Calculator	Version: 2.0, June. 2009`.
+- Focused tests passed:
+  `python -m pytest tests/test_runtime_environment_files.py tests/test_audit_container_materials.py tests/test_run_reference_kaks_calculator.py tests/test_organize_module_results.py tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q`
+  passed with 33 tests.
+- Full test suite passed:
+  `python -m pytest tests -q` passed with 556 tests.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: not created in this session
+
+Next:
+- Investigate why 139 KaKs jobs produce empty outputs; likely candidates are
+  problematic CDS length/frame/stop-codon structure or unsupported pair
+  properties.
+- Convert the non-empty KaKs result set into normalized WGD-ready tables and
+  decide whether failed pairs should be filtered, repaired, or reported as QC
+  exclusions.
+
+## 2026-06-28 12:42 - Correct MCScanX self circlize and JCVI module responsibilities
+
+Context:
+- User corrected the workflow design: MCScanX self is required and must run for
+  intra-species duplication/circlize plots; JCVI is the inter-species
+  collinearity branch.
+- The real three-species result package already had MCScanX self/circlize
+  outputs, but the standard report still used the old external
+  `plotting.syntenic_pairs` gate and marked MCScanX/circlize report rows as
+  missing.
+
+Decisions:
+- Keep `10_synteny_jcvi/` for inter-species JCVI ortholog/screen/karyotype
+  analysis.
+- Keep `11_mcscanx/` for required MCScanX self analysis and intra-species
+  circlize plots.
+- Register MCScanX self/circlize outputs in the standard report whenever the
+  synteny branch runs, without requiring an external syntenic-pair file.
+- Keep Ka/Ks input preparation downstream of both JCVI inter-species pairs and
+  MCScanX self pairs.
+
+Added:
+- Named Nextflow outputs for `PLOT_MCSCANX_SELF_CIRCOS`: full module package,
+  circlize link-density table, duplicate-type track table, PDF, and PNG.
+
+Modified:
+- `workflows/modules/mcscanx_self_circos.nf`
+- `workflows/main.nf`
+- `tests/test_workflow_modules.py`
+- `docs/reference_to_pipeline_mapping.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_workflow_modules.py::test_mcscanx_self_circos_module_prepares_and_plots_self_outputs tests/test_workflow_modules.py::test_mcscanx_self_circos_module_prepares_reference_step9_inputs -q`
+  passed with 3 tests.
+- `python -m pytest tests/test_prepare_jcvi_collinearity.py tests/test_prepare_reference_kaks_inputs.py tests/test_runtime_environment_files.py -q`
+  passed with 22 tests.
+- Real three-species Nextflow probe completed with `-resume` in
+  `results/real_3species_all_modules_probe_current2`.
+- `analysis_modules/module_manifest.tsv` now reports
+  `10_synteny_jcvi=available`, `11_mcscanx=available`, and
+  `14_duplication_retention_kaks=prepared_missing_dependency`.
+- `analysis_modules/10_synteny_jcvi/jcvi_run_status.tsv` reports 5 commands,
+  5 succeeded, 0 failed.
+- `analysis_modules/11_mcscanx/mcscanx_execution_status.tsv` reports
+  `executed=true` with exit code 0, and
+  `analysis_modules/11_mcscanx/mcscanx_circlize_status.tsv` reports 94 links.
+- The final report now marks `circlize_link_density`,
+  `circlize_duplicate_type_tracks`, `mcscanx_circlize_pdf`, and
+  `mcscanx_circlize_png` as available.
+- Ka/Ks input preparation produced 289 pair inputs: 101 from MCScanX self and
+  188 from JCVI; `KaKs_Calculator` itself remains missing on the current Mac
+  runtime path.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: not created in this session
+
+Next:
+- Install or containerize `KaKs_Calculator`, then rerun the same real
+  three-species branch to produce actual Ka/Ks values and WGD-layer plots.
+- Continue auditing final report wording so MCScanX self and JCVI are always
+  described as separate intra-species and inter-species analyses.
+
+## 2026-06-28 09:34 - Wire JCVI KaKs handoff and Pfam confirmation status
+
+Context:
+- The Reference workflow Step8.1 uses JCVI `*color2`/anchor-derived gene pairs
+  for Ka/Ks preparation.
+- The Reference workflow Step4 expects Pfam confirmation outputs such as
+  `inter.ID`, `union.ID`, `pfam.ID`, `pfam_scan.id`, and `identify.ID.fa`.
+- The standard branch needed these pieces as formal Nextflow outputs instead
+  of only generic candidate tables.
+
+Decisions:
+- Parse JCVI `*.color2` first because it matches the Reference markdown, and
+  fall back to `*.anchors.simple`, `*.anchors.new`, or `*.anchors`.
+- Combine JCVI and MCScanX self pairs in `PREPARE_REFERENCE_KAKS_INPUTS`.
+- Add Pfam confirmation as an optional statusized step: if no Pfam database or
+  precomputed hmmscan domtblout is available, write `missing_input` and keep the
+  workflow running.
+- Derive the Pfam confirmation HMM/PF ID from YAML
+  `gene_family.hmm_profiles[0].id` unless `params.pfam_confirm_hmm_id` is
+  explicitly set.
+
+Added:
+- `bin/genefam/run_pfam_confirmation.py`
+- `tests/test_run_pfam_confirmation.py`
+- JCVI pair parsing in `bin/genefam/prepare_reference_kaks_inputs.py`
+- `RUN_PFAM_CONFIRMATION` process in `workflows/modules/standard_postprocess.nf`
+
+Modified:
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/nextflow.config`
+- `bin/genefam/organize_module_results.py`
+- `docs/reference_to_pipeline_mapping.md`
+- `tests/test_prepare_reference_kaks_inputs.py`
+- `tests/test_workflow_modules.py`
+- `tests/test_organize_module_results.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Focused tests passed:
+  `python -m pytest tests/test_prepare_reference_kaks_inputs.py tests/test_organize_module_results.py tests/test_workflow_modules.py tests/test_run_pfam_confirmation.py -q`
+  passed with 31 tests before the final Pfam FASTA alias hardening.
+- `python -m pytest tests -q` passed with 542 tests after the final Pfam FASTA
+  alias hardening.
+- Real three-species Nextflow probe completed in
+  `results/real_3species_all_modules_probe_current2`.
+- `results/real_3species_all_modules_probe_current2/analysis_modules/01_gene_identification/pfam_confirmation/pfam_confirmation_status.tsv`
+  reports `missing_input` for `PF00657` because no Pfam DB or precomputed
+  hmmscan domtblout was provided.
+- The real three-species Pfam confirmation was replayed against the generated
+  `family_candidates.tsv` and `family_members.faa`; `identify.ID.fa` now has
+  2797 lines for 368 candidate IDs, confirming species-prefixed FASTA headers
+  are handled.
+- `results/real_3species_all_modules_probe_current2/analysis_modules/module_manifest.tsv`
+  reports `10_synteny_jcvi=prepared_missing_dependency`,
+  `11_mcscanx=missing_input`, and
+  `14_duplication_retention_kaks=missing_input`.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: not created in this session
+
+Next:
+- Verify the updated standard branch with full pytest and the real
+  three-species probe.
+
+## 2026-06-28 10:08 - Add module execution status to final result package report
+
+Context:
+- `analysis_modules/module_manifest.tsv` recorded module-level states, but the
+  delivered `analysis_modules/report/final_report.md` did not expose those
+  states directly.
+- For Reference-level review, the report needs to explain whether missing
+  figures are caused by missing input files, missing dependencies, or genuinely
+  absent outputs.
+
+Decisions:
+- Generate `analysis_modules/module_status_summary.md` from the same rows as
+  `module_manifest.tsv`.
+- Append the module status table to
+  `analysis_modules/report/final_report.md` during
+  `ORGANIZE_MODULE_RESULTS`.
+- Keep the top-level report unchanged; the module result package report is the
+  self-contained delivery artifact.
+
+Added:
+- `module_status_summary.md` generation in
+  `bin/genefam/organize_module_results.py`.
+- Optional `--final-report` argument for `organize_module_results.py`.
+
+Modified:
+- `bin/genefam/organize_module_results.py`
+- `workflows/modules/standard_postprocess.nf`
+- `tests/test_organize_module_results.py`
+- `tests/test_workflow_modules.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Focused tests passed:
+  `python -m pytest tests/test_organize_module_results.py tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index -q`.
+- `python -m pytest tests -q` passed with 543 tests.
+- Replayed `organize_module_results.py` against
+  `results/real_3species_all_modules_probe_current2` with `--final-report`.
+- `results/real_3species_all_modules_probe_current2/analysis_modules/module_status_summary.md`
+  and
+  `results/real_3species_all_modules_probe_current2/analysis_modules/report/final_report.md`
+  both include `Module Execution Status`.
+- The final package report records `10_synteny_jcvi=prepared_missing_dependency`,
+  `11_mcscanx=missing_input`, and
+  `14_duplication_retention_kaks=missing_input`.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: not created in this session
+
+Next:
+- Continue closing external-input-dependent modules: JCVI execution, MCScanX
+  self outputs, PlantCARE gene-level hits, and expression matrix integration.
+
+## 2026-06-28 10:21 - Surface module blocker reasons in status notes
+
+Context:
+- The module status report listed statuses such as `missing_input` and
+  `prepared_missing_dependency`, but many `note` values still said `ok`.
+- For Reference-level review, missing modules need actionable explanations
+  directly in `module_manifest.tsv`, `module_status_summary.md`, and the final
+  result-package report.
+
+Decisions:
+- Add module-specific note extraction from status files.
+- Prefer `note` or `detail` fields from the relevant status TSV.
+- Keep the previous generic `ok` only when no module-specific status file has
+  a useful explanation.
+
+Added:
+- `module_note()` and `_first_status_note()` helpers in
+  `bin/genefam/organize_module_results.py`.
+
+Modified:
+- `bin/genefam/organize_module_results.py`
+- `tests/test_organize_module_results.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Focused test passed:
+  `python -m pytest tests/test_organize_module_results.py -q`.
+- `python -m pytest tests -q` passed with 543 tests.
+- Replayed `organize_module_results.py` against
+  `results/real_3species_all_modules_probe_current2`.
+- `module_manifest.tsv`, `module_status_summary.md`, and
+  `analysis_modules/report/final_report.md` now show concrete blocker notes:
+  `JCVI Python module is not importable with python`,
+  `No MCScanX self gene pairs available for circlize plotting`,
+  `PlantCARE gene-level hit table not provided; set promoter.cis_elements to enable this module`,
+  and `No Ka/Ks input pairs were prepared`.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: not created in this session
+
+Next:
+- Continue closing external-input-dependent modules after the missing inputs or
+  dependencies are provided.
+
+## 2026-06-28 10:34 - Add PlantCARE promoter FASTA submission splits
+
+Context:
+- Reference Step10 extracts promoter FASTA files and then splits large promoter
+  FASTA files for PlantCARE submission.
+- The pipeline already extracted promoter BED/FASTA, but it did not yet
+  produce a ready-to-upload PlantCARE FASTA split package.
+
+Decisions:
+- Implement PlantCARE FASTA splitting in pure Python instead of relying on the
+  external `fasta-splitter.pl`.
+- Split by configurable record count with `params.plantcare_records_per_file`.
+- Publish the split package inside `08_promoter/plantcare_submission/` so it
+  sits next to promoter BED/FASTA outputs.
+
+Added:
+- `bin/genefam/split_promoter_fasta_for_plantcare.py`
+- `tests/test_split_promoter_fasta_for_plantcare.py`
+- `plantcare_submission/` output from the `EXTRACT_PROMOTERS` Nextflow process
+
+Modified:
+- `workflows/modules/annotation_integration.nf`
+- `workflows/nextflow.config`
+- `bin/genefam/organize_module_results.py`
+- `tests/test_workflow_modules.py`
+- `tests/test_organize_module_results.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Focused tests passed:
+  `python -m pytest tests/test_split_promoter_fasta_for_plantcare.py tests/test_workflow_modules.py tests/test_organize_module_results.py tests/test_extract_promoters.py -q`
+  with 33 tests.
+- `python -m pytest tests -q` passed with 545 tests.
+- Replayed PlantCARE FASTA splitting against
+  `results/real_3species_all_modules_probe_current2/sequences/promoters.fa`.
+- The real three-species promoter FASTA produced 368 records across 4 split
+  FASTA files in
+  `results/real_3species_all_modules_probe_current2/analysis_modules/08_promoter/plantcare_submission/`.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: not created in this session
+
+Next:
+- Continue closing PlantCARE result import after a gene-level PlantCARE hit
+  table is available.
+
+## 2026-06-28 10:46 - Add explicit skipped status for missing expression matrix
+
+Context:
+- The user already clarified that missing expression matrices should skip the
+  expression analysis without stopping the full workflow.
+- `13_expression` previously appeared as `missing` without a status table,
+  which made the module report less self-explanatory than PlantCARE, MCScanX,
+  or Ka/Ks.
+
+Decisions:
+- Add `EMPTY_EXPRESSION_STATUS` to write empty expression tables and
+  `expression_status.tsv`.
+- Mark missing expression input as `skipped_optional` instead of a workflow
+  failure.
+- Let `analysis_modules` surface the expression skip reason in
+  `module_manifest.tsv`, `module_status_summary.md`, and the final package
+  report.
+
+Added:
+- `EMPTY_EXPRESSION_STATUS` process in
+  `workflows/modules/annotation_integration.nf`.
+
+Modified:
+- `workflows/main.nf`
+- `workflows/modules/annotation_integration.nf`
+- `bin/genefam/organize_module_results.py`
+- `tests/test_workflow_modules.py`
+- `tests/test_organize_module_results.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Focused tests passed:
+  `python -m pytest tests/test_workflow_modules.py tests/test_organize_module_results.py -q`
+  with 29 tests.
+- `python -m pytest tests -q` passed with 546 tests.
+- Refreshed `results/real_3species_all_modules_probe_current2` with
+  `expression_status.tsv` and empty expression placeholder tables.
+- Replayed `organize_module_results.py`; `13_expression` now appears as
+  `skipped_optional` with note
+  `RNA-seq expression matrix not provided; expression module skipped` in
+  `module_manifest.tsv`, `module_status_summary.md`, and the final package
+  report.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: not created in this session
+
+Next:
+- Continue closing expression visualization after a real expression matrix is
+  available.
+
+## 2026-06-28 07:48 - Start strict Reference workflow alignment and add JCVI Step8 preparation
+
+Context:
+- User clarified that the pipeline was still not following `Reference/Long_Weixiong_20240323_1_GDSL/Evolution_LWX_GDSL_2024.md` closely enough.
+- User specifically noted that plots must live inside each module folder and that the `jcvi` collinearity analysis had not been implemented.
+- The Reference workflow clearly separates Step8 `jcvi` collinearity from Step9 MCScanX self duplication/circos; the previous pipeline blurred those concepts.
+
+Decisions:
+- Create a strict Reference-to-Pipeline mapping document and use it as the acceptance checklist for future development.
+- Split module packaging into `10_synteny_jcvi/` and `11_mcscanx/` instead of treating JCVI and MCScanX as one module.
+- Implement the first Step8 deliverable: JCVI-ready family BED/peptide inputs, adjacent species pair manifest, `seqids`, `layout`, command manifest, and dependency status.
+- Do not pretend JCVI analysis completed when the active `GeneFamilyFlow` environment lacks the `jcvi` Python package.
+- Mark the module as `prepared_missing_dependency` when inputs are ready but JCVI is unavailable.
+
+Added:
+- `docs/reference_to_pipeline_mapping.md`
+- `bin/genefam/prepare_jcvi_collinearity.py`
+- `workflows/modules/jcvi_collinearity.nf`
+- `tests/test_prepare_jcvi_collinearity.py`
+
+Modified:
+- `workflows/main.nf`
+- `bin/genefam/organize_module_results.py`
+- `tests/test_organize_module_results.py`
+- `tests/test_workflow_modules.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH" python -m jcvi --help` failed with `No module named jcvi`, confirming the current environment cannot run Reference Step8 yet.
+- `python bin/genefam/prepare_jcvi_collinearity.py --family-candidates results/real_3species_all_modules_probe/tables/family_candidates.tsv --species-manifest results/00_preprocess/species_manifest.clean.tsv --outdir /tmp/genefam_real_jcvi_prepare` generated JCVI-ready inputs.
+- Real-data JCVI preparation matched all family genes:
+  - Arabidopsis_thaliana bed/pep: 110 written, 0 missing.
+  - Brassica_rapa bed/pep: 146 written, 0 missing.
+  - Capsella_rubella bed/pep: 112 written, 0 missing.
+- `python -m pytest tests/test_prepare_jcvi_collinearity.py tests/test_organize_module_results.py tests/test_workflow_modules.py -q` passed with 24 tests.
+- `PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH" nextflow run workflows/main.nf -resume -c workflows/nextflow.config -profile activated --config configs/real_3species.template.yaml --groups configs/species_groups.yaml --run_identification true --use_hmmer true --use_diamond true --final_rule intersection --mock_external_tools false --standard_stop_after_family_candidates false --outdir results/real_3species_all_modules_probe --preprocess_outdir results/00_preprocess` completed successfully.
+- `results/real_3species_all_modules_probe/analysis_modules/10_synteny_jcvi/` now contains per-species `.bed`/`.pep`, `seqids`, `layout`, `commands/jcvi_commands.sh`, `jcvi_pair_manifest.tsv`, `jcvi_input_status.tsv`, and `jcvi_dependency_status.tsv`.
+- `results/real_3species_all_modules_probe/analysis_modules/10_synteny_jcvi/jcvi_dependency_status.tsv` reports `missing_dependency` for `jcvi_python_module`.
+- `results/real_3species_all_modules_probe/analysis_modules/module_manifest.tsv` reports `10_synteny_jcvi` as `prepared_missing_dependency` and `11_mcscanx` as `missing`.
+- `python -m pytest tests -q` passed with 521 tests.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: Reference mapping, JCVI input preparation, JCVI Nextflow module, module organizer status logic, tests, and history
+
+Next:
+- Install or containerize `jcvi`, then extend `PREPARE_JCVI_COLLINEARITY` into full Reference Step8 execution: `jcvi.compara.catalog ortholog`, `jcvi.compara.synteny screen`, colored anchor/simple files, and `jcvi.graphics.karyotype` plots.
+- Implement Reference Step9 MCScanX self duplication/circos as a separate module with per-species `*.gene_pairs.csv`, `*.gene_pairs.ID.csv`, and `circos_<species>.pdf/png`.
+
+## 2026-06-28 07:20 - Add Reference-style per-module result package
+
+Context:
+- User rejected the current result layout because outputs were mixed under `tables/`, `plots/`, `sequences/`, and `report/`.
+- User expected Reference-style delivery where each analysis module has its own folder and the final report is collected separately.
+
+Decisions:
+- Keep the original machine-friendly `tables/`, `plots/`, `sequences/`, `alignment/`, `phylogeny/`, and `report/` outputs for backward compatibility.
+- Add a user-facing `analysis_modules/` package with one folder per analysis module plus a final `report/` folder.
+- Include empty-but-explicit folders for missing modules, with `module_manifest.tsv` recording `available` or `missing` status.
+- Wire the organizer into the standard Nextflow branch after `ASSEMBLE_STANDARD_REPORT`, so future runs generate the module package automatically.
+
+Added:
+- `bin/genefam/organize_module_results.py`
+- `tests/test_organize_module_results.py`
+- Nextflow process `ORGANIZE_MODULE_RESULTS`
+- Published result package at `results/real_3species_all_modules_probe/analysis_modules/`
+
+Modified:
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/main.nf`
+- `tests/test_workflow_modules.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_organize_module_results.py tests/test_workflow_modules.py -q` passed with 21 tests.
+- `python bin/genefam/organize_module_results.py --source results/real_3species_all_modules_probe --outdir /tmp/genefam_module_package_check` generated a valid module package.
+- Initial Nextflow wiring failed because `ORGANIZE_MODULE_RESULTS` resolved relative `params.outdir` from the process work directory; fixed by resolving relative outdirs through `${projectDir}/../${params.outdir}`.
+- `PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH" nextflow run workflows/main.nf -resume -c workflows/nextflow.config -profile activated --config configs/real_3species.template.yaml --groups configs/species_groups.yaml --run_identification true --use_hmmer true --use_diamond true --final_rule intersection --mock_external_tools false --standard_stop_after_family_candidates false --outdir results/real_3species_all_modules_probe --preprocess_outdir results/00_preprocess` completed successfully and published `analysis_modules/`.
+- `results/real_3species_all_modules_probe/analysis_modules/module_manifest.tsv` reports available folders for preprocess, identification, domain filtering, alignment, phylogeny, motif, gene structure, chromosome location, promoter, promoter cis, PPI, duplication handoff, gene family summary, and report; MCScanX and expression are explicitly marked missing.
+- `python -m pytest tests -q` passed with 518 tests.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: module result organizer script, Nextflow final packaging step, workflow tests, and history
+
+Next:
+- Convert currently missing or placeholder modules into real Reference-style analyses: MCScanX/circlize, Ka/Ks/WGD gamma-beta-alpha-theta, real MEME, real PlantCARE cis-element hits, and optional expression integration.
+
+## 2026-06-28 07:06 - Correct PPI transfer to use Arabidopsis AraNet through reciprocal DIAMOND evidence
+
+Context:
+- User corrected the PPI design: `data/config/AraNet.txt` is an Arabidopsis PPI source network, not a target-species PPI table.
+- The PPI workflow must follow `Reference/Long_Weixiong_20240323_1_GDSL/Evolution_LWX_GDSL_2024.md` Step11 more closely by comparing family proteins against Arabidopsis proteins and Arabidopsis proteins back against each target species before transferring AraNet interactions.
+- User expected the real three-species result package to contain actual PPI analysis evidence, not only a ggNetView plot.
+
+Decisions:
+- Keep `AraNet.txt` as a source network and transfer its edges to each selected species through protein homology evidence.
+- Add a Reference-style reciprocal DIAMOND branch for PPI: family proteins to Arabidopsis, then Arabidopsis proteins to each species proteome.
+- Store raw PPI DIAMOND outputs under `results/.../tables/ppi_blast/` so the result package is reproducible and auditable.
+- Keep ggNetView as the visualization layer after transferred edges/nodes are built.
+- Keep `ppi.reference_species: Arabidopsis_thaliana` explicit in the real three-species YAML.
+
+Added:
+- `bin/genefam/build_aranet_ppi_from_reciprocal_blast.py`
+- `tests/test_build_aranet_ppi_from_reciprocal_blast.py`
+- Nextflow process `BUILD_ARANET_PPI_FROM_RECIPROCAL_BLAST`
+
+Modified:
+- `workflows/main.nf`
+- `workflows/modules/plots.nf`
+- `workflows/nextflow.config`
+- `configs/real_3species.template.yaml`
+- `tests/test_workflow_modules.py`
+- `tests/test_real_3species_template.py`
+- Earlier all-module support files for promoter cis-element xlsx reading, promoter ID alias matching, headerless AraNet edge parsing, optional expression skipping, and plot-manifest wiring remain part of this development session.
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_aranet_ppi_from_reciprocal_blast.py tests/test_workflow_modules.py tests/test_real_3species_template.py -q` passed with 23 tests.
+- `python bin/genefam/validate_config.py configs/real_3species.template.yaml --check-paths` returned `Configuration OK`.
+- `PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH" nextflow run workflows/main.nf -resume -c workflows/nextflow.config -profile activated --config configs/real_3species.template.yaml --groups configs/species_groups.yaml --run_identification true --use_hmmer true --use_diamond true --final_rule intersection --mock_external_tools false --standard_stop_after_family_candidates false --outdir results/real_3species_all_modules_probe --preprocess_outdir results/00_preprocess` completed successfully.
+- Published PPI raw reciprocal DIAMOND evidence:
+  - `results/real_3species_all_modules_probe/tables/ppi_blast/Arabidopsis_thaliana/Arabidopsis_thaliana_to_Arabidopsis_thaliana.diamond.tsv` has 66,376 lines.
+  - `results/real_3species_all_modules_probe/tables/ppi_blast/Brassica_rapa/Arabidopsis_thaliana_to_Brassica_rapa.diamond.tsv` has 66,181 lines.
+  - `results/real_3species_all_modules_probe/tables/ppi_blast/Brassica_rapa/Brassica_rapa_to_Arabidopsis_thaliana.diamond.tsv` has 438 lines.
+  - `results/real_3species_all_modules_probe/tables/ppi_blast/Capsella_rubella/Arabidopsis_thaliana_to_Capsella_rubella.diamond.tsv` has 62,865 lines.
+  - `results/real_3species_all_modules_probe/tables/ppi_blast/Capsella_rubella/Capsella_rubella_to_Arabidopsis_thaliana.diamond.tsv` has 336 lines.
+- `results/real_3species_all_modules_probe/tables/ppi_transfer_evidence.tsv` reports 368 homology rows, 287 reciprocal-supported homologs, 895,000 AraNet edges read, 384 transferred edges, and 3 species with transferred edges.
+- `results/real_3species_all_modules_probe/tables/ppi_network_qc.tsv` reports 172 nodes and 384 normalized edges.
+- `results/real_3species_all_modules_probe/tables/ppi_ggnetview_status.tsv` reports `ready` with `ggNetView` version `0.2.0`.
+- `python -m pytest tests -q` passed with 516 tests.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: Reference-style PPI reciprocal DIAMOND transfer, Nextflow wiring, real YAML PPI reference species, tests, and history
+
+Next:
+- Promote the same Reference-style rigor to the remaining incomplete modules: real MEME execution instead of fixture motif input, real MCScanX/KaKs/WGD event branch integration in the standard run, PlantCARE/gene-level promoter cis-element hits, and optional RNA-seq skip/report semantics.
+
+## 2026-06-28 01:15 - Probe real three-species config with all analysis modules enabled
+
+Context:
+- User felt the current Nextflow result package did not match the `Reference/Long_Weixiong_20240323_1_GDSL` analysis style and that many expected analyses were not actually run.
+- User requested setting `feature_summary`, `motif`, `synteny`, `promoter`, `promoter_cis`, `ppi`, `duplication_retention`, `kaks`, and `expression` to `true` in `configs/real_3species.template.yaml`, then running once to see which parts stop because required inputs or software are missing.
+
+Decisions:
+- Keep the all-module probe in the real three-species template so the config validator and Nextflow preflight expose missing required inputs explicitly.
+- Treat this as a diagnostic probe, not a completed Reference-style result package.
+- Record the architectural gap that `modules.*` currently participates in validation but does not yet fully drive the standard Nextflow `run_*` switches or Reference-style publish directories.
+
+Added:
+- none
+
+Modified:
+- `configs/real_3species.template.yaml`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python bin/genefam/validate_config.py configs/real_3species.template.yaml --check-paths` failed as expected with missing required inputs:
+  - `modules.expression requires expression.matrix`
+  - `modules.promoter_cis requires promoter.cis_elements`
+  - `modules.promoter_cis requires input.required.genome: true`
+  - `modules.ppi requires ppi.edges`
+- `python bin/genefam/validate_config.py configs/real_3species.template.yaml` failed with the same messages.
+- `PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH" nextflow run workflows/main.nf -c workflows/nextflow.config -profile activated --config configs/real_3species.template.yaml --groups configs/species_groups.yaml --run_identification true --use_hmmer true --use_diamond true --final_rule intersection --mock_external_tools false --standard_stop_after_family_candidates false --outdir results/real_3species_all_modules_probe --preprocess_outdir results/00_preprocess` stopped at `VALIDATE_CONFIG (config preflight)` with the same missing-input messages.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: all-module probe YAML and history entry
+
+Next:
+- Decide whether to provide the missing real inputs (`expression.matrix`, `promoter.cis_elements`, genome FASTA for promoter extraction, and `ppi.edges`) or first develop Reference-style Nextflow publish directories and true YAML-driven module switches.
+
 ## 2026-06-28 00:57 - Harden real-species GFF3 alias matching and reproducibility code
 
 Context:
@@ -14402,6 +16168,706 @@ Commit:
 
 Next:
 - Continue final MVP handoff polish; Docker/Apptainer runtime execution remains the intentionally deferred final packaging stage.
+
+## 2026-06-28 - Wire Reference MVP package audit into standard Nextflow branch
+
+Timestamp:
+- 2026-06-28 14:59 CST
+
+Context:
+- The standard Nextflow branch could generate basic module outputs, but the Reference-level package audit was still a post-run/manual check rather than an in-workflow deliverable.
+- The MCScanX/JCVI boundary needed to be explicit: MCScanX self is the required intra-species duplication and circlize branch, while JCVI is the inter-species collinearity branch.
+- Mock-mode standard smoke exposed runtime wiring issues after the audit process was added.
+
+Decisions:
+- Add `AUDIT_REAL_REFERENCE_PACKAGE` as a formal standard-postprocess Nextflow process that writes `analysis_modules/report/reference_mvp_package_audit.tsv` and `.md`.
+- Keep the audit strict by default in the CLI, but allow the workflow process to write failed audit evidence without stopping exploratory smoke runs via `--allow-incomplete`.
+- Add `EMPTY_REFERENCE_MANIFEST` so mock external-tool mode can still build reproducibility code without touching `BUILD_REFERENCE_FROM_TAIR_DOMAINS.out`.
+- Filter empty optional package inputs before `ORGANIZE_MODULE_RESULTS` so disabled optional modules do not create `Path value cannot be empty` failures.
+- Treat MCScanX self/circlize and JCVI as separate required Reference MVP checks.
+
+Added:
+- `bin/genefam/audit_real_reference_package.py`
+- `tests/test_audit_real_reference_package.py`
+- `AUDIT_REAL_REFERENCE_PACKAGE` process in `workflows/modules/standard_postprocess.nf`
+- `EMPTY_REFERENCE_MANIFEST` process in `workflows/modules/standard_postprocess.nf`
+- Standard workflow wiring from `ORGANIZE_MODULE_RESULTS` to `AUDIT_REAL_REFERENCE_PACKAGE`
+
+Modified:
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `tests/test_workflow_modules.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_audit_real_reference_package.py -q` passed with 4 tests.
+- `python -m pytest tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_audit_real_reference_package.py -q` passed with 6 tests.
+- `python bin/genefam/run_nextflow_standard_smoke.py --conda-env GeneFamilyFlow --config configs/manifest.example.yaml --outdir results/nextflow_standard_audit_process_smoke` exited 0.
+- `results/nextflow_standard_audit_process_smoke/standard/analysis_modules/report/reference_mvp_package_audit.tsv` was generated. It intentionally fails Reference MVP completeness for the lightweight mock smoke because promoter handoff, JCVI, MCScanX self/circlize, and Ka/Ks diagnostics are not enabled there.
+- `python -m pytest tests/test_audit_real_reference_package.py tests/test_workflow_modules.py tests/test_run_nextflow_standard_smoke.py -q` passed with 49 tests.
+- `python -m pytest tests -q` passed with 574 tests.
+- In the `GeneFamilyFlow` conda environment, `MCScanX`, `diamond`, `blastp`, `makeblastdb`, `KaKs_Calculator`, and Python `jcvi` were available; `ParaAT.pl` was not found.
+
+Commit:
+- not committed in this entry
+
+Next:
+- Run the real 3-species configuration with `modules.synteny: true`, MCScanX self enabled, JCVI enabled, and Ka/Ks enabled so `11_mcscanx`, `10_synteny_jcvi`, and `14_duplication_retention_kaks` can move from audit-failed smoke evidence to Reference MVP pass evidence.
+
+## 2026-06-28 - Clarify MCScanX self, JCVI, and Reference two-pass HMMER
+
+Timestamp:
+- 2026-06-28 13:50 CST
+
+Context:
+- The Reference workflow requires MCScanX self to run for intra-species duplication/circlize.
+- JCVI must remain the inter-species collinearity branch.
+- Reference-style HMMER should optionally support first-pass hit extraction, MAFFT alignment, `hmmbuild`, and a rebuilt-HMM second search.
+
+Decisions:
+- Treat MCScanX self as the required intra-species synteny/circlize source when `modules.synteny: true`.
+- Treat JCVI as the inter-species collinearity and karyotype source.
+- Treat MCScanX `.gene_type` as optional evidence; `.tandem/.collinearity` and parsed gene pairs are sufficient for MCScanX self/circlize status.
+- Use DIAMOND as the default MCScanX self all-vs-all search frontend for large multi-species runs while retaining `blastp` compatibility through `mcscanx.search_tool: blastp`.
+- Expose Reference-style two-pass HMMER through `identification.two_pass_hmmer` and `--hmmer_two_pass true`, defaulting to off.
+
+Added:
+- `bin/genefam/build_rebuilt_hmmer_inputs.py`
+- `tests/test_build_rebuilt_hmmer_inputs.py`
+- Optional `BUILD_REBUILT_HMMER_INPUTS` and `HMMER_SEARCH_REBUILT` wiring in the Nextflow standard identification branch.
+- Tests for MCScanX self status when `.gene_type` is absent but self `.tandem/.collinearity` evidence exists.
+- `mcscanx.search_tool: diamond` in the real three-species YAML template.
+
+Modified:
+- `workflows/main.nf`
+- `workflows/modules/hmmer_search.nf`
+- `workflows/nextflow.config`
+- `configs/real_3species.template.yaml`
+- `bin/genefam/organize_module_results.py`
+- `bin/genefam/build_mcscanx_self_inputs.py`
+- `bin/genefam/run_mcscanx_self.py`
+- `tests/test_workflow_modules.py`
+- `tests/test_build_mcscanx_self_inputs.py`
+- `tests/test_run_mcscanx_self.py`
+- `tests/test_organize_module_results.py`
+- `tests/test_real_3species_template.py`
+- `docs/reference_to_pipeline_mapping.md`
+- `docs/input_contract.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_rebuilt_hmmer_inputs.py tests/test_workflow_modules.py::test_hmmer_module_writes_normalized_tsv tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_organize_module_results.py::test_organize_module_results_creates_reference_style_module_folders -q` passed with 5 tests.
+- `python -m pytest tests/test_build_mcscanx_self_inputs.py tests/test_organize_module_results.py -q` passed with 13 tests.
+- `python -m pytest tests/test_real_3species_template.py tests/test_build_rebuilt_hmmer_inputs.py tests/test_build_mcscanx_self_inputs.py tests/test_organize_module_results.py -q` passed with 16 tests.
+- `python -m pytest tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_workflow_modules.py::test_mcscanx_self_circos_module_prepares_and_plots_self_outputs tests/test_workflow_modules.py::test_mcscanx_self_circos_module_prepares_reference_step9_inputs tests/test_workflow_modules.py::test_nextflow_config_exposes_mcscanx_self_execution_toggle -q` passed with 4 tests.
+- `python -m pytest tests/test_build_mcscanx_self_inputs.py tests/test_run_mcscanx_self.py tests/test_real_3species_template.py tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_workflow_modules.py::test_mcscanx_self_circos_module_prepares_reference_step9_inputs tests/test_workflow_modules.py::test_nextflow_config_exposes_mcscanx_self_execution_toggle -q` passed with 12 tests.
+- `python -m pytest tests -q` passed with 566 tests.
+- `GeneFamilyFlow` has DIAMOND 2.2.2, MCScanX, makeblastdb, and blastp available.
+- Real three-species default run completed through module packaging at `results/real_3species_all_modules_probe_current5`.
+- Real three-species two-pass HMMER run at `results/real_3species_twopass_hmmer_probe` confirmed rebuilt HMMER, rebuilt-domain filtering, JCVI, PPI, MEME, feature summary, and tree-feature plotting stages before it was stopped at the slow NCBI `blastp` MCScanX self search. That bottleneck drove the switch to DIAMOND as the default MCScanX self search frontend.
+- Real three-species two-pass HMMER run with DIAMOND-backed MCScanX self completed at `results/real_3species_twopass_hmmer_probe_diamond`.
+- `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/02_domain_filtering/two_pass_hmmer/rebuilt_hmmer_status.tsv` reports `available`, 368 first-pass hits, and 3 species.
+- `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/10_synteny_jcvi/jcvi_run_status.tsv` reports `available`, 5 commands, 5 succeeded, 0 failed; pair PDFs and `karyotype.pdf` are present.
+- `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/11_mcscanx/mcscanx_execution_status.tsv` reports `executed`, exit code 0; `mcscanx_circlize_status.tsv` reports `available` with 36 links; raw `.blast/.collinearity/.tandem/html` files and `plots/mcscanx_circlize.pdf/png` are packaged.
+- `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/14_duplication_retention_kaks/kaks_calculator_status.tsv` reports `partial`, 213 pairs, 119 succeeded, and 94 failed/empty outputs; WGD event evidence detected the configured gamma layer from successful Ks pairs.
+
+Next:
+- Continue polishing report interpretation and Ka/Ks failure diagnostics; container packaging remains intentionally deferred.
+
+## 2026-06-28 - Fix optional-module report status consistency
+
+Timestamp:
+- 2026-06-28 14:12 CST
+
+Context:
+- Real three-species Reference-level run produced a contradictory status surface: `module_manifest.tsv` correctly marked `09_promoter_cis` as `missing_input` and `13_expression` as `skipped_optional`, but `report/report_index.tsv` still marked placeholder promoter-cis and expression outputs as `available`.
+- Root cause: `build_standard_report_index.py` inferred availability from non-empty channel paths and reconstructed published paths without consuming the authoritative `promoter_cis_status.tsv` and `expression_status.tsv` process outputs.
+
+Decisions:
+- Treat `promoter_cis_status.tsv` and `expression_status.tsv` as authoritative report-index inputs when present.
+- Suppress placeholder promoter-cis and expression rows in the report index when status is `missing_input`, `skipped_optional`, or `missing_dependency`.
+- Keep real PlantCARE or RNA-seq branches available when no missing/skipped status is passed and real outputs are provided.
+
+Added:
+- Optional CLI arguments `--promoter-cis-status` and `--expression-status` for `bin/genefam/build_standard_report_index.py`.
+- Regression test covering missing PlantCARE gene-level input and skipped RNA-seq expression matrix in published report-index mode.
+- Nextflow report-index wiring for `promoter_cis_status_ch` and `expression_status_ch`.
+
+Modified:
+- `bin/genefam/build_standard_report_index.py`
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `tests/test_standard_branch_report_index.py`
+- `tests/test_workflow_modules.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_standard_branch_report_index.py::test_published_report_index_respects_missing_optional_module_status -q` first failed because `promoter_cis_elements` was still reported as available from a placeholder published path.
+- `python -m pytest tests/test_standard_branch_report_index.py::test_published_report_index_respects_missing_optional_module_status tests/test_standard_branch_report_index.py::test_build_standard_report_index_cli_can_write_published_paths -q` passed with 2 tests after script-level status handling.
+- `python -m pytest tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_includes_remaining_standard_analysis_processes tests/test_standard_branch_report_index.py -q` passed with 8 tests after Nextflow wiring.
+- `nextflow run workflows/main.nf -c workflows/nextflow.config -profile activated -resume --config configs/real_3species.template.yaml --run_identification true --hmmer_two_pass true --outdir results/real_3species_twopass_hmmer_probe_diamond --project_name My_3species_GDSL --gene_family GDSL` completed and refreshed `BUILD_STANDARD_REPORT_INDEX`, `ASSEMBLE_STANDARD_REPORT`, and `ORGANIZE_MODULE_RESULTS`.
+- `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/report/report_index.tsv` now marks all `promoter_cis*` and `expression*` rows as `missing` when PlantCARE gene-level hits and RNA-seq matrix are absent.
+- `results/real_3species_twopass_hmmer_probe_diamond/analysis_modules/module_manifest.tsv` still reports `09_promoter_cis` as `missing_input`, `13_expression` as `skipped_optional`, `10_synteny_jcvi` as `available`, `11_mcscanx` as `available`, and `14_duplication_retention_kaks` as `partial`.
+- `python -m pytest tests -q` passed with 567 tests.
+
+Next:
+- Continue polishing report interpretation and Ka/Ks failure diagnostics; container packaging remains intentionally deferred.
+
+## 2026-06-28 - Fix and verify required MCScanX self/circlize branch
+
+Timestamp:
+- 2026-06-28 12:20 CST
+
+Context:
+- MCScanX self must run for intra-species duplication and circlize visualization.
+- JCVI is reserved for inter-species collinearity.
+- A real three-species run showed MCScanX execution was previously possible but produced empty family-pair/circlize outputs because the generated MCScanX GFF column order was wrong.
+
+Decisions:
+- Make MCScanX self execution enabled by default.
+- Keep MCScanX self and circlize as the intra-species branch.
+- Keep JCVI as the inter-species branch and status it as missing dependency when the `jcvi` Python module is unavailable.
+- Treat Ka/Ks as prepared when pair FASTA/manifest files are generated, but mark calculation as missing dependency until `KaKs_Calculator` is installed.
+
+Added:
+- Regression tests for MCScanX native `.collinearity` parsing.
+- Regression tests for MCScanX GFF column order.
+- Regression tests for circlize tiny-sector padding.
+- Regression tests for missing `block_id` fallback in circlize links.
+- Regression tests for marking the MCScanX module available when circlize output is available.
+
+Modified:
+- `bin/genefam/build_mcscanx_self_inputs.py`
+- `bin/genefam/build_circlize_inputs.py`
+- `bin/genefam/organize_module_results.py`
+- `scripts/plot_mcscanx_circlize.R`
+- `workflows/modules/mcscanx_self_circos.nf`
+- `workflows/nextflow.config`
+- `configs/real_3species.template.yaml`
+- `README.zh-CN.md`
+- `docs/reference_to_pipeline_mapping.md`
+- `tests/test_build_mcscanx_self_inputs.py`
+- `tests/test_build_circlize_inputs.py`
+- `tests/test_run_mcscanx_circlize_smoke.py`
+- `tests/test_organize_module_results.py`
+- `tests/test_workflow_modules.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_mcscanx_self_inputs.py::test_build_mcscanx_self_inputs_marks_missing_self_files tests/test_build_mcscanx_self_inputs.py::test_build_mcscanx_self_inputs_parses_native_mcscanx_collinearity_lines tests/test_workflow_modules.py::test_mcscanx_self_circos_module_prepares_reference_step9_inputs tests/test_workflow_modules.py::test_nextflow_config_exposes_mcscanx_self_execution_toggle tests/test_run_mcscanx_self.py -q` passed with 6 tests.
+- `python -m pytest tests/test_build_circlize_inputs.py tests/test_run_mcscanx_circlize_smoke.py -q` passed with 5 tests after fixing circlize padding and `block_id` fallback.
+- `python -m pytest tests/test_build_mcscanx_self_inputs.py tests/test_organize_module_results.py tests/test_build_circlize_inputs.py tests/test_run_mcscanx_circlize_smoke.py -q` passed with 15 tests after MCScanX module-status updates.
+- `python -m pytest tests -q` passed with 553 tests.
+- Real run command completed: `PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH" nextflow run workflows/main.nf -resume -c workflows/nextflow.config -profile activated --config configs/real_3species.template.yaml --groups configs/species_groups.yaml --run_identification true --use_hmmer true --use_diamond true --final_rule intersection --mock_external_tools false --standard_stop_after_family_candidates false --outdir results/real_3species_all_modules_probe_current2 --preprocess_outdir results/00_preprocess`.
+- Real MCScanX self output: `results/real_3species_all_modules_probe_current2/analysis_modules/11_mcscanx/mcscanx_execution_status.tsv` reports `executed	true` with exit code 0.
+- Real MCScanX/circlize output: `mcscanx_gene_pairs.tsv` has 102 lines, `tables/circlize_links.tsv` has 95 lines, and `mcscanx_circlize_status.tsv` reports `available	94	ok`.
+- Real circlize plots generated: `analysis_modules/11_mcscanx/plots/mcscanx_circlize.pdf` and `analysis_modules/11_mcscanx/plots/mcscanx_circlize.png`.
+- Real Ka/Ks handoff output: `analysis_modules/14_duplication_retention_kaks/KaKs_Gene_Pair.tsv` and `kaks_input_manifest.tsv` each have 102 lines, but `kaks_calculator_status.tsv` reports `missing_dependency` because `KaKs_Calculator` is not installed.
+- Environment check found `makeblastdb`, `blastp`, and `MCScanX` in `/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin`; `KaKs_Calculator` and `KaKs_Calculator2` were not found.
+- Module manifest now reports `11_mcscanx` as `available`, `10_synteny_jcvi` as `prepared_missing_dependency`, and `14_duplication_retention_kaks` as `prepared_missing_dependency`.
+
+Commit:
+- pending
+
+Next:
+- Install or configure a Ka/Ks executable, preferably `KaKs_Calculator` or a supported replacement.
+- Install the `jcvi` Python module in `GeneFamilyFlow` if inter-species collinearity should execute instead of only preparing inputs.
+- Parameterize MCScanX self BLAST threads in YAML before scaling to many species.
+
+## 2026-06-28 - Add MCScanX self-run preparation materials
+
+Timestamp:
+- 2026-06-28 11:20 CST
+
+Context:
+- The Reference Step9-style MCScanX module could organize existing `.gene_type`, `.tandem2`, and `.collinearity2` files, but a real first-run dataset also needs prepared MCScanX self-run inputs before those files exist.
+- The real three-species probe still reported `11_mcscanx` as `missing_input` because MCScanX self gene pairs had not been generated.
+
+Decisions:
+- Keep MCScanX execution itself as an external-tool step for now, but generate reproducible per-species MCScanX GFF files and a command script for `makeblastdb`, `blastp`, and `MCScanX`.
+- Put the run-preparation files into the formal `analysis_modules/11_mcscanx/` folder so the final result package shows exactly what is prepared and what remains blocked.
+- Avoid a self-copying GFF command in the generated script; the GFF is already written under `mcscanx_run/`.
+
+Added:
+- MCScanX run-preparation status table: `mcscanx_self_circos/mcscanx_run_status.tsv`.
+- Per-species MCScanX GFF files under `mcscanx_self_circos/mcscanx_run/`.
+- Reproducible command script under `mcscanx_self_circos/commands/mcscanx_self_commands.sh`.
+- Tests requiring the workflow and module organizer to preserve MCScanX run-preparation files.
+
+Modified:
+- `bin/genefam/build_mcscanx_self_inputs.py`
+- `bin/genefam/organize_module_results.py`
+- `workflows/modules/mcscanx_self_circos.nf`
+- `tests/test_build_mcscanx_self_inputs.py`
+- `tests/test_organize_module_results.py`
+- `tests/test_workflow_modules.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Focused tests first failed because `mcscanx_run_status.tsv`, `commands/mcscanx_self_commands.sh`, and `mcscanx_run/*.gff` were not yet guaranteed or copied into `11_mcscanx`.
+- Focused tests passed after implementation:
+  `python -m pytest tests/test_build_mcscanx_self_inputs.py tests/test_workflow_modules.py::test_mcscanx_self_circos_module_prepares_reference_step9_inputs tests/test_organize_module_results.py::test_organize_module_results_creates_reference_style_module_folders -q`
+  reported 4 passed.
+- Full tests passed:
+  `python -m pytest tests -q`
+  reported 546 passed.
+- Real three-species result package refreshed:
+  `results/real_3species_all_modules_probe_current2/analysis_modules/11_mcscanx/`
+  now contains `commands/mcscanx_self_commands.sh`, `mcscanx_run_status.tsv`, and MCScanX GFF files for `Arabidopsis_thaliana`, `Brassica_rapa`, and `Capsella_rubella`.
+- The refreshed module manifest still correctly reports `11_mcscanx` as `missing_input` because MCScanX self gene pairs have not been executed/generated yet.
+
+Commit:
+- none
+
+Next:
+- Run the generated MCScanX command script in an environment with `makeblastdb`, `blastp`, and `MCScanX`, then feed the resulting `.tandem2` and `.collinearity2` files back into the module for circlize plotting and Ka/Ks pair preparation.
+
+## 2026-06-28 - Package preprocess ID trace evidence
+
+Timestamp:
+- 2026-06-28 11:55 CST
+
+Context:
+- Reference Step5 requires cleaned IDs and gene-family information, but the final `analysis_modules/00_preprocess/` package only exposed the clean manifest and run config.
+- Per-species `transcript_gene_map.tsv` and `representative_transcripts.tsv` already existed inside the preprocess working output, but users could not inspect a run-level original-to-clean ID trace from the final module package.
+
+Decisions:
+- Generate global preprocess audit tables during species-bank cleaning:
+  `all_transcript_gene_map.tsv`, `all_representative_transcripts.tsv`, and `all_preprocess_warnings.tsv`.
+- Add a standard-branch `PUBLISH_PREPROCESS_AUDIT` process so the current run directory contains the clean species manifest, global ID trace tables, warnings, and `species_bank_clean/`.
+- Copy the preprocess audit evidence into `analysis_modules/00_preprocess/` so the final Reference-style package is self-contained.
+- Stage the clean species-bank input as `clean_species_bank_input` and copy directory contents with `cp -RL .../.` to avoid Nextflow symlink loops when resuming.
+
+Added:
+- Global preprocess audit tables from `bin/genefam/preprocess_species.py`.
+- `PUBLISH_PREPROCESS_AUDIT` process in `workflows/modules/standard_postprocess.nf`.
+- Workflow wiring for `PUBLISH_PREPROCESS_AUDIT`.
+- `00_preprocess/` module packaging for global trace tables and clean FASTA/CDS directories.
+
+Modified:
+- `bin/genefam/preprocess_species.py`
+- `bin/genefam/organize_module_results.py`
+- `workflows/modules/preprocess.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/main.nf`
+- `docs/reference_to_pipeline_mapping.md`
+- `tests/test_preprocess_species.py`
+- `tests/test_organize_module_results.py`
+- `tests/test_workflow_modules.py`
+- `HISTORY.md`
+
+Deleted:
+- Removed one generated self-referential symlink left by a failed Nextflow publish attempt:
+  `work/78/8cc341b4c7b638abb03035ab5e09f8/species_bank_clean/species_bank_clean`.
+
+Verification:
+- The first focused test run failed because global preprocess trace tables were not generated and were not copied into `analysis_modules/00_preprocess/`.
+- After implementation, focused tests passed:
+  `python -m pytest tests/test_preprocess_species.py::test_preprocess_species_cli_writes_clean_manifest_and_audit_tables tests/test_organize_module_results.py::test_organize_module_results_creates_reference_style_module_folders tests/test_workflow_modules.py::test_preprocess_module_cleans_species_bank_and_builds_reference tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q`
+  reported 5 passed.
+- Full tests passed before real-run refresh:
+  `python -m pytest tests -q`
+  reported 546 passed.
+- A real three-species Nextflow run initially failed with `FileSystemLoopException` while publishing `species_bank_clean`, revealing that input and output directory names collided through a staged symlink.
+- After staging the input directory as `clean_species_bank_input` and copying contents, the real three-species Nextflow run completed with exit code 0:
+  `PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH" nextflow run workflows/main.nf -resume -c workflows/nextflow.config -profile activated --config configs/real_3species.template.yaml --groups configs/species_groups.yaml --run_identification true --use_hmmer true --use_diamond true --final_rule intersection --mock_external_tools false --standard_stop_after_family_candidates false --outdir results/real_3species_all_modules_probe_current2 --preprocess_outdir results/00_preprocess`.
+- Refreshed real result evidence:
+  `results/real_3species_all_modules_probe_current2/analysis_modules/00_preprocess/all_transcript_gene_map.tsv` has 122,345 lines.
+  `results/real_3species_all_modules_probe_current2/analysis_modules/00_preprocess/all_representative_transcripts.tsv` has 93,845 lines.
+  `results/real_3species_all_modules_probe_current2/analysis_modules/00_preprocess/all_preprocess_warnings.tsv` has only the header row for the current clean run.
+  `results/real_3species_all_modules_probe_current2/analysis_modules/00_preprocess/species_bank_clean/` contains clean peptide/CDS FASTA plus per-species trace tables for `Arabidopsis_thaliana`, `Brassica_rapa`, and `Capsella_rubella`.
+- No symlinks remain under `results/real_3species_all_modules_probe_current2/species_bank_clean`.
+
+Commit:
+- none
+
+Next:
+- Continue closing Reference gaps that still require external data/software: JCVI install/runtime, MCScanX self output execution, PlantCARE gene-level hit import, and Ka/Ks/WGD plots from real pair data.
+
+## 2026-06-28 - Add controlled MCScanX self execution gate
+
+Timestamp:
+- 2026-06-28 12:20 CST
+
+Context:
+- `GeneFamilyFlow` contains `makeblastdb`, `blastp`, and `MCScanX`, so MCScanX is not a missing-software blocker on this machine.
+- Full MCScanX self execution is expensive because it runs genome-wide self BLAST plus MCScanX per species; it should not start automatically during a large multi-species smoke or first pass.
+- Ka/Ks remains configured through `KaKs_Calculator`, but the command is not installed in the current environment and current real three-species data has no prepared JCVI/MCScanX gene pairs.
+
+Decisions:
+- Add a controlled runner that checks MCScanX dependencies by default and writes a machine-readable execution status.
+- Keep default behavior as `ready_not_executed`; users explicitly enable full execution with YAML `mcscanx.execute_self: true` or CLI `--mcscanx_execute_self true`.
+- Preserve existing external-result mode through `mcscanx.self_dir` for users who already have `.gene_type`, `.tandem2`, and `.collinearity2`.
+- Surface MCScanX execution status in `analysis_modules/11_mcscanx/` and module notes.
+
+Added:
+- `bin/genefam/run_mcscanx_self.py`
+- `tests/test_run_mcscanx_self.py`
+- Nextflow parameter `params.mcscanx_execute_self = false`
+- YAML template key `mcscanx.execute_self: false`
+- Chinese README notes explaining `mcscanx.execute_self` and `--mcscanx_execute_self true`
+
+Modified:
+- `workflows/modules/mcscanx_self_circos.nf`
+- `workflows/main.nf`
+- `workflows/nextflow.config`
+- `configs/real_3species.template.yaml`
+- `bin/genefam/organize_module_results.py`
+- `tests/test_workflow_modules.py`
+- `tests/test_organize_module_results.py`
+- `README.zh-CN.md`
+- `docs/reference_to_pipeline_mapping.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Red tests first failed because `run_mcscanx_self.py`, `params.mcscanx_execute_self`, workflow wiring, and execution-log packaging did not exist.
+- Focused tests passed after implementation:
+  `python -m pytest tests/test_run_mcscanx_self.py tests/test_workflow_modules.py::test_mcscanx_self_circos_module_prepares_reference_step9_inputs tests/test_workflow_modules.py::test_nextflow_config_exposes_mcscanx_self_execution_toggle tests/test_organize_module_results.py::test_organize_module_results_creates_reference_style_module_folders -q`
+  reported 5 passed.
+- YAML mapping focused tests passed:
+  `python -m pytest tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_workflow_modules.py::test_mcscanx_self_circos_module_prepares_reference_step9_inputs tests/test_workflow_modules.py::test_nextflow_config_exposes_mcscanx_self_execution_toggle tests/test_run_mcscanx_self.py tests/test_organize_module_results.py::test_organize_module_results_creates_reference_style_module_folders -q`
+  reported 6 passed.
+- Full tests passed:
+  `python -m pytest tests -q`
+  reported 549 passed.
+- Real three-species Nextflow run completed with exit code 0:
+  `PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH" nextflow run workflows/main.nf -resume -c workflows/nextflow.config -profile activated --config configs/real_3species.template.yaml --groups configs/species_groups.yaml --run_identification true --use_hmmer true --use_diamond true --final_rule intersection --mock_external_tools false --standard_stop_after_family_candidates false --outdir results/real_3species_all_modules_probe_current2 --preprocess_outdir results/00_preprocess`.
+- Environment check found:
+  `/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin/makeblastdb`
+  `/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin/blastp`
+  `/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin/MCScanX`
+  No `KaKs_Calculator` or `KaKs_Calculator2` command was found.
+- Refreshed real result evidence:
+  `results/real_3species_all_modules_probe_current2/analysis_modules/11_mcscanx/mcscanx_execution_status.tsv`
+  reports `ready_not_executed	false		commands/mcscanx_self_commands.sh		MCScanX dependencies are available; set mcscanx_execute_self=true to execute self BLAST and MCScanX`.
+- `results/real_3species_all_modules_probe_current2/analysis_modules/report/software_versions.tsv`
+  records `KaKs_Calculator` as `version_not_detected`.
+- `results/real_3species_all_modules_probe_current2/analysis_modules/14_duplication_retention_kaks/kaks_calculator_status.tsv`
+  reports `missing_input	0	0	0	No Ka/Ks input pairs were prepared`.
+
+Commit:
+- none
+
+Next:
+- Install/provide `KaKs_Calculator` or configure an equivalent supported executable before real Ka/Ks execution.
+- Enable `mcscanx.execute_self: true` only when ready to run genome-wide self BLAST/MCScanX, or provide precomputed MCScanX self outputs through `mcscanx.self_dir`.
+
+## 2026-06-28 - Add JCVI execution status branch
+
+Timestamp:
+- 2026-06-28 09:01 CST
+
+Context:
+- Reference Step8 requires JCVI ortholog, synteny screen, and karyotype
+  execution, not only prepared BED/peptide inputs.
+- The local `GeneFamilyFlow` environment still does not provide the `jcvi`
+  Python package, so the workflow must expose this as a dependency state
+  without hiding or crashing the standard analysis.
+
+Decisions:
+- Add a JCVI command runner that reads `commands/jcvi_commands.sh`.
+- Execute commands only when the configured Python can import `jcvi`.
+- Write `jcvi_run_status.tsv` and `jcvi_command_status.tsv` for report/package
+  evidence.
+- Keep `params.python_bin` configurable, default `python`.
+
+Added:
+- `bin/genefam/run_jcvi_collinearity.py`
+- `tests/test_run_jcvi_collinearity.py`
+- `RUN_JCVI_COLLINEARITY` process in `workflows/modules/jcvi_collinearity.nf`
+
+Modified:
+- `workflows/main.nf`
+- `workflows/modules/jcvi_collinearity.nf`
+- `workflows/nextflow.config`
+- `docs/reference_to_pipeline_mapping.md`
+- `tests/test_workflow_modules.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_jcvi_collinearity.py -q` passed with 2 tests.
+- Focused JCVI workflow tests passed:
+  `python -m pytest tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_workflow_modules.py::test_jcvi_collinearity_module_prepares_and_runs_when_available -q`.
+- Real three-species Nextflow probe completed successfully with
+  `RUN_JCVI_COLLINEARITY`.
+- `results/real_3species_all_modules_probe/analysis_modules/10_synteny_jcvi/jcvi_run_status.tsv`
+  reports `missing_dependency` because `jcvi` is not importable with `python`.
+- `results/real_3species_all_modules_probe/analysis_modules/10_synteny_jcvi/jcvi_command_status.tsv`
+  records five JCVI commands as `not_run` with `missing_dependency`.
+- `python -m pytest tests -q` passed with 536 tests.
+
+Next:
+- Feed an environment/container with `jcvi` installed to validate the available
+  path and generate karyotype figures.
+- Feed real MCScanX/JCVI pair inputs to trigger available Ka/Ks and WGD plots.
+
+## 2026-06-28 - Add Reference KaKs_Calculator execution status
+
+Timestamp:
+- 2026-06-28 08:57 CST
+
+Context:
+- Reference Step8.1 and Step9.1 require prepared CDS/peptide pairs to feed
+  Ka/Ks calculation.
+- The standard branch already prepared `kaks_input_manifest.tsv`, but it did
+  not yet attempt KaKs_Calculator execution or report whether execution was
+  blocked by missing pairs or missing software.
+
+Decisions:
+- Add a small KaKs_Calculator runner that reads `kaks_input_manifest.tsv`.
+- Generate `kaks_calculator_commands.tsv`, `kaks_calculator_results.tsv`, and
+  `kaks_calculator_status.tsv`.
+- Report `missing_input` when no Ka/Ks pairs exist.
+- Report `missing_dependency` when pairs exist but the configured executable is
+  not on `PATH`.
+- Keep the executable configurable through `params.kaks_calculator_bin`, default
+  `KaKs_Calculator`.
+
+Added:
+- `bin/genefam/run_reference_kaks_calculator.py`
+- `tests/test_run_reference_kaks_calculator.py`
+- `RUN_REFERENCE_KAKS_CALCULATOR` process in `workflows/modules/standard_postprocess.nf`
+
+Modified:
+- `workflows/main.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/nextflow.config`
+- `docs/reference_to_pipeline_mapping.md`
+- `tests/test_workflow_modules.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_reference_kaks_calculator.py -q` passed with 2 tests.
+- Focused workflow tests passed:
+  `python -m pytest tests/test_workflow_modules.py::test_standard_postprocess_module_extracts_family_sequences_and_report_index tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch -q`.
+- Real three-species Nextflow probe completed successfully with
+  `RUN_REFERENCE_KAKS_CALCULATOR`.
+- `results/real_3species_all_modules_probe/analysis_modules/14_duplication_retention_kaks/`
+  now contains `kaks_calculator_commands.tsv`, `kaks_calculator_results.tsv`,
+  and `kaks_calculator_status.tsv`.
+- `kaks_calculator_status.tsv` reports `missing_input` because no Ka/Ks input
+  pairs were prepared from the current MCScanX self data.
+- `python -m pytest tests -q` passed with 533 tests.
+
+Next:
+- Add JCVI true execution once `jcvi` is available.
+- Feed real MCScanX/JCVI pair inputs to exercise the KaKs_Calculator `available`
+  path and WGD plots.
+
+## 2026-06-28 - Add MCScanX self-circos status and plotting handoff
+
+Timestamp:
+- 2026-06-28 08:54 CST
+
+Context:
+- Reference Step9 expects MCScanX self duplication outputs to feed gene-pair
+  tables and circlize plots.
+- The current real three-species dataset does not include MCScanX self outputs,
+  but the pipeline still needs a complete module folder and explicit status.
+
+Decisions:
+- Keep `PREPARE_MCSCANX_SELF_CIRCOS` as the parser/preparation step.
+- Add `PLOT_MCSCANX_SELF_CIRCOS` as the enhanced self-circos handoff step.
+- Generate circlize-ready chromosomes, links, skipped-links, density, and
+  duplicate-type track tables from `mcscanx_gene_pairs.tsv`.
+- Produce actual circlize plots only when at least one MCScanX link exists.
+- Write `mcscanx_circlize_status.tsv` with `missing_input` when no MCScanX
+  self gene pairs are available.
+- Avoid publishing the preparation directory directly to prevent duplicate
+  `mcscanx_self_circos` publish conflicts; only the enhanced directory is
+  published.
+
+Added:
+- `PLOT_MCSCANX_SELF_CIRCOS` process in `workflows/modules/mcscanx_self_circos.nf`.
+- MCScanX self-circos workflow assertions in `tests/test_workflow_modules.py`.
+
+Modified:
+- `workflows/main.nf`
+- `workflows/modules/mcscanx_self_circos.nf`
+- `docs/reference_to_pipeline_mapping.md`
+- `tests/test_workflow_modules.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Focused MCScanX workflow tests passed:
+  `python -m pytest tests/test_workflow_modules.py::test_main_workflow_wires_standard_identification_branch tests/test_workflow_modules.py::test_mcscanx_self_circos_module_prepares_and_plots_self_outputs -q`.
+- Real three-species Nextflow probe completed successfully after fixing the
+  publish-directory loop.
+- `results/real_3species_all_modules_probe/analysis_modules/11_mcscanx/`
+  contains family BED files, MCScanX pair tables, circlize-ready tables, and
+  `mcscanx_circlize_status.tsv`.
+- `mcscanx_circlize_status.tsv` reports `missing_input	0	No MCScanX self gene pairs available for circlize plotting`.
+- `results/real_3species_all_modules_probe/analysis_modules/module_manifest.tsv`
+  reports `11_mcscanx` as `missing_input` with 18 files.
+- `python -m pytest tests -q` passed with 531 tests.
+
+Next:
+- Add JCVI true execution once `jcvi` is available.
+- Add real KaKs_Calculator execution once Ka/Ks dependency and gene pairs are
+  available.
+
+## 2026-06-28 - Wire PlantCARE hit import and promoter-cis missing-input status
+
+Timestamp:
+- 2026-06-28 08:49 CST
+
+Context:
+- The user provided `data/config/cir_element.desc.20240509.xlsx`, which is an
+  element-description dictionary, not a gene-level PlantCARE hit table.
+- The previous configuration incorrectly used this description dictionary as
+  `promoter.cis_elements`, producing empty promoter-cis outputs that looked
+  like a completed analysis.
+
+Decisions:
+- Treat `promoter.cis_elements` as the PlantCARE gene-level hit table.
+- Treat `promoter.element_descriptions` as the optional element-description
+  dictionary, including `cir_element.desc*.xlsx`.
+- Allow `modules.promoter_cis: true` without a PlantCARE hit table so the full
+  workflow can continue and report `missing_input` instead of failing early.
+- Parse promoter FASTA-style PlantCARE sequence names such as
+  `Arabidopsis_thaliana|AT1G06990|Chr1:...` into `species_id` and `gene_id`.
+
+Added:
+- `EMPTY_PROMOTER_CIS_ELEMENTS` process in `workflows/modules/plots.nf`.
+- `promoter_cis_status.tsv` output for missing PlantCARE gene-level hit tables.
+- Tests for promoter-header parsing, element-description mapping, missing-input
+  module status, and relaxed validation behavior.
+
+Modified:
+- `bin/genefam/build_promoter_cis_elements.py`
+- `bin/genefam/organize_module_results.py`
+- `bin/genefam/validate_config.py`
+- `configs/real_3species.template.yaml`
+- `workflows/main.nf`
+- `workflows/modules/plots.nf`
+- `workflows/nextflow.config`
+- `docs/reference_to_pipeline_mapping.md`
+- `tests/test_build_promoter_cis_elements.py`
+- `tests/test_organize_module_results.py`
+- `tests/test_real_3species_template.py`
+- `tests/test_validate_config.py`
+- `tests/test_workflow_modules.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_promoter_cis_elements.py -q` passed with 4 tests.
+- Focused workflow/config tests passed:
+  `python -m pytest tests/test_validate_config.py::test_validate_config_allows_promoter_cis_without_gene_level_hits_but_checks_description_path tests/test_real_3species_template.py tests/test_workflow_modules.py::test_plot_module_runs_r_scripts_through_configured_r_bin tests/test_workflow_modules.py::test_main_workflow_includes_plot_processes -q`.
+- Real three-species Nextflow probe completed successfully with
+  `PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH" nextflow run workflows/main.nf -resume -c workflows/nextflow.config -profile activated --config configs/real_3species.template.yaml --groups configs/species_groups.yaml --run_identification true --use_hmmer true --use_diamond true --final_rule intersection --mock_external_tools false --standard_stop_after_family_candidates false --outdir results/real_3species_all_modules_probe --preprocess_outdir results/00_preprocess`.
+- `results/real_3species_all_modules_probe/analysis_modules/09_promoter_cis/promoter_cis_status.tsv` reports `missing_input` because no PlantCARE gene-level hit table was provided.
+- `results/real_3species_all_modules_probe/analysis_modules/module_manifest.tsv` reports `09_promoter_cis` as `missing_input`.
+- `python -m pytest tests -q` passed with 530 tests.
+
+Next:
+- Implement MCScanX/circlize plotting from real MCScanX self outputs.
+- Add JCVI true execution once `jcvi` is available in `GeneFamilyFlow` or in the final container.
+- Add real KaKs_Calculator execution once the dependency is available and gene-pair inputs exist.
+
+## 2026-06-28 - Start Reference-to-Pipeline completion pass
+
+Timestamp:
+- 2026-06-28 08:24 CST
+
+Context:
+- The current Reference-level `/goal` requires GeneFam-Pipeline to follow
+  `Reference/Long_Weixiong_20240323_1_GDSL/Evolution_LWX_GDSL_2024.md`
+  module by module instead of only exposing a generic gene-family workflow.
+- The user expects one result folder per analysis module plus a final report,
+  and missing dependencies or missing user inputs must be explicit without
+  stopping unrelated modules.
+
+Decisions:
+- Add a strict Reference-to-Pipeline mapping document as the acceptance
+  checklist for this completion pass.
+- Add JCVI collinearity input preparation first, because the local
+  `GeneFamilyFlow` environment currently does not provide the Python `jcvi`
+  module.
+- Add MCScanX self-output preparation and status reporting first, because the
+  current three-species test data does not include MCScanX self outputs such as
+  `.gene_type`, `.tandem2`, and `.collinearity2`.
+- Keep module packaging deterministic under `analysis_modules/`, with
+  `prepared_missing_dependency` and `missing_input` states surfaced in
+  `module_manifest.tsv`.
+
+Added:
+- `docs/reference_to_pipeline_mapping.md`
+- `bin/genefam/prepare_jcvi_collinearity.py`
+- `workflows/modules/jcvi_collinearity.nf`
+- `bin/genefam/build_mcscanx_self_inputs.py`
+- `workflows/modules/mcscanx_self_circos.nf`
+- `bin/genefam/prepare_reference_kaks_inputs.py`
+- `bin/genefam/organize_module_results.py`
+- `tests/test_prepare_jcvi_collinearity.py`
+- `tests/test_build_mcscanx_self_inputs.py`
+- `tests/test_prepare_reference_kaks_inputs.py`
+- `tests/test_organize_module_results.py`
+
+Modified:
+- `bin/genefam/parse_meme_motifs.py`
+- `workflows/main.nf`
+- `workflows/modules/alignment_phylogeny.nf`
+- `workflows/modules/standard_postprocess.nf`
+- `workflows/nextflow.config`
+- `configs/real_3species.template.yaml`
+- `tests/test_parse_meme_motifs.py`
+- `tests/test_workflow_modules.py`
+- `tests/test_real_3species_template.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_mcscanx_self_inputs.py tests/test_organize_module_results.py tests/test_real_3species_template.py tests/test_workflow_modules.py -q` passed with 26 tests.
+- Real three-species probe command completed successfully:
+  `PATH="/Users/liuyue/miniforge3/envs/GeneFamilyFlow/bin:$PATH" nextflow run workflows/main.nf -resume -c workflows/nextflow.config -profile activated --config configs/real_3species.template.yaml --groups configs/species_groups.yaml --run_identification true --use_hmmer true --use_diamond true --final_rule intersection --mock_external_tools false --standard_stop_after_family_candidates false --outdir results/real_3species_all_modules_probe --preprocess_outdir results/00_preprocess`
+- The probe produced `results/real_3species_all_modules_probe/analysis_modules/`.
+- `analysis_modules/module_manifest.tsv` reports `10_synteny_jcvi` as `prepared_missing_dependency` because `jcvi` is not installed in `GeneFamilyFlow`.
+- `analysis_modules/module_manifest.tsv` reports `11_mcscanx` as `missing_input` because MCScanX self files were not provided.
+- `analysis_modules/11_mcscanx/` now contains per-species family BED files, empty pair tables, and `mcscanx_self_status.tsv`.
+- `analysis_modules/10_synteny_jcvi/` now contains JCVI-ready BED/pep files, pair manifest, `seqids`, `layout`, command manifest, and dependency status.
+- `analysis_modules/14_duplication_retention_kaks/` now contains `KaKs_Gene_Pair.tsv`, `kaks_input_manifest.tsv`, `kaks_missing_sequences.tsv`, and `kaks_input_status.tsv`.
+- `analysis_modules/14_duplication_retention_kaks/kaks_input_status.tsv` reports `mcscanx	missing_input	0	0	0	no usable gene pairs` for the current probe because no MCScanX self gene pairs were provided.
+- Real MEME now runs from `family_members.faa` and publishes raw outputs under `analysis_modules/05_motif_analysis/`: `meme.txt`, `meme.html`, `meme.xml`, and motif logos.
+- `analysis_modules/05_motif_analysis/motif_summary.tsv` now contains real MEME motifs parsed as `MEME-1` and `MEME-2` for the current GDSL probe.
+- `python -m pytest tests -q` passed with 527 tests.
+
+Next:
+- Add Ka/Ks preparation from JCVI and MCScanX gene pairs.
+- Add real MEME execution and parsed motif output.
+- Add PlantCARE gene-level result import.
+- Add MCScanX/circlize plotting once MCScanX pair inputs are available.
 
 ## 2026-06-27 - Add Reference visual alignment audit
 

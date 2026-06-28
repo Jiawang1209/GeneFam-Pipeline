@@ -45,3 +45,17 @@ def test_parse_meme_text_fails_when_matrix_is_missing(tmp_path):
         assert "Missing letter-probability matrix for motif 1" in str(error)
     else:
         raise AssertionError("Expected ValueError for incomplete MEME motif")
+
+
+def test_parse_meme_text_handles_modern_meme_consensus_name_and_inline_stats(tmp_path):
+    meme_txt = tmp_path / "meme.txt"
+    meme_txt.write_text(
+        "MOTIF FFGKPTGRFSBGRLISD MEME-1\twidth =  17  sites = 316  llr = 9235  E-value = 1.0e-2452\n"
+        "letter-probability matrix: alength= 20 w= 17 nsites= 316 E= 1.0e-2452\n",
+        encoding="utf-8",
+    )
+
+    rows = parse_meme_text(meme_txt, family_name="GDSL")
+
+    assert rows[0]["motif_id"] == "FFGKPTGRFSBGRLISD"
+    assert rows[0]["motif_name"] == "MEME-1"

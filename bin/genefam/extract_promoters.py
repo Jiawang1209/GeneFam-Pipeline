@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import re
 from pathlib import Path
 
 
@@ -56,6 +57,27 @@ def _parse_attributes(value: str) -> dict[str, str]:
     return attributes
 
 
+def _clean_attr_id(value: str) -> str:
+    return value.split()[0].split("|", 1)[0] if value else ""
+
+
+def _strip_common_gene_version(value: str) -> str:
+    stripped = re.sub(r"\.v\d+(?:\.\d+)*$", "", value, flags=re.IGNORECASE)
+    if stripped != value:
+        return stripped
+    return re.sub(r"\.\d+$", "", value)
+
+
+def _gene_aliases(attributes: dict[str, str]) -> set[str]:
+    aliases: set[str] = set()
+    for key in ("ID", "Name", "gene_id", "locus", "locus_tag"):
+        alias = _clean_attr_id(attributes.get(key, ""))
+        if alias:
+            aliases.add(alias)
+            aliases.add(_strip_common_gene_version(alias))
+    return {alias for alias in aliases if alias}
+
+
 def _read_gene_rows(gff3: Path, gene_ids: set[str]) -> dict[str, dict[str, str]]:
     genes: dict[str, dict[str, str]] = {}
     with Path(gff3).open("r", encoding="utf-8") as handle:
@@ -66,8 +88,7 @@ def _read_gene_rows(gff3: Path, gene_ids: set[str]) -> dict[str, dict[str, str]]
             if len(fields) != 9 or fields[2] != "gene":
                 continue
             attributes = _parse_attributes(fields[8])
-            gene_id = attributes.get("ID") or attributes.get("gene_id") or attributes.get("Name")
-            if gene_id in gene_ids:
+            for gene_id in sorted(gene_ids & _gene_aliases(attributes)):
                 genes[gene_id] = {
                     "seqid": fields[0],
                     "start": fields[3],

@@ -2,6 +2,7 @@ import subprocess
 import sys
 
 from bin.genefam.build_ppi_tables import build_ppi_tables
+from bin.genefam.build_ppi_tables import read_edge_table
 
 
 def test_build_ppi_tables_normalizes_edges_nodes_and_hubs():
@@ -28,6 +29,50 @@ def test_build_ppi_tables_normalizes_edges_nodes_and_hubs():
     assert by_node["geneC"]["type"] == "Others"
     assert outputs["hubs"][0]["node"] == "geneA"
     assert outputs["hubs"][0]["rank"] == "1"
+    assert outputs["node_annotation"] == [
+        {
+            "ID": "geneA",
+            "Domain": "PF00657",
+            "species": "sp1",
+            "Type": "GDSL",
+            "degree": "2",
+            "weighted_degree": "8.0000",
+        },
+        {
+            "ID": "geneB",
+            "Domain": "PF00657",
+            "species": "sp1",
+            "Type": "GDSL",
+            "degree": "1",
+            "weighted_degree": "5.0000",
+        },
+        {
+            "ID": "geneC",
+            "Domain": "unknown",
+            "species": "sp1",
+            "Type": "Others",
+            "degree": "1",
+            "weighted_degree": "3.0000",
+        },
+    ]
+    assert outputs["species_ppi_annotation"] == [
+        {
+            "source": "geneA",
+            "source_domain": "PF00657",
+            "target": "geneB",
+            "target_domain": "PF00657",
+            "weight": "5.0000",
+            "species": "sp1",
+        },
+        {
+            "source": "geneA",
+            "source_domain": "PF00657",
+            "target": "geneC",
+            "target_domain": "unknown",
+            "weight": "3.0000",
+            "species": "sp1",
+        },
+    ]
     evidence = {row["metric"]: row["value"] for row in outputs["input_evidence"]}
     assert evidence["raw_edge_rows"] == "3"
     assert evidence["normalized_edge_rows"] == "2"
@@ -37,6 +82,22 @@ def test_build_ppi_tables_normalizes_edges_nodes_and_hubs():
     assert qc["node_count"] == "3"
     assert qc["edge_count"] == "2"
     assert qc["missing_annotation_nodes"] == "1"
+
+
+def test_read_edge_table_accepts_aranet_three_column_without_header(tmp_path):
+    aranet = tmp_path / "AraNet.txt"
+    aranet.write_text(
+        "AT2G33370\tAT4G34555\t5.36380915573035\n"
+        "AT1G04480\tAT4G34555\t5.36296365542836\n",
+        encoding="utf-8",
+    )
+
+    rows = read_edge_table(aranet)
+
+    assert rows == [
+        {"source": "AT2G33370", "target": "AT4G34555", "weight": "5.36380915573035", "species": "Arabidopsis_thaliana"},
+        {"source": "AT1G04480", "target": "AT4G34555", "weight": "5.36296365542836", "species": "Arabidopsis_thaliana"},
+    ]
 
 
 def test_build_ppi_tables_cli_writes_outputs(tmp_path):
@@ -68,3 +129,7 @@ def test_build_ppi_tables_cli_writes_outputs(tmp_path):
     assert (outdir / "ppi_hubs.tsv").read_text(encoding="utf-8").startswith("rank\tnode\tspecies")
     assert (outdir / "ppi_input_evidence.tsv").read_text(encoding="utf-8").startswith("metric\tvalue\tdescription")
     assert (outdir / "ppi_network_qc.tsv").read_text(encoding="utf-8").startswith("metric\tvalue\tdescription")
+    assert (outdir / "node_annotation.tsv").read_text(encoding="utf-8").startswith("ID\tDomain\tspecies\tType")
+    assert (outdir / "species_ppi_annotation.tsv").read_text(encoding="utf-8").startswith(
+        "source\tsource_domain\ttarget\ttarget_domain\tweight\tspecies"
+    )

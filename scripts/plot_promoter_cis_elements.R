@@ -26,7 +26,17 @@ if (!is.null(element_annotations_path) && file.exists(element_annotations_path))
 }
 
 if (nrow(gene_matrix) == 0 || nrow(category_summary) == 0) {
-  stop("Promoter cis-element matrix and category summary must not be empty")
+  pdf(file.path(outdir, "promoter_cis_elements.pdf"), width = 8, height = 5)
+  plot.new()
+  text(0.5, 0.58, "Promoter cis-element plot skipped", cex = 1.2)
+  text(0.5, 0.44, "PlantCARE gene-level hit table was not provided", cex = 0.85)
+  dev.off()
+  png(file.path(outdir, "promoter_cis_elements.png"), width = 1200, height = 800, res = 160)
+  plot.new()
+  text(0.5, 0.58, "Promoter cis-element plot skipped", cex = 1.2)
+  text(0.5, 0.44, "PlantCARE gene-level hit table was not provided", cex = 0.85)
+  dev.off()
+  quit(save = "no", status = 0)
 }
 
 gene_matrix$count_numeric <- suppressWarnings(as.numeric(gene_matrix$count))
@@ -141,10 +151,146 @@ draw_plot <- function() {
   title("top promoter cis-elements")
 }
 
+draw_promoter1 <- function() {
+  has_element_panel <- nrow(gene_element_matrix) > 0 && nrow(element_annotations) > 0
+  if (has_element_panel) {
+    layout(matrix(c(1, 2), nrow = 1), widths = c(1.15, 1.55))
+  } else {
+    layout(matrix(c(1), nrow = 1))
+  }
+  par(mar = c(8, 8, 4, 2))
+  image(
+    x = seq_len(ncol(heat)),
+    y = seq_len(nrow(heat)),
+    z = t(heat),
+    axes = FALSE,
+    xlab = "",
+    ylab = "",
+    col = colorRampPalette(c("#FFFFFF", "#FDD49E", "#FC8D59", "#B30000"))(40)
+  )
+  axis(1, at = seq_len(ncol(heat)), labels = colnames(heat), las = 2, cex.axis = 0.75)
+  axis(2, at = seq_len(nrow(heat)), labels = rownames(heat), las = 2, cex.axis = 0.68)
+  title("promoter1: gene-level cis-element category counts")
+  grid(nx = ncol(heat), ny = nrow(heat), col = "#EDEDED")
+  for (row_idx in seq_len(nrow(heat))) {
+    for (col_idx in seq_len(ncol(heat))) {
+      value <- heat[row_idx, col_idx]
+      if (value > 0) {
+        text(col_idx, row_idx, labels = value, cex = 0.65)
+      }
+    }
+  }
+
+  if (has_element_panel) {
+    gene_element_matrix$count_numeric <- suppressWarnings(as.numeric(gene_element_matrix$count))
+    gene_element_matrix$count_numeric[is.na(gene_element_matrix$count_numeric)] <- 0
+    element_annotations$total_numeric <- suppressWarnings(as.numeric(element_annotations$total_count))
+    element_annotations$total_numeric[is.na(element_annotations$total_numeric)] <- 0
+    selected_elements <- head(element_annotations[order(element_annotations$total_numeric, decreasing = TRUE), "element"], 18)
+    element_panel <- gene_element_matrix[gene_element_matrix$element %in% selected_elements, , drop = FALSE]
+    element_genes <- sort(unique(paste(element_panel$species_id, element_panel$gene_id, sep = "|")))
+    selected_elements <- selected_elements[selected_elements %in% unique(element_panel$element)]
+    element_heat <- matrix(0, nrow = length(element_genes), ncol = length(selected_elements), dimnames = list(element_genes, selected_elements))
+    element_category <- setNames(element_annotations$category, element_annotations$element)
+    for (idx in seq_len(nrow(element_panel))) {
+      gene_key <- paste(element_panel$species_id[idx], element_panel$gene_id[idx], sep = "|")
+      element_heat[gene_key, element_panel$element[idx]] <- element_panel$count_numeric[idx]
+    }
+    par(mar = c(8, 8, 4, 2))
+    plot(NA, xlim = c(0.5, ncol(element_heat) + 0.5), ylim = c(0.5, nrow(element_heat) + 0.5), axes = FALSE, xlab = "", ylab = "")
+    axis(1, at = seq_len(ncol(element_heat)), labels = colnames(element_heat), las = 2, cex.axis = 0.68)
+    axis(2, at = seq_len(nrow(element_heat)), labels = rownames(element_heat), las = 2, cex.axis = 0.62)
+    title("top cis-elements across family genes")
+    grid(nx = ncol(element_heat), ny = nrow(element_heat), col = "#EFEFEF")
+    max_count <- max(element_heat)
+    if (!is.finite(max_count) || max_count <= 0) {
+      max_count <- 1
+    }
+    for (row_idx in seq_len(nrow(element_heat))) {
+      for (col_idx in seq_len(ncol(element_heat))) {
+        value <- element_heat[row_idx, col_idx]
+        if (value <= 0) {
+          next
+        }
+        category <- element_category[[colnames(element_heat)[col_idx]]]
+        point_col <- category_colors[[category]]
+        if (is.null(point_col)) {
+          point_col <- "#72B7B2"
+        }
+        points(col_idx, row_idx, pch = 21, cex = 0.55 + 1.25 * sqrt(value / max_count), bg = point_col, col = "#222222")
+      }
+    }
+  }
+}
+
+draw_species_promoter2 <- function() {
+  species_categories <- aggregate(count_numeric ~ species_id + category, data = gene_matrix, FUN = sum)
+  species_ids <- sort(unique(species_categories$species_id))
+  category_ids <- sort(unique(species_categories$category))
+  species_heat <- matrix(0, nrow = length(species_ids), ncol = length(category_ids), dimnames = list(species_ids, category_ids))
+  for (idx in seq_len(nrow(species_categories))) {
+    species_heat[species_categories$species_id[idx], species_categories$category[idx]] <- species_categories$count_numeric[idx]
+  }
+
+  layout(matrix(c(1, 2), nrow = 1), widths = c(1.15, 1))
+  par(mar = c(7, 7, 4, 2))
+  image(
+    x = seq_len(ncol(species_heat)),
+    y = seq_len(nrow(species_heat)),
+    z = t(species_heat),
+    axes = FALSE,
+    xlab = "",
+    ylab = "",
+    col = colorRampPalette(c("#FFFFFF", "#C7E9C0", "#41AB5D", "#005A32"))(40)
+  )
+  axis(1, at = seq_len(ncol(species_heat)), labels = colnames(species_heat), las = 2, cex.axis = 0.8)
+  axis(2, at = seq_len(nrow(species_heat)), labels = rownames(species_heat), las = 2, cex.axis = 0.8)
+  title("species_promoter2: species-level cis-element classes")
+  grid(nx = ncol(species_heat), ny = nrow(species_heat), col = "#EDEDED")
+  for (row_idx in seq_len(nrow(species_heat))) {
+    for (col_idx in seq_len(ncol(species_heat))) {
+      value <- species_heat[row_idx, col_idx]
+      if (value > 0) {
+        text(col_idx, row_idx, labels = value, cex = 0.7)
+      }
+    }
+  }
+
+  species_totals <- aggregate(count_numeric ~ species_id, data = gene_matrix, FUN = sum)
+  species_totals <- species_totals[order(species_totals$count_numeric, decreasing = TRUE), , drop = FALSE]
+  par(mar = c(7, 5, 4, 2))
+  barplot(
+    species_totals$count_numeric,
+    names.arg = species_totals$species_id,
+    las = 2,
+    cex.names = 0.8,
+    ylab = "Total cis-element occurrences",
+    col = "#74A9CF",
+    border = NA
+  )
+  title("total promoter cis-elements by species")
+}
+
 pdf(file.path(outdir, "promoter_cis_elements.pdf"), width = 12, height = 6)
 draw_plot()
 dev.off()
 
 png(file.path(outdir, "promoter_cis_elements.png"), width = 1800, height = 900, res = 160)
 draw_plot()
+dev.off()
+
+pdf(file.path(outdir, "promoter1.pdf"), width = 12, height = 7)
+draw_promoter1()
+dev.off()
+
+png(file.path(outdir, "promoter1.png"), width = 1800, height = 1050, res = 160)
+draw_promoter1()
+dev.off()
+
+pdf(file.path(outdir, "species_promoter2.pdf"), width = 10, height = 6)
+draw_species_promoter2()
+dev.off()
+
+png(file.path(outdir, "species_promoter2.png"), width = 1600, height = 960, res = 160)
+draw_species_promoter2()
 dev.off()

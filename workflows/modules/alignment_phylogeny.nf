@@ -87,12 +87,37 @@ process RUN_PHYLOGENY {
     """
 }
 
+process RUN_MEME_MOTIFS {
+    tag "run MEME motifs"
+    publishDir "${params.outdir}", mode: "copy", overwrite: true
+
+    input:
+    path family_members_faa
+
+    output:
+    path "meme"
+
+    script:
+    """
+    meme ${family_members_faa} \\
+      -protein \\
+      -oc meme \\
+      -nostatus \\
+      -time ${params.meme_time_limit} \\
+      -mod zoops \\
+      -nmotifs ${params.meme_nmotifs} \\
+      -minw ${params.meme_minw} \\
+      -maxw ${params.meme_maxw} \\
+      -maxsize ${params.meme_maxsize}
+    """
+}
+
 process PARSE_MEME_MOTIFS {
     tag "parse MEME motifs"
     publishDir "${params.outdir}/tables", mode: "copy", overwrite: true
 
     input:
-    path meme_txt
+    path meme_output
     val family_name
 
     output:
@@ -101,7 +126,7 @@ process PARSE_MEME_MOTIFS {
     script:
     """
     python ${projectDir}/../bin/genefam/parse_meme_motifs.py \\
-      --meme-txt ${meme_txt} \\
+      --meme-txt ${meme_output}/meme.txt \\
       --family-name ${family_name} \\
       --out motif_summary.tsv
     """

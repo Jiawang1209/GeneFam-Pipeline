@@ -57,7 +57,7 @@ def load_standard_params(config_path: Path) -> dict[str, str]:
         "final_rule": str(identification.get("final_rule", "intersection")),
         "mock_external_tools": _bool_param(dev.get("mock_external_tools", True)),
         "run_feature_summary": _bool_param(modules.get("feature_summary", False)),
-        "run_mcscanx_circlize": _bool_param(modules.get("synteny", False) and plotting.get("syntenic_pairs")),
+        "run_mcscanx_circlize": _bool_param(modules.get("synteny", False)),
         "syntenic_pairs": _resolve_optional_path(plotting.get("syntenic_pairs")),
         "run_promoter": _bool_param(modules.get("promoter", False)),
         "run_promoter_cis": _bool_param(modules.get("promoter_cis", False)),

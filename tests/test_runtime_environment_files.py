@@ -12,11 +12,13 @@ def test_conda_environment_file_defines_genefamilyflow_runtime():
     assert "nextflow" in text
     assert "hmmer" in text
     assert "diamond" in text
+    assert "\n  - last\n" in text
     assert "mafft" in text
     assert "iqtree" in text
     assert "r-base" in text
     assert "quarto" in text
     assert "\n  - jcvi\n" not in text
+    assert "\n  - kakscalculator2\n" in text
     assert "\n  - kaks_calculator\n" not in text
 
 
@@ -27,7 +29,9 @@ def test_linux_conda_environment_keeps_platform_limited_full_toolchain():
     text = environment.read_text(encoding="utf-8")
     assert "name: GeneFamilyFlow" in text
     assert "\n  - jcvi\n" in text
-    assert "\n  - kaks_calculator\n" in text
+    assert "\n  - kakscalculator2\n" in text
+    assert "\n  - kaks_calculator\n" not in text
+    assert "\n  - last\n" in text
 
 
 def test_dockerfile_installs_genefamilyflow_and_exposes_usr_local_r():
@@ -168,6 +172,10 @@ def test_runtime_environment_docs_use_conda_env_aware_audit_and_linux_file():
     assert "results/container_profile_smoke/apptainer/container_profile_smoke.md" in text
     assert "results/container_default_smoke" in text
     assert "run_standard_smoke.py" in text
+    assert "pip install jcvi" in text
+    assert "lastdb" in text
+    assert "kakscalculator2" in text
+    assert "KaKs_Calculator" in text
     assert 'docker run --rm -v "$PWD/results:/opt/GeneFam-Pipeline/results" genefam-pipeline:latest' in text
     assert "scripts/run_local_acceptance.sh" in text
     assert "results/delivery_bundle/delivery_bundle.md" in text

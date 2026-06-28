@@ -18,7 +18,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
         "phylogeny",
         "motif",
         "synteny",
-        "MCScanX circlize visualization",
+        "MCScanX self circlize visualization",
         "duplication retention",
         "gamma",
         "beta",
@@ -178,6 +178,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "Figure Traceability Matrix" in text
     assert "reproducibility commands" in text
     assert "report indexes expose plot manifests, software versions, figure interpretations in TSV/Markdown, final reports, and figure_traceability_matrix anchors" in text
+    assert "reference_mvp_package_audit" in text
     assert "report_index_traceability_anchor" in text
     assert "all available indexed report paths exist" in text
     assert "docs/quickstart.md" in text
@@ -280,7 +281,7 @@ def test_release_audit_maps_goal_requirements_to_evidence_and_commands():
     assert "run_nextflow_smoke.py" in text
     assert "run_nextflow_single_tool_smoke.py" in text
     assert "configs/publication_modules.example.yaml" in text
-    assert "plotting.syntenic_pairs" in text
+    assert "MCScanX self" in text
     assert "results/nextflow_standard_manifest_smoke" in text
     assert "results/nextflow_standard_feature_smoke" in text
     assert "run_container_profile_smoke.py" in text

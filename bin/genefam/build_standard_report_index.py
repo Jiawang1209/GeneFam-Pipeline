@@ -37,6 +37,8 @@ DESCRIPTIONS = {
     "chromosome_locations": "Family member chromosome coordinates",
     "promoters_bed": "Promoter coordinate BED table",
     "promoters_fasta": "Promoter sequence FASTA",
+    "plantcare_submission_manifest": "PlantCARE submission FASTA part manifest for promoter cis-element analysis handoff",
+    "plantcare_submission_status": "PlantCARE submission preparation status and split-file counts",
     "promoter_cis_elements": "Normalized promoter cis-element occurrence table",
     "promoter_cis_gene_matrix": "Promoter cis-element gene-by-category count matrix",
     "promoter_cis_gene_element_matrix": "Promoter cis-element gene-by-element count matrix",
@@ -44,6 +46,10 @@ DESCRIPTIONS = {
     "promoter_cis_element_annotations": "Promoter cis-element per-element biological annotation and position summary table",
     "promoter_cis_pdf": "Promoter cis-element PDF plot",
     "promoter_cis_png": "Promoter cis-element PNG plot",
+    "promoter1_pdf": "Reference-style promoter1 PDF plot with gene-level cis-element category and element matrices",
+    "promoter1_png": "Reference-style promoter1 PNG plot with gene-level cis-element category and element matrices",
+    "species_promoter2_pdf": "Reference-style species_promoter2 PDF plot with species-level promoter cis-element summary",
+    "species_promoter2_png": "Reference-style species_promoter2 PNG plot with species-level promoter cis-element summary",
     "feature_summary": "Combined domain, motif, gene-structure, synteny, and promoter feature statistics",
     "feature_summary_pdf": "Feature summary PDF plot",
     "feature_summary_png": "Feature summary PNG plot",
@@ -56,7 +62,12 @@ DESCRIPTIONS = {
     "ppi_hubs": "Top PPI hub table ranked by weighted degree",
     "ppi_input_evidence": "PPI input evidence table documenting edge cleaning and normalization",
     "ppi_network_qc": "PPI network QC table with node, edge, hub, species, and annotation coverage metrics",
+    "ppi_node_annotation": "Reference-style PPI node annotation table with ID, Domain, species, Type, degree, and weighted degree",
+    "ppi_species_annotation": "Reference-style species PPI edge annotation table with source and target domain assignments",
+    "ppi_overview_status": "PPI overview plotting status table recording whether Reference-style ggraph or ggplot2 fallback was used",
     "ppi_ggnetview_status": "ggNetView PPI plotting status table",
+    "ppi_pdf": "Reference-style PPI network overview PDF plot",
+    "ppi_png": "Reference-style PPI network overview PNG plot",
     "ppi_ggnetview_pdf": "PPI network PDF plot generated with ggNetView",
     "ppi_ggnetview_png": "PPI network PNG plot generated with ggNetView",
     "family_expression": "Family member RNA-seq expression matrix",
@@ -66,16 +77,31 @@ DESCRIPTIONS = {
     "expression_heatmap_pdf": "Annotated family expression heatmap PDF plot",
     "expression_heatmap_png": "Annotated family expression heatmap PNG plot",
     "wgd_handoff_manifest": "Standard-to-WGD handoff manifest for duplication and WGD event analysis",
+    "kaks_failure_summary": "Ka/Ks calculator failure diagnostics grouped by collinearity source, calculator note, and CDS QC flags",
+    "wgd_layers": "Ks-derived WGD layer assignments for standard-branch Ka/Ks pairs",
+    "kaks_wgd_annotations": "WGD event labels and Ks positions used to annotate the standard-branch Ks distribution plot",
+    "wgd_event_evidence": "Layer-level WGD event evidence table with configured event metadata",
+    "ks_distribution_pdf": "Ks distribution PDF plot for WGD-layer interpretation",
+    "ks_distribution_png": "Ks distribution PNG plot for WGD-layer interpretation",
+    "mcscanx_duplicate_types": "Gene-level duplicate-type classification derived from MCScanX self intra-species pairs",
+    "duplicate_type_kaks": "Ka/Ks table grouped by MCScanX self duplicate type",
+    "duplicate_type_kaks_summary": "Duplicate-type Ka/Ks summary statistics",
+    "duplicate_type_kaks_pdf": "Duplicate-type Ka/Ks PDF plot from MCScanX self classifications",
+    "duplicate_type_kaks_png": "Duplicate-type Ka/Ks PNG plot from MCScanX self classifications",
     "plot_manifest": "Generated plot inventory",
     "software_versions": "Software and R package version table for methods reporting",
     "figure_interpretations": "Structured per-figure result interpretation notes",
     "figure_interpretations_md": "Markdown per-figure result interpretation notes",
     "final_report": "Final Markdown report with methods, software versions, QC, and per-figure result interpretation",
+    "reference_mvp_package_audit_tsv": "Machine-readable Reference MVP package audit enforcing MCScanX self intra-species and JCVI inter-species boundaries",
+    "reference_mvp_package_audit_md": "Markdown Reference MVP package audit summary for the modular result package",
     "figure_traceability_matrix": "Final report Figure Traceability Matrix linking every registered plot to close-reading, QC, software, and reproducibility evidence",
 }
 OPTIONAL_KEYS = {
     "promoters_bed",
     "promoters_fasta",
+    "plantcare_submission_manifest",
+    "plantcare_submission_status",
     "promoter_cis_elements",
     "promoter_cis_gene_matrix",
     "promoter_cis_gene_element_matrix",
@@ -83,6 +109,10 @@ OPTIONAL_KEYS = {
     "promoter_cis_element_annotations",
     "promoter_cis_pdf",
     "promoter_cis_png",
+    "promoter1_pdf",
+    "promoter1_png",
+    "species_promoter2_pdf",
+    "species_promoter2_png",
     "feature_summary",
     "feature_summary_pdf",
     "feature_summary_png",
@@ -95,7 +125,12 @@ OPTIONAL_KEYS = {
     "ppi_hubs",
     "ppi_input_evidence",
     "ppi_network_qc",
+    "ppi_node_annotation",
+    "ppi_species_annotation",
+    "ppi_overview_status",
     "ppi_ggnetview_status",
+    "ppi_pdf",
+    "ppi_png",
     "ppi_ggnetview_pdf",
     "ppi_ggnetview_png",
     "family_expression",
@@ -104,8 +139,21 @@ OPTIONAL_KEYS = {
     "expression_gene_summary",
     "expression_heatmap_pdf",
     "expression_heatmap_png",
+    "wgd_layers",
+    "kaks_failure_summary",
+    "kaks_wgd_annotations",
+    "wgd_event_evidence",
+    "ks_distribution_pdf",
+    "ks_distribution_png",
+    "mcscanx_duplicate_types",
+    "duplicate_type_kaks",
+    "duplicate_type_kaks_summary",
+    "duplicate_type_kaks_pdf",
+    "duplicate_type_kaks_png",
     "figure_interpretations_md",
     "final_report",
+    "reference_mvp_package_audit_tsv",
+    "reference_mvp_package_audit_md",
     "figure_traceability_matrix",
 }
 
@@ -116,7 +164,9 @@ def _traceability_anchor(final_report: str) -> str:
 
 def build_report_index(paths: dict[str, str]) -> list[dict[str, str]]:
     paths = dict(paths)
-    paths.setdefault("figure_traceability_matrix", _traceability_anchor(paths.get("final_report", "")))
+    for key in DESCRIPTIONS:
+        paths.setdefault(key, "")
+    paths["figure_traceability_matrix"] = paths.get("figure_traceability_matrix") or _traceability_anchor(paths.get("final_report", ""))
     return [
         {
             "key": key,
@@ -136,6 +186,7 @@ def published_paths(
     promoter_cis_available: bool = False,
     mcscanx_circlize_available: bool = False,
     ppi_available: bool = False,
+    wgd_available: bool = False,
 ) -> dict[str, str]:
     outdir = Path(published_outdir)
     return {
@@ -166,6 +217,8 @@ def published_paths(
         "chromosome_locations": str(outdir / "tables/chromosome_locations.tsv"),
         "promoters_bed": str(outdir / "tables/promoters.bed") if promoter_available else "",
         "promoters_fasta": str(outdir / "sequences/promoters.fa") if promoter_available else "",
+        "plantcare_submission_manifest": str(outdir / "plantcare_submission/plantcare_submission_manifest.tsv") if promoter_available else "",
+        "plantcare_submission_status": str(outdir / "plantcare_submission/plantcare_submission_status.tsv") if promoter_available else "",
         "promoter_cis_elements": str(outdir / "tables/promoter_cis_elements.tsv") if promoter_cis_available else "",
         "promoter_cis_gene_matrix": str(outdir / "tables/promoter_cis_gene_matrix.tsv") if promoter_cis_available else "",
         "promoter_cis_gene_element_matrix": str(outdir / "tables/promoter_cis_gene_element_matrix.tsv") if promoter_cis_available else "",
@@ -173,6 +226,10 @@ def published_paths(
         "promoter_cis_element_annotations": str(outdir / "tables/promoter_cis_element_annotations.tsv") if promoter_cis_available else "",
         "promoter_cis_pdf": str(outdir / "plots/promoter_cis_elements.pdf") if promoter_cis_available else "",
         "promoter_cis_png": str(outdir / "plots/promoter_cis_elements.png") if promoter_cis_available else "",
+        "promoter1_pdf": str(outdir / "plots/promoter1.pdf") if promoter_cis_available else "",
+        "promoter1_png": str(outdir / "plots/promoter1.png") if promoter_cis_available else "",
+        "species_promoter2_pdf": str(outdir / "plots/species_promoter2.pdf") if promoter_cis_available else "",
+        "species_promoter2_png": str(outdir / "plots/species_promoter2.png") if promoter_cis_available else "",
         "feature_summary": str(outdir / "tables/feature_summary.tsv") if feature_summary_available else "",
         "feature_summary_pdf": str(outdir / "plots/feature_summary.pdf") if feature_summary_available else "",
         "feature_summary_png": str(outdir / "plots/feature_summary.png") if feature_summary_available else "",
@@ -185,7 +242,12 @@ def published_paths(
         "ppi_hubs": str(outdir / "tables/ppi_hubs.tsv") if ppi_available else "",
         "ppi_input_evidence": str(outdir / "tables/ppi_input_evidence.tsv") if ppi_available else "",
         "ppi_network_qc": str(outdir / "tables/ppi_network_qc.tsv") if ppi_available else "",
+        "ppi_node_annotation": str(outdir / "tables/node_annotation.tsv") if ppi_available else "",
+        "ppi_species_annotation": str(outdir / "tables/species_ppi_annotation.tsv") if ppi_available else "",
+        "ppi_overview_status": str(outdir / "tables/ppi_overview_status.tsv") if ppi_available else "",
         "ppi_ggnetview_status": str(outdir / "tables/ppi_ggnetview_status.tsv") if ppi_available else "",
+        "ppi_pdf": str(outdir / "plots/ppi.pdf") if ppi_available else "",
+        "ppi_png": str(outdir / "plots/ppi.png") if ppi_available else "",
         "ppi_ggnetview_pdf": str(outdir / "plots/ppi_ggnetview.pdf") if ppi_available else "",
         "ppi_ggnetview_png": str(outdir / "plots/ppi_ggnetview.png") if ppi_available else "",
         "family_expression": str(outdir / "tables/family_expression.tsv") if family_expression_available else "",
@@ -195,11 +257,24 @@ def published_paths(
         "expression_heatmap_pdf": str(outdir / "plots/expression_heatmap.pdf") if family_expression_available else "",
         "expression_heatmap_png": str(outdir / "plots/expression_heatmap.png") if family_expression_available else "",
         "wgd_handoff_manifest": str(outdir / "tables/wgd_handoff_manifest.tsv"),
+        "kaks_failure_summary": str(outdir / "kaks_inputs/kaks_failure_summary.tsv") if wgd_available else "",
+        "wgd_layers": str(outdir / "tables/wgd_layers.tsv") if wgd_available else "",
+        "kaks_wgd_annotations": str(outdir / "tables/kaks_wgd_annotations.tsv") if wgd_available else "",
+        "wgd_event_evidence": str(outdir / "tables/wgd_event_evidence.tsv") if wgd_available else "",
+        "ks_distribution_pdf": str(outdir / "plots/ks_distribution.pdf") if wgd_available else "",
+        "ks_distribution_png": str(outdir / "plots/ks_distribution.png") if wgd_available else "",
+        "mcscanx_duplicate_types": str(outdir / "tables/mcscanx_duplicate_types.tsv") if wgd_available else "",
+        "duplicate_type_kaks": str(outdir / "tables/duplicate_type_kaks.tsv") if wgd_available else "",
+        "duplicate_type_kaks_summary": str(outdir / "tables/duplicate_type_kaks_summary.tsv") if wgd_available else "",
+        "duplicate_type_kaks_pdf": str(outdir / "plots/duplicate_type_kaks.pdf") if wgd_available else "",
+        "duplicate_type_kaks_png": str(outdir / "plots/duplicate_type_kaks.png") if wgd_available else "",
         "plot_manifest": str(outdir / "report/plot_manifest.tsv"),
         "software_versions": str(outdir / "report/software_versions.tsv"),
         "figure_interpretations": str(outdir / "report/figure_interpretations.tsv"),
         "figure_interpretations_md": str(outdir / "report/figure_interpretations.md"),
         "final_report": str(outdir / "report/final_report.md"),
+        "reference_mvp_package_audit_tsv": str(outdir / "report/reference_mvp_package_audit.tsv"),
+        "reference_mvp_package_audit_md": str(outdir / "report/reference_mvp_package_audit.md"),
         "figure_traceability_matrix": _traceability_anchor(str(outdir / "report/final_report.md")),
     }
 
@@ -207,6 +282,14 @@ def published_paths(
 def read_tsv(path: Path) -> list[dict[str, str]]:
     with path.open("r", encoding="utf-8", newline="") as handle:
         return list(csv.DictReader(handle, delimiter="\t"))
+
+
+def status_file_allows_available(path: Path) -> bool:
+    if not path.exists():
+        return True
+    text = path.read_text(encoding="utf-8")
+    unavailable_statuses = ("missing_input", "skipped_optional", "missing_dependency")
+    return not any(status in text for status in unavailable_statuses)
 
 
 def write_tsv(rows: list[dict[str, str]], out_path: Path) -> None:
@@ -221,22 +304,30 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     for key in DESCRIPTIONS:
         parser.add_argument(f"--{key.replace('_', '-')}", default="", required=key not in OPTIONAL_KEYS)
+    parser.add_argument("--promoter-cis-status", default="")
+    parser.add_argument("--expression-status", default="")
     parser.add_argument("--published-outdir", default=None)
     parser.add_argument("--out", required=True, type=Path)
     args = parser.parse_args()
     paths = {key: getattr(args, key) for key in DESCRIPTIONS}
     paths["figure_traceability_matrix"] = paths["figure_traceability_matrix"] or _traceability_anchor(paths["final_report"])
     if args.published_outdir:
+        published_outdir = Path(args.published_outdir)
+        promoter_cis_status = Path(args.promoter_cis_status) if args.promoter_cis_status else published_outdir / "tables" / "promoter_cis_status.tsv"
+        expression_status = Path(args.expression_status) if args.expression_status else published_outdir / "tables" / "expression_status.tsv"
+        promoter_cis_available = bool(
+            paths["promoter_cis_elements"] or paths["promoter_cis_category_summary"] or paths["promoter_cis_pdf"]
+        ) and status_file_allows_available(promoter_cis_status)
+        family_expression_available = bool(paths["family_expression"]) and status_file_allows_available(expression_status)
         paths = published_paths(
             args.published_outdir,
-            family_expression_available=bool(paths["family_expression"]),
+            family_expression_available=family_expression_available,
             promoter_available=bool(paths["promoters_bed"] or paths["promoters_fasta"]),
-            promoter_cis_available=bool(
-                paths["promoter_cis_elements"] or paths["promoter_cis_category_summary"] or paths["promoter_cis_pdf"]
-            ),
+            promoter_cis_available=promoter_cis_available,
             feature_summary_available=bool(paths["feature_summary"] or paths["feature_summary_pdf"] or paths["feature_summary_png"]),
             mcscanx_circlize_available=bool(paths["mcscanx_circlize_pdf"] or paths["mcscanx_circlize_png"]),
             ppi_available=bool(paths["ppi_edges"] or paths["ppi_ggnetview_status"] or paths["ppi_ggnetview_pdf"]),
+            wgd_available=bool(paths["wgd_layers"] or paths["wgd_event_evidence"] or paths["ks_distribution_pdf"]),
         )
     write_tsv(build_report_index(paths), args.out)
 

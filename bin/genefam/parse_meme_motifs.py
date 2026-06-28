@@ -23,7 +23,8 @@ def parse_meme_text(path: Path, family_name: str) -> list[dict[str, str]]:
             if line.startswith("MOTIF "):
                 if pending_motif is not None:
                     raise ValueError(f"Missing letter-probability matrix for motif {pending_motif['motif_id']}")
-                parts = line.split(maxsplit=2)
+                motif_header = line.split("\t", 1)[0]
+                parts = motif_header.split(maxsplit=2)
                 motif_id = parts[1]
                 motif_name = parts[2] if len(parts) > 2 else motif_id
                 pending_motif = {"motif_id": motif_id, "motif_name": motif_name}

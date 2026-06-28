@@ -91,7 +91,7 @@ def test_audit_container_materials_reports_reference_backed_example_hmm_profiles
         "  - meme\n"
         "  - mcscanx\n"
         "  - jcvi\n"
-        "  - kaks_calculator\n"
+        "  - kakscalculator2\n"
         "  - r-base\n"
         "  - quarto\n",
         encoding="utf-8",

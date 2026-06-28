@@ -101,6 +101,17 @@ def run_mcscanx_circlize_smoke(
         check=True,
     )
 
+    species_ids = sorted({row["species_id"] for row in chromosomes})
+    species_plot_lines: list[str] = []
+    species_outputs: dict[str, Path] = {}
+    for species_id in species_ids:
+        species_pdf = plot_dir / "species" / species_id / f"circos_{species_id}.pdf"
+        species_png = plot_dir / "species" / species_id / f"circos_{species_id}.png"
+        species_plot_lines.append(f"- `{species_pdf}`")
+        species_plot_lines.append(f"- `{species_png}`")
+        species_outputs[f"circos_{species_id}_pdf"] = species_pdf
+        species_outputs[f"circos_{species_id}_png"] = species_png
+
     summary_md = outdir / "mcscanx_circlize_smoke.md"
     summary_md.write_text(
         "\n".join(
@@ -120,6 +131,10 @@ def run_mcscanx_circlize_smoke(
                 f"PDF plot: `{plot_dir / 'mcscanx_circlize.pdf'}`",
                 f"PNG plot: `{plot_dir / 'mcscanx_circlize.png'}`",
                 "",
+                "## Per-Species Circos",
+                "",
+                *species_plot_lines,
+                "",
             ]
         ),
         encoding="utf-8",
@@ -133,7 +148,7 @@ def run_mcscanx_circlize_smoke(
         "circlize_pdf": plot_dir / "mcscanx_circlize.pdf",
         "circlize_png": plot_dir / "mcscanx_circlize.png",
         "summary": summary_md,
-    }
+    } | species_outputs
 
 
 def _print_outputs(outputs: dict[str, Path]) -> None:

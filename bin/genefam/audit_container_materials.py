@@ -117,7 +117,7 @@ def audit_container_materials(
         "meme",
         "mcscanx",
         "jcvi",
-        "kaks_calculator",
+        "kakscalculator2",
         "r-base",
         "quarto",
     ]

@@ -16,7 +16,9 @@ from bin.genefam.build_ppi_tables import (
     EDGE_FIELDS,
     HUB_FIELDS,
     METRIC_FIELDS,
+    NODE_ANNOTATION_FIELDS,
     NODE_FIELDS,
+    SPECIES_PPI_ANNOTATION_FIELDS,
     build_ppi_tables,
     write_tsv,
 )
@@ -44,15 +46,20 @@ def run_ppi_ggnetview_plot_smoke(r_bin: str, outdir: Path) -> dict[str, Path]:
     table_dir = outdir / "tables"
     plot_dir = outdir / "plots"
     status = table_dir / "ppi_ggnetview_status.tsv"
+    overview_status = table_dir / "ppi_overview_status.tsv"
     summary = outdir / "ppi_ggnetview_plot_smoke.md"
     outputs = build_ppi_tables(edges=_demo_edges(), node_annotations=_demo_nodes(), top_n=10)
     edge_path = table_dir / "ppi_edges.tsv"
     node_path = table_dir / "ppi_nodes.tsv"
+    node_annotation_path = table_dir / "node_annotation.tsv"
+    species_annotation_path = table_dir / "species_ppi_annotation.tsv"
     hub_path = table_dir / "ppi_hubs.tsv"
     evidence_path = table_dir / "ppi_input_evidence.tsv"
     qc_path = table_dir / "ppi_network_qc.tsv"
     write_tsv(outputs["edges"], edge_path, EDGE_FIELDS)
     write_tsv(outputs["nodes"], node_path, NODE_FIELDS)
+    write_tsv(outputs["node_annotation"], node_annotation_path, NODE_ANNOTATION_FIELDS)
+    write_tsv(outputs["species_ppi_annotation"], species_annotation_path, SPECIES_PPI_ANNOTATION_FIELDS)
     write_tsv(outputs["hubs"], hub_path, HUB_FIELDS)
     write_tsv(outputs["input_evidence"], evidence_path, METRIC_FIELDS)
     write_tsv(outputs["network_qc"], qc_path, METRIC_FIELDS)
@@ -83,10 +90,15 @@ def run_ppi_ggnetview_plot_smoke(r_bin: str, outdir: Path) -> dict[str, Path]:
                 "",
                 f"Edges: `{edge_path}`",
                 f"Nodes: `{node_path}`",
+                f"Reference node annotation: `{node_annotation_path}`",
+                f"Reference species PPI annotation: `{species_annotation_path}`",
                 f"Hubs: `{hub_path}`",
                 f"Input evidence: `{evidence_path}`",
                 f"Network QC: `{qc_path}`",
+                f"PPI overview status: `{overview_status}`",
                 f"Status: `{status}`",
+                f"Reference PPI PDF plot: `{plot_dir / 'ppi.pdf'}`",
+                f"Reference PPI PNG plot: `{plot_dir / 'ppi.png'}`",
                 f"PDF plot: `{plot_dir / 'ppi_ggnetview.pdf'}`",
                 f"PNG plot: `{plot_dir / 'ppi_ggnetview.png'}`",
                 "",
@@ -97,10 +109,15 @@ def run_ppi_ggnetview_plot_smoke(r_bin: str, outdir: Path) -> dict[str, Path]:
     return {
         "ppi_edges": edge_path,
         "ppi_nodes": node_path,
+        "ppi_node_annotation": node_annotation_path,
+        "ppi_species_annotation": species_annotation_path,
         "ppi_hubs": hub_path,
         "ppi_input_evidence": evidence_path,
         "ppi_network_qc": qc_path,
+        "ppi_overview_status": overview_status,
         "ppi_status": status,
+        "ppi_reference_pdf": plot_dir / "ppi.pdf",
+        "ppi_reference_png": plot_dir / "ppi.png",
         "ppi_pdf": plot_dir / "ppi_ggnetview.pdf",
         "ppi_png": plot_dir / "ppi_ggnetview.png",
         "summary": summary,

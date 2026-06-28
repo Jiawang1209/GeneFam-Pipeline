@@ -72,6 +72,10 @@ def run_promoter_cis_smoke(r_bin: str, outdir: Path) -> dict[str, Path]:
                 f"Element annotations: `{outputs['promoter_cis_element_annotations']}`",
                 f"PDF plot: `{plot_dir / 'promoter_cis_elements.pdf'}`",
                 f"PNG plot: `{plot_dir / 'promoter_cis_elements.png'}`",
+                f"Reference promoter1 PDF: `{plot_dir / 'promoter1.pdf'}`",
+                f"Reference promoter1 PNG: `{plot_dir / 'promoter1.png'}`",
+                f"Reference species_promoter2 PDF: `{plot_dir / 'species_promoter2.pdf'}`",
+                f"Reference species_promoter2 PNG: `{plot_dir / 'species_promoter2.png'}`",
                 "",
             ]
         ),
@@ -80,6 +84,10 @@ def run_promoter_cis_smoke(r_bin: str, outdir: Path) -> dict[str, Path]:
     outputs = dict(outputs)
     outputs["promoter_cis_pdf"] = plot_dir / "promoter_cis_elements.pdf"
     outputs["promoter_cis_png"] = plot_dir / "promoter_cis_elements.png"
+    outputs["promoter1_pdf"] = plot_dir / "promoter1.pdf"
+    outputs["promoter1_png"] = plot_dir / "promoter1.png"
+    outputs["species_promoter2_pdf"] = plot_dir / "species_promoter2.pdf"
+    outputs["species_promoter2_png"] = plot_dir / "species_promoter2.png"
     outputs["summary"] = summary_md
     return outputs
 

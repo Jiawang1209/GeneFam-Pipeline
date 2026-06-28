@@ -264,6 +264,9 @@ def clean_sequence_records(
 
 def preprocess_manifest(manifest_rows: list[dict[str, str]], outdir: Path) -> list[dict[str, str]]:
     clean_rows: list[dict[str, str]] = []
+    all_transcript_rows: list[dict[str, str]] = []
+    all_representative_rows: list[dict[str, str]] = []
+    all_warning_rows: list[dict[str, str]] = []
     for row in manifest_rows:
         species_id = row["species_id"]
         species_outdir = outdir / "species_bank_clean" / species_id
@@ -288,12 +291,18 @@ def preprocess_manifest(manifest_rows: list[dict[str, str]], outdir: Path) -> li
         write_tsv(transcript_rows, TRANSCRIPT_FIELDS, species_outdir / "transcript_gene_map.tsv")
         write_tsv(representative_rows, REPRESENTATIVE_FIELDS, species_outdir / "representative_transcripts.tsv")
         write_tsv(warnings, WARNING_FIELDS, species_outdir / "preprocess_warnings.tsv")
+        all_transcript_rows.extend(transcript_rows)
+        all_representative_rows.extend(representative_rows)
+        all_warning_rows.extend(warnings)
 
         clean_row = dict(row)
         clean_row["pep"] = str(clean_pep_path.resolve())
         if cds_path:
             clean_row["cds"] = str(clean_cds_path.resolve())
         clean_rows.append(clean_row)
+    write_tsv(all_transcript_rows, TRANSCRIPT_FIELDS, outdir / "all_transcript_gene_map.tsv")
+    write_tsv(all_representative_rows, REPRESENTATIVE_FIELDS, outdir / "all_representative_transcripts.tsv")
+    write_tsv(all_warning_rows, WARNING_FIELDS, outdir / "all_preprocess_warnings.tsv")
     return clean_rows
 
 

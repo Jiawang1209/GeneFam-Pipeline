@@ -41,6 +41,10 @@ def test_build_standard_report_index_marks_core_outputs_available():
             "promoter_cis_element_annotations": "",
             "promoter_cis_pdf": "",
             "promoter_cis_png": "",
+            "promoter1_pdf": "",
+            "promoter1_png": "",
+            "species_promoter2_pdf": "",
+            "species_promoter2_png": "",
             "feature_summary": "",
             "feature_summary_pdf": "",
             "feature_summary_png": "",
@@ -53,7 +57,12 @@ def test_build_standard_report_index_marks_core_outputs_available():
             "ppi_hubs": "",
             "ppi_input_evidence": "",
             "ppi_network_qc": "",
+            "ppi_node_annotation": "",
+            "ppi_species_annotation": "",
+            "ppi_overview_status": "",
             "ppi_ggnetview_status": "",
+            "ppi_pdf": "",
+            "ppi_png": "",
             "ppi_ggnetview_pdf": "",
             "ppi_ggnetview_png": "",
             "family_expression": "",
@@ -68,6 +77,8 @@ def test_build_standard_report_index_marks_core_outputs_available():
             "figure_interpretations": "report/figure_interpretations.tsv",
             "figure_interpretations_md": "report/figure_interpretations.md",
             "final_report": "report/final_report.md",
+            "reference_mvp_package_audit_tsv": "report/reference_mvp_package_audit.tsv",
+            "reference_mvp_package_audit_md": "report/reference_mvp_package_audit.md",
             "figure_traceability_matrix": "report/final_report.md#figure-traceability-matrix",
         }
     )
@@ -103,6 +114,8 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "chromosome_locations",
         "promoters_bed",
         "promoters_fasta",
+        "plantcare_submission_manifest",
+        "plantcare_submission_status",
         "promoter_cis_elements",
         "promoter_cis_gene_matrix",
         "promoter_cis_gene_element_matrix",
@@ -110,6 +123,10 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "promoter_cis_element_annotations",
         "promoter_cis_pdf",
         "promoter_cis_png",
+        "promoter1_pdf",
+        "promoter1_png",
+        "species_promoter2_pdf",
+        "species_promoter2_png",
         "feature_summary",
         "feature_summary_pdf",
         "feature_summary_png",
@@ -122,7 +139,12 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "ppi_hubs",
         "ppi_input_evidence",
         "ppi_network_qc",
+        "ppi_node_annotation",
+        "ppi_species_annotation",
+        "ppi_overview_status",
         "ppi_ggnetview_status",
+        "ppi_pdf",
+        "ppi_png",
         "ppi_ggnetview_pdf",
         "ppi_ggnetview_png",
         "family_expression",
@@ -132,10 +154,13 @@ def test_build_standard_report_index_marks_core_outputs_available():
         "expression_heatmap_pdf",
         "expression_heatmap_png",
         "wgd_handoff_manifest",
+        "kaks_failure_summary",
         "software_versions",
         "figure_interpretations",
         "figure_interpretations_md",
         "final_report",
+        "reference_mvp_package_audit_tsv",
+        "reference_mvp_package_audit_md",
         "figure_traceability_matrix",
     }
     assert next(row for row in rows if row["key"] == "figure_traceability_matrix") == {
@@ -147,6 +172,8 @@ def test_build_standard_report_index_marks_core_outputs_available():
     assert next(row for row in rows if row["key"] == "family_expression")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "expression_heatmap_pdf")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "promoters_bed")["status"] == "missing"
+    assert next(row for row in rows if row["key"] == "plantcare_submission_manifest")["status"] == "missing"
+    assert next(row for row in rows if row["key"] == "plantcare_submission_status")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "promoter_cis_pdf")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "promoter_cis_element_annotations")["status"] == "missing"
     assert next(row for row in rows if row["key"] == "feature_summary_pdf")["status"] == "missing"
@@ -186,6 +213,8 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
         "chromosome_locations": "results/nextflow_standard_smoke/standard/tables/chromosome_locations.tsv",
         "promoters_bed": "",
         "promoters_fasta": "",
+        "plantcare_submission_manifest": "",
+        "plantcare_submission_status": "",
         "promoter_cis_elements": "",
         "promoter_cis_gene_matrix": "",
         "promoter_cis_gene_element_matrix": "",
@@ -193,6 +222,10 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
         "promoter_cis_element_annotations": "",
         "promoter_cis_pdf": "",
         "promoter_cis_png": "",
+        "promoter1_pdf": "",
+        "promoter1_png": "",
+        "species_promoter2_pdf": "",
+        "species_promoter2_png": "",
         "feature_summary": "",
         "feature_summary_pdf": "",
         "feature_summary_png": "",
@@ -205,7 +238,12 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
         "ppi_hubs": "",
         "ppi_input_evidence": "",
         "ppi_network_qc": "",
+        "ppi_node_annotation": "",
+        "ppi_species_annotation": "",
+        "ppi_overview_status": "",
         "ppi_ggnetview_status": "",
+        "ppi_pdf": "",
+        "ppi_png": "",
         "ppi_ggnetview_pdf": "",
         "ppi_ggnetview_png": "",
         "family_expression": "",
@@ -215,15 +253,69 @@ def test_published_paths_map_standard_outputs_to_user_results_tree():
         "expression_heatmap_pdf": "",
         "expression_heatmap_png": "",
         "wgd_handoff_manifest": "results/nextflow_standard_smoke/standard/tables/wgd_handoff_manifest.tsv",
+        "kaks_failure_summary": "",
+        "wgd_layers": "",
+        "kaks_wgd_annotations": "",
+        "wgd_event_evidence": "",
+        "ks_distribution_pdf": "",
+        "ks_distribution_png": "",
+        "mcscanx_duplicate_types": "",
+        "duplicate_type_kaks": "",
+        "duplicate_type_kaks_summary": "",
+        "duplicate_type_kaks_pdf": "",
+        "duplicate_type_kaks_png": "",
         "plot_manifest": "results/nextflow_standard_smoke/standard/report/plot_manifest.tsv",
         "software_versions": "results/nextflow_standard_smoke/standard/report/software_versions.tsv",
         "figure_interpretations": "results/nextflow_standard_smoke/standard/report/figure_interpretations.tsv",
         "figure_interpretations_md": "results/nextflow_standard_smoke/standard/report/figure_interpretations.md",
         "final_report": "results/nextflow_standard_smoke/standard/report/final_report.md",
+        "reference_mvp_package_audit_tsv": (
+            "results/nextflow_standard_smoke/standard/report/reference_mvp_package_audit.tsv"
+        ),
+        "reference_mvp_package_audit_md": (
+            "results/nextflow_standard_smoke/standard/report/reference_mvp_package_audit.md"
+        ),
         "figure_traceability_matrix": (
             "results/nextflow_standard_smoke/standard/report/final_report.md#figure-traceability-matrix"
         ),
     }
+
+
+def test_published_paths_can_mark_standard_wgd_outputs_available():
+    paths = published_paths(
+        "results/nextflow_standard_smoke/standard",
+        family_expression_available=False,
+        wgd_available=True,
+    )
+
+    assert paths["wgd_layers"] == "results/nextflow_standard_smoke/standard/tables/wgd_layers.tsv"
+    assert paths["kaks_wgd_annotations"] == "results/nextflow_standard_smoke/standard/tables/kaks_wgd_annotations.tsv"
+    assert paths["wgd_event_evidence"] == "results/nextflow_standard_smoke/standard/tables/wgd_event_evidence.tsv"
+    assert paths["kaks_failure_summary"] == "results/nextflow_standard_smoke/standard/kaks_inputs/kaks_failure_summary.tsv"
+    assert paths["ks_distribution_pdf"] == "results/nextflow_standard_smoke/standard/plots/ks_distribution.pdf"
+    assert paths["ks_distribution_png"] == "results/nextflow_standard_smoke/standard/plots/ks_distribution.png"
+    assert paths["mcscanx_duplicate_types"] == "results/nextflow_standard_smoke/standard/tables/mcscanx_duplicate_types.tsv"
+    assert paths["duplicate_type_kaks"] == "results/nextflow_standard_smoke/standard/tables/duplicate_type_kaks.tsv"
+    assert paths["duplicate_type_kaks_summary"] == "results/nextflow_standard_smoke/standard/tables/duplicate_type_kaks_summary.tsv"
+    assert paths["duplicate_type_kaks_pdf"] == "results/nextflow_standard_smoke/standard/plots/duplicate_type_kaks.pdf"
+    assert paths["duplicate_type_kaks_png"] == "results/nextflow_standard_smoke/standard/plots/duplicate_type_kaks.png"
+
+
+def test_published_paths_can_mark_plantcare_submission_handoff_available():
+    paths = published_paths(
+        "results/nextflow_standard_smoke/standard",
+        family_expression_available=False,
+        promoter_available=True,
+    )
+
+    assert paths["promoters_bed"] == "results/nextflow_standard_smoke/standard/tables/promoters.bed"
+    assert paths["promoters_fasta"] == "results/nextflow_standard_smoke/standard/sequences/promoters.fa"
+    assert paths["plantcare_submission_manifest"] == (
+        "results/nextflow_standard_smoke/standard/plantcare_submission/plantcare_submission_manifest.tsv"
+    )
+    assert paths["plantcare_submission_status"] == (
+        "results/nextflow_standard_smoke/standard/plantcare_submission/plantcare_submission_status.tsv"
+    )
 
 
 def test_build_standard_report_index_cli_writes_tsv(tmp_path):
@@ -307,6 +399,10 @@ def test_build_standard_report_index_cli_writes_tsv(tmp_path):
             "figure_interpretations.md",
             "--final-report",
             "final_report.md",
+            "--reference-mvp-package-audit-tsv",
+            "reference_mvp_package_audit.tsv",
+            "--reference-mvp-package-audit-md",
+            "reference_mvp_package_audit.md",
             "--out",
             str(out),
         ],
@@ -405,6 +501,10 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
             "figure_interpretations.md",
             "--final-report",
             "final_report.md",
+            "--reference-mvp-package-audit-tsv",
+            "reference_mvp_package_audit.tsv",
+            "--reference-mvp-package-audit-md",
+            "reference_mvp_package_audit.md",
             "--published-outdir",
             "results/demo",
             "--out",
@@ -442,6 +542,128 @@ def test_build_standard_report_index_cli_can_write_published_paths(tmp_path):
     assert rows["figure_interpretations"]["path"] == "results/demo/report/figure_interpretations.tsv"
     assert rows["figure_interpretations_md"]["path"] == "results/demo/report/figure_interpretations.md"
     assert rows["final_report"]["path"] == "results/demo/report/final_report.md"
+    assert rows["reference_mvp_package_audit_tsv"]["path"] == "results/demo/report/reference_mvp_package_audit.tsv"
+    assert rows["reference_mvp_package_audit_md"]["path"] == "results/demo/report/reference_mvp_package_audit.md"
     assert rows["figure_traceability_matrix"]["path"] == (
         "results/demo/report/final_report.md#figure-traceability-matrix"
     )
+
+
+def test_published_report_index_respects_missing_optional_module_status(tmp_path):
+    published = tmp_path / "published"
+    (published / "tables").mkdir(parents=True)
+    (published / "report").mkdir(parents=True)
+    promoter_status = tmp_path / "work_promoter_cis_status.tsv"
+    expression_status = tmp_path / "work_expression_status.tsv"
+    promoter_status.write_text(
+        "status\tnote\nmissing_input\tPlantCARE gene-level hit table not provided\n",
+        encoding="utf-8",
+    )
+    (published / "tables/promoter_cis_elements.tsv").write_text(
+        "species_id\tgene_id\telement\tcategory\tposition\tstrand\tdescription\n",
+        encoding="utf-8",
+    )
+    expression_status.write_text(
+        "status\tnote\nskipped_optional\tRNA-seq expression matrix not provided\n",
+        encoding="utf-8",
+    )
+    (published / "tables/family_expression.tsv").write_text("gene_id\n", encoding="utf-8")
+    (published / "report/final_report.md").write_text("# Report\n", encoding="utf-8")
+
+    out = tmp_path / "report_index.tsv"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "bin/genefam/build_standard_report_index.py",
+            "--species-manifest",
+            "species_manifest.tsv",
+            "--run-config-snapshot",
+            "run_config_snapshot.tsv",
+            "--family-candidates",
+            "family_candidates.tsv",
+            "--family-counts",
+            "family_counts.tsv",
+            "--family-counts-pdf",
+            "family_counts.pdf",
+            "--family-counts-png",
+            "family_counts.png",
+            "--family-members-faa",
+            "family_members.faa",
+            "--gene-family-copy-number",
+            "gene_family_copy_number.tsv",
+            "--gene-family-copy-number-summary",
+            "gene_family_copy_number_summary.tsv",
+            "--gene-family-species-order",
+            "gene_family_species_order.tsv",
+            "--gene-family-copy-number-expansion",
+            "gene_family_copy_number_expansion.tsv",
+            "--gene-family-pangenome-summary",
+            "gene_family_pangenome_summary.tsv",
+            "--gene-family-protein-properties",
+            "gene_family_protein_properties.tsv",
+            "--gene-family-info-pdf",
+            "gene_family_info_summary.pdf",
+            "--gene-family-info-png",
+            "gene_family_info_summary.png",
+            "--alignment-manifest",
+            "alignment_manifest.tsv",
+            "--alignment-file",
+            "GDSL.mafft.aln.faa",
+            "--phylogeny-manifest",
+            "phylogeny_manifest.tsv",
+            "--phylogeny-tree",
+            "GDSL.fasttree.treefile",
+            "--motif-summary",
+            "motif_summary.tsv",
+            "--gene-structure-summary",
+            "gene_structure_summary.tsv",
+            "--tree-feature-matrix",
+            "tree_feature_matrix.tsv",
+            "--tree-features-pdf",
+            "tree_features.pdf",
+            "--tree-features-png",
+            "tree_features.png",
+            "--chromosome-locations",
+            "chromosome_locations.tsv",
+            "--promoter-cis-elements",
+            "placeholder.tsv",
+            "--family-expression",
+            "placeholder.tsv",
+            "--promoter-cis-status",
+            str(promoter_status),
+            "--expression-status",
+            str(expression_status),
+            "--wgd-handoff-manifest",
+            "wgd_handoff_manifest.tsv",
+            "--plot-manifest",
+            "plot_manifest.tsv",
+            "--software-versions",
+            "software_versions.tsv",
+            "--figure-interpretations",
+            "figure_interpretations.tsv",
+            "--figure-interpretations-md",
+            "figure_interpretations.md",
+            "--final-report",
+            "final_report.md",
+            "--reference-mvp-package-audit-tsv",
+            "reference_mvp_package_audit.tsv",
+            "--reference-mvp-package-audit-md",
+            "reference_mvp_package_audit.md",
+            "--published-outdir",
+            str(published),
+            "--out",
+            str(out),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    rows = {row["key"]: row for row in read_tsv(out)}
+    assert rows["promoter_cis_elements"]["path"] == ""
+    assert rows["promoter_cis_elements"]["status"] == "missing"
+    assert rows["promoter_cis_pdf"]["path"] == ""
+    assert rows["family_expression"]["path"] == ""
+    assert rows["family_expression"]["status"] == "missing"
+    assert rows["expression_heatmap_pdf"]["path"] == ""

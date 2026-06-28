@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from bin.genefam.build_promoter_cis_elements import build_promoter_cis_tables, read_tsv, write_tables
+from openpyxl import Workbook
+
+from bin.genefam.build_promoter_cis_elements import build_promoter_cis_tables, read_table, read_tsv, write_tables
 
 
 def test_build_promoter_cis_tables_normalizes_plantcare_columns_and_infers_categories(tmp_path):
@@ -86,3 +88,60 @@ def test_write_promoter_cis_tables_writes_expected_outputs(tmp_path):
     assert outputs["promoter_cis_category_summary"].name == "promoter_cis_category_summary.tsv"
     assert outputs["promoter_cis_element_annotations"].name == "promoter_cis_element_annotations.tsv"
     assert "MYB" in outputs["promoter_cis_elements"].read_text(encoding="utf-8")
+
+
+def test_read_table_accepts_element_description_xlsx_without_gene_hits(tmp_path):
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.append(["element", "description"])
+    sheet.append(["ABRE", "Plant hormone related"])
+    xlsx = tmp_path / "cir_element.desc.xlsx"
+    workbook.save(xlsx)
+
+    rows = read_table(xlsx)
+    tables = build_promoter_cis_tables(rows)
+
+    assert rows == [{"element": "ABRE", "description": "Plant hormone related"}]
+    assert tables.normalized == []
+
+
+def test_build_promoter_cis_tables_uses_promoter_header_and_element_descriptions():
+    hit_rows = [
+        {
+            "Sequence Name": "Arabidopsis_thaliana|AT1G06990|Chr1:2146387-2148386(+)",
+            "Site Name": "ABRE",
+            "Position": "-210",
+        },
+        {
+            "Sequence Name": "Brassica_rapa|BraA010001|A01:10-2000(-)",
+            "Site Name": "LTR",
+            "Position": "-450",
+        },
+    ]
+    description_rows = [
+        {"element": "ABRE", "description": "Plant hormone related"},
+        {"element": "LTR", "description": "Stress related"},
+    ]
+
+    tables = build_promoter_cis_tables(hit_rows, element_descriptions=description_rows)
+
+    assert tables.normalized == [
+        {
+            "species_id": "Arabidopsis_thaliana",
+            "gene_id": "AT1G06990",
+            "element": "ABRE",
+            "category": "hormone_responsive",
+            "position": "-210",
+            "strand": "",
+            "description": "Plant hormone related",
+        },
+        {
+            "species_id": "Brassica_rapa",
+            "gene_id": "BraA010001",
+            "element": "LTR",
+            "category": "stress_responsive",
+            "position": "-450",
+            "strand": "",
+            "description": "Stress related",
+        },
+    ]

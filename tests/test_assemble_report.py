@@ -61,6 +61,17 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
             "p_value": "0.001",
         }
     ]
+    kaks_failure_summary = [
+        {
+            "source": "mcscanx",
+            "calculator_status": "failed",
+            "calculator_note": "empty KaKs output",
+            "qc_flags": "terminal_stop",
+            "pair_count": "13",
+            "example_pair_ids": "mc1,mc2",
+            "interpretation": "KaKs_Calculator finished without a usable result file; CDS QC flags suggest checking terminal stop codons before rerunning.",
+        }
+    ]
     plot_manifest = [
         {"plot_key": "family_counts", "path": "plots/family_counts.pdf", "description": "Family counts"},
         {"plot_key": "kaks", "path": "plots/ks_distribution.pdf", "description": "Ks distribution"},
@@ -100,6 +111,7 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
         wgd_event_evidence=wgd_event_evidence,
         family_event_retention=family_event_retention,
         retention_enrichment=retention_enrichment,
+        kaks_failure_summary=kaks_failure_summary,
         plot_manifest=plot_manifest,
         software_versions=software_versions,
         figure_interpretations=figure_interpretations,
@@ -163,6 +175,8 @@ def test_assemble_report_renders_output_availability_and_wgd_sections():
     assert "| WGD_layer_1 | alpha | WGD/segmental | 4 | 6 | AT1,AT2,AT3,AT4 |" in report
     assert "## Duplicate-Type Retention Enrichment" in report
     assert "| WGD/segmental | 4 | 5 | 4.0000 | 0.001 |" in report
+    assert "## Ka/Ks Calculator Diagnostics" in report
+    assert "| mcscanx | failed | empty KaKs output | terminal_stop | 13 | mc1,mc2 | KaKs_Calculator finished without a usable result file; CDS QC flags suggest checking terminal stop codons before rerunning. |" in report
     assert "## Plots" in report
     assert "| family_counts | plots/family_counts.pdf | Family counts |" in report
 
@@ -174,6 +188,7 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
     plot_manifest = tmp_path / "plot_manifest.tsv"
     software_versions = tmp_path / "software_versions.tsv"
     figure_interpretations = tmp_path / "figure_interpretations.tsv"
+    kaks_failure_summary = tmp_path / "kaks_failure_summary.tsv"
     out_path = tmp_path / "final_report.md"
     report_index.write_text(
         "key\tpath\tstatus\tdescription\n"
@@ -202,6 +217,11 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
         "family_counts\tFamily copy number and member count overview\tFamily counts\tCounts by species\tCopy-number contrasts are visible across species\tExpansion signal\tSmoke data\ttables/gene_family_copy_number.tsv\tplot_gene_family_info.R; /usr/local/bin/R\tnextflow run main.nf -profile conda --branch standard\tfigure-specific close reading\tplots/family_counts.pdf\n",
         encoding="utf-8",
     )
+    kaks_failure_summary.write_text(
+        "source\tcalculator_status\tcalculator_note\tqc_flags\tpair_count\texample_pair_ids\tinterpretation\n"
+        "jcvi\tfailed\tempty KaKs output\tclean_basic_qc\t2\tjc1,jc2\tInspect pair CDS alignment and calculator output.\n",
+        encoding="utf-8",
+    )
 
     completed = subprocess.run(
         [
@@ -223,6 +243,8 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
             str(software_versions),
             "--figure-interpretations",
             str(figure_interpretations),
+            "--kaks-failure-summary",
+            str(kaks_failure_summary),
             "--out",
             str(out_path),
         ],
@@ -238,6 +260,7 @@ def test_assemble_report_cli_writes_markdown(tmp_path):
     assert "## Results Package Inventory" in text
     assert "### Software Versions" in text
     assert "## Figure Result Interpretations" in text
+    assert "## Ka/Ks Calculator Diagnostics" in text
     assert "![family_counts: Family copy number and member count overview](../plots/family_counts.png)" in text
     assert "## Figure Traceability Matrix" in text
     assert (

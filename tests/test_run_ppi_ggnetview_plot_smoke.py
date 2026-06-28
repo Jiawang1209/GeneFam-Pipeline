@@ -25,13 +25,25 @@ def test_run_ppi_ggnetview_plot_smoke_writes_tables_status_and_plots(tmp_path):
     assert (outdir / "tables/ppi_hubs.tsv").exists()
     assert (outdir / "tables/ppi_input_evidence.tsv").exists()
     assert (outdir / "tables/ppi_network_qc.tsv").exists()
+    assert (outdir / "tables/node_annotation.tsv").exists()
+    assert (outdir / "tables/species_ppi_annotation.tsv").exists()
+    assert (outdir / "tables/ppi_overview_status.tsv").exists()
     assert (outdir / "tables/ppi_ggnetview_status.tsv").exists()
+    assert (outdir / "plots/ppi.pdf").exists()
+    assert (outdir / "plots/ppi.png").exists()
     assert (outdir / "plots/ppi_ggnetview.pdf").exists()
     assert (outdir / "plots/ppi_ggnetview.png").exists()
     status = (outdir / "tables/ppi_ggnetview_status.tsv").read_text(encoding="utf-8")
     assert "ppi_ggnetview_plot\tready\tggNetView" in status
+    overview_status = (outdir / "tables/ppi_overview_status.tsv").read_text(encoding="utf-8")
+    assert "ppi_overview_plot" in overview_status
+    assert "ready_ggnetview_alias" in overview_status
     summary = (outdir / "ppi_ggnetview_plot_smoke.md").read_text(encoding="utf-8")
     assert "ggNetView PPI Plot Smoke" in summary
     assert "ppi_hubs.tsv" in summary
     assert "ppi_input_evidence.tsv" in summary
     assert "ppi_network_qc.tsv" in summary
+    assert "node_annotation.tsv" in summary
+    assert "species_ppi_annotation.tsv" in summary
+    assert "ppi_overview_status.tsv" in summary
+    assert "ppi.pdf" in summary

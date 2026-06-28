@@ -17,6 +17,8 @@ REQUIRED_ARTIFACT_KEYS = {
         "figure_interpretations",
         "figure_interpretations_md",
         "final_report",
+        "reference_mvp_package_audit_tsv",
+        "reference_mvp_package_audit_md",
         "figure_traceability_matrix",
     ],
     "wgd": [

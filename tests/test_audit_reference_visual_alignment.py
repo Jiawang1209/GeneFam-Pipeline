@@ -15,7 +15,7 @@ def _standard_plot_rows() -> list[str]:
         "gene_family_pangenome_summary\tplots/gene_family_info_summary.pdf\tGene family pangenome presence and copy-number balance",
         "tree_features\tplots/tree_features.pdf\tTree, motif, gene-structure, and domain composite plot",
         "feature_summary\tplots/feature_summary.pdf\tIntegrated feature summary",
-        "mcscanx_circlize\tplots/mcscanx_circlize.pdf\tMCScanX synteny and chromosome-scale circlize plot",
+        "mcscanx_circlize\tplots/mcscanx_circlize.pdf\tMCScanX self intra-species collinearity and chromosome-scale circlize plot",
         "promoter_cis_elements\tplots/promoter_cis_elements.pdf\tPromoter cis-element category matrix",
         "ppi_ggnetview\tplots/ppi_ggnetview.pdf\tPPI network generated with ggNetView",
         "expression_heatmap\tplots/expression_heatmap.pdf\tFamily member expression heatmap",

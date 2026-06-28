@@ -4,19 +4,48 @@ import sys
 
 def test_run_feature_summary_smoke_writes_statistics_and_plots(tmp_path):
     outdir = tmp_path / "feature_summary"
+    inputs = tmp_path / "inputs"
+    inputs.mkdir()
+    domains = inputs / "filtered_domains.tsv"
+    motifs = inputs / "motif_summary.tsv"
+    gene_structures = inputs / "gene_structure_summary.tsv"
+    synteny = inputs / "syntenic_pairs.tsv"
+    domains.write_text(
+        "gene_id\tspecies_id\tdomain_coverage\n"
+        "geneA\tsp1\t0.80\n"
+        "geneB\tsp1\t0.60\n",
+        encoding="utf-8",
+    )
+    motifs.write_text(
+        "motif_id\twidth\tsites\n"
+        "motif1\t12\t2\n"
+        "motif2\t8\t1\n",
+        encoding="utf-8",
+    )
+    gene_structures.write_text(
+        "gene_id\tspecies_id\tgene_length\texon_count\n"
+        "geneA\tsp1\t1200\t4\n"
+        "geneB\tsp1\t900\t3\n",
+        encoding="utf-8",
+    )
+    synteny.write_text(
+        "block_id\tsource\ttarget\n"
+        "block1\tgeneA\tgeneB\n",
+        encoding="utf-8",
+    )
 
     completed = subprocess.run(
         [
             sys.executable,
             "bin/genefam/run_feature_summary_smoke.py",
             "--domains",
-            "results/domain_filter_smoke/tables/filtered_domains.tsv",
+            str(domains),
             "--motifs",
-            "results/motif_smoke/tables/motif_summary.tsv",
+            str(motifs),
             "--gene-structures",
-            "results/gene_structure_smoke/tables/gene_structure_summary.tsv",
+            str(gene_structures),
             "--synteny",
-            "results/synteny_smoke/tables/syntenic_pairs.tsv",
+            str(synteny),
             "--r-bin",
             "/usr/local/bin/R",
             "--outdir",

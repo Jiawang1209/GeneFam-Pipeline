@@ -9,6 +9,9 @@ process PREPROCESS_SPECIES {
     path "species_manifest.raw.tsv"
     path "species_manifest.clean.tsv"
     path "species_bank_clean"
+    path "all_transcript_gene_map.tsv"
+    path "all_representative_transcripts.tsv"
+    path "all_preprocess_warnings.tsv"
 
     script:
     """

@@ -178,6 +178,17 @@ def test_validate_config_check_paths_reports_missing_runtime_inputs(tmp_path):
     assert "expression.matrix path does not exist: data/expression/family_expression.tsv" in errors
 
 
+def test_validate_config_allows_expression_module_without_matrix_as_skipped_optional_analysis():
+    config = _valid_base_config()
+    config["input"]["root"] = "data/species_bank"
+    config["modules"]["expression"] = True
+
+    errors = validate_config(config)
+
+    assert "modules.expression requires expression.matrix" not in errors
+    assert errors == []
+
+
 def test_validate_config_check_paths_reports_missing_reference_generation_inputs(tmp_path):
     config = _valid_base_config()
     config["reference_generation"] = {
@@ -325,14 +336,14 @@ def test_validate_config_check_paths_reports_missing_included_auto_species(tmp_p
     assert "input.root requested species not found: Missing_species" in errors
 
 
-def test_validate_config_reports_promoter_cis_requires_annotation_table_and_missing_path(tmp_path):
+def test_validate_config_allows_missing_promoter_cis_hits_and_checks_path_when_provided(tmp_path):
     config = _valid_base_config()
     config["input"]["root"] = "tests/fixtures/species_bank"
     config["modules"]["promoter_cis"] = True
 
     errors = validate_config(config)
 
-    assert "modules.promoter_cis requires promoter.cis_elements" in errors
+    assert "modules.promoter_cis requires promoter.cis_elements" not in errors
 
     config["promoter"] = {"cis_elements": "data/promoter/plantcare.tsv"}
     errors = validate_config(config, check_paths=True, base_dir=tmp_path)
@@ -530,13 +541,14 @@ def test_validate_config_reports_chromosome_location_requires_gff3_inputs():
     assert "modules.chromosome_location requires input.required.gff3: true" in errors
 
 
-def test_validate_config_reports_expression_requires_matrix_path():
+def test_validate_config_allows_expression_without_matrix_so_module_can_be_skipped():
     config = _valid_base_config()
+    config["input"]["root"] = "data/species_bank"
     config["modules"]["expression"] = True
 
     errors = validate_config(config)
 
-    assert "modules.expression requires expression.matrix" in errors
+    assert errors == []
 
 
 def test_validate_config_reports_expression_requires_family_summary():
@@ -592,6 +604,17 @@ def test_validate_config_reports_ppi_requires_edge_table_and_missing_paths():
 
     assert "ppi.edges path does not exist: data/ppi/edges.tsv" in errors
     assert "ppi.nodes path does not exist: data/ppi/nodes.tsv" in errors
+
+
+def test_validate_config_allows_promoter_cis_without_gene_level_hits_but_checks_description_path():
+    config = _valid_base_config()
+    config["modules"]["promoter_cis"] = True
+    config["promoter"] = {"cis_elements": None, "element_descriptions": "missing_cir_element.xlsx"}
+
+    errors = validate_config(config, check_paths=True)
+
+    assert "modules.promoter_cis requires promoter.cis_elements" not in errors
+    assert "promoter.element_descriptions path does not exist: missing_cir_element.xlsx" in errors
 
 
 def test_validate_config_reports_phylogeny_and_motif_require_family_summary():

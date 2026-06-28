@@ -72,7 +72,7 @@ FIGURE_GALLERY_ROWS = [
         "branch": "standard",
         "plot_key": "mcscanx_circlize",
         "plot_path": "results/nextflow_standard_feature_smoke/standard/plots/mcscanx_circlize.pdf",
-        "plot_description": "MCScanX synteny and chromosome-scale circlize plot",
+        "plot_description": "MCScanX self intra-species collinearity and chromosome-scale circlize plot",
         "figure_interpretations": "results/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md",
         "software_versions": "results/nextflow_standard_feature_smoke/standard/report/software_versions.tsv",
         "final_report": "results/nextflow_standard_feature_smoke/standard/report/final_report.md",

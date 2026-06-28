@@ -15,6 +15,7 @@ dependencies:
   - hmmer
   - diamond
   - blast
+  - last
   - seqkit
   - mafft
   - muscle
@@ -24,7 +25,7 @@ dependencies:
   - meme
   - mcscanx
   - jcvi
-  - kaks_calculator
+  - kakscalculator2
   - r-base
   - r-ggplot2
   - r-pheatmap

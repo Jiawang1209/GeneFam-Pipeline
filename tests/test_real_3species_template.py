@@ -19,6 +19,7 @@ def test_real_three_species_template_is_a_valid_non_mock_config():
     ]
     assert config["dev"]["mock_external_tools"] is False
     assert config["input"]["required"]["cds"] is True
+    assert config["input"]["required"]["genome"] is True
     assert config["preprocess"] == {"enabled": True, "outdir": "results/00_preprocess"}
     assert config["reference_generation"] == {
         "enabled": True,
@@ -28,8 +29,17 @@ def test_real_three_species_template_is_a_valid_non_mock_config():
     }
     assert "reference_peptides" not in config["gene_family"]
     assert config["modules"]["phylogeny"] is True
-    assert config["modules"]["promoter_cis"] is False
-    assert config["modules"]["ppi"] is False
-    assert config["modules"]["synteny"] is False
-    assert config["modules"]["kaks"] is False
-    assert config["modules"]["duplication_retention"] is False
+    assert config["modules"]["promoter_cis"] is True
+    assert config["modules"]["ppi"] is True
+    assert config["modules"]["synteny"] is True
+    assert config["modules"]["kaks"] is True
+    assert config["modules"]["duplication_retention"] is True
+    assert config["modules"]["expression"] is True
+    assert config["promoter"]["cis_elements"] is None
+    assert config["promoter"]["element_descriptions"] == "data/config/cir_element.desc.20240509.xlsx"
+    assert config["mcscanx"]["self_dir"] is None
+    assert config["mcscanx"]["execute_self"] is True
+    assert config["mcscanx"]["search_tool"] == "diamond"
+    assert config["identification"]["two_pass_hmmer"] is False
+    assert config["ppi"]["edges"] == "data/config/AraNet.txt"
+    assert config["ppi"]["reference_species"] == "Arabidopsis_thaliana"

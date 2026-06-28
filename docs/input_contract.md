@@ -112,6 +112,8 @@ The standard identification branch can enable or disable external search input g
 
 Both default to enabled when omitted. When `modules.identification: true`, at least one of these flags must remain enabled so the branch has evidence to merge. Disabled tools still produce a header-only planning table, which keeps downstream file contracts stable while making the skipped evidence source explicit.
 
+Set `identification.two_pass_hmmer: true` or pass `--hmmer_two_pass true` to enable the Reference-style two-pass HMMER branch. The workflow extracts first-pass HMMER hit peptides, aligns them with MAFFT, rebuilds a family HMM with `hmmbuild`, reruns HMMER, and packages the rebuilt HMM, alignment, input manifest, and status tables under `02_domain_filtering/two_pass_hmmer/`.
+
 ## Domain Filtering
 
 HMMER evidence can be filtered by:
@@ -202,14 +204,9 @@ Set `params.gene_family_species_order` in Nextflow or `plotting.gene_family_spec
 
 ## MCScanX Syntenic Pairs For Circlize
 
-The standard report circlize module expects a normalized syntenic-pair table such as the output from `bin/genefam/parse_mcscanx_collinearity.py`:
+The formal standard workflow draws MCScanX/circlize from MCScanX self results generated for each species. This is an intra-species duplication view and is required for the formal synteny-enabled analysis. Inter-species collinearity is handled by the JCVI branch.
 
-```text
-block_id species_a gene_a species_b gene_b score
-block0001 Arabidopsis_thaliana AT1G01010 Brassica_rapa BraA01g000010 120
-```
-
-Set `modules.synteny: true` and `plotting.syntenic_pairs: <path>` in YAML to enable the MCScanX + `circlize` visualization in the standard Nextflow smoke, or pass `--run_mcscanx_circlize true --syntenic_pairs <path>` directly.
+Set `modules.synteny: true` in YAML to enable both branches: JCVI for inter-species collinearity and MCScanX self for intra-species duplication/circlize. With `mcscanx.execute_self: true`, the workflow runs a self protein search and `MCScanX` for each species before drawing the intra-species circlize plot. `mcscanx.search_tool: diamond` is the default because large multi-species self searches are much faster with DIAMOND; set `mcscanx.search_tool: blastp` to use `makeblastdb` and NCBI `blastp` instead. The older standalone circlize smoke can still accept a normalized pair table for script-level testing, but the formal Nextflow result package uses MCScanX self output as the circlize source.
 
 ## Motif Summary
 

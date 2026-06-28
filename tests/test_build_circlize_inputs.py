@@ -173,3 +173,16 @@ def test_build_circlize_inputs_can_build_density_and_duplicate_type_tracks():
             "link_count": "1",
         },
     ]
+
+
+def test_build_circlize_inputs_assigns_block_id_when_pair_source_has_none():
+    locations = [
+        {"species_id": "Arabidopsis_thaliana", "gene_id": "AT1", "seqid": "Chr1", "start": "100", "end": "200", "strand": "+"},
+        {"species_id": "Arabidopsis_thaliana", "gene_id": "AT2", "seqid": "Chr1", "start": "900", "end": "1000", "strand": "+"},
+    ]
+    syntenic_pairs = [{"gene_a": "AT1", "gene_b": "AT2", "pair_evalue": ""}]
+
+    _chromosomes, links, skipped = build_circlize_inputs(locations, syntenic_pairs)
+
+    assert skipped == []
+    assert links[0]["block_id"] == "pair_1"

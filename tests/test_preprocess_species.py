@@ -142,3 +142,25 @@ def test_preprocess_species_cli_writes_clean_manifest_and_audit_tables(tmp_path)
     assert (outdir / "species_bank_clean/Demo_species/transcript_gene_map.tsv").exists()
     assert (outdir / "species_bank_clean/Demo_species/representative_transcripts.tsv").exists()
     assert (outdir / "species_bank_clean/Demo_species/preprocess_warnings.tsv").exists()
+    assert (outdir / "all_transcript_gene_map.tsv").exists()
+    assert (outdir / "all_representative_transcripts.tsv").exists()
+    assert (outdir / "all_preprocess_warnings.tsv").exists()
+
+    with (outdir / "all_transcript_gene_map.tsv").open("r", encoding="utf-8", newline="") as handle:
+        trace_rows = list(csv.DictReader(handle, delimiter="\t"))
+    assert trace_rows == [
+        {
+            "species_id": "Demo_species",
+            "raw_transcript_id": "AT1G01010.1|PACid:1",
+            "clean_transcript_id": "AT1G01010.1",
+            "gene_id": "AT1G01010",
+            "source": "gff3",
+        },
+        {
+            "species_id": "Demo_species",
+            "raw_transcript_id": "AT1G01010.2|PACid:2",
+            "clean_transcript_id": "AT1G01010.2",
+            "gene_id": "AT1G01010",
+            "source": "gff3",
+        },
+    ]

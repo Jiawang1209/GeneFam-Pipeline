@@ -81,6 +81,7 @@ def assemble_report(
     wgd_event_evidence: list[dict[str, str]] | None = None,
     family_event_retention: list[dict[str, str]] | None = None,
     retention_enrichment: list[dict[str, str]] | None = None,
+    kaks_failure_summary: list[dict[str, str]] | None = None,
     plot_manifest: list[dict[str, str]] | None = None,
     software_versions: list[dict[str, str]] | None = None,
     figure_interpretations: list[dict[str, str]] | None = None,
@@ -236,6 +237,25 @@ def assemble_report(
     )
     lines.extend(
         _section_or_empty(
+            "Ka/Ks Calculator Diagnostics",
+            ["source", "calculator_status", "calculator_note", "qc_flags", "pair_count", "example_pair_ids", "interpretation"],
+            [
+                [
+                    row.get("source", ""),
+                    row.get("calculator_status", ""),
+                    row.get("calculator_note", ""),
+                    row.get("qc_flags", ""),
+                    row.get("pair_count", ""),
+                    row.get("example_pair_ids", ""),
+                    row.get("interpretation", ""),
+                ]
+                for row in (kaks_failure_summary or [])
+            ],
+            "No Ka/Ks calculator failure diagnostics were available for this run.",
+        )
+    )
+    lines.extend(
+        _section_or_empty(
             "Plots",
             ["plot_key", "path", "description"],
             [
@@ -321,6 +341,7 @@ def main() -> None:
     parser.add_argument("--wgd-event-evidence", default=None, type=Path)
     parser.add_argument("--family-event-retention", default=None, type=Path)
     parser.add_argument("--retention-enrichment", default=None, type=Path)
+    parser.add_argument("--kaks-failure-summary", default=None, type=Path)
     parser.add_argument("--plot-manifest", default=None, type=Path)
     parser.add_argument("--software-versions", default=None, type=Path)
     parser.add_argument("--figure-interpretations", default=None, type=Path)
@@ -335,6 +356,7 @@ def main() -> None:
             wgd_event_evidence=read_tsv(args.wgd_event_evidence),
             family_event_retention=read_tsv(args.family_event_retention),
             retention_enrichment=read_tsv(args.retention_enrichment),
+            kaks_failure_summary=read_tsv(args.kaks_failure_summary),
             plot_manifest=read_tsv(args.plot_manifest),
             software_versions=read_tsv(args.software_versions),
             figure_interpretations=read_tsv(args.figure_interpretations),

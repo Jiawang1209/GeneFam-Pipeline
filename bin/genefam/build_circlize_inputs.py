@@ -152,9 +152,10 @@ def build_circlize_inputs(
     skipped: list[dict[str, str]] = []
     linked_genes: dict[str, dict[str, str]] = {}
     link_count_by_gene: dict[str, int] = defaultdict(int)
-    for pair in syntenic_pairs:
+    for pair_index, pair in enumerate(syntenic_pairs, start=1):
         gene_a = pair["gene_a"]
         gene_b = pair["gene_b"]
+        block_id = pair.get("block_id", "") or f"pair_{pair_index}"
         coord_a = coordinates.get(gene_a)
         coord_b = coordinates.get(gene_b)
         reason = ""
@@ -165,7 +166,7 @@ def build_circlize_inputs(
         if reason:
             skipped.append(
                 {
-                    "block_id": pair.get("block_id", ""),
+                    "block_id": block_id,
                     "gene_a": gene_a,
                     "gene_b": gene_b,
                     "reason": reason,
@@ -174,7 +175,7 @@ def build_circlize_inputs(
             continue
         links.append(
             {
-                "block_id": pair.get("block_id", ""),
+                "block_id": block_id,
                 "gene_a": gene_a,
                 "gene_a_chr": _chr_id(coord_a),
                 "gene_a_start": coord_a["start"],

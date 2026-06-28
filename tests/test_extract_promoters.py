@@ -101,3 +101,23 @@ def test_extract_promoters_cli_writes_bed_and_fasta(tmp_path):
     assert completed.returncode == 0, completed.stderr
     assert out_bed.read_text(encoding="utf-8").splitlines()[0].startswith("species_id\tgene_id")
     assert read_fasta(out_fasta) == {"Demo|gene_plus|Chr1:1-6(+)": "AACCGG"}
+
+
+def test_extract_promoters_matches_phytozome_versioned_gene_ids(tmp_path):
+    genome = tmp_path / "genome.fa"
+    genome.write_text(">Chr01\n" + "A" * 5000 + "\n", encoding="utf-8")
+    gff3 = tmp_path / "brassica.gff3"
+    gff3.write_text(
+        "Chr01\tphytozomev13\tgene\t1629\t3263\t.\t+\t.\t"
+        "ID=BrO_302V.01G000100.v1.1;Name=BrO_302V.01G000100\n",
+        encoding="utf-8",
+    )
+    family_rows = [{"species_id": "Brassica_rapa", "gene_id": "BrO_302V.01G000100"}]
+    manifest_rows = [{"species_id": "Brassica_rapa", "gff3": str(gff3), "genome": str(genome)}]
+
+    bed_rows, fasta_records = extract_promoters(family_rows, manifest_rows, upstream_bp=2000)
+
+    assert bed_rows[0]["gene_id"] == "BrO_302V.01G000100"
+    assert bed_rows[0]["promoter_start"] == "1"
+    assert bed_rows[0]["promoter_end"] == "1628"
+    assert fasta_records[0][0] == "Brassica_rapa|BrO_302V.01G000100|Chr01:1-1628(+)"

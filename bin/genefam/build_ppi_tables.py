@@ -11,6 +11,8 @@ from pathlib import Path
 
 EDGE_FIELDS = ["source", "target", "weight", "species"]
 NODE_FIELDS = ["node", "species", "type", "domain", "degree", "weighted_degree"]
+NODE_ANNOTATION_FIELDS = ["ID", "Domain", "species", "Type", "degree", "weighted_degree"]
+SPECIES_PPI_ANNOTATION_FIELDS = ["source", "source_domain", "target", "target_domain", "weight", "species"]
 HUB_FIELDS = ["rank", "node", "species", "type", "domain", "degree", "weighted_degree"]
 METRIC_FIELDS = ["metric", "value", "description"]
 
@@ -20,6 +22,35 @@ def read_tsv(path: Path | None) -> list[dict[str, str]]:
         return []
     with Path(path).open("r", encoding="utf-8", newline="") as handle:
         return list(csv.DictReader(handle, delimiter="\t"))
+
+
+def read_edge_table(path: Path | None) -> list[dict[str, str]]:
+    if path is None:
+        return []
+    edge_path = Path(path)
+    with edge_path.open("r", encoding="utf-8", newline="") as handle:
+        first_line = handle.readline()
+        if not first_line:
+            return []
+        first_fields = first_line.rstrip("\n").split("\t")
+        has_header = any(field.lower() in {"source", "target", "from", "to", "weight", "score", "species"} for field in first_fields)
+        handle.seek(0)
+        if has_header:
+            return list(csv.DictReader(handle, delimiter="\t"))
+        rows: list[dict[str, str]] = []
+        reader = csv.reader(handle, delimiter="\t")
+        for fields in reader:
+            if len(fields) < 2:
+                continue
+            rows.append(
+                {
+                    "source": fields[0],
+                    "target": fields[1],
+                    "weight": fields[2] if len(fields) > 2 else "1",
+                    "species": fields[3] if len(fields) > 3 else "Arabidopsis_thaliana",
+                }
+            )
+        return rows
 
 
 def _first(row: dict[str, str], *keys: str) -> str:
@@ -137,6 +168,29 @@ def build_ppi_tables(
 
     hubs = sorted(nodes, key=lambda row: (-float(row["weighted_degree"]), row["node"]))[:top_n]
     hub_rows = [{"rank": str(index), **row} for index, row in enumerate(hubs, start=1)]
+    node_annotations_out = [
+        {
+            "ID": row["node"],
+            "Domain": row["domain"],
+            "species": row["species"],
+            "Type": row["type"],
+            "degree": row["degree"],
+            "weighted_degree": row["weighted_degree"],
+        }
+        for row in nodes
+    ]
+    domain_by_node = {row["node"]: row["domain"] for row in nodes}
+    species_ppi_annotation = [
+        {
+            "source": edge["source"],
+            "source_domain": domain_by_node.get(edge["source"], "unknown"),
+            "target": edge["target"],
+            "target_domain": domain_by_node.get(edge["target"], "unknown"),
+            "weight": edge["weight"],
+            "species": edge["species"],
+        }
+        for edge in normalized_edges
+    ]
     annotated_nodes = sum(1 for node in degree if node in annotations)
     network_qc = {
         "node_count": len(nodes),
@@ -149,6 +203,8 @@ def build_ppi_tables(
     return {
         "edges": normalized_edges,
         "nodes": nodes,
+        "node_annotation": node_annotations_out,
+        "species_ppi_annotation": species_ppi_annotation,
         "hubs": hub_rows,
         "input_evidence": _metric_rows(
             evidence,
@@ -189,9 +245,15 @@ def main() -> None:
     parser.add_argument("--top-n", default=20, type=int)
     parser.add_argument("--outdir", required=True, type=Path)
     args = parser.parse_args()
-    outputs = build_ppi_tables(edges=read_tsv(args.edges), node_annotations=read_tsv(args.nodes), top_n=args.top_n)
+    outputs = build_ppi_tables(edges=read_edge_table(args.edges), node_annotations=read_tsv(args.nodes), top_n=args.top_n)
     write_tsv(outputs["edges"], args.outdir / "ppi_edges.tsv", EDGE_FIELDS)
     write_tsv(outputs["nodes"], args.outdir / "ppi_nodes.tsv", NODE_FIELDS)
+    write_tsv(outputs["node_annotation"], args.outdir / "node_annotation.tsv", NODE_ANNOTATION_FIELDS)
+    write_tsv(
+        outputs["species_ppi_annotation"],
+        args.outdir / "species_ppi_annotation.tsv",
+        SPECIES_PPI_ANNOTATION_FIELDS,
+    )
     write_tsv(outputs["hubs"], args.outdir / "ppi_hubs.tsv", HUB_FIELDS)
     write_tsv(outputs["input_evidence"], args.outdir / "ppi_input_evidence.tsv", METRIC_FIELDS)
     write_tsv(outputs["network_qc"], args.outdir / "ppi_network_qc.tsv", METRIC_FIELDS)

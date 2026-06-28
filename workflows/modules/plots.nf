@@ -165,6 +165,7 @@ process PLOT_PROMOTER_CIS_ELEMENTS {
 
     input:
     path cis_elements
+    val element_descriptions
 
     output:
     path "tables/promoter_cis_elements.tsv"
@@ -174,14 +175,44 @@ process PLOT_PROMOTER_CIS_ELEMENTS {
     path "tables/promoter_cis_element_annotations.tsv"
     path "plots/promoter_cis_elements.pdf"
     path "plots/promoter_cis_elements.png"
+    path "plots/promoter1.pdf"
+    path "plots/promoter1.png"
+    path "plots/species_promoter2.pdf"
+    path "plots/species_promoter2.png"
 
     script:
+    def descriptionsArg = element_descriptions ? "--element-descriptions ${element_descriptions}" : ""
     """
     mkdir -p tables plots
     python ${projectDir}/../bin/genefam/build_promoter_cis_elements.py \\
       --cis-elements ${cis_elements} \\
+      ${descriptionsArg} \\
       --outdir tables
     ${params.r_bin} --vanilla --slave -f ${projectDir}/../scripts/plot_promoter_cis_elements.R --args tables/promoter_cis_gene_matrix.tsv tables/promoter_cis_category_summary.tsv tables/promoter_cis_gene_element_matrix.tsv tables/promoter_cis_element_annotations.tsv plots
+    """
+}
+
+process EMPTY_PROMOTER_CIS_ELEMENTS {
+    tag "promoter cis-elements missing input"
+    publishDir "${params.outdir}", mode: "copy", overwrite: true
+
+    output:
+    path "tables/promoter_cis_elements.tsv"
+    path "tables/promoter_cis_gene_matrix.tsv"
+    path "tables/promoter_cis_gene_element_matrix.tsv"
+    path "tables/promoter_cis_category_summary.tsv"
+    path "tables/promoter_cis_element_annotations.tsv"
+    path "tables/promoter_cis_status.tsv"
+
+    script:
+    """
+    mkdir -p tables
+    printf 'species_id\\tgene_id\\telement\\tcategory\\tposition\\tstrand\\tdescription\\n' > tables/promoter_cis_elements.tsv
+    printf 'species_id\\tgene_id\\tcategory\\tcount\\n' > tables/promoter_cis_gene_matrix.tsv
+    printf 'species_id\\tgene_id\\telement\\tcategory\\tcount\\tpositions\\n' > tables/promoter_cis_gene_element_matrix.tsv
+    printf 'category\\telement\\ttotal_count\\tgene_count\\tspecies_count\\tdescription\\n' > tables/promoter_cis_category_summary.tsv
+    printf 'element\\tcategory\\tgene_count\\tspecies_count\\ttotal_count\\tposition_min\\tposition_median\\tposition_max\\tdescription\\n' > tables/promoter_cis_element_annotations.tsv
+    printf 'status\\tnote\\nmissing_input\\tPlantCARE gene-level hit table not provided; set promoter.cis_elements to enable this module\\n' > tables/promoter_cis_status.tsv
     """
 }
 
@@ -231,9 +262,14 @@ process PLOT_PPI_GGNETVIEW {
     path "tables/ppi_hubs.tsv"
     path "tables/ppi_input_evidence.tsv"
     path "tables/ppi_network_qc.tsv"
+    path "tables/ppi_overview_status.tsv"
     path "tables/ppi_ggnetview_status.tsv"
+    path "plots/ppi.pdf"
+    path "plots/ppi.png"
     path "plots/ppi_ggnetview.pdf"
     path "plots/ppi_ggnetview.png"
+    path "tables/node_annotation.tsv"
+    path "tables/species_ppi_annotation.tsv"
 
     script:
     def nodesArg = ppi_nodes ? "--nodes ${ppi_nodes}" : ""
@@ -247,9 +283,72 @@ process PLOT_PPI_GGNETVIEW {
     """
 }
 
+process BUILD_ARANET_PPI_EDGES {
+    tag "transfer AraNet PPI"
+    publishDir "${params.outdir}", mode: "copy", overwrite: true
+
+    input:
+    path family_candidates
+    path aranet
+
+    output:
+    path "tables/ppi_edges.tsv"
+    path "tables/ppi_nodes.tsv"
+    path "tables/ppi_transfer_evidence.tsv"
+
+    script:
+    """
+    mkdir -p tables
+    python ${projectDir}/../bin/genefam/build_aranet_ppi_edges.py \\
+      --family-candidates ${family_candidates} \\
+      --aranet ${aranet} \\
+      --outdir tables
+    """
+}
+
+process BUILD_ARANET_PPI_FROM_RECIPROCAL_BLAST {
+    tag "Reference-style AraNet PPI transfer"
+    publishDir "${params.outdir}", mode: "copy", overwrite: true
+
+    input:
+    path family_candidates
+    path species_manifest
+    path aranet
+    val reference_species
+
+    output:
+    path "tables/ppi_transferred_edges.tsv"
+    path "tables/ppi_transferred_nodes.tsv"
+    path "tables/ppi_transfer_evidence.tsv"
+    path "tables/ppi_homology_best_hits.tsv"
+    path "tables/ppi_blast_manifest.tsv"
+    path "tables/ppi_blast/*/*.tsv"
+
+    script:
+    """
+    mkdir -p tables tables/ppi_blast
+    python ${projectDir}/../bin/genefam/build_aranet_ppi_from_reciprocal_blast.py \\
+      --family-candidates ${family_candidates} \\
+      --species-manifest ${species_manifest} \\
+      --aranet ${aranet} \\
+      --reference-species ${reference_species} \\
+      --outdir tables \\
+      --workdir tables/ppi_blast \\
+      --threads ${task.cpus}
+    """
+}
+
 process BUILD_PLOT_MANIFEST {
     tag "plot manifest"
     publishDir "${params.outdir}/report", mode: "copy", overwrite: true
+
+    input:
+    val run_feature_summary
+    val run_mcscanx_circlize
+    val run_kaks_wgd
+    val run_promoter_cis
+    val run_ppi
+    val expression_matrix
 
     output:
     path "plot_manifest.tsv"
@@ -262,19 +361,26 @@ process BUILD_PLOT_MANIFEST {
       --plot "gene_family_pangenome_summary=plots/gene_family_info_summary.pdf=Gene family pangenome presence and copy-number balance"
       --plot "tree_features=plots/tree_features.pdf=Tree, motif, gene-structure, and domain composite plot"
     )
-    if [ "${params.run_feature_summary}" = "true" ]; then
+    if [ "${run_feature_summary}" = "true" ]; then
       plotArgs+=(--plot "feature_summary=plots/feature_summary.pdf=Integrated domain, motif, gene-structure, synteny, promoter, and expression feature summary")
     fi
-    if [ "${params.run_mcscanx_circlize}" = "true" ]; then
-      plotArgs+=(--plot "mcscanx_circlize=plots/mcscanx_circlize.pdf=MCScanX synteny and chromosome-scale circlize plot")
+    if [ "${run_mcscanx_circlize}" = "true" ]; then
+      plotArgs+=(--plot "mcscanx_circlize=plots/mcscanx_circlize.pdf=MCScanX self intra-species collinearity and chromosome-scale circlize plot")
     fi
-    if [ "${params.run_promoter_cis}" = "true" ]; then
+    if [ "${run_kaks_wgd}" = "true" ]; then
+      plotArgs+=(--plot "ks_distribution=plots/ks_distribution.pdf=Ks distribution for duplicated pairs and WGD layer interpretation")
+      plotArgs+=(--plot "duplicate_type_kaks=plots/duplicate_type_kaks.pdf=MCScanX self duplicate-type grouped Ka/Ks and Ks overview")
+    fi
+    if [ "${run_promoter_cis}" = "true" ]; then
       plotArgs+=(--plot "promoter_cis_elements=plots/promoter_cis_elements.pdf=Promoter cis-element category matrix and top element summary")
+      plotArgs+=(--plot "promoter1=plots/promoter1.pdf=Reference-style promoter cis-element gene matrix")
+      plotArgs+=(--plot "species_promoter2=plots/species_promoter2.pdf=Reference-style species-level promoter cis-element summary")
     fi
-    if [ "${params.run_ppi}" = "true" ]; then
+    if [ "${run_ppi}" = "true" ]; then
+      plotArgs+=(--plot "ppi=plots/ppi.pdf=Reference-style PPI network overview")
       plotArgs+=(--plot "ppi_ggnetview=plots/ppi_ggnetview.pdf=PPI network generated with ggNetView")
     fi
-    if [ -n "${params.expression_matrix}" ] && [ "${params.expression_matrix}" != "null" ]; then
+    if [ -n "${expression_matrix}" ] && [ "${expression_matrix}" != "null" ]; then
       plotArgs+=(--plot "expression_heatmap=plots/expression_heatmap.pdf=Family member expression heatmap")
     fi
     python ${projectDir}/../bin/genefam/build_plot_manifest.py \\

@@ -61,4 +61,26 @@ def test_build_reproducibility_code_md_collects_analysis_commands(tmp_path):
     assert "--preprocess_outdir results/00_preprocess" in text
     assert "results/00_preprocess/reference/PF00657.reference.pep.fa" in text
     assert "results/real_3species_full_standard/tables/family_candidates.tsv" in text
+    assert "## Reference-Level Module Commands And Handoffs" in text
+    assert "### MEME motif analysis" in text
+    assert "RUN_MEME_MOTIFS" in text
+    assert "### JCVI inter-species collinearity" in text
+    assert "prepare_jcvi_collinearity.py" in text
+    assert "run_jcvi_collinearity.py" in text
+    assert "### MCScanX self intra-species duplication and circlize" in text
+    assert "build_mcscanx_self_inputs.py" in text
+    assert "run_mcscanx_self.py" in text
+    assert "### JCVI/MCScanX KaKs and WGD layers" in text
+    assert "prepare_reference_kaks_inputs.py" in text
+    assert "run_reference_kaks_calculator.py" in text
+    assert "kaks_failure_summary.tsv" in text
+    assert "### Promoter and PlantCARE handoff" in text
+    assert "split_promoter_fasta_for_plantcare.py" in text
+    assert "plantcare_submission/plantcare_submission_manifest.tsv" in text
+    assert "promoter.cis_elements" in text
+    assert "### AraNet PPI transfer and ggNetView" in text
+    assert "build_aranet_ppi_from_reciprocal_blast.py" in text
+    assert "PLOT_PPI_GGNETVIEW" in text
+    assert "### Final report and module package" in text
+    assert "organize_module_results.py" in text
     assert str(family_candidates) not in text

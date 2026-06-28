@@ -25,8 +25,8 @@ def test_build_figure_interpretations_creates_reading_notes_for_each_plot():
     assert "feature tracks" in by_key["tree_features"]["what_figure_shows"]
     assert "tables/tree_feature_matrix.tsv" in by_key["tree_features"]["qc_tables"]
     assert "plot_tree_features.R" in by_key["tree_features"]["method_and_software"]
-    assert by_key["mcscanx_circlize"]["title"] == "MCScanX syntenic relationship overview"
-    assert "syntenic block" in by_key["mcscanx_circlize"]["what_figure_shows"]
+    assert by_key["mcscanx_circlize"]["title"] == "MCScanX self intra-species collinearity overview"
+    assert "within-species MCScanX self links" in by_key["mcscanx_circlize"]["what_figure_shows"]
     assert "tables/circlize_link_density.tsv" in by_key["mcscanx_circlize"]["qc_tables"]
     assert "plot_mcscanx_circlize.R" in by_key["mcscanx_circlize"]["method_and_software"]
     assert "WGD" in by_key["ks_wgd_layers"]["qc_tables"]
@@ -81,6 +81,8 @@ def test_wgd_kaks_plots_have_figure_specific_close_reading_templates():
     assert by_key["duplicate_type_kaks"]["title"] == "Duplicate-type grouped Ka/Ks selection overview"
     assert "WGD, tandem, proximal, transposed, or dispersed" in by_key["duplicate_type_kaks"]["what_figure_shows"]
     assert "tables/duplicate_type_kaks_summary.tsv" in by_key["duplicate_type_kaks"]["qc_tables"]
+    assert "build_mcscanx_duplicate_types.py" in by_key["duplicate_type_kaks"]["method_and_software"]
+    assert "MCScanX self duplicate classes" in by_key["duplicate_type_kaks"]["method_and_software"]
     assert "run_duplicate_type_kaks_smoke.py" in by_key["duplicate_type_kaks"]["reproducibility"]
 
     assert by_key["pangenome_kaks"]["title"] == "Pangenome-class grouped Ka/Ks selection overview"

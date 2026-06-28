@@ -82,7 +82,7 @@ def build_bootstrap_plan(rows: list[dict[str, str]]) -> dict[str, str]:
             "",
             "## Container Path",
             "",
-            "Linux and Docker builds use `envs/GeneFamilyFlow.linux-64.conda.yaml` so platform-limited tools such as `jcvi` and `kaks_calculator` stay available in the container route.",
+            "Linux and Docker builds use `envs/GeneFamilyFlow.linux-64.conda.yaml` so the full toolchain, including `jcvi`, `last`, and `kakscalculator2` for `KaKs_Calculator`, stays available in the container route.",
             "",
             "Build the reproducible Docker image after the Conda environment file changes:",
             "",

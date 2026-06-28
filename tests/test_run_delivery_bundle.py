@@ -347,7 +347,7 @@ def test_run_delivery_bundle_cli_writes_user_facing_index(tmp_path):
         in gallery_text
     )
     assert (
-        "standard\tmcscanx_circlize\tresults/nextflow_standard_feature_smoke/standard/plots/mcscanx_circlize.pdf\tresults/nextflow_standard_feature_smoke/standard/plots/mcscanx_circlize.png\tMCScanX synteny and chromosome-scale circlize plot\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md#mcscanx_circlize\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md"
+        "standard\tmcscanx_circlize\tresults/nextflow_standard_feature_smoke/standard/plots/mcscanx_circlize.pdf\tresults/nextflow_standard_feature_smoke/standard/plots/mcscanx_circlize.png\tMCScanX self intra-species collinearity and chromosome-scale circlize plot\tresults/nextflow_standard_feature_smoke/standard/report/figure_interpretations.md#mcscanx_circlize\tresults/nextflow_standard_feature_smoke/standard/report/software_versions.tsv\tresults/nextflow_standard_feature_smoke/standard/report/final_report.md"
         in gallery_text
     )
     assert (

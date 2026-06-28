@@ -52,6 +52,8 @@ def test_report_index_audit_requires_core_standard_report_artifacts(tmp_path):
 
     assert by_check["report_index_required_artifacts"]["status"] == "failed"
     assert "figure_traceability_matrix:missing_row" in by_check["report_index_required_artifacts"]["note"]
+    assert "reference_mvp_package_audit_tsv:missing_row" in by_check["report_index_required_artifacts"]["note"]
+    assert "reference_mvp_package_audit_md:missing_row" in by_check["report_index_required_artifacts"]["note"]
     assert by_check["report_index_available_paths_exist"]["status"] == "passed"
     assert summarize_audit(rows) == {"passed": 3, "failed": 1, "complete": False}
 
@@ -64,6 +66,8 @@ def test_report_index_audit_passes_when_core_wgd_report_artifacts_are_indexed(tm
         "software_versions.tsv",
         "figure_interpretations.tsv",
         "figure_interpretations.md",
+        "reference_mvp_package_audit.tsv",
+        "reference_mvp_package_audit.md",
     ]:
         (report_dir / name).parent.mkdir(parents=True, exist_ok=True)
         (report_dir / name).write_text("ok\n", encoding="utf-8")
@@ -88,6 +92,18 @@ def test_report_index_audit_passes_when_core_wgd_report_artifacts_are_indexed(tm
                 "Figure interpretations Markdown",
             ],
             ["final_report", str(report_dir / "final_report.md"), "available", "Final report"],
+            [
+                "reference_mvp_package_audit_tsv",
+                str(report_dir / "reference_mvp_package_audit.tsv"),
+                "available",
+                "Reference MVP audit TSV",
+            ],
+            [
+                "reference_mvp_package_audit_md",
+                str(report_dir / "reference_mvp_package_audit.md"),
+                "available",
+                "Reference MVP audit Markdown",
+            ],
             [
                 "figure_traceability_matrix",
                 str(report_dir / "final_report.md") + "#figure-traceability-matrix",
@@ -115,6 +131,8 @@ def test_report_index_audit_checks_all_available_paths_not_only_core_artifacts(t
         "software_versions.tsv",
         "figure_interpretations.tsv",
         "figure_interpretations.md",
+        "reference_mvp_package_audit.tsv",
+        "reference_mvp_package_audit.md",
     ]:
         (report_dir / name).parent.mkdir(parents=True, exist_ok=True)
         (report_dir / name).write_text("ok\n", encoding="utf-8")
@@ -139,6 +157,18 @@ def test_report_index_audit_checks_all_available_paths_not_only_core_artifacts(t
                 "Figure interpretations Markdown",
             ],
             ["final_report", str(report_dir / "final_report.md"), "available", "Final report"],
+            [
+                "reference_mvp_package_audit_tsv",
+                str(report_dir / "reference_mvp_package_audit.tsv"),
+                "available",
+                "Reference MVP audit TSV",
+            ],
+            [
+                "reference_mvp_package_audit_md",
+                str(report_dir / "reference_mvp_package_audit.md"),
+                "available",
+                "Reference MVP audit Markdown",
+            ],
             [
                 "figure_traceability_matrix",
                 str(report_dir / "final_report.md") + "#figure-traceability-matrix",
@@ -193,6 +223,18 @@ def test_report_index_audit_requires_traceability_anchor_heading(tmp_path):
             ],
             ["final_report", str(final_report), "available", "Final report"],
             [
+                "reference_mvp_package_audit_tsv",
+                str(report_dir / "reference_mvp_package_audit.tsv"),
+                "available",
+                "Reference MVP audit TSV",
+            ],
+            [
+                "reference_mvp_package_audit_md",
+                str(report_dir / "reference_mvp_package_audit.md"),
+                "available",
+                "Reference MVP audit Markdown",
+            ],
+            [
                 "figure_traceability_matrix",
                 str(final_report) + "#figure-traceability-matrix",
                 "available",
@@ -219,6 +261,8 @@ def test_report_index_audit_requires_traceability_anchor_on_final_report(tmp_pat
         "software_versions.tsv",
         "figure_interpretations.tsv",
         "figure_interpretations.md",
+        "reference_mvp_package_audit.tsv",
+        "reference_mvp_package_audit.md",
     ]:
         (report_dir / name).parent.mkdir(parents=True, exist_ok=True)
         (report_dir / name).write_text("ok\n", encoding="utf-8")
@@ -246,6 +290,18 @@ def test_report_index_audit_requires_traceability_anchor_on_final_report(tmp_pat
                 "Figure interpretations Markdown",
             ],
             ["final_report", str(final_report), "available", "Final report"],
+            [
+                "reference_mvp_package_audit_tsv",
+                str(report_dir / "reference_mvp_package_audit.tsv"),
+                "available",
+                "Reference MVP audit TSV",
+            ],
+            [
+                "reference_mvp_package_audit_md",
+                str(report_dir / "reference_mvp_package_audit.md"),
+                "available",
+                "Reference MVP audit Markdown",
+            ],
             [
                 "figure_traceability_matrix",
                 str(traceability_report) + "#figure-traceability-matrix",

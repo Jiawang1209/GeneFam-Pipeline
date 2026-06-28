@@ -13,7 +13,7 @@ input:
     pep: true
     gff3: true
     cds: true
-    genome: false
+    genome: true
   patterns:
     pep:
       - "*.pep.fa"
@@ -58,6 +58,7 @@ preprocess:
 identification:
   use_hmmer: true
   use_diamond: true
+  two_pass_hmmer: false
   hmm_evalue: 1.0e-10
   diamond_evalue: 1.0e-10
   final_rule: intersection
@@ -88,10 +89,17 @@ plotting:
 
 promoter:
   cis_elements: null
+  element_descriptions: data/config/cir_element.desc.20240509.xlsx
+
+mcscanx:
+  self_dir: null
+  execute_self: true
+  search_tool: diamond
 
 ppi:
-  edges: null
+  edges: data/config/AraNet.txt
   nodes: null
+  reference_species: Arabidopsis_thaliana
 
 dev:
   mock_external_tools: false
@@ -101,15 +109,15 @@ modules:
   identification: true
   domain_filtering: true
   family_summary: true
-  feature_summary: false
+  feature_summary: true
   phylogeny: true
-  motif: false
-  synteny: false
-  promoter: false
-  promoter_cis: false
-  ppi: false
-  duplication_retention: false
-  kaks: false
+  motif: true
+  synteny: true
+  promoter: true
+  promoter_cis: true
+  ppi: true
+  duplication_retention: true
+  kaks: true
   chromosome_location: true
-  expression: false
+  expression: true
   report: true

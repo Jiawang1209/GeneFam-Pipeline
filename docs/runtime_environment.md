@@ -23,7 +23,15 @@ conda activate GeneFamilyFlow
 
 The environment file includes Python, R, workflow dependencies, and common bioinformatics tools used by the pipeline modules.
 It also includes `openjdk` and `nextflow` so the local Conda route can run the workflow engine from the same `GeneFamilyFlow` environment.
-On macOS arm64, `jcvi` and `kaks_calculator` are not available from the current Conda channels, so they are kept out of the local cross-platform environment file.
+On macOS arm64, Bioconda package `kakscalculator2` is available and provides the `KaKs_Calculator` command used by the workflow.
+The JCVI Python package is still installed through pip on this machine after the Conda environment is active:
+
+```bash
+conda activate GeneFamilyFlow
+pip install jcvi
+```
+
+JCVI also needs the LAST command-line tools (`lastdb`, `lastal`, and `last-split`) for the ortholog/synteny step; these are provided by the `last` Conda package in `envs/GeneFamilyFlow.conda.yaml`.
 
 Update an existing environment with:
 
@@ -39,7 +47,7 @@ Linux and Docker builds use the fuller environment file:
 conda env create -f envs/GeneFamilyFlow.linux-64.conda.yaml
 ```
 
-This file keeps platform-limited tools such as `jcvi` and `kaks_calculator` for containerized or Linux execution.
+This file keeps the fuller Linux/container toolchain, including `jcvi`, `last`, and `kakscalculator2` for the `KaKs_Calculator` command.
 
 Generate a machine-specific bootstrap plan from the readiness TSV:
 

@@ -39,7 +39,7 @@ The advanced example expects:
 - `input.required.gff3: true` for chromosome location.
 - `input.required.genome: true` when promoter extraction or promoter cis-element analysis is enabled.
 - `expression.matrix` for expression integration.
-- `plotting.syntenic_pairs` for MCScanX + `circlize` visualization in the standard report branch.
+- `modules.synteny: true` for JCVI inter-species collinearity plus MCScanX self intra-species circlize in the standard report branch.
 - `promoter.cis_elements` for PlantCARE-style promoter cis-element plots.
 - `ppi.edges` and optional `ppi.nodes` for ggNetView PPI plots.
 - `modules.synteny: true` and `modules.kaks: true` before `modules.duplication_retention: true`.
