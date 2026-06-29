@@ -1,0 +1,509 @@
+#!/usr/bin/env python3
+"""Build a reusable species clean bank from a raw folder-per-species bank."""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import re
+import shutil
+import sys
+from collections import Counter
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from bin.genefam.discover_species import FILE_TYPES, discover_species
+from bin.genefam.preprocess_species import (
+    REPRESENTATIVE_FIELDS,
+    TRANSCRIPT_FIELDS,
+    WARNING_FIELDS,
+    clean_header_id,
+    clean_sequence_records,
+    parse_gff3_transcript_gene_map,
+    read_fasta_records,
+    write_fasta,
+    write_tsv,
+)
+
+
+DEFAULT_PATTERNS = {
+    "pep": ["*.pep.fa", "*.pep.fasta", "*.protein.fa", "*.faa"],
+    "cds": ["*.cds.fa", "*.cds.fasta"],
+    "genome": ["*.genome.fa", "*.genome.fasta", "*.dna.fa", "*.dna.fasta", "*.fna"],
+    "gff3": ["*.gff3", "*.gff"],
+}
+DEFAULT_REQUIRED = {"pep": True, "cds": False, "genome": False, "gff3": False}
+MANIFEST_FIELDS = [
+    "species_id",
+    "protein",
+    "cds",
+    "genome",
+    "gff3",
+    "genome_lengths",
+    "chromosome_lengths",
+    "raw_pep",
+    "raw_cds",
+    "raw_genome",
+    "raw_gff3",
+    "gene_id_map",
+    "representative_transcripts",
+    "preprocess_qc",
+    "preprocess_warnings",
+    "status",
+]
+QC_FIELDS = [
+    "species_id",
+    "raw_pep_count",
+    "raw_cds_count",
+    "clean_pep_count",
+    "clean_cds_count",
+    "genome_seq_count",
+    "chromosome_seq_count",
+    "unassembled_seq_count",
+    "organelle_seq_count",
+    "total_genome_bp",
+    "chromosome_bp",
+    "assembly_level",
+    "chromosome_analysis_ready",
+    "gff3_transcript_map_count",
+    "gff3_mapping_rate",
+    "fallback_mapping_rate",
+    "cds_match_rate",
+    "terminal_stop_removed_count",
+    "warning_count",
+    "status",
+    "note",
+]
+FAILED_FIELDS = ["species_id", "status", "reason"]
+GENOME_LENGTH_FIELDS = ["SeqID", "Start", "End", "Length", "SeqType", "Header"]
+CHROMOSOME_LENGTH_FIELDS = ["Chr", "Start", "End"]
+
+
+def iter_fasta_lengths(path: Path | str) -> list[tuple[str, str, int]]:
+    lengths: list[tuple[str, str, int]] = []
+    current_header: str | None = None
+    current_length = 0
+    with Path(path).open("r", encoding="utf-8") as handle:
+        for line in handle:
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith(">"):
+                if current_header is not None:
+                    seqid = clean_header_id(current_header)
+                    lengths.append((seqid, current_header, current_length))
+                current_header = line[1:]
+                current_length = 0
+            elif current_header is None:
+                raise ValueError(f"Sequence found before first FASTA header in {path}")
+            else:
+                current_length += len(line)
+    if current_header is not None:
+        seqid = clean_header_id(current_header)
+        lengths.append((seqid, current_header, current_length))
+    return lengths
+
+
+def classify_genome_sequence(seqid: str, header: str) -> str:
+    value = f"{seqid} {header}".casefold()
+    if re.search(r"(^|[^a-z0-9])(chrm|chrmt|mt|mitochond)", value):
+        return "organelle"
+    if re.search(r"(^|[^a-z0-9])(chrc|chrcp|cp|chloroplast|plastid)", value):
+        return "organelle"
+    if re.search(r"(scaffold|contig|unplaced|unlocalized|random|chrur|chrun|chrsy|^nw_|^nt_)", value):
+        return "unassembled"
+    if re.match(r"^(chr)?[0-9]+[a-z]?$", seqid, flags=re.IGNORECASE):
+        return "chromosome"
+    if re.match(r"^chr[0-9][0-9]?$", seqid, flags=re.IGNORECASE):
+        return "chromosome"
+    if re.search(r"(^|[^a-z0-9])chromosome([^a-z0-9]|$)", value):
+        return "chromosome"
+    return "unclassified"
+
+
+def build_genome_length_rows(path: Path | str | None) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    if not path:
+        return [], []
+    genome_rows: list[dict[str, str]] = []
+    chromosome_rows: list[dict[str, str]] = []
+    for seqid, header, length in iter_fasta_lengths(path):
+        seq_type = classify_genome_sequence(seqid, header)
+        row = {
+            "SeqID": seqid,
+            "Start": "1",
+            "End": str(length),
+            "Length": str(length),
+            "SeqType": seq_type,
+            "Header": header,
+        }
+        genome_rows.append(row)
+        if seq_type == "chromosome":
+            chromosome_rows.append({"Chr": seqid, "Start": "1", "End": str(length)})
+    return genome_rows, chromosome_rows
+
+
+def count_fasta_records(path: Path | str | None) -> int:
+    if not path:
+        return 0
+    return len(read_fasta_records(Path(path)))
+
+
+def terminal_stop_count(records: list[tuple[str, str]]) -> int:
+    return sum(1 for _record_id, sequence in records if sequence.endswith("*"))
+
+
+def write_rows(path: Path, fieldnames: list[str], rows: list[dict[str, str]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, delimiter="\t")
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def write_qc_excel(path: Path, qc_rows: list[dict[str, str]]) -> None:
+    try:
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill
+        from openpyxl.utils import get_column_letter
+    except ImportError as exc:  # pragma: no cover - depends on local runtime
+        raise RuntimeError("openpyxl is required to write clean-bank Excel QC files") from exc
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = "species_qc"
+    worksheet.append(QC_FIELDS)
+    header_fill = PatternFill("solid", fgColor="D9EAF7")
+    for cell in worksheet[1]:
+        cell.font = Font(bold=True)
+        cell.fill = header_fill
+    for row in qc_rows:
+        worksheet.append([row.get(field, "") for field in QC_FIELDS])
+    ready_col = QC_FIELDS.index("chromosome_analysis_ready") + 1
+    for row_index in range(2, worksheet.max_row + 1):
+        cell = worksheet.cell(row=row_index, column=ready_col)
+        if str(cell.value).upper() == "TRUE":
+            cell.fill = PatternFill("solid", fgColor="C6EFCE")
+        else:
+            cell.fill = PatternFill("solid", fgColor="FFC7CE")
+    worksheet.freeze_panes = "A2"
+    worksheet.auto_filter.ref = worksheet.dimensions
+    for col_index, field in enumerate(QC_FIELDS, start=1):
+        values = [field] + [row.get(field, "") for row in qc_rows]
+        width = min(max(len(str(value)) for value in values) + 2, 48)
+        worksheet.column_dimensions[get_column_letter(col_index)].width = width
+
+    summary = workbook.create_sheet("assembly_summary")
+    summary.append(["metric", "value"])
+    summary["A1"].font = Font(bold=True)
+    summary["B1"].font = Font(bold=True)
+    ready_count = sum(1 for row in qc_rows if row.get("chromosome_analysis_ready") == "TRUE")
+    assembly_counts = Counter(row.get("assembly_level", "unknown") for row in qc_rows)
+    summary.append(["species_count", len(qc_rows)])
+    summary.append(["chromosome_analysis_ready", ready_count])
+    for level, count in sorted(assembly_counts.items()):
+        summary.append([f"assembly_level:{level}", count])
+    summary.column_dimensions["A"].width = 36
+    summary.column_dimensions["B"].width = 18
+    workbook.save(path)
+
+
+def copy_if_present(source: str, destination: Path) -> str:
+    if not source:
+        return ""
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(source, destination)
+    return str(destination.resolve())
+
+
+def _rate(numerator: int, denominator: int) -> str:
+    if denominator == 0:
+        return "0.0000"
+    return f"{numerator / denominator:.4f}"
+
+
+def _status(cleaned_pep_count: int, cleaned_cds_count: int, cds_required: bool, warning_count: int) -> tuple[str, str]:
+    if cleaned_pep_count == 0:
+        return "failed", "no clean protein records were produced"
+    if cds_required and cleaned_cds_count == 0:
+        return "missing_cds", "CDS is required but no clean CDS records were produced"
+    if cleaned_cds_count not in {0, cleaned_pep_count}:
+        return "warning", "clean protein and CDS counts differ"
+    if warning_count:
+        return "warning", "non-fatal preprocessing warnings were produced"
+    return "pass", "clean bank species completed"
+
+
+def infer_assembly_level(genome_seq_count: int, chromosome_seq_count: int) -> tuple[str, str]:
+    if genome_seq_count == 0:
+        return "missing_genome", "FALSE"
+    if chromosome_seq_count > 0:
+        return "chromosome", "TRUE"
+    return "scaffold_or_contig", "FALSE"
+
+
+def build_species_clean_bank(
+    *,
+    raw_root: Path,
+    out_root: Path,
+    include: str | list[str] | None = "all",
+    exclude: list[str] | None = None,
+    cds_required: bool = False,
+    genome_required: bool = False,
+    gff3_required: bool = False,
+) -> tuple[list[dict[str, str]], list[dict[str, str]], list[dict[str, str]]]:
+    rows = discover_species(
+        root=raw_root,
+        include=include,
+        exclude=exclude or [],
+        patterns=DEFAULT_PATTERNS,
+        required={
+            "pep": True,
+            "cds": cds_required,
+            "genome": genome_required,
+            "gff3": gff3_required,
+        },
+        base_dir=None,
+    )
+    manifest_rows: list[dict[str, str]] = []
+    qc_rows: list[dict[str, str]] = []
+    failed_rows: list[dict[str, str]] = []
+
+    for row in rows:
+        species_id = row["species_id"]
+        species_root = out_root / species_id
+        raw_dir = species_root / "raw"
+        clean_dir = species_root / "clean"
+        audit_dir = species_root / "audit"
+        try:
+            raw_pep = copy_if_present(row.get("pep", ""), raw_dir / f"{species_id}.pep.fa")
+            raw_cds = copy_if_present(row.get("cds", ""), raw_dir / f"{species_id}.cds.fa")
+            raw_genome = copy_if_present(row.get("genome", ""), raw_dir / f"{species_id}.genome.fa")
+            raw_gff3 = copy_if_present(row.get("gff3", ""), raw_dir / f"{species_id}.gff3")
+
+            pep_records = read_fasta_records(Path(row["pep"]))
+            cds_records = read_fasta_records(Path(row["cds"])) if row.get("cds") else []
+            transcript_gene_map = parse_gff3_transcript_gene_map(row.get("gff3"))
+            cleaned_pep, cleaned_cds, transcript_rows, representative_rows, warnings = clean_sequence_records(
+                species_id=species_id,
+                pep_records=pep_records,
+                cds_records=cds_records,
+                transcript_gene_map=transcript_gene_map,
+            )
+
+            protein_clean = clean_dir / f"{species_id}.protein.clean.fa"
+            cds_clean = clean_dir / f"{species_id}.cds.clean.fa"
+            genome_clean = clean_dir / f"{species_id}.genome.fa"
+            gff3_clean = clean_dir / f"{species_id}.gff3"
+            genome_lengths = audit_dir / f"{species_id}.genome.lengths.tsv"
+            chromosome_lengths = clean_dir / f"{species_id}.chromosome.lengths.tsv"
+            gene_id_map = audit_dir / f"{species_id}.gene_id_map.tsv"
+            representative_tsv = audit_dir / f"{species_id}.representative_transcripts.tsv"
+            warnings_tsv = audit_dir / f"{species_id}.preprocess_warnings.tsv"
+            qc_tsv = audit_dir / f"{species_id}.preprocess_qc.tsv"
+
+            write_fasta(cleaned_pep, protein_clean)
+            if row.get("cds"):
+                write_fasta(cleaned_cds, cds_clean)
+            if row.get("genome"):
+                copy_if_present(row["genome"], genome_clean)
+            if row.get("gff3"):
+                copy_if_present(row["gff3"], gff3_clean)
+            genome_length_rows, chromosome_length_rows = build_genome_length_rows(row.get("genome", ""))
+            write_rows(genome_lengths, GENOME_LENGTH_FIELDS, genome_length_rows)
+            write_rows(chromosome_lengths, CHROMOSOME_LENGTH_FIELDS, chromosome_length_rows)
+            write_tsv(transcript_rows, TRANSCRIPT_FIELDS, gene_id_map)
+            write_tsv(representative_rows, REPRESENTATIVE_FIELDS, representative_tsv)
+            write_tsv(warnings, WARNING_FIELDS, warnings_tsv)
+
+            source_counts = Counter(record["source"] for record in transcript_rows)
+            genome_type_counts = Counter(record["SeqType"] for record in genome_length_rows)
+            total_genome_bp = sum(int(record["Length"]) for record in genome_length_rows)
+            chromosome_bp = sum(int(record["End"]) for record in chromosome_length_rows)
+            assembly_level, chromosome_analysis_ready = infer_assembly_level(
+                len(genome_length_rows),
+                len(chromosome_length_rows),
+            )
+            fallback_count = source_counts.get("auto_suffix", 0) + source_counts.get("self", 0)
+            status, note = _status(len(cleaned_pep), len(cleaned_cds), cds_required, len(warnings))
+            qc_row = {
+                "species_id": species_id,
+                "raw_pep_count": str(len(pep_records)),
+                "raw_cds_count": str(len(cds_records)),
+                "clean_pep_count": str(len(cleaned_pep)),
+                "clean_cds_count": str(len(cleaned_cds)),
+                "genome_seq_count": str(len(genome_length_rows)),
+                "chromosome_seq_count": str(len(chromosome_length_rows)),
+                "unassembled_seq_count": str(genome_type_counts.get("unassembled", 0)),
+                "organelle_seq_count": str(genome_type_counts.get("organelle", 0)),
+                "total_genome_bp": str(total_genome_bp),
+                "chromosome_bp": str(chromosome_bp),
+                "assembly_level": assembly_level,
+                "chromosome_analysis_ready": chromosome_analysis_ready,
+                "gff3_transcript_map_count": str(len(transcript_gene_map)),
+                "gff3_mapping_rate": _rate(source_counts.get("gff3", 0), len(transcript_rows)),
+                "fallback_mapping_rate": _rate(fallback_count, len(transcript_rows)),
+                "cds_match_rate": _rate(len(cleaned_cds), len(cleaned_pep)),
+                "terminal_stop_removed_count": str(terminal_stop_count(pep_records)),
+                "warning_count": str(len(warnings)),
+                "status": status,
+                "note": note,
+            }
+            write_rows(qc_tsv, QC_FIELDS, [qc_row])
+            qc_rows.append(qc_row)
+            if status in {"failed", "missing_cds"}:
+                failed_rows.append({"species_id": species_id, "status": status, "reason": note})
+            manifest_rows.append(
+                {
+                    "species_id": species_id,
+                    "protein": str(protein_clean.resolve()),
+                    "cds": str(cds_clean.resolve()) if row.get("cds") else "",
+                    "genome": str(genome_clean.resolve()) if row.get("genome") else "",
+                    "gff3": str(gff3_clean.resolve()) if row.get("gff3") else "",
+                    "genome_lengths": str(genome_lengths.resolve()) if row.get("genome") else "",
+                    "chromosome_lengths": str(chromosome_lengths.resolve()) if row.get("genome") else "",
+                    "raw_pep": raw_pep,
+                    "raw_cds": raw_cds,
+                    "raw_genome": raw_genome,
+                    "raw_gff3": raw_gff3,
+                    "gene_id_map": str(gene_id_map.resolve()),
+                    "representative_transcripts": str(representative_tsv.resolve()),
+                    "preprocess_qc": str(qc_tsv.resolve()),
+                    "preprocess_warnings": str(warnings_tsv.resolve()),
+                    "status": status,
+                }
+            )
+        except Exception as exc:  # pragma: no cover - defensive per-species continuation
+            reason = str(exc)
+            failed_rows.append({"species_id": species_id, "status": "failed", "reason": reason})
+            qc_rows.append(
+                {
+                    "species_id": species_id,
+                    "raw_pep_count": "0",
+                    "raw_cds_count": "0",
+                    "clean_pep_count": "0",
+                    "clean_cds_count": "0",
+                    "genome_seq_count": "0",
+                    "chromosome_seq_count": "0",
+                    "unassembled_seq_count": "0",
+                    "organelle_seq_count": "0",
+                    "total_genome_bp": "0",
+                    "chromosome_bp": "0",
+                    "assembly_level": "failed",
+                    "chromosome_analysis_ready": "FALSE",
+                    "gff3_transcript_map_count": "0",
+                    "gff3_mapping_rate": "0.0000",
+                    "fallback_mapping_rate": "0.0000",
+                    "cds_match_rate": "0.0000",
+                    "terminal_stop_removed_count": "0",
+                    "warning_count": "1",
+                    "status": "failed",
+                    "note": reason,
+                }
+            )
+    return manifest_rows, qc_rows, failed_rows
+
+
+def write_summary(path: Path, qc_rows: list[dict[str, str]], failed_rows: list[dict[str, str]]) -> None:
+    status_counts = Counter(row["status"] for row in qc_rows)
+    assembly_counts = Counter(row.get("assembly_level", "unknown") for row in qc_rows)
+    ready_count = sum(1 for row in qc_rows if row.get("chromosome_analysis_ready") == "TRUE")
+    missing_chromosome_rows = [
+        row for row in qc_rows if row.get("genome_seq_count", "0") != "0" and row.get("chromosome_seq_count", "0") == "0"
+    ]
+    lines = [
+        "# Species Clean Bank Summary",
+        "",
+        f"Species processed: {len(qc_rows)}",
+        f"Passed: {status_counts.get('pass', 0)}",
+        f"Warnings: {status_counts.get('warning', 0)}",
+        f"Failed: {len(failed_rows)}",
+        f"Chromosome-level analysis ready: {ready_count}",
+        "",
+        "| status | count |",
+        "| --- | ---: |",
+    ]
+    for status, count in sorted(status_counts.items()):
+        lines.append(f"| {status} | {count} |")
+    lines.extend(["", "| assembly_level | count |", "| --- | ---: |"])
+    for assembly_level, count in sorted(assembly_counts.items()):
+        lines.append(f"| {assembly_level} | {count} |")
+    lines.extend(
+        [
+            "",
+            "## Genome Length Tables",
+            "",
+            "Each species with a genome FASTA writes an audit genome-length table and a chromosome-only three-column table for circlize.",
+            "",
+            "| species_id | assembly_level | chromosome_analysis_ready | genome_seq_count | chromosome_seq_count | unassembled_seq_count | organelle_seq_count | chromosome_bp |",
+            "| --- | --- | --- | ---: | ---: | ---: | ---: | ---: |",
+        ]
+    )
+    for row in qc_rows:
+        lines.append(
+            "| {species_id} | {assembly_level} | {chromosome_analysis_ready} | {genome_seq_count} | {chromosome_seq_count} | {unassembled_seq_count} | {organelle_seq_count} | {chromosome_bp} |".format(
+                **row
+            )
+        )
+    if missing_chromosome_rows:
+        lines.extend(
+            [
+                "",
+                "Species with genome FASTA but no chromosome-classified sequences may need a species-specific chromosome rename or scaffold-to-chromosome map before circlize or JCVI visualization.",
+                "",
+                "| species_id | genome_seq_count | unassembled_seq_count |",
+                "| --- | ---: | ---: |",
+            ]
+        )
+        for row in missing_chromosome_rows:
+            lines.append(f"| {row['species_id']} | {row['genome_seq_count']} | {row['unassembled_seq_count']} |")
+    lines.append("")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def _split_csv(value: str | None) -> list[str]:
+    if not value:
+        return []
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--raw-root", required=True, type=Path)
+    parser.add_argument("--out-root", required=True, type=Path)
+    parser.add_argument("--manifest", required=True, type=Path)
+    parser.add_argument("--qc", required=True, type=Path)
+    parser.add_argument("--qc-excel", default=None, type=Path)
+    parser.add_argument("--failed", required=True, type=Path)
+    parser.add_argument("--summary", required=True, type=Path)
+    parser.add_argument("--include", default="all")
+    parser.add_argument("--exclude", default="")
+    parser.add_argument("--require-cds", action="store_true")
+    parser.add_argument("--require-genome", action="store_true")
+    parser.add_argument("--require-gff3", action="store_true")
+    args = parser.parse_args()
+
+    include = "all" if args.include == "all" else _split_csv(args.include)
+    manifest_rows, qc_rows, failed_rows = build_species_clean_bank(
+        raw_root=args.raw_root,
+        out_root=args.out_root,
+        include=include,
+        exclude=_split_csv(args.exclude),
+        cds_required=args.require_cds,
+        genome_required=args.require_genome,
+        gff3_required=args.require_gff3,
+    )
+    write_rows(args.manifest, MANIFEST_FIELDS, manifest_rows)
+    write_rows(args.qc, QC_FIELDS, qc_rows)
+    write_qc_excel(args.qc_excel or args.qc.with_suffix(".xlsx"), qc_rows)
+    write_rows(args.failed, FAILED_FIELDS, failed_rows)
+    write_summary(args.summary, qc_rows, failed_rows)
+    print(f"Built species clean bank for {len(qc_rows)} species at {args.out_root}")
+
+
+if __name__ == "__main__":
+    main()

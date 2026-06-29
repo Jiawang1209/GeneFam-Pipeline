@@ -119,6 +119,7 @@ def parse_gff3_transcript_gene_map(path: Path | str | None) -> dict[str, str]:
             feature_type = parts[2].casefold()
             attributes = _parse_gff3_attributes(parts[8])
             feature_id = clean_header_id(attributes.get("ID", ""))
+            feature_name = clean_header_id(attributes.get("Name", ""))
             parent = clean_header_id(attributes.get("Parent", ""))
             gene_id = clean_header_id(attributes.get("gene_id", ""))
             transcript_id = clean_header_id(attributes.get("transcript_id", ""))
@@ -130,6 +131,13 @@ def parse_gff3_transcript_gene_map(path: Path | str | None) -> dict[str, str]:
                 tx_gene = gene_id or parent
                 if tx_id and tx_gene:
                     transcript_to_gene[tx_id] = tx_gene
+                for alias_key in ("Name", "Alias", "protein_id", "polypeptide", "Derives_from"):
+                    for alias in attributes.get(alias_key, "").split(","):
+                        clean_alias = clean_header_id(alias)
+                        if clean_alias and tx_gene:
+                            transcript_to_gene[clean_alias] = tx_gene
+                if feature_name and tx_gene:
+                    transcript_to_gene[feature_name] = tx_gene
             elif parent and transcript_id:
                 child_to_parent[transcript_id] = parent
 

@@ -8,6 +8,12 @@ results/
 tmp/
 Reference/
 data/species_bank/
+data/species_clean_bank/
+data/species_clean_bank_manifest.tsv
+data/species_clean_bank_qc.tsv
+data/species_clean_bank_qc.xlsx
+data/species_clean_bank_failed.tsv
+data/species_clean_bank_summary.md
 data/domain_annotations/
 data/hmm_profiles/
 data/reference/

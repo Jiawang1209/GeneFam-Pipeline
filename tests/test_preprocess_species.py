@@ -33,6 +33,20 @@ def test_parse_gff3_transcript_gene_map_reads_mrna_parent_relationships(tmp_path
     assert parse_gff3_transcript_gene_map(gff3) == {"AT1G01010.1": "AT1G01010"}
 
 
+def test_parse_gff3_transcript_gene_map_uses_name_as_transcript_alias(tmp_path):
+    gff3 = tmp_path / "demo.gff3"
+    gff3.write_text(
+        "chr1\tPhytozome\tgene\t1\t900\t.\t+\t.\tID=AT1G01010;Name=AT1G01010\n"
+        "chr1\tPhytozome\tmRNA\t1\t900\t.\t+\t.\tID=PAC:19656964;Name=AT1G01010.1;Parent=AT1G01010\n",
+        encoding="utf-8",
+    )
+
+    mapping = parse_gff3_transcript_gene_map(gff3)
+
+    assert mapping["PAC:19656964"] == "AT1G01010"
+    assert mapping["AT1G01010.1"] == "AT1G01010"
+
+
 def test_clean_sequence_records_selects_longest_pep_and_removes_terminal_stop(tmp_path):
     pep = tmp_path / "demo.pep.fa"
     pep.write_text(

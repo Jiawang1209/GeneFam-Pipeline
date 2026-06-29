@@ -34,6 +34,137 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-29 00:20 - Implement standalone species clean bank builder
+
+Context:
+- User approved the `raw/`, `clean/`, and `audit/` clean-bank design and asked to implement it directly.
+- The goal is to make `00_preprocess` usable as a standalone module and as the foundation for future 1000+ species analyses.
+
+Decisions:
+- Reuse the existing `preprocess_species.py` cleaning logic rather than duplicating sequence-cleaning behavior.
+- Enhance GFF3 transcript mapping so transcript feature aliases such as `Name`, `Alias`, `protein_id`, `polypeptide`, and `Derives_from` can map back to gene IDs.
+- Add a standalone `build_species_clean_bank.py` entrypoint that writes raw, clean, audit, global manifest, global QC, failed-species table, and Markdown summary outputs.
+- Ignore `data/species_clean_bank/` and global clean-bank output tables in git because the clean bank is generated data and may become very large.
+
+Added:
+- `bin/genefam/build_species_clean_bank.py`
+- `tests/test_build_species_clean_bank.py`
+
+Modified:
+- `bin/genefam/preprocess_species.py`
+- `tests/test_preprocess_species.py`
+- `.gitignore`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_preprocess_species.py::test_parse_gff3_transcript_gene_map_uses_name_as_transcript_alias tests/test_build_species_clean_bank.py -q` first failed as expected before implementation.
+- `python -m pytest tests/test_preprocess_species.py tests/test_build_species_clean_bank.py -q` passed with 7 tests.
+- Real three-species smoke command passed:
+  `python bin/genefam/build_species_clean_bank.py --raw-root data/species_bank --out-root results/species_clean_bank_check/species_clean_bank --manifest results/species_clean_bank_check/species_clean_bank_manifest.tsv --qc results/species_clean_bank_check/species_clean_bank_qc.tsv --failed results/species_clean_bank_check/species_clean_bank_failed.tsv --summary results/species_clean_bank_check/species_clean_bank_summary.md --require-cds --require-genome --require-gff3`
+- Real smoke QC:
+  `Arabidopsis_thaliana`: raw pep 35386, clean pep 27416, clean CDS 27416, status pass.
+  `Brassica_rapa`: raw pep 57411, clean pep 38746, clean CDS 38746, status pass.
+  `Capsella_rubella`: raw pep 29547, clean pep 27682, clean CDS 27682, status pass.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: clean-bank builder, preprocess alias mapping, tests, gitignore, history
+
+Next:
+- Review whether `fasta_locus` mapping should be reported separately from GFF3 mapping in the clean-bank summary.
+- Add more representative species with distinct ID styles after the module structure is stable.
+
+## 2026-06-29 00:45 - Add genome and chromosome length tables to clean bank
+
+Context:
+- User noted that genome FASTA and GFF3 files can contain unassembled sequences, which can distort JCVI visualization and MCScanX + circlize intra-species plots.
+- The clean bank needs chromosome-length metadata in `Chr\tStart\tEnd` style for later circlize use.
+
+Decisions:
+- Keep an audit-level full genome length table for every sequence in genome FASTA.
+- Write a chromosome-only three-column table under each species `clean/` directory for downstream circlize-style plotting.
+- Classify genome FASTA records as `chromosome`, `unassembled`, `organelle`, or `unclassified` using conservative sequence-ID/header heuristics.
+- Do not treat `scaffold_*` IDs as chromosomes by default; species such as Capsella should instead provide a future scaffold-to-chromosome mapping or rename rule.
+- Add genome/chromosome length paths to the clean-bank manifest and genome class counts to QC outputs.
+
+Added:
+- Per-species `clean/<species>.chromosome.lengths.tsv` with columns `Chr`, `Start`, and `End`.
+- Per-species `audit/<species>.genome.lengths.tsv` with full genome sequence lengths and classification.
+- QC fields for genome sequence count, chromosome sequence count, unassembled sequence count, organelle sequence count, total genome bp, and chromosome bp.
+
+Modified:
+- `bin/genefam/build_species_clean_bank.py`
+- `tests/test_build_species_clean_bank.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_species_clean_bank.py tests/test_preprocess_species.py -q` passed with 7 tests.
+- Real three-species smoke command passed:
+  `python bin/genefam/build_species_clean_bank.py --raw-root data/species_bank --out-root results/species_clean_bank_check/species_clean_bank --manifest results/species_clean_bank_check/species_clean_bank_manifest.tsv --qc results/species_clean_bank_check/species_clean_bank_qc.tsv --failed results/species_clean_bank_check/species_clean_bank_failed.tsv --summary results/species_clean_bank_check/species_clean_bank_summary.md --require-cds --require-genome --require-gff3`
+- Real smoke chromosome classification:
+  `Arabidopsis_thaliana`: genome seq 7, chromosome seq 5, organelle seq 2, chromosome bp 119146348.
+  `Brassica_rapa`: genome seq 14, chromosome seq 10, unassembled seq 4, chromosome bp 417856464.
+  `Capsella_rubella`: genome seq 853, chromosome seq 0, unassembled seq 853, chromosome bp 0; this indicates a future species-specific chromosome mapping is needed before chromosome-level circlize or JCVI visualization.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: clean-bank genome/chromosome length outputs, tests, history
+
+Next:
+- Add optional species-specific chromosome alias/map support for scaffold-named assemblies.
+- Wire clean-bank chromosome-length outputs into the formal MCScanX/circlize and JCVI input preparation steps.
+
+## 2026-06-29 16:10 - Add Excel assembly-level QC for clean bank
+
+Context:
+- User decided that formal downstream chromosome-level analysis should require chromosome-level assemblies.
+- User requested an Excel QC file across all species to make it easy to inspect which species are chromosome-level before preparing a larger 10-species test bank.
+
+Decisions:
+- Add `assembly_level` and `chromosome_analysis_ready` to clean-bank QC.
+- Treat species with at least one chromosome-classified genome sequence as `assembly_level=chromosome` and `chromosome_analysis_ready=TRUE`.
+- Treat scaffold/contig-only genomes as `assembly_level=scaffold_or_contig` and `chromosome_analysis_ready=FALSE`.
+- Generate an Excel workbook by default next to the TSV QC file, with a `species_qc` sheet and an `assembly_summary` sheet.
+- Keep the TSV QC as the machine-readable primary output and use the Excel file as the user-facing inspection surface.
+
+Added:
+- `--qc-excel` CLI option for `bin/genefam/build_species_clean_bank.py`.
+- Default Excel output at the QC TSV path with `.xlsx` suffix when `--qc-excel` is not supplied.
+- Excel workbook sheets: `species_qc` and `assembly_summary`.
+- `.gitignore` entry for `data/species_clean_bank_qc.xlsx`.
+
+Modified:
+- `bin/genefam/build_species_clean_bank.py`
+- `tests/test_build_species_clean_bank.py`
+- `.gitignore`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_species_clean_bank.py tests/test_preprocess_species.py -q` passed with 7 tests.
+- Real three-species clean-bank build passed and wrote `results/species_clean_bank_check/species_clean_bank_qc.xlsx`.
+- The Excel workbook was opened with `openpyxl`; it contains sheets `species_qc` and `assembly_summary`.
+- Real QC shows `Arabidopsis_thaliana` and `Brassica_rapa` as `chromosome` / `TRUE`, while `Capsella_rubella` is `scaffold_or_contig` / `FALSE`.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: clean-bank Excel QC output, assembly-level fields, tests, gitignore, history
+
+Next:
+- Use the upcoming 10-species test data to validate chromosome-level filtering across more annotation and genome naming styles.
+- Wire `chromosome_analysis_ready` into later species selection for MCScanX/circlize and JCVI modules.
+
 ## 2026-06-29 00:00 - Design standalone species clean bank module
 
 Context:
