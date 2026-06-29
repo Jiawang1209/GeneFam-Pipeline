@@ -4,6 +4,10 @@ import sys
 from pathlib import Path
 
 
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SCRIPT = REPO_ROOT / "bin/genefam/build_species_clean_bank.py"
+
+
 def read_tsv(path: Path) -> list[dict[str, str]]:
     with path.open("r", encoding="utf-8", newline="") as handle:
         return list(csv.DictReader(handle, delimiter="\t"))
@@ -54,7 +58,7 @@ def test_build_species_clean_bank_writes_raw_clean_audit_and_global_tables(tmp_p
     completed = subprocess.run(
         [
             sys.executable,
-            "bin/genefam/build_species_clean_bank.py",
+            str(SCRIPT),
             "--raw-root",
             str(raw_root),
             "--out-root",
@@ -155,3 +159,96 @@ def test_build_species_clean_bank_writes_raw_clean_audit_and_global_tables(tmp_p
     ]
     assert read_tsv(failed) == []
     assert "Species Clean Bank Summary" in summary.read_text(encoding="utf-8")
+
+
+def test_build_species_clean_bank_defaults_to_results_outdir(tmp_path):
+    raw_root = tmp_path / "species_bank"
+    write_demo_species(raw_root)
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--raw-root",
+            str(raw_root),
+        ],
+        cwd=tmp_path,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "results/species_clean_bank" in completed.stdout
+    assert (tmp_path / "results/species_clean_bank/Demo_species/clean/Demo_species.protein.clean.fa").exists()
+    assert (tmp_path / "results/species_clean_bank_manifest.tsv").exists()
+    assert (tmp_path / "results/species_clean_bank_qc.tsv").exists()
+    assert (tmp_path / "results/species_clean_bank_qc.xlsx").exists()
+    assert (tmp_path / "results/species_clean_bank_failed.tsv").exists()
+    assert (tmp_path / "results/species_clean_bank_summary.md").exists()
+
+
+def test_build_species_clean_bank_accepts_custom_outdir(tmp_path):
+    raw_root = tmp_path / "species_bank"
+    outdir = tmp_path / "custom_result"
+    write_demo_species(raw_root)
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--raw-root",
+            str(raw_root),
+            "--outdir",
+            str(outdir),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert (outdir / "species_clean_bank/Demo_species/clean/Demo_species.protein.clean.fa").exists()
+    assert (outdir / "species_clean_bank_manifest.tsv").exists()
+    assert (outdir / "species_clean_bank_qc.xlsx").exists()
+
+
+def test_build_species_clean_bank_records_incomplete_species_without_stopping(tmp_path):
+    raw_root = tmp_path / "species_bank"
+    write_demo_species(raw_root)
+    incomplete = raw_root / "Incomplete_species"
+    incomplete.mkdir(parents=True)
+    (incomplete / "all.pep").write_text(">GeneX\nMAA\n", encoding="utf-8")
+    outdir = tmp_path / "results"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--raw-root",
+            str(raw_root),
+            "--outdir",
+            str(outdir),
+            "--require-cds",
+            "--require-genome",
+            "--require-gff3",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert (outdir / "species_clean_bank/Demo_species/clean/Demo_species.protein.clean.fa").exists()
+    qc_rows = {row["species_id"]: row for row in read_tsv(outdir / "species_clean_bank_qc.tsv")}
+    assert qc_rows["Demo_species"]["status"] == "pass"
+    assert qc_rows["Incomplete_species"]["status"] == "missing_required_input"
+    assert qc_rows["Incomplete_species"]["note"] == "missing required input file(s): pep, cds, genome, gff3"
+    failed_rows = read_tsv(outdir / "species_clean_bank_failed.tsv")
+    assert failed_rows == [
+        {
+            "species_id": "Incomplete_species",
+            "status": "missing_required_input",
+            "reason": "missing required input file(s): pep, cds, genome, gff3",
+        }
+    ]

@@ -245,6 +245,40 @@ def infer_assembly_level(genome_seq_count: int, chromosome_seq_count: int) -> tu
     return "scaffold_or_contig", "FALSE"
 
 
+def missing_input_reason(row: dict[str, str], *, cds_required: bool, genome_required: bool, gff3_required: bool) -> str:
+    required = {"pep": True, "cds": cds_required, "genome": genome_required, "gff3": gff3_required}
+    missing = [file_type for file_type, is_required in required.items() if is_required and not row.get(file_type)]
+    if not missing:
+        return ""
+    return "missing required input file(s): " + ", ".join(missing)
+
+
+def failed_qc_row(species_id: str, status: str, note: str) -> dict[str, str]:
+    return {
+        "species_id": species_id,
+        "raw_pep_count": "0",
+        "raw_cds_count": "0",
+        "clean_pep_count": "0",
+        "clean_cds_count": "0",
+        "genome_seq_count": "0",
+        "chromosome_seq_count": "0",
+        "unassembled_seq_count": "0",
+        "organelle_seq_count": "0",
+        "total_genome_bp": "0",
+        "chromosome_bp": "0",
+        "assembly_level": status,
+        "chromosome_analysis_ready": "FALSE",
+        "gff3_transcript_map_count": "0",
+        "gff3_mapping_rate": "0.0000",
+        "fallback_mapping_rate": "0.0000",
+        "cds_match_rate": "0.0000",
+        "terminal_stop_removed_count": "0",
+        "warning_count": "1",
+        "status": status,
+        "note": note,
+    }
+
+
 def build_species_clean_bank(
     *,
     raw_root: Path,
@@ -260,12 +294,7 @@ def build_species_clean_bank(
         include=include,
         exclude=exclude or [],
         patterns=DEFAULT_PATTERNS,
-        required={
-            "pep": True,
-            "cds": cds_required,
-            "genome": genome_required,
-            "gff3": gff3_required,
-        },
+        required={file_type: False for file_type in FILE_TYPES},
         base_dir=None,
     )
     manifest_rows: list[dict[str, str]] = []
@@ -278,6 +307,37 @@ def build_species_clean_bank(
         raw_dir = species_root / "raw"
         clean_dir = species_root / "clean"
         audit_dir = species_root / "audit"
+        missing_reason = missing_input_reason(
+            row,
+            cds_required=cds_required,
+            genome_required=genome_required,
+            gff3_required=gff3_required,
+        )
+        if missing_reason:
+            status = "missing_required_input"
+            failed_rows.append({"species_id": species_id, "status": status, "reason": missing_reason})
+            qc_rows.append(failed_qc_row(species_id, status, missing_reason))
+            manifest_rows.append(
+                {
+                    "species_id": species_id,
+                    "protein": "",
+                    "cds": "",
+                    "genome": "",
+                    "gff3": "",
+                    "genome_lengths": "",
+                    "chromosome_lengths": "",
+                    "raw_pep": row.get("pep", ""),
+                    "raw_cds": row.get("cds", ""),
+                    "raw_genome": row.get("genome", ""),
+                    "raw_gff3": row.get("gff3", ""),
+                    "gene_id_map": "",
+                    "representative_transcripts": "",
+                    "preprocess_qc": "",
+                    "preprocess_warnings": "",
+                    "status": status,
+                }
+            )
+            continue
         try:
             raw_pep = copy_if_present(row.get("pep", ""), raw_dir / f"{species_id}.pep.fa")
             raw_cds = copy_if_present(row.get("cds", ""), raw_dir / f"{species_id}.cds.fa")
@@ -379,31 +439,7 @@ def build_species_clean_bank(
         except Exception as exc:  # pragma: no cover - defensive per-species continuation
             reason = str(exc)
             failed_rows.append({"species_id": species_id, "status": "failed", "reason": reason})
-            qc_rows.append(
-                {
-                    "species_id": species_id,
-                    "raw_pep_count": "0",
-                    "raw_cds_count": "0",
-                    "clean_pep_count": "0",
-                    "clean_cds_count": "0",
-                    "genome_seq_count": "0",
-                    "chromosome_seq_count": "0",
-                    "unassembled_seq_count": "0",
-                    "organelle_seq_count": "0",
-                    "total_genome_bp": "0",
-                    "chromosome_bp": "0",
-                    "assembly_level": "failed",
-                    "chromosome_analysis_ready": "FALSE",
-                    "gff3_transcript_map_count": "0",
-                    "gff3_mapping_rate": "0.0000",
-                    "fallback_mapping_rate": "0.0000",
-                    "cds_match_rate": "0.0000",
-                    "terminal_stop_removed_count": "0",
-                    "warning_count": "1",
-                    "status": "failed",
-                    "note": reason,
-                }
-            )
+            qc_rows.append(failed_qc_row(species_id, "failed", reason))
     return manifest_rows, qc_rows, failed_rows
 
 
@@ -471,15 +507,28 @@ def _split_csv(value: str | None) -> list[str]:
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
+def resolve_output_paths(args: argparse.Namespace) -> dict[str, Path]:
+    outdir = args.outdir
+    return {
+        "out_root": args.out_root or outdir / "species_clean_bank",
+        "manifest": args.manifest or outdir / "species_clean_bank_manifest.tsv",
+        "qc": args.qc or outdir / "species_clean_bank_qc.tsv",
+        "qc_excel": args.qc_excel or outdir / "species_clean_bank_qc.xlsx",
+        "failed": args.failed or outdir / "species_clean_bank_failed.tsv",
+        "summary": args.summary or outdir / "species_clean_bank_summary.md",
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--raw-root", required=True, type=Path)
-    parser.add_argument("--out-root", required=True, type=Path)
-    parser.add_argument("--manifest", required=True, type=Path)
-    parser.add_argument("--qc", required=True, type=Path)
+    parser.add_argument("--outdir", default=Path("results"), type=Path)
+    parser.add_argument("--out-root", default=None, type=Path)
+    parser.add_argument("--manifest", default=None, type=Path)
+    parser.add_argument("--qc", default=None, type=Path)
     parser.add_argument("--qc-excel", default=None, type=Path)
-    parser.add_argument("--failed", required=True, type=Path)
-    parser.add_argument("--summary", required=True, type=Path)
+    parser.add_argument("--failed", default=None, type=Path)
+    parser.add_argument("--summary", default=None, type=Path)
     parser.add_argument("--include", default="all")
     parser.add_argument("--exclude", default="")
     parser.add_argument("--require-cds", action="store_true")
@@ -487,22 +536,23 @@ def main() -> None:
     parser.add_argument("--require-gff3", action="store_true")
     args = parser.parse_args()
 
+    paths = resolve_output_paths(args)
     include = "all" if args.include == "all" else _split_csv(args.include)
     manifest_rows, qc_rows, failed_rows = build_species_clean_bank(
         raw_root=args.raw_root,
-        out_root=args.out_root,
+        out_root=paths["out_root"],
         include=include,
         exclude=_split_csv(args.exclude),
         cds_required=args.require_cds,
         genome_required=args.require_genome,
         gff3_required=args.require_gff3,
     )
-    write_rows(args.manifest, MANIFEST_FIELDS, manifest_rows)
-    write_rows(args.qc, QC_FIELDS, qc_rows)
-    write_qc_excel(args.qc_excel or args.qc.with_suffix(".xlsx"), qc_rows)
-    write_rows(args.failed, FAILED_FIELDS, failed_rows)
-    write_summary(args.summary, qc_rows, failed_rows)
-    print(f"Built species clean bank for {len(qc_rows)} species at {args.out_root}")
+    write_rows(paths["manifest"], MANIFEST_FIELDS, manifest_rows)
+    write_rows(paths["qc"], QC_FIELDS, qc_rows)
+    write_qc_excel(paths["qc_excel"], qc_rows)
+    write_rows(paths["failed"], FAILED_FIELDS, failed_rows)
+    write_summary(paths["summary"], qc_rows, failed_rows)
+    print(f"Built species clean bank for {len(qc_rows)} species at {paths['out_root']}")
 
 
 if __name__ == "__main__":

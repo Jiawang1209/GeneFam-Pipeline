@@ -165,6 +165,47 @@ Next:
 - Use the upcoming 10-species test data to validate chromosome-level filtering across more annotation and genome naming styles.
 - Wire `chromosome_analysis_ready` into later species selection for MCScanX/circlize and JCVI modules.
 
+## 2026-06-29 16:35 - Simplify clean-bank output CLI
+
+Context:
+- User expects clean-bank results to be generated under a simple result directory from any working directory.
+- The default should be the current directory's `results/`, and the common command should only need `--raw-root`.
+
+Decisions:
+- Add `--outdir` as the user-facing output root, defaulting to `results`.
+- Make `--out-root`, `--manifest`, `--qc`, `--qc-excel`, `--failed`, and `--summary` optional advanced overrides.
+- Default clean-bank outputs now resolve to `outdir/species_clean_bank`, `outdir/species_clean_bank_manifest.tsv`, `outdir/species_clean_bank_qc.tsv`, `outdir/species_clean_bank_qc.xlsx`, `outdir/species_clean_bank_failed.tsv`, and `outdir/species_clean_bank_summary.md`.
+- Keep the previous advanced output arguments working for automation and tests.
+- Record incomplete species as `missing_required_input` in global QC and failed tables instead of stopping the whole clean-bank build, so users can prepare large species banks incrementally.
+
+Added:
+- `resolve_output_paths()` helper in `bin/genefam/build_species_clean_bank.py`.
+- Tests for the minimal `--raw-root` command and custom `--outdir`.
+- Test coverage for incomplete species directories that should not block complete species.
+
+Modified:
+- `bin/genefam/build_species_clean_bank.py`
+- `tests/test_build_species_clean_bank.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_species_clean_bank.py tests/test_preprocess_species.py -q` passed with 10 tests.
+- Real smoke with the current in-progress `data/species_bank` passed using the simple command:
+  `python bin/genefam/build_species_clean_bank.py --raw-root data/species_bank --require-cds --require-genome --require-gff3`
+- The real smoke wrote default outputs under `results/`, including `results/species_clean_bank_qc.xlsx`.
+- Current in-progress `Oryza_sativa` was recorded as `missing_required_input` because it only had `all.pep` and did not yet match the expected `*.pep.fa` naming pattern.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: clean-bank CLI defaults, tests, history
+
+Next:
+- Re-run clean-bank construction after the user adds the next batch of species data.
+
 ## 2026-06-29 00:00 - Design standalone species clean bank module
 
 Context:
