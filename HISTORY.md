@@ -34,6 +34,42 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-29 00:00 - Design standalone species clean bank module
+
+Context:
+- User clarified that `00_preprocess` should become an independently runnable module for building a reusable clean species database.
+- The expected future scale is 1000+ species, with later analyses selecting arbitrary species combinations from the clean bank.
+- User approved a layout that preserves raw files and clean files separately under each species.
+
+Decisions:
+- Treat `00_preprocess` as both a full-workflow first stage and a standalone clean-bank builder.
+- Use `data/species_clean_bank/<species>/raw`, `clean`, and `audit` subdirectories.
+- Copy original peptide, CDS, genome, and GFF3 into `raw/`.
+- Write cleaned protein/CDS plus copied genome/GFF3 into `clean/`.
+- Keep audit tables per species and global clean-bank manifests/QC summaries.
+- Do not introduce standardized GFF3 rewriting in this first design; keep original GFF3 copied and available.
+
+Added:
+- `docs/superpowers/specs/2026-06-29-species-clean-bank-design.md`
+- `docs/superpowers/specs/.gitkeep`
+
+Modified:
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Design-only change; no code tests run.
+
+Commit:
+- hash: self-referential; see the commit containing this HISTORY entry
+- message: docs: design species clean bank module
+- files: species clean bank design doc and history entry
+
+Next:
+- Wait for user review of the design before writing the implementation plan.
+
 ## 2026-06-28 16:45 - Commit Reference-level pipeline progress through PPI
 
 Context:
