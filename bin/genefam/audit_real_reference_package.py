@@ -10,7 +10,7 @@ from pathlib import Path
 
 FIELDNAMES = ["check", "status", "evidence", "note"]
 REQUIRED_MODULES = [
-    "00_preprocess",
+    "01_preprocess",
     "01_gene_identification",
     "02_domain_filtering",
     "03_alignment",
@@ -29,7 +29,7 @@ REQUIRED_MODULES = [
     "report",
 ]
 AVAILABLE_REQUIRED_MODULES = [
-    "00_preprocess",
+    "01_preprocess",
     "01_gene_identification",
     "02_domain_filtering",
     "03_alignment",

@@ -34,6 +34,43 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-06-30 09:35 - Rename preprocess stage to 01_preprocess
+
+Context:
+- User clarified the formal module order should be `01_preprocess`, `02_hmm`, then `03_blastp`.
+- This session only renames the existing preprocess stage from `00_preprocess` to `01_preprocess`; HMM and BLASTP implementation are separate follow-up steps.
+
+Decisions:
+- Update current code, workflow defaults, configs, tests, and user-facing docs from `00_preprocess` to `01_preprocess`.
+- Preserve old historical command text elsewhere in this file as historical record rather than rewriting past development logs.
+- Keep the existing `preprocess` function/script names for now; this change is about result-stage numbering and paths.
+
+Added:
+- none
+
+Modified:
+- `workflows/nextflow.config`
+- `workflows/modules/preprocess.nf`
+- `bin/genefam/organize_module_results.py`
+- `bin/genefam/build_reproducibility_code.py`
+- `bin/genefam/audit_real_reference_package.py`
+- `configs/real_3species.template.yaml`
+- README/docs/tests that referenced the old `00_preprocess` result path.
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_real_3species_template.py tests/test_organize_module_results.py tests/test_build_reproducibility_code.py tests/test_preprocess_species.py tests/test_build_reference_from_config.py tests/test_build_reference_from_tair_domains.py tests/test_build_identification_inputs.py tests/test_quickstart_docs.py tests/test_audit_real_reference_package.py -q` passed with 44 tests.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: preprocess stage path rename
+
+Next:
+- Develop `02_hmm` as the HMM-only candidate protein screening module.
+
 ## 2026-06-29 00:20 - Implement standalone species clean bank builder
 
 Context:

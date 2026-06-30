@@ -26,7 +26,7 @@ def _write_png(path: Path) -> None:
 def _build_reference_package(root: Path) -> Path:
     analysis = root / "analysis_modules"
     required_modules = [
-        "00_preprocess",
+        "01_preprocess",
         "01_gene_identification",
         "02_domain_filtering",
         "03_alignment",

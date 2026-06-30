@@ -69,12 +69,12 @@ def test_build_diamond_inputs_can_use_generated_reference_peptides_override():
     assert build_diamond_inputs(
         manifest_rows,
         config,
-        reference_peptides_override="results/00_preprocess/reference/PF00657.reference.pep.fa",
+        reference_peptides_override="results/01_preprocess/reference/PF00657.reference.pep.fa",
     ) == [
         {
             "species_id": "Arabidopsis_thaliana",
             "pep": "ath.clean.fa",
-            "reference_peptides": "results/00_preprocess/reference/PF00657.reference.pep.fa",
+            "reference_peptides": "results/01_preprocess/reference/PF00657.reference.pep.fa",
         }
     ]
 

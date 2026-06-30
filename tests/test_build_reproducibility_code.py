@@ -10,7 +10,7 @@ def test_build_reproducibility_code_md_collects_analysis_commands(tmp_path):
     reference_manifest = tmp_path / "reference_generation.tsv"
     reference_manifest.write_text(
         "hmm_id\treference_peptides\tids\tmissing_ids\n"
-        "PF00657\tresults/00_preprocess/reference/PF00657.reference.pep.fa\tresults/00_preprocess/reference/PF00657.TAIR.ID\tresults/00_preprocess/reference/PF00657.missing_ids.txt\n",
+        "PF00657\tresults/01_preprocess/reference/PF00657.reference.pep.fa\tresults/01_preprocess/reference/PF00657.TAIR.ID\tresults/01_preprocess/reference/PF00657.missing_ids.txt\n",
         encoding="utf-8",
     )
     family_candidates = tmp_path / "family_candidates.tsv"
@@ -36,11 +36,11 @@ def test_build_reproducibility_code_md_collects_analysis_commands(tmp_path):
             "--outdir",
             "results/real_3species_full_standard",
             "--preprocess-outdir",
-            "results/00_preprocess",
+            "results/01_preprocess",
             "--clean-species-manifest-label",
-            "results/00_preprocess/species_manifest.clean.tsv",
+            "results/01_preprocess/species_manifest.clean.tsv",
             "--reference-manifest-label",
-            "results/00_preprocess/reference/reference_generation.tsv",
+            "results/01_preprocess/reference/reference_generation.tsv",
             "--family-candidates-label",
             "results/real_3species_full_standard/tables/family_candidates.tsv",
             "--out",
@@ -58,8 +58,8 @@ def test_build_reproducibility_code_md_collects_analysis_commands(tmp_path):
     assert "nextflow run workflows/main.nf" in text
     assert "--config configs/real_3species.template.yaml" in text
     assert "--outdir results/real_3species_full_standard" in text
-    assert "--preprocess_outdir results/00_preprocess" in text
-    assert "results/00_preprocess/reference/PF00657.reference.pep.fa" in text
+    assert "--preprocess_outdir results/01_preprocess" in text
+    assert "results/01_preprocess/reference/PF00657.reference.pep.fa" in text
     assert "results/real_3species_full_standard/tables/family_candidates.tsv" in text
     assert "## Reference-Level Module Commands And Handoffs" in text
     assert "### MEME motif analysis" in text

@@ -15,7 +15,7 @@ def build_markdown(
     config_label: str | None = None,
     groups_label: str = "configs/species_groups.yaml",
     outdir: str = "results/standard",
-    preprocess_outdir: str = "results/00_preprocess",
+    preprocess_outdir: str = "results/01_preprocess",
     clean_species_manifest_label: str | None = None,
     reference_manifest_label: str | None = None,
     family_candidates_label: str | None = None,
@@ -40,7 +40,7 @@ def build_markdown(
             f"- Reference manifest: `{reference_manifest_for_report}`",
             f"- Family candidates: `{family_candidates_for_report}`",
             "",
-            "## 00_preprocess",
+            "## 01_preprocess",
             "",
             "```bash",
             "python bin/genefam/discover_species.py \\",
@@ -202,7 +202,7 @@ def main() -> None:
     parser.add_argument("--config-label")
     parser.add_argument("--groups-label", default="configs/species_groups.yaml")
     parser.add_argument("--outdir", default="results/standard")
-    parser.add_argument("--preprocess-outdir", default="results/00_preprocess")
+    parser.add_argument("--preprocess-outdir", default="results/01_preprocess")
     parser.add_argument("--clean-species-manifest-label")
     parser.add_argument("--reference-manifest-label")
     parser.add_argument("--family-candidates-label")

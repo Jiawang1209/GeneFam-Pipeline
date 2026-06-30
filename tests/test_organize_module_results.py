@@ -69,10 +69,10 @@ def test_organize_module_results_creates_reference_style_module_folders(tmp_path
     rows = organize(source, outdir)
 
     by_module = {row["module"]: row for row in rows}
-    assert (outdir / "00_preprocess/all_transcript_gene_map.tsv").exists()
-    assert (outdir / "00_preprocess/all_representative_transcripts.tsv").exists()
-    assert (outdir / "00_preprocess/all_preprocess_warnings.tsv").exists()
-    assert (outdir / "00_preprocess/species_bank_clean/A/A.pep.clean.fa").exists()
+    assert (outdir / "01_preprocess/all_transcript_gene_map.tsv").exists()
+    assert (outdir / "01_preprocess/all_representative_transcripts.tsv").exists()
+    assert (outdir / "01_preprocess/all_preprocess_warnings.tsv").exists()
+    assert (outdir / "01_preprocess/species_bank_clean/A/A.pep.clean.fa").exists()
     assert (outdir / "01_gene_identification/family_candidates.tsv").exists()
     assert (outdir / "01_gene_identification/pfam_confirmation/pfam_confirmation_status.tsv").exists()
     assert (outdir / "01_gene_identification/pfam_confirmation/identify.ID.fa").exists()

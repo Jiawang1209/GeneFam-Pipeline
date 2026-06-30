@@ -127,7 +127,7 @@ def test_preprocess_species_cli_writes_clean_manifest_and_audit_tables(tmp_path)
         f"Demo_species\t{pep}\t{gff3}\t{cds}\t\n",
         encoding="utf-8",
     )
-    outdir = tmp_path / "00_preprocess"
+    outdir = tmp_path / "01_preprocess"
 
     subprocess.run(
         [

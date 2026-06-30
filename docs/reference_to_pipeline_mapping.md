@@ -17,7 +17,7 @@
 
 | Reference step | Reference 路线 | 当前 Pipeline 位置 | 状态 | 必须保留或补齐的内容 |
 | --- | --- | --- | --- | --- |
-| `1.database` | 手工整理每个物种的 genome/pep/cds/gff3 到 `1.database` | `00_preprocess/`, `bin/genefam/preprocess_species.py` | `adapted` | 已改成 `data/species_bank/<species>/` 自动发现；必须继续保留最长转录本、pep/cds ID 清洗、去除 `|PACid`、去除蛋白终止 `*`、CDS/pep 对应关系、清洗日志和 warning 表。 |
+| `1.database` | 手工整理每个物种的 genome/pep/cds/gff3 到 `1.database` | `01_preprocess/`, `bin/genefam/preprocess_species.py` | `adapted` | 已改成 `data/species_bank/<species>/` 自动发现；必须继续保留最长转录本、pep/cds ID 清洗、去除 `|PACid`、去除蛋白终止 `*`、CDS/pep 对应关系、清洗日志和 warning 表。 |
 | `2.hmmsearch` | `PF00657.hmm` 一轮 hmmsearch，筛选 hit，提取序列，ClustalW 比对，`hmmbuild new_GDSL.hmm`，二轮 hmmsearch | `01_gene_identification/`, `02_domain_filtering/`, `build_rebuilt_hmmer_inputs.py` | `adapted` | 当前支持两轮 HMMER 和 `hmmbuild`，但比对工具按流程配置可用工具适配；输出必须保留 first-pass hit、alignment、rebuilt HMM、second-pass domtblout 和 `2st_id` 等等价文件。 |
 | `3.blast` | 从 `all.domains.txt` 中 grep PF 号，提取 Arabidopsis reference 蛋白，`makeblastdb` 后所有物种 `blastp` | `02_domain_filtering/`, `build_reference_from_tair_domains.py` | `adapted` | 必须以 HMM/PFAM 号命名 Reference，例如 `PF00657_reference.pep.fa`；必须保留 reference ID、missing ID、每物种 blast/diamond 原始证据和筛选后的 `species_*.blast.id`。 |
 | `4.identification` | HMM 二轮结果和 BLAST 结果取交集；再用 `hmmscan` 或 `pfam_scan.pl` 确认；输出 `identify.ID.fa` | `01_gene_identification/`, `run_pfam_confirmation.py` | `adapted` | 有 Pfam DB 或预计算结果时必须确认结构域；没有 DB 时模块状态写 `missing_input` 或 `missing_dependency`，流程继续。 |

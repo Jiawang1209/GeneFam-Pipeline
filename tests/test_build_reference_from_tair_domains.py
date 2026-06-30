@@ -154,7 +154,7 @@ def test_build_reference_from_tair_domains_cli_can_name_outputs_from_hmm_id(tmp_
     )
     peptides = tmp_path / "Arabidopsis_thaliana.pep.clean.fa"
     peptides.write_text(">AT1G06990\nMAAA\n", encoding="utf-8")
-    outdir = tmp_path / "00_preprocess" / "reference"
+    outdir = tmp_path / "01_preprocess" / "reference"
 
     subprocess.run(
         [

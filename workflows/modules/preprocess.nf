@@ -1,5 +1,5 @@
 process PREPROCESS_SPECIES {
-    tag "00_preprocess species"
+    tag "01_preprocess species"
     publishDir "${params.preprocess_outdir}", mode: "copy", overwrite: true
 
     input:
@@ -22,7 +22,7 @@ process PREPROCESS_SPECIES {
 }
 
 process BUILD_REFERENCE_FROM_TAIR_DOMAINS {
-    tag "00_preprocess reference"
+    tag "01_preprocess reference"
     publishDir "${params.preprocess_outdir}", mode: "copy", overwrite: true
 
     input:

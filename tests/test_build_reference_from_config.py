@@ -31,7 +31,7 @@ def test_build_reference_from_config_uses_first_hmm_id_and_clean_reference_speci
         "  reference_species: Arabidopsis_thaliana\n",
         encoding="utf-8",
     )
-    outdir = tmp_path / "00_preprocess" / "reference"
+    outdir = tmp_path / "01_preprocess" / "reference"
 
     subprocess.run(
         [

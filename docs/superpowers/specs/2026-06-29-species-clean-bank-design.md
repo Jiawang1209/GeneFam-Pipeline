@@ -2,7 +2,7 @@
 
 ## Scope
 
-This design defines `00_preprocess` as an independently runnable module for building a reusable species clean bank. The module serves both the full GeneFam-Pipeline workflow and standalone preprocessing for large species collections.
+This design defines `01_preprocess` as an independently runnable module for building a reusable species clean bank. The module serves both the full GeneFam-Pipeline workflow and standalone preprocessing for large species collections.
 
 The target use case is a raw species bank containing hundreds to thousands of species. Each species should be cleaned once, audited, and then reused by later gene-family analyses through species selection.
 
@@ -13,7 +13,7 @@ The target use case is a raw species bank containing hundreds to thousands of sp
 - Keep genome and GFF3 files available inside the clean bank.
 - Produce audit tables that explain every ID cleaning and representative-transcript decision.
 - Produce global manifests and QC summaries so future analyses can select arbitrary species combinations from the clean bank.
-- Make `00_preprocess` runnable as a standalone module and as the first step of the full workflow.
+- Make `01_preprocess` runnable as a standalone module and as the first step of the full workflow.
 
 ## Directory Layout
 
@@ -134,7 +134,7 @@ The command should support species include/exclude lists and should be able to p
 
 ## Workflow Integration
 
-`00_preprocess` should be runnable as:
+`01_preprocess` should be runnable as:
 
 - a standalone Python module;
 - a standalone Nextflow module;

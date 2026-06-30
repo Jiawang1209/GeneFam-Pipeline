@@ -53,7 +53,7 @@ gene_family:
 
 preprocess:
   enabled: true
-  outdir: results/00_preprocess
+  outdir: results/01_preprocess
 
 identification:
   use_hmmer: true

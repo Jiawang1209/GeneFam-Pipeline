@@ -20,7 +20,7 @@ def test_real_three_species_template_is_a_valid_non_mock_config():
     assert config["dev"]["mock_external_tools"] is False
     assert config["input"]["required"]["cds"] is True
     assert config["input"]["required"]["genome"] is True
-    assert config["preprocess"] == {"enabled": True, "outdir": "results/00_preprocess"}
+    assert config["preprocess"] == {"enabled": True, "outdir": "results/01_preprocess"}
     assert config["reference_generation"] == {
         "enabled": True,
         "source": "tair_all_domains",
