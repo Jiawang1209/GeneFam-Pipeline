@@ -34,6 +34,645 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-01 00:05 - Enable two-pass HMM and add 04_identification module
+
+Context:
+- User asked to rerun `02_hmm` with second-pass HMM search and then use that two-pass result as the input to `04_identification`.
+- Reference Step4 identifies family members by intersecting HMM and BLASTP candidates, extracting `inter.ID.fa`, and confirming the target domain before writing `identify.ID.fa`.
+
+Decisions:
+- Enable `hmm.rebuild_hmm: true` in `projects/GDSL_2026/project.yaml`.
+- Keep `hmm.family_name: GDSL`, which writes `GDSL.rebuilt.hmm`.
+- Add standalone `bin/genefam/run_identification_module.py` for the current project-style module outputs.
+- Use `(species_id, gene_id)` as the canonical key internally to avoid ID collision across many species.
+- Output Reference-style files `inter.ID`, `union.ID`, `inter.ID.fa`, and `identify.ID.fa`.
+- Use `hmmsearch` with the configured target HMM profile for domain confirmation, so the module can run now without a full Pfam database installation.
+
+Added:
+- `bin/genefam/run_identification_module.py`
+- `tests/test_run_identification_module.py`
+- `04_identification` usage documentation in `docs/module_usage.zh-CN.md`
+
+Modified:
+- `projects/GDSL_2026/project.yaml`
+- `docs/module_usage.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_identification_module.py -q` first failed because `run_identification_module.py` did not exist.
+- `python -m pytest tests/test_run_identification_module.py -q` passed with 1 test after implementation.
+- Real two-pass `02_hmm` run passed:
+  `python bin/genefam/run_hmm_module.py --config projects/GDSL_2026/project.yaml`
+- Real two-pass output includes `projects/GDSL_2026/results/02_hmm/rebuilt_hmm/GDSL.rebuilt.hmm`.
+- Real two-pass HMM candidate count is 2023 across 12 species.
+- Real `04_identification` run passed:
+  `python bin/genefam/run_identification_module.py --config projects/GDSL_2026/project.yaml`
+- `projects/GDSL_2026/results/04_identification/report/identification_summary.tsv` reports 2023 HMM candidates, 3550 BLASTP candidates, 2023 HMM/BLASTP intersection candidates, and 1958 domain-confirmed final members.
+- `projects/GDSL_2026/results/04_identification/fasta/inter.ID.fa` contains 2023 records.
+- `projects/GDSL_2026/results/04_identification/fasta/identify.ID.fa` contains 1958 records.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: two-pass HMM config, 04_identification runner, tests, docs, history
+
+Next:
+- Decide whether `04_identification` should also support full Pfam-A `hmmscan`/`pfam_scan.pl` confirmation when a local Pfam database is configured.
+
+## 2026-07-01 00:15 - Expose 04_identification union and pfam_scan interfaces
+
+Context:
+- User clarified that `04_identification` needs an explicit interface for intersection versus union.
+- User also clarified that the Reference workflow ultimately used `pfam_scan.pl` for domain annotation, so `04_identification` should expose that path.
+
+Decisions:
+- Keep `identification.final_rule` as the formal candidate merge interface with `intersection`, `union`, and `hmm_only`.
+- Add `identification.domain_method` with `hmmsearch` and `pfam_scan`.
+- Keep the current project default as `domain_method: hmmsearch` because `GeneFamilyFlow` currently does not provide `pfam_scan.pl` and no local Pfam database directory was found in the quick check.
+- Add `pfam_scan.pl` support without forcing it as default: users can switch by setting `domain_method: pfam_scan` plus `pfam_scan_dir`.
+
+Added:
+- `--domain-method pfam_scan`
+- `--pfam-scan-dir`
+- `--pfam-scan-executable`
+- Tests for `--final-rule union` and `pfam_scan.pl` domain confirmation.
+
+Modified:
+- `bin/genefam/run_identification_module.py`
+- `tests/test_run_identification_module.py`
+- `projects/GDSL_2026/project.yaml`
+- `docs/module_usage.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_identification_module.py -q` first failed because the summary did not record `final_rule`, and `--domain-method pfam_scan` / `--pfam-scan-dir` were not implemented.
+- `python -m pytest tests/test_run_identification_module.py -q` passed with 3 tests after implementation.
+- Real `04_identification` run passed:
+  `python bin/genefam/run_identification_module.py --config projects/GDSL_2026/project.yaml`
+- Real summary now records `final_rule=intersection`, `domain_method=hmmsearch`, 2023 selected candidates, and 1958 final members.
+- `python -m pytest tests/test_run_identification_module.py tests/test_run_hmm_module.py tests/test_run_blastp_module.py -q` passed with 10 tests.
+- `which pfam_scan.pl` inside `GeneFamilyFlow` returned `pfam_scan.pl not found`, so the current real run intentionally remains on `hmmsearch` domain confirmation.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: 04 identification merge-rule and pfam_scan interfaces, docs, history
+
+Next:
+- If the user provides or installs `pfam_scan.pl` plus a Pfam database directory, switch `identification.domain_method` to `pfam_scan` and rerun `04_identification`.
+
+## 2026-06-30 23:58 - Make 03_blastp seed extraction explicit
+
+Context:
+- User accepted the `03_blastp` logic: screen `PF00657` from Arabidopsis and Oryza domain annotations, normalize transcript IDs such as `AT1G06990.1` and `LOC_Os01g11570.1` to clean-bank gene IDs, extract seed/reference peptides from `01_preprocess` clean protein, then build a BLASTP database and search all species.
+- User requested making the output clearer by adding a `seed/` directory because the first part of `03_blastp` is seed sequence extraction.
+
+Decisions:
+- Treat `seed/` as the formal semantic output for domain-annotation-derived seed sequences.
+- Keep `reference/` compatibility outputs for existing downstream scripts and tests that still read `blastp_reference.pep.fa` or `reference_manifest.tsv`.
+- Build the BLASTP database from `seed/combined_seed.pep.fa`.
+
+Added:
+- `projects/GDSL_2026/results/03_blastp/seed/` output contract in documentation.
+- `seed_manifest.tsv` test coverage for per-reference-species seed counts and missing IDs.
+
+Modified:
+- `bin/genefam/run_blastp_module.py`
+- `tests/test_run_blastp_module.py`
+- `docs/module_usage.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_blastp_module.py -q` first failed because `seed/seed_manifest.tsv` did not exist.
+- `python -m pytest tests/test_run_blastp_module.py -q` passed with 1 test after implementation.
+- `python -m pytest tests/test_run_blastp_module.py tests/test_run_hmm_module.py -q` passed with 7 tests.
+- Real `03_blastp` run passed:
+  `python bin/genefam/run_blastp_module.py --config projects/GDSL_2026/project.yaml`
+- Real seed outputs were generated under `projects/GDSL_2026/results/03_blastp/seed/`.
+- `seed_manifest.tsv` reports 111 Arabidopsis seed peptides with 2 missing IDs (`AT1G58525`, `AT4G16233`) and 120 Oryza seed peptides with 0 missing IDs.
+- `seed/combined_seed.pep.fa` contains 231 seed peptide records.
+- BLASTP output still contains 24180 raw/filtered hits and 3550 candidate genes, plus table headers.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: 03_blastp seed outputs, test, docs, history
+
+Next:
+- Develop `04_identification` to integrate `02_hmm` and `03_blastp` evidence.
+
+## 2026-06-30 23:41 - Run 02_hmm and implement 03_blastp module
+
+Context:
+- User added `PF00657.hmm` under `projects/GDSL_2026/config/hmm_profiles/`.
+- User added Arabidopsis and Oryza sativa domain annotation files under `configs/03_blastp/domain_annotations/`.
+- User requested checking whether `02_hmm` can execute and then developing/running `03_blastp`.
+- `03_blastp` must use the domain annotation files and may need sequence data produced by `01_preprocess`.
+
+Decisions:
+- Fix `run_hmm_module.py` project-YAML path resolution so repository-relative paths such as `projects/GDSL_2026/config/hmm_profiles` are not duplicated relative to the config directory.
+- Keep `02_hmm` as project-specific and driven by `projects/GDSL_2026/project.yaml`.
+- Add standalone `bin/genefam/run_blastp_module.py` for `03_blastp`.
+- Make `03_blastp` read:
+  - `database.species_clean_bank`
+  - `blastp.domain_terms`
+  - `blastp.reference_sources`
+  - `project.outdir`
+- Support both TAIR-style domain annotation and Oryza headered domain annotation by searching target terms across annotation rows and normalizing transcript suffixes.
+- Extract reference peptide sequences from `01_preprocess` clean protein FASTA for Arabidopsis and Oryza.
+- Build a combined BLASTP reference database and run BLASTP for every clean-bank species.
+
+Added:
+- `bin/genefam/run_blastp_module.py`
+- `tests/test_run_blastp_module.py`
+- 03_blastp usage documentation in `docs/module_usage.zh-CN.md`
+- Regression test that `run_hmm_module.py` accepts repository-relative paths in `project.yaml`.
+
+Modified:
+- `bin/genefam/run_hmm_module.py`
+- `tests/test_run_hmm_module.py`
+- `docs/module_usage.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_hmm_module.py::test_run_hmm_module_project_yaml_accepts_repo_relative_paths -q` first failed because `hmm_dir` was resolved as `projects/GDSL_2026/projects/GDSL_2026/config/hmms`.
+- `python -m pytest tests/test_run_blastp_module.py -q` first failed because `run_blastp_module.py` did not exist.
+- `python -m pytest tests/test_run_blastp_module.py tests/test_run_hmm_module.py -q` passed with 7 tests after implementation.
+- Real 02_hmm run passed:
+  `python bin/genefam/run_hmm_module.py --config projects/GDSL_2026/project.yaml`
+- 02_hmm output: `projects/GDSL_2026/results/02_hmm`, with 1961 total candidates.
+- Real 03_blastp run passed:
+  `python bin/genefam/run_blastp_module.py --config projects/GDSL_2026/project.yaml`
+- 03_blastp output: `projects/GDSL_2026/results/03_blastp`.
+- 03_blastp reference extraction selected 111 Arabidopsis reference peptides with 2 missing IDs (`AT1G58525`, `AT4G16233`) and 120 Oryza reference peptides with 0 missing IDs.
+- Combined BLASTP reference FASTA contains 231 records.
+- BLASTP generated 24180 raw/filtered hits and 3550 candidate genes across 12 species.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: HMM path resolution, 03_blastp runner, tests, docs, history
+
+Next:
+- Develop `04_identification` to integrate `02_hmm` candidates and `03_blastp` candidates into the final gene family member table.
+
+## 2026-06-30 23:24 - Separate project-specific HMM config from shared BLASTP resources
+
+Context:
+- User clarified the configuration boundary for future packaging.
+- `GeneFam-Pipeline` is the reusable R/Python tool repository.
+- `02_hmm` HMM profiles are project/gene-family specific and should live inside the current project workspace.
+- `03_blastp` Arabidopsis/Oryza domain annotation resources are reusable across projects and should live at the repository/tool level.
+
+Decisions:
+- Move project-specific HMM resource path to `projects/GDSL_2026/config/hmm_profiles/`.
+- Keep `projects/GDSL_2026/project.yaml` as the single project-level parameter file.
+- Move BLASTP shared reference-source table to `configs/03_blastp/reference_sources.tsv`.
+- Use `configs/03_blastp/domain_annotations/` for local reusable Arabidopsis/Oryza domain annotation files.
+- Ignore real files under `configs/03_blastp/domain_annotations/` in git while preserving `.gitkeep`.
+- Remove the old project-local placeholder directories `projects/GDSL_2026/02_hmm/` and `projects/GDSL_2026/03_blastp/`.
+
+Added:
+- `projects/GDSL_2026/config/hmm_profiles/.gitkeep`
+- `configs/03_blastp/reference_sources.tsv`
+- `configs/03_blastp/domain_annotations/.gitkeep`
+- `.gitignore` rules for external shared BLASTP domain annotation files.
+
+Modified:
+- `projects/GDSL_2026/project.yaml`
+- `docs/module_usage.zh-CN.md`
+- `README.zh-CN.md`
+- `.gitignore`
+- `HISTORY.md`
+
+Deleted:
+- Old untracked project placeholder directories for `02_hmm` and `03_blastp`.
+
+Verification:
+- Confirmed `projects/GDSL_2026/project.yaml` uses:
+  - `hmm.hmm_dir: projects/GDSL_2026/config/hmm_profiles`
+  - `blastp.reference_sources: configs/03_blastp/reference_sources.tsv`
+  - `database.species_clean_bank: projects/GDSL_2026/results/01_preprocess/species_clean_bank`
+- Confirmed all three configured paths exist.
+- `rg` confirmed current docs/README/project YAML now point to `projects/GDSL_2026/config/hmm_profiles` and `configs/03_blastp`.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: project HMM config path, shared BLASTP config path, docs, history
+
+Next:
+- Put project-specific HMM files such as `PF00657.hmm` under `projects/GDSL_2026/config/hmm_profiles/`.
+- Put reusable external domain annotation files under `configs/03_blastp/domain_annotations/`.
+
+## 2026-06-30 23:18 - Move analysis outputs into project workspace
+
+Context:
+- User clarified the architectural boundary: `GeneFam-Pipeline` is the reusable tool/package repository, eventually integrating R and Python.
+- Per-analysis outputs should not live under the repository root `results/`.
+- The GDSL analysis should write results under its project workspace, for example `projects/GDSL_2026/results/`.
+
+Decisions:
+- Treat repository-root `results/` as a temporary/default path only, not the formal project result location.
+- Use `projects/GDSL_2026/results` as `project.outdir`.
+- Use `projects/GDSL_2026/results/01_preprocess` as the formal 01 module output directory for the current GDSL project.
+- Point `database.species_clean_bank` to `projects/GDSL_2026/results/01_preprocess/species_clean_bank`.
+- Keep module resources under `projects/GDSL_2026/02_hmm/` and `projects/GDSL_2026/03_blastp/`, while module outputs go under `projects/GDSL_2026/results/`.
+
+Added:
+- Documentation that project outputs should be written under `projects/GDSL_2026/results/`.
+
+Modified:
+- `projects/GDSL_2026/project.yaml`
+- `docs/module_usage.zh-CN.md`
+- `README.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- Repository-root generated `results/` directory.
+
+Verification:
+- Rebuilt formal 01 preprocess output with:
+  `python bin/genefam/build_species_clean_bank.py --raw-root data/species_bank --outdir projects/GDSL_2026/results/01_preprocess --require-cds --require-genome --require-gff3 --scaffold-chromosome-min-bp 10000000`
+- Command completed and wrote `projects/GDSL_2026/results/01_preprocess/species_clean_bank`.
+- Root `results/` is absent after cleanup.
+- `projects/GDSL_2026/results/01_preprocess` size is about 1.0G.
+- QC reports 12 species, 12 pass, 0 warnings, and all 12 chromosome-analysis-ready.
+- Raw input files under the clean bank are all symlinks: 48 symlinks and 0 regular raw files.
+- `project.yaml` resolves `database.species_clean_bank` to an existing path.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: project output path alignment, rebuilt 01 output, docs, history
+
+Next:
+- Run `02_hmm` through `projects/GDSL_2026/project.yaml`, so it reads the project-local 01 clean bank and writes to `projects/GDSL_2026/results/02_hmm`.
+
+## 2026-06-30 23:09 - Align project workspace paths with formal 01_preprocess output
+
+Context:
+- User clarified that the current working path is only the `GeneFam-Pipeline` repository.
+- The intended project structure under `projects/GDSL_2026/` should therefore be interpreted as a project workspace inside the repository, not as a separate repository.
+- `02_hmm` needs HMM profiles, and `03_blastp` needs Arabidopsis/Oryza domain annotation resources, while all paths should remain governed by one `project.yaml`.
+
+Decisions:
+- Treat `projects/GDSL_2026/` as an internal project workspace under `GeneFam-Pipeline`.
+- Keep HMM profile resources under `projects/GDSL_2026/02_hmm/hmm_profiles/`.
+- Keep BLASTP domain annotation resources under `projects/GDSL_2026/03_blastp/domain_annotations/` and their table under `projects/GDSL_2026/03_blastp/reference_sources.tsv`.
+- Point `database.species_clean_bank` in `projects/GDSL_2026/project.yaml` to the formal 01 module result: `results/01_preprocess/species_clean_bank`.
+
+Added:
+- Documentation that project paths are relative to the `GeneFam-Pipeline` repository root.
+
+Modified:
+- `projects/GDSL_2026/project.yaml`
+- `docs/module_usage.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Confirmed `results/01_preprocess/species_clean_bank` exists.
+- Confirmed `projects/GDSL_2026/project.yaml` now uses `database.species_clean_bank: results/01_preprocess/species_clean_bank`.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: project YAML path alignment, module usage docs, history
+
+Next:
+- Place the target HMM profiles in `projects/GDSL_2026/02_hmm/hmm_profiles/`.
+- Place Arabidopsis and Oryza domain annotation files in `projects/GDSL_2026/03_blastp/domain_annotations/`.
+
+## 2026-06-30 22:54 - Rebuild formal 01_preprocess result directory
+
+Context:
+- User cleared `results/` and requested a clean, standardized 01 module output directory.
+- The previous `01_preprocess_probe` naming was useful for testing but confusing as a formal downstream input.
+- User requested the new `01_preprocess` usage and parameters to be recorded with annotations.
+
+Decisions:
+- Use `results/01_preprocess` as the formal 01 module output directory.
+- Remove stale probe-style output before rebuilding.
+- Keep the Setaria scaffold pseudochromosome threshold in the formal run because the current species bank includes Setaria italica scaffold-named chromosomes.
+- Update the Chinese module-usage document with a recommended formal command and parameter-by-parameter notes.
+
+Added:
+- Formal 01 module command documentation in `docs/module_usage.zh-CN.md`.
+- Parameter annotations for `--raw-root`, `--outdir`, `--require-cds`, `--require-genome`, `--require-gff3`, and `--scaffold-chromosome-min-bp`.
+
+Modified:
+- `docs/module_usage.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- `results/01_preprocess_probe` generated output directory before rebuilding.
+
+Verification:
+- Formal 01 preprocess command completed successfully:
+  `python bin/genefam/build_species_clean_bank.py --raw-root data/species_bank --outdir results/01_preprocess --require-cds --require-genome --require-gff3 --scaffold-chromosome-min-bp 10000000`
+- `results/01_preprocess` size is about 1.0G.
+- `results/01_preprocess/species_clean_bank_qc.tsv` reports 12 species, 12 pass, 0 warnings, and all 12 chromosome-analysis-ready.
+- `find results/01_preprocess/species_clean_bank -path '*/raw/*' -type l | wc -l` returned 48.
+- Non-symlink raw-file count returned 0.
+- Cleaned output check confirmed 12 regular `protein.clean.fa`, 12 regular `cds.clean.fa`, 12 clean genome symlinks, and 12 clean GFF3 symlinks.
+- `results/` now contains `01_preprocess` as the formal 01 result directory.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: formal 01 preprocess result, module usage docs, history
+
+Next:
+- Use `results/01_preprocess/species_clean_bank` as the `02_hmm` clean-bank input.
+
+## 2026-06-30 22:29 - Make all raw 01_preprocess inputs symlinks
+
+Context:
+- User clarified that everything under each species `raw/` directory can be a symlink.
+- The raw directory is for input traceability, not for duplicating original data.
+- Cleaned protein and CDS FASTA files still need to be saved as real outputs.
+- Genome/GFF3 should remain available by path without inflating disk usage.
+
+Decisions:
+- Change `raw/<species>.pep.fa` and `raw/<species>.cds.fa` from copied files to symlinks.
+- Keep `raw/<species>.genome.fa` and `raw/<species>.gff3` as symlinks.
+- Keep `clean/<species>.protein.clean.fa` and `clean/<species>.cds.clean.fa` as real generated files.
+- Keep `clean/<species>.genome.fa` and `clean/<species>.gff3` controlled by `--large-file-mode`, defaulting to symlink.
+- Keep chromosome length tables as real generated outputs.
+
+Added:
+- Regression assertion that raw peptide and raw CDS files are symlinks by default.
+
+Modified:
+- `bin/genefam/build_species_clean_bank.py`
+- `tests/test_build_species_clean_bank.py`
+- `docs/module_usage.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_species_clean_bank.py::test_build_species_clean_bank_writes_raw_clean_audit_and_global_tables -q` first failed because raw peptide was still copied.
+- `python -m pytest tests/test_build_species_clean_bank.py tests/test_preprocess_species.py -q` passed with 14 tests after implementation.
+- Real 12-species preprocess probe passed:
+  `python bin/genefam/build_species_clean_bank.py --raw-root data/species_bank --outdir results/01_preprocess_probe --require-cds --require-genome --require-gff3 --scaffold-chromosome-min-bp 10000000`
+- Probe output size is now about 1.0G.
+- `find results/01_preprocess_probe/species_clean_bank -path '*/raw/*' -type l | wc -l` returned 48, and the non-symlink raw-file count returned 0.
+- Probe confirmed 12 regular cleaned protein FASTA files, 12 regular cleaned CDS FASTA files, 12 clean genome symlinks, and 12 clean GFF3 symlinks.
+- Probe QC reported all 12 species as `pass`, with 0 warnings, and all 12 chromosome-analysis-ready.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: raw symlink behavior, docs, tests, history
+
+Next:
+- Downstream modules should consume `clean/` paths from the manifest; `raw/` remains an audit/traceability surface.
+
+## 2026-06-30 22:25 - Make genome and GFF3 symlinks the default in 01_preprocess
+
+Context:
+- User decided that genome FASTA files are too large to duplicate routinely.
+- User requested `01_preprocess` to symlink genome FASTA and GFF3, save cleaned protein/CDS FASTA, and continue producing chromosome length statistics.
+
+Decisions:
+- Change `--large-file-mode` default from `copy` to `symlink`.
+- Keep cleaned protein and cleaned CDS as real files under each species `clean/` directory.
+- Keep raw protein and raw CDS copied into each species `raw/` directory for traceability.
+- Keep genome and GFF3 paths present under both `raw/` and `clean/`, but make them symlinks by default.
+- Preserve `--large-file-mode copy` for portable archives or cross-machine clean-bank bundles.
+- Continue writing full genome length audit tables and chromosome-only length tables for downstream circlize/JCVI/MCScanX-style modules.
+
+Added:
+- Default-behavior regression assertions that genome/GFF3 are symlinks while pep/CDS are real files.
+
+Modified:
+- `bin/genefam/build_species_clean_bank.py`
+- `tests/test_build_species_clean_bank.py`
+- `docs/module_usage.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_species_clean_bank.py::test_build_species_clean_bank_writes_raw_clean_audit_and_global_tables -q` first failed because the default still copied genome/GFF3.
+- `python -m pytest tests/test_build_species_clean_bank.py tests/test_preprocess_species.py -q` passed with 14 tests after changing the default.
+- Real default-mode probe passed:
+  `python bin/genefam/build_species_clean_bank.py --raw-root data/species_bank --outdir results/01_preprocess_default_symlink_probe --include Arabidopsis_thaliana --require-cds --require-genome --require-gff3`
+- Probe file listing confirmed:
+  - `clean/Arabidopsis_thaliana.protein.clean.fa` is a regular file.
+  - `clean/Arabidopsis_thaliana.cds.clean.fa` is a regular file.
+  - `clean/Arabidopsis_thaliana.genome.fa` is a symlink to the original species bank genome.
+  - `clean/Arabidopsis_thaliana.gff3` is a symlink to the original species bank GFF3.
+  - `clean/Arabidopsis_thaliana.chromosome.lengths.tsv` is written as a regular table.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: 01_preprocess default symlink behavior, docs, tests, history
+
+Next:
+- If a clean bank must be moved to another machine, run `01_preprocess` with `--large-file-mode copy` or package the original `data/species_bank` together with the clean bank.
+
+## 2026-06-30 22:09 - Fix Ensembl-style wheat CDS matching and add scaffold pseudochromosome override
+
+Context:
+- User asked to inspect `Setaria_italica` because its first scaffold records may be usable as chromosome-like sequences.
+- User asked to inspect why `Triticum_aestivum` had clean protein/CDS count mismatch, because peptide and CDS counts should normally stay consistent after representative transcript selection.
+- User reiterated that test runs should avoid copying genome files, but formal real analyses should still copy genome files into the result/clean-bank folder.
+
+Findings:
+- `Setaria_italica` genome FASTA uses `scaffold_1` to `scaffold_9` as large sequences of roughly 36-59 Mb, totaling 401300876 bp.
+- `Setaria_italica scaffold_10` is only 423243 bp, so the evidence supports treating the first 9 large scaffold records as pseudochromosomes, not the first 10 or 12.
+- `Triticum_aestivum` peptide headers include Ensembl-style colon attributes such as `transcript:TraesCS1A02G000100.1`.
+- The previous FASTA attribute parser only accepted `key=value`, so it missed `transcript:` and selected transcript IDs such as `TraesCS1A02G000100.1.cds1`.
+- GFF3 attributes also used namespaced IDs such as `gene:TraesCS1A02G000100` and `transcript:TraesCS1A02G000100.1`; these needed to be normalized before matching.
+
+Decisions:
+- Parse both `key=value` and Ensembl-style `key:value` FASTA header attributes.
+- Normalize GFF3/FASTA IDs with `gene:`, `transcript:`, `CDS:`, or `protein:` prefixes by stripping the namespace prefix.
+- Add `--scaffold-chromosome-min-bp` as an explicit, default-off override for numbered scaffold pseudochromosomes.
+- Keep `--large-file-mode copy` as the default so formal clean-bank builds still copy genome/GFF3 files.
+- Use `--large-file-mode symlink` only for disk-saving tests/probes.
+
+Added:
+- Regression test for Ensembl colon-attribute peptide/CDS matching.
+- Regression test for scaffold pseudochromosome promotion by minimum length.
+- Documentation for `--scaffold-chromosome-min-bp`.
+
+Modified:
+- `bin/genefam/preprocess_species.py`
+- `bin/genefam/build_species_clean_bank.py`
+- `tests/test_preprocess_species.py`
+- `tests/test_build_species_clean_bank.py`
+- `docs/module_usage.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_preprocess_species.py::test_clean_sequence_records_matches_ensembl_colon_transcript_attributes -q` first failed because GFF3 gene IDs retained the `gene:` prefix.
+- `python -m pytest tests/test_build_species_clean_bank.py::test_build_genome_length_rows_can_promote_large_numbered_scaffolds_to_chromosomes -q` first failed because `scaffold_chromosome_min_bp` did not exist.
+- `python -m pytest tests/test_build_species_clean_bank.py tests/test_preprocess_species.py -q` passed with 14 tests.
+- Real 12-species probe passed:
+  `python bin/genefam/build_species_clean_bank.py --raw-root data/species_bank --outdir results/01_preprocess_probe --require-cds --require-genome --require-gff3 --large-file-mode symlink --scaffold-chromosome-min-bp 10000000`
+- Probe QC reported 12 processed species, 12 pass, 0 warning, 0 failed, and 12 chromosome-analysis-ready species.
+- `Setaria_italica` now reports 9 chromosome-like scaffold records and chromosome bp `401300876`.
+- `Triticum_aestivum` now reports clean protein count `107545`, clean CDS count `107545`, CDS match rate `1.0000`, and warning count `0`.
+- Probe output stayed around 2.5G and contained 12 clean genome symlinks plus 12 clean GFF3 symlinks, confirming test mode did not copy genome/GFF3.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: Ensembl header parsing, GFF3 namespace normalization, scaffold pseudochromosome option, tests, docs, history
+
+Next:
+- For formal production clean-bank builds, omit `--large-file-mode symlink` so genome/GFF3 files are copied into the result folder.
+- For scaffold-named chromosome assemblies, set `--scaffold-chromosome-min-bp` only after checking genome lengths or supplying a stronger species-specific rename/map table.
+
+## 2026-06-30 21:39 - Add space-saving genome/GFF3 materialization for 01_preprocess
+
+Context:
+- User found the disk may explode during real-species testing.
+- For test runs, genome FASTA files should not be copied into the clean bank.
+- For real reusable data-bank construction, genome/GFF3 files should still be copied by default.
+- The expanded species bank also exposed chromosome IDs such as `Bd1` and `Tu7`, which are true chromosome-style identifiers but were previously classified as `unclassified`.
+
+Decisions:
+- Keep `copy` as the default behavior for formal clean-bank builds.
+- Add `--large-file-mode symlink` for test/probe runs so genome and GFF3 paths exist under `raw/` and `clean/` without duplicating large files.
+- Add `--large-file-mode skip` for extreme space-saving runs where the manifest should reference the original genome/GFF3 paths.
+- Keep peptide and CDS cleaning materialized normally, because they are core inputs for downstream HMM/BLASTP modules.
+- Extend chromosome classification to accept short species-prefix chromosome IDs such as `Bd1` and `Tu7`, while keeping `scaffold`, `contig`, and `ungrouped` sequences as non-chromosome evidence.
+
+Added:
+- `--large-file-mode {copy,symlink,skip}` CLI option in `bin/genefam/build_species_clean_bank.py`.
+- Regression test for symlink-mode genome/GFF3 materialization.
+- Regression test for species-prefix chromosome ID classification.
+
+Modified:
+- `bin/genefam/build_species_clean_bank.py`
+- `tests/test_build_species_clean_bank.py`
+- `tests/test_preprocess_species.py`
+- `docs/module_usage.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_build_species_clean_bank.py::test_build_species_clean_bank_can_symlink_large_genome_inputs_for_testing -q` first failed because `--large-file-mode` was not implemented.
+- `python -m pytest tests/test_preprocess_species.py::test_classify_genome_sequence_accepts_species_prefix_chromosome_ids -q` first failed because `Bd1` was classified as `unclassified`.
+- `python -m pytest tests/test_build_species_clean_bank.py tests/test_preprocess_species.py -q` passed with 12 tests after implementation.
+- Real 12-species probe passed:
+  `python bin/genefam/build_species_clean_bank.py --raw-root data/species_bank --outdir results/01_preprocess_probe --require-cds --require-genome --require-gff3 --large-file-mode symlink`
+- Probe output size was 2.5G instead of duplicating all genome/GFF3 files; `find ... -type l` confirmed 12 clean genome symlinks and 12 clean GFF3 symlinks.
+- Probe QC reported 12 processed species, 11 pass, 1 warning, 0 failed.
+- Probe QC reported 11 chromosome-analysis-ready species; `Setaria_italica` remains scaffold/contig because all genome sequence IDs are `scaffold_*`.
+- `Triticum_aestivum` remains warning because clean protein count is 107902 but clean CDS count is 76809, indicating protein/CDS representative mismatch that should be inspected before downstream Ka/Ks.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: 01_preprocess large-file mode, chromosome classifier tests, docs, history
+
+Next:
+- Decide whether `Setaria_italica scaffold_1-9` should be mapped to chromosomes using a user-provided rename/map table; do not auto-convert scaffold names without evidence.
+- Inspect `Triticum_aestivum` CDS/protein mismatch before using it in Ka/Ks-heavy analyses.
+
+## 2026-06-30 11:05 - Add project-level YAML configuration template
+
+Context:
+- User decided that one YAML per module would be too cumbersome.
+- The preferred design is one `project.yaml` per gene-family project, with module parameters grouped under module sections.
+
+Decisions:
+- Add `projects/GDSL_2026/project.yaml` as the first project-level configuration template.
+- Keep module-specific resources in module folders, such as `02_hmm/hmm_profiles/` and `03_blastp/domain_annotations/`.
+- Add `--config` support to `run_hmm_module.py`; it reads `database.species_clean_bank`, `project.outdir`, and the `hmm:` section.
+- Allow command-line arguments to override `project.yaml` values when needed.
+- Keep `project.yaml` as the single user-facing configuration file for a project.
+
+Added:
+- `projects/GDSL_2026/project.yaml`
+- `projects/GDSL_2026/02_hmm/hmm_profiles/.gitkeep`
+- `projects/GDSL_2026/03_blastp/domain_annotations/.gitkeep`
+- `projects/GDSL_2026/03_blastp/reference_sources.tsv`
+- Project-YAML test coverage for `02_hmm`.
+
+Modified:
+- `bin/genefam/run_hmm_module.py`
+- `tests/test_run_hmm_module.py`
+- `docs/module_usage.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_hmm_module.py::test_run_hmm_module_reads_project_yaml -q` first failed because `--config` was not implemented.
+- `python -m pytest tests/test_run_hmm_module.py -q` passed with 5 tests after implementation.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: project YAML template, HMM module config support, tests, docs, history
+
+Next:
+- Implement `03_blastp` to read the same `project.yaml` from its `blastp:` section.
+
+## 2026-06-30 10:35 - Document module usage and parameters
+
+Context:
+- User requested durable records for each submodule's usage and parameters.
+- The project is now moving module by module, starting with `01_preprocess` and `02_hmm`.
+
+Decisions:
+- Add a dedicated Chinese module-usage document instead of burying all command details in chat.
+- Record each module's purpose, minimal command, common command variants, parameters, default paths, and important outputs.
+- Keep the command-line contract simple and document advanced overrides separately.
+
+Added:
+- `docs/module_usage.zh-CN.md`
+
+Modified:
+- `README.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_hmm_module.py -q` passed with 4 tests.
+- `python bin/genefam/run_hmm_module.py --help` completed successfully.
+- `rg -n "docs/module_usage.zh-CN.md|01_preprocess|02_hmm|--combine-rule|--rebuild-hmm" README.zh-CN.md docs/module_usage.zh-CN.md` confirmed the README link and module parameter documentation.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: module usage docs, README link, history
+
+Next:
+- Keep updating `docs/module_usage.zh-CN.md` whenever a new module is added or a module parameter changes.
+
 ## 2026-06-30 09:35 - Rename preprocess stage to 01_preprocess
 
 Context:
@@ -70,6 +709,48 @@ Commit:
 
 Next:
 - Develop `02_hmm` as the HMM-only candidate protein screening module.
+
+## 2026-06-30 10:05 - Add initial 02_hmm screening module
+
+Context:
+- User confirmed `01_preprocess` can be treated as complete for now and requested development of the second module, `02_hmm`.
+- The module must screen candidate proteins using HMM only, without BLASTP.
+- HMM input should be simple: pass a directory containing one or more `.hmm` profiles.
+- Multi-HMM screening must support `any` and `all` combination rules.
+- Two-pass/rebuilt HMM mode should be available as a parameter for Reference-style HMM rebuilding.
+
+Decisions:
+- Add `bin/genefam/run_hmm_module.py` as a standalone `02_hmm` entrypoint.
+- Default inputs and outputs are simple: `--clean-bank results/species_clean_bank`, `--hmm-dir <dir>`, and `--outdir results/02_hmm`.
+- Scan all `*.hmm` files under `--hmm-dir`; use filename stem as `hmm_id`.
+- Run `hmmsearch` for every species peptide FASTA and every HMM profile.
+- Parse HMMER `domtblout`, filter by e-value, bit score, and domain coverage, then merge candidate genes with `--combine-rule any|all`.
+- Write candidate protein FASTA with headers `<species>|<gene_id>`.
+- Fail clearly if `hmmsearch` is unavailable.
+- Implement `--rebuild-hmm` with MAFFT alignment and `hmmbuild`, then run a second-pass search using `<family_name>.rebuilt.hmm`.
+
+Added:
+- `bin/genefam/run_hmm_module.py`
+- `tests/test_run_hmm_module.py`
+
+Modified:
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_hmm_module.py -q` first failed because `run_hmm_module.py` did not exist.
+- The dedicated two-pass test first failed because `--family-name` and rebuilt HMM mode were not implemented.
+- After implementation and test-fixture fixes, `python -m pytest tests/test_run_hmm_module.py -q` passed with 4 tests.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: initial HMM-only direct/two-pass module, tests, history
+
+Next:
+- Wire `02_hmm` into the formal Nextflow module chain after `01_preprocess`.
 
 ## 2026-06-29 00:20 - Implement standalone species clean bank builder
 

@@ -3,6 +3,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from bin.genefam.build_species_clean_bank import build_genome_length_rows
+
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = REPO_ROOT / "bin/genefam/build_species_clean_bank.py"
@@ -45,6 +47,27 @@ def write_demo_species(root: Path, species: str = "Demo_species") -> Path:
     return species_dir
 
 
+def test_build_genome_length_rows_can_promote_large_numbered_scaffolds_to_chromosomes(tmp_path):
+    genome = tmp_path / "setaria_like.genome.fa"
+    genome.write_text(
+        ">scaffold_1\n" + "A" * 20 + "\n"
+        ">scaffold_2\n" + "A" * 15 + "\n"
+        ">scaffold_10\n" + "A" * 5 + "\n",
+        encoding="utf-8",
+    )
+
+    default_rows, default_chromosomes = build_genome_length_rows(genome)
+    promoted_rows, promoted_chromosomes = build_genome_length_rows(genome, scaffold_chromosome_min_bp=10)
+
+    assert [row["SeqType"] for row in default_rows] == ["unassembled", "unassembled", "unassembled"]
+    assert default_chromosomes == []
+    assert [row["SeqType"] for row in promoted_rows] == ["chromosome", "chromosome", "unassembled"]
+    assert promoted_chromosomes == [
+        {"Chr": "scaffold_1", "Start": "1", "End": "20"},
+        {"Chr": "scaffold_2", "Start": "1", "End": "15"},
+    ]
+
+
 def test_build_species_clean_bank_writes_raw_clean_audit_and_global_tables(tmp_path):
     raw_root = tmp_path / "species_bank"
     write_demo_species(raw_root)
@@ -85,12 +108,20 @@ def test_build_species_clean_bank_writes_raw_clean_audit_and_global_tables(tmp_p
     assert (species_root / "raw/Demo_species.cds.fa").exists()
     assert (species_root / "raw/Demo_species.genome.fa").exists()
     assert (species_root / "raw/Demo_species.gff3").exists()
+    assert (species_root / "raw/Demo_species.pep.fa").is_symlink()
+    assert (species_root / "raw/Demo_species.cds.fa").is_symlink()
+    assert (species_root / "raw/Demo_species.genome.fa").is_symlink()
+    assert (species_root / "raw/Demo_species.gff3").is_symlink()
     protein_clean = species_root / "clean/Demo_species.protein.clean.fa"
     cds_clean = species_root / "clean/Demo_species.cds.clean.fa"
     assert protein_clean.read_text(encoding="utf-8") == ">GeneA\nMAAAA\n>GeneB\nMCC\n"
     assert cds_clean.read_text(encoding="utf-8") == ">GeneA\nATGGCTGCTGCTGCTTAA\n>GeneB\nATGTGTTGTTAA\n"
     assert (species_root / "clean/Demo_species.genome.fa").exists()
     assert (species_root / "clean/Demo_species.gff3").exists()
+    assert not protein_clean.is_symlink()
+    assert not cds_clean.is_symlink()
+    assert (species_root / "clean/Demo_species.genome.fa").is_symlink()
+    assert (species_root / "clean/Demo_species.gff3").is_symlink()
     assert (species_root / "clean/Demo_species.chromosome.lengths.tsv").exists()
     assert (species_root / "audit/Demo_species.gene_id_map.tsv").exists()
     assert (species_root / "audit/Demo_species.genome.lengths.tsv").exists()
@@ -211,6 +242,49 @@ def test_build_species_clean_bank_accepts_custom_outdir(tmp_path):
     assert (outdir / "species_clean_bank/Demo_species/clean/Demo_species.protein.clean.fa").exists()
     assert (outdir / "species_clean_bank_manifest.tsv").exists()
     assert (outdir / "species_clean_bank_qc.xlsx").exists()
+
+
+def test_build_species_clean_bank_can_symlink_large_genome_inputs_for_testing(tmp_path):
+    raw_root = tmp_path / "species_bank"
+    species_dir = write_demo_species(raw_root)
+    outdir = tmp_path / "results"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--raw-root",
+            str(raw_root),
+            "--outdir",
+            str(outdir),
+            "--large-file-mode",
+            "symlink",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    species_root = outdir / "species_clean_bank/Demo_species"
+    raw_genome = species_root / "raw/Demo_species.genome.fa"
+    raw_gff3 = species_root / "raw/Demo_species.gff3"
+    clean_genome = species_root / "clean/Demo_species.genome.fa"
+    clean_gff3 = species_root / "clean/Demo_species.gff3"
+    assert raw_genome.is_symlink()
+    assert raw_gff3.is_symlink()
+    assert clean_genome.is_symlink()
+    assert clean_gff3.is_symlink()
+    assert raw_genome.resolve() == (species_dir / "Demo_species.genome.fa").resolve()
+    assert raw_gff3.resolve() == (species_dir / "Demo_species.gff3").resolve()
+    assert clean_genome.resolve() == (species_dir / "Demo_species.genome.fa").resolve()
+    assert clean_gff3.resolve() == (species_dir / "Demo_species.gff3").resolve()
+    manifest_rows = read_tsv(outdir / "species_clean_bank_manifest.tsv")
+    assert manifest_rows[0]["genome"].endswith("clean/Demo_species.genome.fa")
+    assert manifest_rows[0]["gff3"].endswith("clean/Demo_species.gff3")
+    assert read_tsv(species_root / "clean/Demo_species.chromosome.lengths.tsv") == [
+        {"Chr": "chr1", "Start": "1", "End": "8"}
+    ]
 
 
 def test_build_species_clean_bank_records_incomplete_species_without_stopping(tmp_path):

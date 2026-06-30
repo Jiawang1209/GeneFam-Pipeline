@@ -70,15 +70,23 @@ def clean_header_id(raw_id: str) -> str:
     parts = raw_id.split()
     if not parts:
         return ""
-    return parts[0].split("|", 1)[0]
+    clean_id = parts[0].split("|", 1)[0]
+    if ":" in clean_id:
+        prefix, value = clean_id.split(":", 1)
+        if prefix.casefold() in {"gene", "transcript", "cds", "protein"}:
+            clean_id = value
+    return clean_id
 
 
 def parse_fasta_header_attributes(raw_id: str) -> dict[str, str]:
     attributes: dict[str, str] = {}
     for token in raw_id.split()[1:]:
-        if "=" not in token:
+        if "=" in token:
+            key, value = token.split("=", 1)
+        elif ":" in token:
+            key, value = token.split(":", 1)
+        else:
             continue
-        key, value = token.split("=", 1)
         attributes[key] = value
     return attributes
 

@@ -17,4 +17,6 @@ data/species_clean_bank_summary.md
 data/domain_annotations/
 data/hmm_profiles/
 data/reference/
+configs/03_blastp/domain_annotations/*
+!configs/03_blastp/domain_annotations/.gitkeep
 *.sif

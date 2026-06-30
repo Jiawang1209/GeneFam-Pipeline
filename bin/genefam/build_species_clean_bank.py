@@ -119,18 +119,35 @@ def classify_genome_sequence(seqid: str, header: str) -> str:
         return "chromosome"
     if re.match(r"^chr[0-9][0-9]?$", seqid, flags=re.IGNORECASE):
         return "chromosome"
+    if re.match(r"^[A-Z][a-z]{1,4}[0-9]{1,2}[A-Z]?$", seqid):
+        return "chromosome"
     if re.search(r"(^|[^a-z0-9])chromosome([^a-z0-9]|$)", value):
         return "chromosome"
     return "unclassified"
 
 
-def build_genome_length_rows(path: Path | str | None) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+def should_promote_scaffold_to_chromosome(seqid: str, length: int, scaffold_chromosome_min_bp: int) -> bool:
+    if scaffold_chromosome_min_bp <= 0 or length < scaffold_chromosome_min_bp:
+        return False
+    return re.match(r"^scaffold[_-]?[0-9]+$", seqid, flags=re.IGNORECASE) is not None
+
+
+def build_genome_length_rows(
+    path: Path | str | None,
+    scaffold_chromosome_min_bp: int = 0,
+) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
     if not path:
         return [], []
     genome_rows: list[dict[str, str]] = []
     chromosome_rows: list[dict[str, str]] = []
     for seqid, header, length in iter_fasta_lengths(path):
         seq_type = classify_genome_sequence(seqid, header)
+        if seq_type == "unassembled" and should_promote_scaffold_to_chromosome(
+            seqid,
+            length,
+            scaffold_chromosome_min_bp,
+        ):
+            seq_type = "chromosome"
         row = {
             "SeqID": seqid,
             "Start": "1",
@@ -219,6 +236,28 @@ def copy_if_present(source: str, destination: Path) -> str:
     return str(destination.resolve())
 
 
+def symlink_if_present(source: str, destination: Path) -> str:
+    return materialize_large_file(source, destination, "symlink")
+
+
+def materialize_large_file(source: str, destination: Path, mode: str) -> str:
+    if not source:
+        return ""
+    source_path = Path(source).resolve()
+    if mode == "skip":
+        return str(source_path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    if destination.exists() or destination.is_symlink():
+        destination.unlink()
+    if mode == "copy":
+        shutil.copy2(source_path, destination)
+    elif mode == "symlink":
+        destination.symlink_to(source_path)
+    else:
+        raise ValueError(f"Unsupported large-file mode: {mode}")
+    return str(destination.absolute())
+
+
 def _rate(numerator: int, denominator: int) -> str:
     if denominator == 0:
         return "0.0000"
@@ -288,6 +327,8 @@ def build_species_clean_bank(
     cds_required: bool = False,
     genome_required: bool = False,
     gff3_required: bool = False,
+    large_file_mode: str = "symlink",
+    scaffold_chromosome_min_bp: int = 0,
 ) -> tuple[list[dict[str, str]], list[dict[str, str]], list[dict[str, str]]]:
     rows = discover_species(
         root=raw_root,
@@ -339,10 +380,10 @@ def build_species_clean_bank(
             )
             continue
         try:
-            raw_pep = copy_if_present(row.get("pep", ""), raw_dir / f"{species_id}.pep.fa")
-            raw_cds = copy_if_present(row.get("cds", ""), raw_dir / f"{species_id}.cds.fa")
-            raw_genome = copy_if_present(row.get("genome", ""), raw_dir / f"{species_id}.genome.fa")
-            raw_gff3 = copy_if_present(row.get("gff3", ""), raw_dir / f"{species_id}.gff3")
+            raw_pep = symlink_if_present(row.get("pep", ""), raw_dir / f"{species_id}.pep.fa")
+            raw_cds = symlink_if_present(row.get("cds", ""), raw_dir / f"{species_id}.cds.fa")
+            raw_genome = symlink_if_present(row.get("genome", ""), raw_dir / f"{species_id}.genome.fa")
+            raw_gff3 = symlink_if_present(row.get("gff3", ""), raw_dir / f"{species_id}.gff3")
 
             pep_records = read_fasta_records(Path(row["pep"]))
             cds_records = read_fasta_records(Path(row["cds"])) if row.get("cds") else []
@@ -364,15 +405,20 @@ def build_species_clean_bank(
             representative_tsv = audit_dir / f"{species_id}.representative_transcripts.tsv"
             warnings_tsv = audit_dir / f"{species_id}.preprocess_warnings.tsv"
             qc_tsv = audit_dir / f"{species_id}.preprocess_qc.tsv"
+            genome_clean_path = ""
+            gff3_clean_path = ""
 
             write_fasta(cleaned_pep, protein_clean)
             if row.get("cds"):
                 write_fasta(cleaned_cds, cds_clean)
             if row.get("genome"):
-                copy_if_present(row["genome"], genome_clean)
+                genome_clean_path = materialize_large_file(row["genome"], genome_clean, large_file_mode)
             if row.get("gff3"):
-                copy_if_present(row["gff3"], gff3_clean)
-            genome_length_rows, chromosome_length_rows = build_genome_length_rows(row.get("genome", ""))
+                gff3_clean_path = materialize_large_file(row["gff3"], gff3_clean, large_file_mode)
+            genome_length_rows, chromosome_length_rows = build_genome_length_rows(
+                row.get("genome", ""),
+                scaffold_chromosome_min_bp=scaffold_chromosome_min_bp,
+            )
             write_rows(genome_lengths, GENOME_LENGTH_FIELDS, genome_length_rows)
             write_rows(chromosome_lengths, CHROMOSOME_LENGTH_FIELDS, chromosome_length_rows)
             write_tsv(transcript_rows, TRANSCRIPT_FIELDS, gene_id_map)
@@ -421,8 +467,8 @@ def build_species_clean_bank(
                     "species_id": species_id,
                     "protein": str(protein_clean.resolve()),
                     "cds": str(cds_clean.resolve()) if row.get("cds") else "",
-                    "genome": str(genome_clean.resolve()) if row.get("genome") else "",
-                    "gff3": str(gff3_clean.resolve()) if row.get("gff3") else "",
+                    "genome": genome_clean_path,
+                    "gff3": gff3_clean_path,
                     "genome_lengths": str(genome_lengths.resolve()) if row.get("genome") else "",
                     "chromosome_lengths": str(chromosome_lengths.resolve()) if row.get("genome") else "",
                     "raw_pep": raw_pep,
@@ -534,6 +580,18 @@ def main() -> None:
     parser.add_argument("--require-cds", action="store_true")
     parser.add_argument("--require-genome", action="store_true")
     parser.add_argument("--require-gff3", action="store_true")
+    parser.add_argument(
+        "--large-file-mode",
+        choices=["copy", "symlink", "skip"],
+        default="symlink",
+        help="How to materialize genome/GFF3 files in raw/ and clean/: symlink by default to save space, copy for portable archives, or skip to reference originals in the manifest.",
+    )
+    parser.add_argument(
+        "--scaffold-chromosome-min-bp",
+        type=int,
+        default=0,
+        help="Promote numbered scaffold IDs such as scaffold_1 to chromosome length rows when their length is at least this many bp; 0 disables this conservative override.",
+    )
     args = parser.parse_args()
 
     paths = resolve_output_paths(args)
@@ -546,6 +604,8 @@ def main() -> None:
         cds_required=args.require_cds,
         genome_required=args.require_genome,
         gff3_required=args.require_gff3,
+        large_file_mode=args.large_file_mode,
+        scaffold_chromosome_min_bp=args.scaffold_chromosome_min_bp,
     )
     write_rows(paths["manifest"], MANIFEST_FIELDS, manifest_rows)
     write_rows(paths["qc"], QC_FIELDS, qc_rows)

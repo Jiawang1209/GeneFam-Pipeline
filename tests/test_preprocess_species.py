@@ -3,6 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from bin.genefam.build_species_clean_bank import classify_genome_sequence
 from bin.genefam.preprocess_species import (
     clean_sequence_records,
     infer_gene_id,
@@ -45,6 +46,16 @@ def test_parse_gff3_transcript_gene_map_uses_name_as_transcript_alias(tmp_path):
 
     assert mapping["PAC:19656964"] == "AT1G01010"
     assert mapping["AT1G01010.1"] == "AT1G01010"
+
+
+def test_classify_genome_sequence_accepts_species_prefix_chromosome_ids():
+    assert classify_genome_sequence("Bd1", "Bd1") == "chromosome"
+    assert classify_genome_sequence("Tu7", "Tu7") == "chromosome"
+    assert (
+        classify_genome_sequence("Bd1_centromere_containing_Bradi1g41430", "Bd1_centromere_containing_Bradi1g41430")
+        == "unclassified"
+    )
+    assert classify_genome_sequence("TuUngrouped_contig_1", "TuUngrouped_contig_1") == "unassembled"
 
 
 def test_clean_sequence_records_selects_longest_pep_and_removes_terminal_stop(tmp_path):
@@ -101,6 +112,40 @@ def test_clean_sequence_records_matches_phytozome_pep_and_cds_header_attributes(
     assert cleaned_cds == [("BrO_302V.01G000100", "ATGGCTTAA")]
     assert transcript_rows[0]["clean_transcript_id"] == "BrO_302V.01G000100.1"
     assert representative_rows[0]["selected_transcript_id"] == "BrO_302V.01G000100.1"
+    assert warnings == []
+
+
+def test_clean_sequence_records_matches_ensembl_colon_transcript_attributes(tmp_path):
+    pep = tmp_path / "wheat.pep.fa"
+    pep.write_text(
+        ">TraesCS1A02G000100.1.cds1 pep chromosome:IWGSC:1A:40098:70338:-1 gene:TraesCS1A02G000100 transcript:TraesCS1A02G000100.1 gene_biotype:protein_coding\nMAAA\n",
+        encoding="utf-8",
+    )
+    cds = tmp_path / "wheat.cds.fa"
+    cds.write_text(
+        ">TraesCS1A02G000100.1 cds chromosome:IWGSC:1A:40098:70338:-1 gene:TraesCS1A02G000100 gene_biotype:protein_coding\nATGGCTGCTGCT\n",
+        encoding="utf-8",
+    )
+    gff3 = tmp_path / "wheat.gff3"
+    gff3.write_text(
+        "1A\tIWGSC\tgene\t40098\t70338\t.\t-\t.\tID=gene:TraesCS1A02G000100;gene_id=TraesCS1A02G000100\n"
+        "1A\tIWGSC\tmRNA\t40098\t70338\t.\t-\t.\tID=transcript:TraesCS1A02G000100.1;Parent=gene:TraesCS1A02G000100;transcript_id=TraesCS1A02G000100.1\n",
+        encoding="utf-8",
+    )
+
+    mapping = parse_gff3_transcript_gene_map(gff3)
+    cleaned_pep, cleaned_cds, transcript_rows, representative_rows, warnings = clean_sequence_records(
+        species_id="Triticum_aestivum",
+        pep_records=read_fasta_records(pep),
+        cds_records=read_fasta_records(cds),
+        transcript_gene_map=mapping,
+    )
+
+    assert mapping["TraesCS1A02G000100.1"] == "TraesCS1A02G000100"
+    assert cleaned_pep == [("TraesCS1A02G000100", "MAAA")]
+    assert cleaned_cds == [("TraesCS1A02G000100", "ATGGCTGCTGCT")]
+    assert transcript_rows[0]["clean_transcript_id"] == "TraesCS1A02G000100.1"
+    assert representative_rows[0]["selected_transcript_id"] == "TraesCS1A02G000100.1"
     assert warnings == []
 
 

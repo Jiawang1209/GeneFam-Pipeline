@@ -1,0 +1,43 @@
+project:
+  name: GDSL_2026
+  root: projects/GDSL_2026
+  outdir: projects/GDSL_2026/results
+
+database:
+  species_clean_bank: projects/GDSL_2026/results/01_preprocess/species_clean_bank
+
+species:
+  include: []
+  exclude: []
+
+modules:
+  preprocess: true
+  hmm: true
+  blastp: true
+  identification: true
+
+hmm:
+  hmm_dir: projects/GDSL_2026/config/hmm_profiles
+  combine_rule: any
+  evalue: 1.0e-10
+  min_bitscore: 0.0
+  min_domain_coverage: 0.0
+  rebuild_hmm: true
+  family_name: GDSL
+
+blastp:
+  domain_terms:
+    - PF00657
+  reference_sources: configs/03_blastp/reference_sources.tsv
+  evalue: 1.0e-10
+  num_threads: 10
+  num_alignments: 10
+
+identification:
+  final_rule: intersection
+  domain_method: hmmsearch
+  domain_terms:
+    - PF00657
+  domain_evalue: 1.0e-5
+  pfam_scan_executable: pfam_scan.pl
+  pfam_scan_dir: ""
