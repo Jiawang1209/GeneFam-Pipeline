@@ -34,6 +34,39 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-01 00:13 - Commit project modules through identification
+
+Context:
+- User requested committing all current development changes.
+- The committed scope covers the modular direct-run project workflow from `01_preprocess` through `04_identification`.
+
+Decisions:
+- Commit the current staged code, docs, tests, project configuration, and small HMM profile resource together.
+- Keep real species data and generated project results out of git.
+
+Added:
+- Commit record for `feat: add project modules through identification`.
+
+Modified:
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Pre-commit test command passed:
+  `python -m pytest tests/test_build_species_clean_bank.py tests/test_preprocess_species.py tests/test_run_hmm_module.py tests/test_run_blastp_module.py tests/test_run_identification_module.py tests/test_run_pfam_confirmation.py -q`
+- Test result: 28 passed.
+- Staged diff contained 19 files and did not include ignored real species data or generated project results.
+
+Commit:
+- hash: 15e6367
+- message: feat: add project modules through identification
+- files: 01_preprocess improvements, direct 02_hmm/03_blastp/04_identification modules, project YAML, BLASTP config scaffold, HMM profile, docs, tests, history
+
+Next:
+- Continue from the committed project-module baseline; install or provide `pfam_scan.pl` plus a Pfam database directory before switching `04_identification` to `domain_method: pfam_scan`.
+
 ## 2026-07-01 00:05 - Enable two-pass HMM and add 04_identification module
 
 Context:
