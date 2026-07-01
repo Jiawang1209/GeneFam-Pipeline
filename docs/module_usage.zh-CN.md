@@ -676,3 +676,94 @@ BLASTP candidates: 3550
 HMM ∩ BLASTP: 2023
 PF00657/domain-confirmed final members: 1958
 ```
+
+## 05_genefamily_info
+
+### 作用
+
+`05_genefamily_info` 对齐 Reference Step5，基于 `04_identification` 得到的最终家族成员：
+
+- 读取 `identify.ID.fa`
+- 解析 `01_preprocess` clean bank 中每个物种的 clean GFF3
+- 生成全基因 BED 表 `species_10.bed`
+- 为最终家族成员匹配染色体、起止坐标、链方向
+- 计算蛋白质理化性质：长度、分子量、疏水性/GRAVY、等电点 pI
+- 输出 `Gene_Information.tsv/xlsx`
+- 输出 `Gene_Information_stat.tsv/xlsx`
+- 输出拷贝数、扩张/收缩、pangenome presence 等统计表
+- 可选调用 `/usr/local/bin/R` 生成 `gene_family_info_summary.pdf/png`
+
+### 最简命令
+
+```bash
+python bin/genefam/run_genefamily_info_module.py \
+  --config projects/GDSL_2026/project.yaml
+```
+
+默认读取：
+
+```text
+projects/GDSL_2026/results/04_identification/fasta/identify.ID.fa
+projects/GDSL_2026/results/01_preprocess/species_clean_bank
+```
+
+默认输出：
+
+```text
+projects/GDSL_2026/results/05_genefamily_info
+```
+
+### 主要参数
+
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `--config` | 空 | 项目级 `project.yaml` |
+| `--clean-bank` | `database.species_clean_bank` | `01_preprocess` 输出的 clean bank |
+| `--members-fasta` | `<project.outdir>/04_identification/fasta/identify.ID.fa` | 最终家族成员蛋白 FASTA |
+| `--outdir` | `<project.outdir>/05_genefamily_info` | 05 模块输出目录 |
+| `--r-bin` | `/usr/local/bin/R` | 绘图使用的 R |
+| `--plot` | YAML 中 `genefamily_info.plot` | 生成 summary PDF/PNG |
+| `--skip-plot` | false | 跳过绘图，仅生成表格 |
+
+项目配置：
+
+```yaml
+modules:
+  genefamily_info: true
+
+genefamily_info:
+  plot: true
+  r_bin: /usr/local/bin/R
+```
+
+### 默认输出
+
+```text
+projects/GDSL_2026/results/05_genefamily_info/
+  tables/
+    Gene_Information.tsv
+    Gene_Information.xlsx
+    Gene_Information_stat.tsv
+    Gene_Information_stat.xlsx
+    species_10.bed
+    gene_family_copy_number.tsv
+    gene_family_copy_number_summary.tsv
+    gene_family_species_order.tsv
+    gene_family_copy_number_expansion.tsv
+    gene_family_pangenome_summary.tsv
+    gene_family_protein_properties.tsv
+  plots/
+    gene_family_info_summary.pdf
+    gene_family_info_summary.png
+  report/
+    genefamily_info_summary.md
+```
+
+当前真实 GDSL_2026 运行结果：
+
+```text
+Final family members: 1958
+Members matched to GFF coordinates: 1958
+Species with members: 12
+GFF gene BED rows: 547058
+```

@@ -15,6 +15,7 @@ modules:
   hmm: true
   blastp: true
   identification: true
+  genefamily_info: true
 
 hmm:
   hmm_dir: projects/GDSL_2026/config/hmm_profiles
@@ -41,3 +42,7 @@ identification:
   domain_evalue: 1.0e-5
   pfam_scan_executable: pfam_scan.pl
   pfam_scan_dir: ""
+
+genefamily_info:
+  plot: true
+  r_bin: /usr/local/bin/R

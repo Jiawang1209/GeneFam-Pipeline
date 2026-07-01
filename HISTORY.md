@@ -34,6 +34,56 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-01 09:50 - Add 05_genefamily_info module
+
+Context:
+- User requested development of `05_genefamily_info`, referencing `Reference/Long_Weixiong_20240323_1_GDSL/Evolution_LWX_GDSL_2024.md` and `Reference/Long_Weixiong_20240323_1_GDSL/R/5.GeneFamily_Info.R`.
+- Reference Step5 builds gene-family information from final candidate members, cleaned GFF/BED coordinates, and protein physicochemical properties.
+- User added the development constraint that each module should have its own tests, history entry, and commit.
+
+Decisions:
+- Add a direct project-style `05_genefamily_info` entrypoint that consumes `04_identification/fasta/identify.ID.fa` and the `01_preprocess` clean species bank.
+- Parse clean GFF3 `gene` features into a Reference-style `species_10.bed`.
+- Match final family members to physical gene coordinates by `(species_id, gene_id)`.
+- Reuse the existing protein-property and copy-number helper logic from `build_gene_family_info.py`.
+- Write both TSV and XLSX versions of `Gene_Information` and `Gene_Information_stat`.
+- Use the existing `scripts/plot_gene_family_info.R` for optional summary PDF/PNG generation through `/usr/local/bin/R`.
+
+Added:
+- `bin/genefam/run_genefamily_info_module.py`
+- `tests/test_run_genefamily_info_module.py`
+- `05_genefamily_info` documentation in `docs/module_usage.zh-CN.md`
+
+Modified:
+- `projects/GDSL_2026/project.yaml`
+- `docs/module_usage.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_genefamily_info_module.py -q` first failed because `run_genefamily_info_module.py` did not exist.
+- `python -m pytest tests/test_run_genefamily_info_module.py -q` passed with 1 test after implementation.
+- Real table-only run passed:
+  `python bin/genefam/run_genefamily_info_module.py --config projects/GDSL_2026/project.yaml --skip-plot`
+- Real plot run passed:
+  `python bin/genefam/run_genefamily_info_module.py --config projects/GDSL_2026/project.yaml --plot`
+- Real outputs were generated under `projects/GDSL_2026/results/05_genefamily_info`.
+- `Gene_Information.tsv` contains 1958 final family members plus header.
+- All 1958 final members matched GFF coordinates; missing chromosome count was 0.
+- `Gene_Information_stat.tsv` contains 12 species plus header.
+- `species_10.bed` contains 547058 clean GFF gene rows plus header.
+- `plots/gene_family_info_summary.pdf` and `plots/gene_family_info_summary.png` were generated.
+
+Commit:
+- hash: not created in this session
+- message: none
+- files: 05_genefamily_info runner, tests, project config, docs, history
+
+Next:
+- Commit `05_genefamily_info` as its own module-level commit.
+
 ## 2026-07-01 00:13 - Commit project modules through identification
 
 Context:
