@@ -18726,3 +18726,76 @@ Commit:
 
 Next:
 - If the visual balance still needs refinement, tune only the project YAML values first; the plotting script no longer needs code edits for these style knobs.
+
+## 2026-07-01 18:22 - Add 07_domain_motif_genestructure module
+
+Context:
+- User requested the next module, `07_domain_motif_genestructure`, based on the Reference Step7 workflow and the supplied `R.R`, `gene_structure_data.R`, and `get_motif_info.py` examples.
+- The desired module should run MEME motif analysis, prepare domain evidence, parse gene structures from GFF3, and render a `ggtree + ggplot2/gggenes` composite figure.
+
+Decisions:
+- Implement `07_domain_motif_genestructure` as a standalone Python module with a Reference-style R plotting script.
+- Use `04_identification/fasta/identify.ID.fa` as the default family-member FASTA.
+- Clean FASTA headers to gene IDs before MEME so motif, tree, and GFF-derived tracks share a stable identifier.
+- Prefer parsing `meme.xml` for motif locations when available, with a fallback parser for the text format used by the supplied `get_motif_info.py`.
+- Reuse existing HMM/domain evidence from `02_hmm/tables/hmm_hits.filtered.tsv` as the default domain track input.
+- Parse per-species clean-bank GFF3 files from `01_preprocess/species_clean_bank/<species>/clean/<species>.gff3` and scale feature coordinates per gene, following the supplied `gene_structure_data.R` idea.
+- Align domain, motif, and gene-structure tracks to the actual `ggtree` tip y positions so the four panels stay synchronized.
+
+Added:
+- `bin/genefam/run_domain_motif_genestructure_module.py`
+  - Runs MEME.
+  - Writes cleaned MEME input FASTA.
+  - Parses motif locations.
+  - Normalizes domain locations.
+  - Parses scaled gene-structure tracks.
+  - Calls the R composite plotting script.
+  - Writes a module summary and command log.
+- `scripts/plot_domain_motif_genestructure.R`
+  - Builds a four-panel plot with phylogenetic tree, domain track, motif track, and gene-structure track.
+  - Uses `ggtree`, `ggplot2`, `gggenes`, and `aplot`.
+- `tests/test_run_domain_motif_genestructure_module.py`
+  - Covers the module command path with fake MEME/R tools.
+  - Verifies motif, domain, gene-structure, plot, command, and report outputs.
+  - Checks that the R script uses the Reference-style plotting stack.
+
+Modified:
+- `projects/Whirly_2026/project.yaml`
+  - Enabled `domain_motif_genestructure`.
+  - Added Whirly 07 module configuration: MEME executable, R binary, and motif width/count parameters.
+
+Deleted:
+- None.
+
+Outputs:
+- Real Whirly run produced:
+  - `projects/Whirly_2026/results/07_domain_motif_genestructure/inputs/identify.ID.clean.fa`
+  - `projects/Whirly_2026/results/07_domain_motif_genestructure/meme/meme.txt`
+  - `projects/Whirly_2026/results/07_domain_motif_genestructure/meme/meme.xml`
+  - `projects/Whirly_2026/results/07_domain_motif_genestructure/tables/motif_locations.tsv`
+  - `projects/Whirly_2026/results/07_domain_motif_genestructure/tables/domain_locations.tsv`
+  - `projects/Whirly_2026/results/07_domain_motif_genestructure/tables/gene_structure_tracks.tsv`
+  - `projects/Whirly_2026/results/07_domain_motif_genestructure/plots/tree_domain_motif_genestructure.pdf`
+  - `projects/Whirly_2026/results/07_domain_motif_genestructure/plots/tree_domain_motif_genestructure.png`
+  - `projects/Whirly_2026/results/07_domain_motif_genestructure/report/domain_motif_genestructure_summary.md`
+
+Verification:
+- `python -m pytest tests/test_run_domain_motif_genestructure_module.py -q` first failed because the module and plot script did not exist.
+- `python -m pytest tests/test_run_domain_motif_genestructure_module.py -q` passed after implementation with 2 tests.
+- `conda run -n GeneFamilyFlow python bin/genefam/run_domain_motif_genestructure_module.py --config projects/Whirly_2026/project.yaml` completed successfully.
+- Real Whirly output table sizes:
+  - `motif_locations.tsv`: 234 rows plus header.
+  - `domain_locations.tsv`: 39 rows plus header.
+  - `gene_structure_tracks.tsv`: 367 rows plus header.
+- Initial plot inspection showed empty tracks because factor y values did not align with ggtree y coordinates; the R script was fixed to merge and use actual tip `plot_y`.
+- The final regenerated PNG shows all four panels: phylogenetic tree, domain analysis, motif analysis, and gene structure.
+- `python -m pytest tests/test_run_domain_motif_genestructure_module.py tests/test_run_phylogeny_module.py tests/test_reference_plotting_reuse.py -q` passed with 5 tests.
+
+Commit:
+- hash: 0c1a85a
+- message: feat: add domain motif gene-structure module
+- files: `run_domain_motif_genestructure_module.py`, `plot_domain_motif_genestructure.R`, module tests, Whirly project config
+
+Next:
+- Later connect this Python module into the formal workflow runner/Nextflow branch when the remaining standalone modules settle.
+- Consider exposing composite plot sizing and panel widths in YAML if further publication-style tuning is needed.
