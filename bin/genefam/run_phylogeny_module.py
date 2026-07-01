@@ -29,6 +29,7 @@ PHYLOGENY_FIELDS = ["family_name", "tree_builder", "alignment", "treefile", "sup
 COMMAND_FIELDS = ["step", "tool", "command", "stdout", "stderr", "status"]
 TREE_SUBFAMILY_SCRIPT = REPO_ROOT / "scripts/plot_tree_subfamilies.R"
 LABEL_MAP_FIELDS = ["original_id", "tree_label", "gene_id", "species_id"]
+PLOT_CONFIG_FIELDS = ["parameter", "value"]
 
 
 def load_project_config(path: Path | None) -> dict:
@@ -71,6 +72,25 @@ def write_tsv(rows: list[dict[str, str]], path: Path, fieldnames: list[str]) -> 
         writer = csv.DictWriter(handle, fieldnames=fieldnames, delimiter="\t", lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
+
+
+def normalize_plot_config(config: object) -> dict[str, str]:
+    if config is None:
+        return {}
+    if not isinstance(config, dict):
+        raise ValueError("phylogeny.subfamily.plot must be a mapping")
+    normalized: dict[str, str] = {}
+    for key, value in config.items():
+        if value is None:
+            continue
+        normalized[str(key)] = str(value)
+    return normalized
+
+
+def write_plot_config(config: dict[str, str], path: Path) -> Path:
+    rows = [{"parameter": key, "value": value} for key, value in sorted(config.items())]
+    write_tsv(rows, path, PLOT_CONFIG_FIELDS)
+    return path
 
 
 def ensure_command(command: str) -> str:
@@ -236,6 +256,7 @@ def run_tree_subfamilies(
     min_size: int,
     max_groups: int,
     label_map: Path,
+    plot_config: Path,
     log_dir: Path,
 ) -> dict[str, str]:
     executable = ensure_command(r_bin)
@@ -254,6 +275,7 @@ def run_tree_subfamilies(
             str(min_size),
             str(max_groups),
             str(label_map),
+            str(plot_config),
         ]
     else:
         command = [
@@ -265,6 +287,7 @@ def run_tree_subfamilies(
             str(min_size),
             str(max_groups),
             str(label_map),
+            str(plot_config),
         ]
     stdout_path = log_dir / "tree_subfamily.stdout.log"
     stderr_path = log_dir / "tree_subfamily.stderr.log"
@@ -325,6 +348,7 @@ def resolve_args(args: argparse.Namespace) -> dict:
         "subfamily_min_size": int(subfamily_config.get("min_size", 2)),
         "subfamily_max_groups": int(subfamily_config.get("max_groups", 8)),
         "subfamily_r_bin": str(subfamily_config.get("r_bin") or genefamily_info_config.get("r_bin") or "/usr/local/bin/R"),
+        "subfamily_plot_config": normalize_plot_config(subfamily_config.get("plot")),
     }
 
 
@@ -369,11 +393,13 @@ def run_module(**kwargs) -> Path:
     subfamily_command = None
     subfamily_assignments = outdir / "tables/tree_subfamily_assignments.tsv"
     subfamily_stats = outdir / "tables/tree_subfamily_stats.tsv"
+    subfamily_plot_config = outdir / "tables/tree_subfamily_plot_config.tsv"
     subfamily_tree_plot = outdir / "plots/tree_subfamily.pdf"
     subfamily_stats_plot = outdir / "plots/tree_subfamily_species_stats.pdf"
     if kwargs["subfamily_enabled"]:
         if kwargs["subfamily_method"] != "auto_topology":
             raise ValueError("phylogeny.subfamily.method currently supports only auto_topology")
+        write_plot_config(kwargs["subfamily_plot_config"], subfamily_plot_config)
         subfamily_command = run_tree_subfamilies(
             treefile,
             outdir,
@@ -382,6 +408,7 @@ def run_module(**kwargs) -> Path:
             kwargs["subfamily_min_size"],
             kwargs["subfamily_max_groups"],
             label_map,
+            subfamily_plot_config,
             logs_dir,
         )
         command_rows.append(subfamily_command)
@@ -412,6 +439,7 @@ def run_module(**kwargs) -> Path:
                 f"- Subfamily maximum groups: {kwargs['subfamily_max_groups']}",
                 f"- Subfamily assignments: `{subfamily_assignments}`",
                 f"- Subfamily statistics: `{subfamily_stats}`",
+                f"- Subfamily plot config: `{subfamily_plot_config}`",
                 f"- Subfamily tree plot: `{subfamily_tree_plot}`",
                 f"- Subfamily species statistics plot: `{subfamily_stats_plot}`",
                 f"- Subfamily command: `{subfamily_command['command'] if subfamily_command else ''}`",

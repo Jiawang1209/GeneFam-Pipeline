@@ -1,6 +1,6 @@
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) < 5 || length(args) > 6) {
-  stop("Usage: R --vanilla --slave -f plot_tree_subfamilies.R --args <treefile> <outdir> <family_name> <min_size> <max_groups> [label_map.tsv]")
+if (length(args) < 5 || length(args) > 7) {
+  stop("Usage: R --vanilla --slave -f plot_tree_subfamilies.R --args <treefile> <outdir> <family_name> <min_size> <max_groups> [label_map.tsv] [plot_config.tsv]")
 }
 
 treefile <- args[[1]]
@@ -15,6 +15,7 @@ if (is.na(max_groups) || max_groups < 1) {
   max_groups <- 8
 }
 label_map_file <- if (length(args) >= 6) args[[6]] else ""
+plot_config_file <- if (length(args) >= 7) args[[7]] else ""
 
 required_packages <- c("ape", "treeio", "ggtree", "tidytree", "ggplot2", "ggnewscale", "aplot")
 missing_packages <- required_packages[!vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)]
@@ -27,6 +28,36 @@ suppressPackageStartupMessages({
   library(ggnewscale)
   library(aplot)
 })
+
+read_plot_config <- function(path) {
+  if (!nzchar(path) || !file.exists(path)) {
+    return(stats::setNames(character(), character()))
+  }
+  config <- read.delim(path, check.names = FALSE, stringsAsFactors = FALSE)
+  required_cols <- c("parameter", "value")
+  missing_cols <- setdiff(required_cols, names(config))
+  if (length(missing_cols) > 0) {
+    stop(paste("Plot config missing required columns:", paste(missing_cols, collapse = ", ")))
+  }
+  stats::setNames(as.character(config$value), as.character(config$parameter))
+}
+
+plot_config <- read_plot_config(plot_config_file)
+
+plot_number <- function(name, default) {
+  if (!(name %in% names(plot_config))) {
+    return(default)
+  }
+  value <- plot_config[[name]]
+  if (is.null(value) || is.na(value) || !nzchar(value)) {
+    return(default)
+  }
+  parsed <- suppressWarnings(as.numeric(value))
+  if (is.na(parsed)) {
+    stop(paste("Plot config parameter must be numeric:", name))
+  }
+  parsed
+}
 
 tables_dir <- file.path(outdir, "tables")
 plots_dir <- file.path(outdir, "plots")
@@ -153,22 +184,25 @@ strip_df <- do.call(rbind, run_rows)
 
 tree_info <- assignments[, c("tree_label", "gene_id", "species_id", "subfamily")]
 names(tree_info)[1] <- "label"
-tip_label_offset <- 0.35
-strip_offset <- 1.2
+tip_label_offset <- plot_number("tip_label_offset", 0.35)
+strip_offset <- plot_number("strip_offset", 1.2)
 tree_outer_padding <- 2.4
-tip_label_size <- ifelse(n_tips > 24, 3.0, 3.4)
-tip_point_size <- 1.6
-strip_bar_size <- 1.1
-tree_scale <- ifelse(n_tips > 24, 0.78, 0.92)
-plot_width <- max(14, ifelse(n_tips > 24, 18, 14))
-plot_height <- max(14, ifelse(n_tips > 24, 18, 14))
+tip_label_size <- plot_number("tip_label_size", ifelse(n_tips > 24, 3.0, 3.4))
+tip_point_size <- plot_number("tip_point_size", 1.6)
+strip_bar_size <- plot_number("strip_bar_size", 1.1)
+tree_scale <- plot_number("tree_scale", ifelse(n_tips > 24, 0.78, 0.92))
+branch_size <- plot_number("branch_size", 0.22)
+plot_width <- plot_number("plot_width", max(14, ifelse(n_tips > 24, 18, 14)))
+plot_height <- plot_number("plot_height", max(14, ifelse(n_tips > 24, 18, 14)))
+legend_x <- plot_number("legend_x", 0.54)
+legend_y <- plot_number("legend_y", 0.48)
 
 plot_tree <- function() {
   p <- ggtree::ggtree(
     tree_plot,
     branch.length = "none",
     layout = "circular",
-    size = 0.12,
+    size = branch_size,
     color = "#969696"
   ) %<+% tree_info +
     ggtree::geom_nodepoint(
@@ -190,9 +224,9 @@ plot_tree <- function() {
     ggplot2::scale_fill_manual(values = species_cols, name = "Species") +
     ggtree::geom_tiplab(ggplot2::aes(label = gene_id, color = subfamily), size = tip_label_size, offset = tip_label_offset, show.legend = FALSE) +
     ggplot2::scale_color_manual(values = subfamily_cols, name = "Subfamily") +
-    ggtree::geom_tree(size = 0.12, color = "#969696") +
+    ggtree::geom_tree(size = branch_size, color = "#969696") +
     ggplot2::theme(
-      legend.position = c(0.54, 0.48),
+      legend.position = c(legend_x, legend_y),
       legend.background = ggplot2::element_blank(),
       legend.key.size = ggplot2::unit(0.35, "cm"),
       legend.text = ggplot2::element_text(size = 7),

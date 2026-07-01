@@ -73,3 +73,15 @@ phylogeny:
     min_size: 2
     max_groups: 8
     r_bin: /usr/local/bin/R
+    plot:
+      tree_scale: 0.5
+      branch_size: 0.36
+      tip_label_size: 3.2
+      tip_label_offset: 0.28
+      tip_point_size: 1.7
+      strip_offset: 1.0
+      strip_bar_size: 1.35
+      plot_width: 18
+      plot_height: 18
+      legend_x: 0.54
+      legend_y: 0.48

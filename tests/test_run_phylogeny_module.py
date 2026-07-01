@@ -43,7 +43,18 @@ def write_project(root: Path) -> Path:
         "    method: auto_topology\n"
         "    min_size: 2\n"
         "    max_groups: 3\n"
-        "    r_bin: Rscript\n",
+        "    r_bin: Rscript\n"
+        "    plot:\n"
+        "      tree_scale: 0.68\n"
+        "      branch_size: 0.28\n"
+        "      tip_label_size: 3.2\n"
+        "      tip_label_offset: 0.28\n"
+        "      strip_offset: 1.05\n"
+        "      strip_bar_size: 1.4\n"
+        "      plot_width: 16\n"
+        "      plot_height: 16\n"
+        "      legend_x: 0.54\n"
+        "      legend_y: 0.48\n",
         encoding="utf-8",
     )
     return config
@@ -140,6 +151,7 @@ def test_run_phylogeny_module_builds_alignment_tree_and_manifests(tmp_path):
     assert "tree_subfamily.pdf" in summary
     assert (outdir / "tables/tree_subfamily_assignments.tsv").exists()
     assert (outdir / "tables/tree_subfamily_stats.tsv").exists()
+    assert (outdir / "tables/tree_subfamily_plot_config.tsv").exists()
     assert (outdir / "plots/tree_subfamily.pdf").exists()
     assert (outdir / "plots/tree_subfamily.png").exists()
     assert (outdir / "plots/tree_subfamily_species_stats.pdf").exists()
@@ -148,6 +160,13 @@ def test_run_phylogeny_module_builds_alignment_tree_and_manifests(tmp_path):
     assert label_map[0]["original_id"] == "Species_a|GeneA"
     assert label_map[0]["tree_label"] == "GeneA"
     assert label_map[0]["species_id"] == "Species_a"
+    plot_config = read_tsv(outdir / "tables/tree_subfamily_plot_config.tsv")
+    plot_config_map = {row["parameter"]: row["value"] for row in plot_config}
+    assert plot_config_map["tree_scale"] == "0.68"
+    assert plot_config_map["branch_size"] == "0.28"
+    assert plot_config_map["tip_label_size"] == "3.2"
+    assert "tree_subfamily_plot_config.tsv" in commands[2]["command"]
+    assert "Subfamily plot config:" in summary
 
 
 def test_plot_tree_subfamilies_r_script_assigns_groups_and_stats(tmp_path):
@@ -157,21 +176,23 @@ def test_plot_tree_subfamilies_r_script_assigns_groups_and_stats(tmp_path):
     assert "geom_strip" in script_text
     assert "geom_tippoint" in script_text
     assert "geom_nodepoint" in script_text
-    assert "tree_scale <- ifelse(n_tips > 24, 0.78, 0.92)" in script_text
-    assert "plot_width <- max(14, ifelse(n_tips > 24, 18, 14))" in script_text
-    assert "plot_height <- max(14, ifelse(n_tips > 24, 18, 14))" in script_text
+    assert "read_plot_config" in script_text
+    assert "tree_scale <- plot_number(\"tree_scale\", ifelse(n_tips > 24, 0.78, 0.92))" in script_text
+    assert "branch_size <- plot_number(\"branch_size\", 0.22)" in script_text
+    assert "plot_width <- plot_number(\"plot_width\", max(14, ifelse(n_tips > 24, 18, 14)))" in script_text
+    assert "plot_height <- plot_number(\"plot_height\", max(14, ifelse(n_tips > 24, 18, 14)))" in script_text
     assert "ggplot2::aes(label = gene_id, color = subfamily)" in script_text
     assert "ggplot2::scale_fill_manual(values = species_cols, name = \"Species\")" in script_text
     assert "show_tip_labels" not in script_text
     assert "show_species_legend" not in script_text
     assert "label_map_file" in script_text
     assert "ggplot2::ggplot" in script_text
-    assert "strip_offset <- 1.2" in script_text
-    assert "tip_label_offset <- 0.35" in script_text
+    assert "strip_offset <- plot_number(\"strip_offset\", 1.2)" in script_text
+    assert "tip_label_offset <- plot_number(\"tip_label_offset\", 0.35)" in script_text
     assert "tree_outer_padding <- 2.4" in script_text
-    assert "tip_label_size <- ifelse(n_tips > 24, 3.0, 3.4)" in script_text
-    assert "tip_point_size <- 1.6" in script_text
-    assert "strip_bar_size <- 1.1" in script_text
+    assert "tip_label_size <- plot_number(\"tip_label_size\", ifelse(n_tips > 24, 3.0, 3.4))" in script_text
+    assert "tip_point_size <- plot_number(\"tip_point_size\", 1.6)" in script_text
+    assert "strip_bar_size <- plot_number(\"strip_bar_size\", 1.1)" in script_text
     tree = tmp_path / "tree.nwk"
     tree.write_text(
         "((AT1G14410:0.1,AT1G71260:0.1)0.9:0.2,"
