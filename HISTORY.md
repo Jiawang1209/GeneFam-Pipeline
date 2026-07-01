@@ -34,6 +34,51 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-01 15:29 - Add 06_phylogeny module
+
+Context:
+- User requested development of the next module, `06_phylogeny`, following the Reference Step6 workflow.
+- Reference Step6 runs multiple sequence alignment with MUSCLE and then builds a tree with IQ-TREE.
+- User requested both alignment software choice and tree-building software choice to be exposed as parameters.
+
+Decisions:
+- Add a project-style `06_phylogeny` module entrypoint.
+- Default the GDSL project to `muscle -super5 + FastTree` for large multi-species family data, because the current real candidate set contains 1958 protein sequences.
+- Keep `mafft`, `muscle`, `fasttree`, and `iqtree` selectable from CLI/YAML.
+- Record the exact alignment and tree commands in `tables/phylogeny_commands.tsv`.
+- Keep Reference-compatible IQ-TREE settings available through YAML: `MFP`, `bb=1000`, `bnni`, `cmax 15`, `redo`, and `threads=AUTO`.
+
+Added:
+- `bin/genefam/run_phylogeny_module.py`
+- `tests/test_run_phylogeny_module.py`
+- `06_phylogeny` usage documentation in `docs/module_usage.zh-CN.md`
+
+Modified:
+- `projects/GDSL_2026/project.yaml`
+- `docs/module_usage.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- Removed incomplete `projects/GDSL_2026/results/06_phylogeny` after interrupting a long full-data trial run.
+
+Verification:
+- `python -m pytest tests/test_run_phylogeny_module.py -q` first failed because `bin/genefam/run_phylogeny_module.py` did not exist.
+- `python -m pytest tests/test_run_phylogeny_module.py -q` passed after implementation.
+- `python -m pytest tests/test_run_phylogeny_module.py tests/test_run_alignment_phylogeny_smoke.py tests/test_prepare_alignment_inputs.py tests/test_prepare_phylogeny_inputs.py -q` passed with 6 tests.
+- Real tool smoke using `GeneFamilyFlow` passed on a 3-sequence fixture:
+  `conda run -n GeneFamilyFlow python bin/genefam/run_phylogeny_module.py --input-fasta tests/fixtures/alignment/family_members.faa --outdir /tmp/genefam_06_tool_smoke --family-name GDSL --aligner muscle --aligner-options='-align {input} -output {output}' --tree-builder fasttree --tree-options=-lg`
+- Real tool smoke generated `/tmp/genefam_06_tool_smoke/alignment/GDSL.muscle.aln.faa` and `/tmp/genefam_06_tool_smoke/phylogeny/GDSL.fasttree.treefile`.
+- Full GDSL_2026 real run was attempted with MAFFT and MUSCLE Super5 but intentionally interrupted because the 1958-sequence alignment was a long-running analysis task; no incomplete 06 result directory was kept.
+
+Commit:
+- hash: 9bdfd8b
+- message: feat: add phylogeny module
+- files: 06 phylogeny module, tests, project YAML, docs
+
+Next:
+- Add optional reuse/resume behavior for existing alignment files before running full GDSL_2026 phylogeny to completion.
+- Add Reference-style tree visualization in the next visual module pass.
+
 ## 2026-07-01 10:31 - Make property plot axis text fully adaptive
 
 Context:
