@@ -18289,6 +18289,49 @@ Commit:
 
 Next:
 - Continue final MVP handoff polish; Docker/Apptainer runtime execution remains the intentionally deferred final packaging stage.
+## 2026-07-01 - Compact phylogeny subfamily tree plot proportions
+
+Timestamp:
+- 2026-07-01 16:56 CST
+
+Context:
+- The ggtree-based subfamily plot was structurally correct, but the rendered tree still occupied too much of the canvas.
+- The user requested a more balanced visual composition where the phylogeny is not visually oversized.
+
+Decisions:
+- Keep the gene-only tree and annotation-table architecture unchanged.
+- Reduce visual weight of the tree-tip layer while keeping the subfamily strips outside the tip labels.
+- Add named plotting constants so future visual tuning is explicit instead of hidden in hard-coded geom arguments.
+
+Modified:
+- `scripts/plot_tree_subfamilies.R`
+- `tests/test_run_phylogeny_module.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Details:
+- Added `tree_outer_padding <- 2.4`.
+- Kept `tip_label_offset <- 0.35` and `strip_offset <- 1.2`.
+- Reduced tip label size to `tip_label_size <- 1.8`.
+- Reduced tip point size to `tip_point_size <- 1.6`.
+- Reduced strip bar size to `strip_bar_size <- 1.1`.
+- Expanded the tree x-limit with `xlim_tree(strip_offset + tree_outer_padding)`.
+
+Verification:
+- `python -m pytest tests/test_run_phylogeny_module.py::test_plot_tree_subfamilies_r_script_assigns_groups_and_stats -q` first failed before the new plotting constants existed.
+- `python -m pytest tests/test_run_phylogeny_module.py -q` passed after visual tuning with 2 tests.
+- `conda run -n GeneFamilyFlow python bin/genefam/run_phylogeny_module.py --config projects/Whirly_2026/project.yaml` completed successfully and regenerated the compact Whirly tree plot.
+
+Commit:
+- hash: 38135fb36d01342453fb07e395063f5fdc5c486d
+- message: style: compact phylogeny subfamily tree plot
+- files: subfamily plotting script and phylogeny module tests
+
+Next:
+- Continue visually tuning tree layout against real family sizes; for larger families, consider a YAML-exposed plotting scale profile.
+
 ## 2026-07-01 - Correct phylogeny tree labels and subfamily strip placement
 
 Timestamp:
