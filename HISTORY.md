@@ -34,6 +34,51 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-02 00:44 - Add 10_promoter module
+
+Context:
+- User requested promoter analysis to follow the Reference Step10 workflow, including promoter extraction from provided genomes and cis-element visualization when PlantCARE results are available.
+- User clarified that missing optional inputs should skip the affected analysis instead of stopping the full workflow.
+
+Decisions:
+- Add a dedicated `10_promoter` module that extracts upstream promoter sequences directly from cleaned GFF3 and genome FASTA paths.
+- Use BED-style 0-based promoter coordinates to align with the Reference `seqkit subseq --bed --up-stream 2000 --only-flank` logic.
+- Write PlantCARE submission FASTA parts even when no PlantCARE result table has been returned yet.
+- Record missing cis-element input as `missing_input` in `logs/promoter_cis_status.tsv`.
+- Add a Reference-style promoter heatmap script with nested functional axis labels, white tiles, square count points, count text, and optional species-tree insertion.
+
+Added:
+- `bin/genefam/run_promoter_module.py`
+- `scripts/plot_promoter_cis_reference.R`
+- `tests/test_run_promoter_module.py`
+- Real Whirly outputs under `projects/Whirly_2026/results/10_promoter/`
+
+Modified:
+- `projects/Whirly_2026/project.yaml`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Red test first failed because `bin/genefam/run_promoter_module.py` and `scripts/plot_promoter_cis_reference.R` did not exist:
+  `python -m pytest tests/test_run_promoter_module.py -q`
+- A coordinate regression test caught an off-by-one BED start issue; promoter coordinates were corrected to 0-based BED-style output.
+- `python -m pytest tests/test_run_promoter_module.py -q` passed with 2 tests.
+- Real Whirly run completed:
+  `conda run -n GeneFamilyFlow python bin/genefam/run_promoter_module.py --config projects/Whirly_2026/project.yaml`
+- Real Whirly `10_promoter` produced 36 promoter records, `tables/promoters.bed`, `sequences/promoters.fa`, one PlantCARE submission FASTA part, `logs/promoter_cis_status.tsv`, and `report/promoter_summary.md`.
+- `projects/Whirly_2026/results/10_promoter/logs/promoter_cis_status.tsv` records `missing_input` because no PlantCARE cis-element table was configured.
+- `python -m pytest tests/test_run_jcvi_module.py tests/test_run_mcscanx_module.py tests/test_run_promoter_module.py tests/test_run_phylogeny_module.py tests/test_run_domain_motif_genestructure_module.py tests/test_reference_plotting_reuse.py -q` passed with 11 tests.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: 10_promoter runner, Reference promoter plot script, tests, Whirly config, Whirly 10 outputs
+
+Next:
+- Continue with `11_ppi`: AraNet reciprocal homology transfer, ggNetView primary PPI visualization, and Reference-style PPI tables/report.
+
 ## 2026-07-02 00:38 - Add 09_mcscanx module
 
 Context:

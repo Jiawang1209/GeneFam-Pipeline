@@ -20,6 +20,7 @@ modules:
   domain_motif_genestructure: true
   jcvi: true
   mcscanx: true
+  promoter: true
 
 hmm:
   hmm_dir: projects/Whirly_2026/config/hmm_profiles
@@ -108,4 +109,10 @@ mcscanx:
   execute: false
   search_tool: diamond
   window_size: 500000
+  r_bin: /usr/local/bin/R
+
+promoter:
+  family_name: Whirly
+  upstream_bp: 2000
+  split_records: 100
   r_bin: /usr/local/bin/R
