@@ -169,7 +169,7 @@ def test_plot_tree_subfamilies_r_script_assigns_groups_and_stats(tmp_path):
     assert "strip_offset <- 1.2" in script_text
     assert "tip_label_offset <- 0.35" in script_text
     assert "tree_outer_padding <- 2.4" in script_text
-    assert "tip_label_size <- 1.8" in script_text
+    assert "tip_label_size <- ifelse(n_tips > 24, 3.0, 3.4)" in script_text
     assert "tip_point_size <- 1.6" in script_text
     assert "strip_bar_size <- 1.1" in script_text
     tree = tmp_path / "tree.nwk"

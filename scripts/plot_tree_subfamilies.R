@@ -156,7 +156,7 @@ names(tree_info)[1] <- "label"
 tip_label_offset <- 0.35
 strip_offset <- 1.2
 tree_outer_padding <- 2.4
-tip_label_size <- 1.8
+tip_label_size <- ifelse(n_tips > 24, 3.0, 3.4)
 tip_point_size <- 1.6
 strip_bar_size <- 1.1
 tree_scale <- ifelse(n_tips > 24, 0.78, 0.92)
