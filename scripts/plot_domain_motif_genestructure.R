@@ -37,6 +37,8 @@ label_map <- read_required(label_map_file)
 motif <- read_required(motif_file)
 domain <- read_required(domain_file)
 structure <- read_required(structure_file)
+sequence_lengths_file <- file.path(outdir, "tables", "sequence_lengths.tsv")
+sequence_lengths <- read_required(sequence_lengths_file)
 tree <- treeio::read.newick(treefile, node.label = "support")
 tree_base <- ggtree::ggtree(tree, branch.length = "none")
 tree_labels <- ggtree::get_taxa_name(tree_base)
@@ -62,6 +64,10 @@ coerce_track <- function(df, id_col = "gene_id") {
 motif <- coerce_track(motif)
 domain <- coerce_track(domain)
 structure <- coerce_track(structure)
+sequence_lengths$gene_id <- as.character(sequence_lengths$gene_id)
+sequence_lengths$protein_length <- suppressWarnings(as.numeric(sequence_lengths$protein_length))
+sequence_lengths <- merge(sequence_lengths, tip_positions, by = "gene_id", all.x = TRUE, sort = FALSE)
+sequence_lengths <- sequence_lengths[!is.na(sequence_lengths$plot_y) & !is.na(sequence_lengths$protein_length), , drop = FALSE]
 if (nrow(motif) > 0) {
   motif$motif_id <- factor(motif$motif_id, levels = sort(unique(motif$motif_id)), ordered = TRUE)
 }
@@ -69,7 +75,7 @@ if (nrow(domain) > 0) {
   domain$domain_id <- factor(domain$domain_id, levels = sort(unique(domain$domain_id)), ordered = TRUE)
 }
 if (nrow(structure) > 0) {
-  structure$feature <- factor(structure$feature, levels = c("UTR", "exon", "CDS"), ordered = TRUE)
+  structure$feature <- factor(structure$feature, levels = c("gene", "five_prime_UTR", "three_prime_UTR", "exon", "CDS"), ordered = TRUE)
 }
 
 palette <- c(
@@ -126,16 +132,105 @@ domain_p <- ggplot2::ggplot(domain, ggplot2::aes(xmin = start, xmax = end, y = p
 
 gene_structure_p <- ggplot2::ggplot(structure, ggplot2::aes(xmin = start, xmax = end, y = plot_y, fill = feature)) +
   gggenes::geom_gene_arrow(arrowhead_height = grid::unit(3, "mm"), arrowhead_width = grid::unit(0.1, "mm")) +
-  ggplot2::scale_fill_manual(values = c(UTR = "#a6cee3", exon = "#b2df8a", CDS = "#e31a1c"), name = "Gene Structure", na.value = "#969696") +
+  ggplot2::scale_fill_manual(
+    values = c(gene = "#d9d9d9", five_prime_UTR = "#66c2ff", three_prime_UTR = "#ff9999", exon = "#b2df8a", CDS = "#ffb700"),
+    name = "Gene Structure",
+    na.value = "#969696"
+  ) +
   ggplot2::labs(x = "", y = "") +
   ggplot2::ggtitle("Gene Structure") +
   track_theme
+
+full_track_theme <- ggplot2::theme_bw() +
+  ggplot2::theme(
+    axis.text.y = ggplot2::element_blank(),
+    axis.ticks.y = ggplot2::element_blank(),
+    panel.grid = ggplot2::element_blank(),
+    plot.title = ggplot2::element_text(hjust = 0.5),
+    legend.background = ggplot2::element_rect(color = "#969696", fill = "#d9d9d9")
+  )
+
+domain_full_p <- ggplot2::ggplot() +
+  ggplot2::geom_segment(
+    data = sequence_lengths,
+    ggplot2::aes(x = 0, xend = protein_length, y = plot_y, yend = plot_y),
+    color = "gray60",
+    linewidth = 0.8
+  ) +
+  ggplot2::geom_rect(
+    data = domain,
+    ggplot2::aes(xmin = start, xmax = end, ymin = plot_y - 0.25, ymax = plot_y + 0.25, fill = domain_id),
+    color = "black",
+    linewidth = 0.3
+  ) +
+  ggplot2::scale_fill_manual(values = rep(palette, length.out = max(1, length(unique(domain$domain_id)))), name = "Domain") +
+  ggplot2::labs(x = "Relative position (aa)", y = "") +
+  ggplot2::ggtitle("Domain Analysis") +
+  full_track_theme
+
+motif_full_p <- ggplot2::ggplot() +
+  ggplot2::geom_segment(
+    data = sequence_lengths,
+    ggplot2::aes(x = 0, xend = protein_length, y = plot_y, yend = plot_y),
+    color = "gray60",
+    linewidth = 0.8
+  ) +
+  ggplot2::geom_rect(
+    data = motif,
+    ggplot2::aes(xmin = start, xmax = end, ymin = plot_y - 0.25, ymax = plot_y + 0.25, fill = motif_id),
+    color = "black",
+    linewidth = 0.3
+  ) +
+  ggplot2::scale_fill_manual(values = rep(palette, length.out = max(1, length(unique(motif$motif_id)))), name = "Motif") +
+  ggplot2::labs(x = "Relative position (aa)", y = "") +
+  ggplot2::ggtitle("Motif Analysis") +
+  full_track_theme
+
+structure_base <- structure[structure$feature == "gene", , drop = FALSE]
+gene_structure_full_p <- ggplot2::ggplot() +
+  ggplot2::geom_segment(
+    data = structure_base,
+    ggplot2::aes(x = 0, xend = end, y = plot_y, yend = plot_y),
+    color = "gray60",
+    linewidth = 0.8
+  ) +
+  ggplot2::geom_rect(
+    data = structure[structure$feature == "five_prime_UTR", , drop = FALSE],
+    ggplot2::aes(xmin = start, xmax = end, ymin = plot_y - 0.25, ymax = plot_y + 0.25),
+    fill = "#66c2ff",
+    color = "black",
+    linewidth = 0.3
+  ) +
+  ggplot2::geom_rect(
+    data = structure[structure$feature == "three_prime_UTR", , drop = FALSE],
+    ggplot2::aes(xmin = start, xmax = end, ymin = plot_y - 0.25, ymax = plot_y + 0.25),
+    fill = "#ff9999",
+    color = "black",
+    linewidth = 0.3
+  ) +
+  ggplot2::geom_rect(
+    data = structure[structure$feature == "CDS", , drop = FALSE],
+    ggplot2::aes(xmin = start, xmax = end, ymin = plot_y - 0.4, ymax = plot_y + 0.4),
+    fill = "#ffb700",
+    color = "black",
+    linewidth = 0.3
+  ) +
+  ggplot2::labs(x = "Relative position (bp)", y = "") +
+  ggplot2::ggtitle("Gene Structure") +
+  full_track_theme
 
 combined <- tree_p %>%
   aplot::insert_right(domain_p, width = 0.9) %>%
   aplot::insert_right(motif_p, width = 0.9) %>%
   aplot::insert_right(gene_structure_p, width = 1.0)
 
+combined_full <- tree_p %>%
+  aplot::insert_right(domain_full_p, width = 0.9) %>%
+  aplot::insert_right(motif_full_p, width = 0.9) %>%
+  aplot::insert_right(gene_structure_full_p, width = 1.0)
+
 height <- max(6, 0.28 * length(gene_levels) + 3.5)
 ggplot2::ggsave(file.path(plots_dir, "tree_domain_motif_genestructure.pdf"), combined, width = 18, height = height, limitsize = FALSE)
 ggplot2::ggsave(file.path(plots_dir, "tree_domain_motif_genestructure.png"), combined, width = 18, height = height, dpi = 180, limitsize = FALSE)
+ggplot2::ggsave(file.path(plots_dir, "tree_domain_motif_genestructure_full_length.pdf"), combined_full, width = 18, height = height, limitsize = FALSE)
+ggplot2::ggsave(file.path(plots_dir, "tree_domain_motif_genestructure_full_length.png"), combined_full, width = 18, height = height, dpi = 180, limitsize = FALSE)

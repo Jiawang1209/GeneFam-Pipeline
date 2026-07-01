@@ -56,8 +56,10 @@ def write_fake_project(root: Path) -> Path:
     (clean / "Species_a.gff3").write_text(
         "chr1\ttest\tgene\t100\t500\t.\t+\t.\tID=GeneA;Name=GeneA\n"
         "chr1\ttest\tmRNA\t100\t500\t.\t+\t.\tID=GeneA.t1;Name=GeneA.1;Parent=GeneA\n"
+        "chr1\ttest\tfive_prime_UTR\t100\t119\t.\t+\t.\tID=utr.GeneA.1;Parent=GeneA.t1\n"
         "chr1\ttest\tCDS\t120\t180\t.\t+\t0\tID=cds.GeneA.1;Parent=GeneA.t1\n"
         "chr1\ttest\tCDS\t250\t320\t.\t+\t0\tID=cds.GeneA.2;Parent=GeneA.t1\n"
+        "chr1\ttest\tthree_prime_UTR\t321\t500\t.\t+\t.\tID=utr.GeneA.2;Parent=GeneA.t1\n"
         "chr1\ttest\tgene\t700\t1000\t.\t-\t.\tID=GeneB;Name=GeneB\n"
         "chr1\ttest\tmRNA\t700\t1000\t.\t-\t.\tID=GeneB.t1;Name=GeneB.1;Parent=GeneB\n"
         "chr1\ttest\tCDS\t900\t960\t.\t-\t0\tID=cds.GeneB.1;Parent=GeneB.t1\n",
@@ -105,7 +107,9 @@ def write_fake_tools(bin_dir: Path) -> None:
         "outdir = Path(sys.argv[7])\n"
         "(outdir / 'plots').mkdir(parents=True, exist_ok=True)\n"
         "(outdir / 'plots/tree_domain_motif_genestructure.pdf').write_bytes(b'%PDF fake')\n"
-        "(outdir / 'plots/tree_domain_motif_genestructure.png').write_bytes(b'fake png')\n",
+        "(outdir / 'plots/tree_domain_motif_genestructure.png').write_bytes(b'fake png')\n"
+        "(outdir / 'plots/tree_domain_motif_genestructure_full_length.pdf').write_bytes(b'%PDF fake full')\n"
+        "(outdir / 'plots/tree_domain_motif_genestructure_full_length.png').write_bytes(b'fake png full')\n",
         encoding="utf-8",
     )
     rscript.chmod(0o755)
@@ -133,8 +137,11 @@ def test_run_domain_motif_genestructure_module_builds_tables_and_plot(tmp_path):
     assert (outdir / "tables/motif_locations.tsv").exists()
     assert (outdir / "tables/domain_locations.tsv").exists()
     assert (outdir / "tables/gene_structure_tracks.tsv").exists()
+    assert (outdir / "tables/sequence_lengths.tsv").exists()
     assert (outdir / "plots/tree_domain_motif_genestructure.pdf").exists()
     assert (outdir / "plots/tree_domain_motif_genestructure.png").exists()
+    assert (outdir / "plots/tree_domain_motif_genestructure_full_length.pdf").exists()
+    assert (outdir / "plots/tree_domain_motif_genestructure_full_length.png").exists()
     assert (outdir / "report/domain_motif_genestructure_summary.md").exists()
 
     motifs = read_tsv(outdir / "tables/motif_locations.tsv")
@@ -147,7 +154,9 @@ def test_run_domain_motif_genestructure_module_builds_tables_and_plot(tmp_path):
     assert domains[0]["start"] == "2"
     structures = read_tsv(outdir / "tables/gene_structure_tracks.tsv")
     assert {row["gene_id"] for row in structures} == {"GeneA", "GeneB"}
-    assert {row["feature"] for row in structures} == {"CDS"}
+    assert {"gene", "CDS", "five_prime_UTR", "three_prime_UTR"} <= {row["feature"] for row in structures}
+    lengths = read_tsv(outdir / "tables/sequence_lengths.tsv")
+    assert lengths[0]["protein_length"] == "9"
     commands = read_tsv(outdir / "tables/domain_motif_genestructure_commands.tsv")
     assert commands[0]["tool"] == "meme"
     assert commands[1]["tool"] == "Rscript"
@@ -156,12 +165,18 @@ def test_run_domain_motif_genestructure_module_builds_tables_and_plot(tmp_path):
     assert "Domain locations:" in summary
     assert "Gene structure tracks:" in summary
     assert "tree_domain_motif_genestructure.pdf" in summary
+    assert "tree_domain_motif_genestructure_full_length.pdf" in summary
 
 
 def test_plot_domain_motif_genestructure_r_reuses_reference_style():
     script_text = PLOT_SCRIPT.read_text(encoding="utf-8")
     assert "ggtree::ggtree" in script_text
     assert "gggenes::geom_gene_arrow" in script_text
+    assert "geom_segment" in script_text
+    assert "geom_rect" in script_text
+    assert "five_prime_UTR" in script_text
+    assert "three_prime_UTR" in script_text
+    assert "tree_domain_motif_genestructure_full_length.pdf" in script_text
     assert "aplot::insert_right" in script_text
     assert "Motif Analysis" in script_text
     assert "Domain Analysis" in script_text

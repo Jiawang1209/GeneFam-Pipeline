@@ -24,6 +24,7 @@ PLOT_SCRIPT = REPO_ROOT / "scripts/plot_domain_motif_genestructure.R"
 MOTIF_FIELDS = ["gene_id", "motif_id", "start", "end", "width", "pvalue", "sequence"]
 DOMAIN_FIELDS = ["species_id", "gene_id", "domain_id", "start", "end", "domain_coverage", "evalue", "bitscore"]
 STRUCTURE_FIELDS = ["species_id", "gene_id", "feature", "start", "end", "strand", "seqid"]
+LENGTH_FIELDS = ["gene_id", "species_id", "protein_length"]
 COMMAND_FIELDS = ["step", "tool", "command", "stdout", "stderr", "status"]
 
 
@@ -104,7 +105,7 @@ def write_clean_fasta(input_fasta: Path, output_fasta: Path) -> list[dict[str, s
     with output_fasta.open("w", encoding="utf-8") as out:
         for original_id, sequence in fasta_records(input_fasta):
             species_id, gene_id = split_member_id(original_id)
-            rows.append({"original_id": original_id, "species_id": species_id, "gene_id": gene_id})
+            rows.append({"original_id": original_id, "species_id": species_id, "gene_id": gene_id, "protein_length": str(len(sequence))})
             out.write(f">{gene_id}\n{sequence}\n")
     return rows
 
@@ -256,6 +257,7 @@ def normalize_gene_id(value: str) -> str:
 
 def parse_gff_gene_structures(gff_path: Path, species_id: str, allowed_genes: set[str]) -> list[dict[str, str]]:
     gene_ids: dict[str, str] = {}
+    gene_bounds: dict[str, tuple[int, int, str, str]] = {}
     transcript_to_gene: dict[str, str] = {}
     feature_rows: list[dict[str, str]] = []
     with gff_path.open("r", encoding="utf-8") as handle:
@@ -273,6 +275,8 @@ def parse_gff_gene_structures(gff_path: Path, species_id: str, allowed_genes: se
             if feature == "gene":
                 gene = normalize_gene_id(name or feature_id)
                 gene_ids[feature_id] = gene
+                if gene in allowed_genes:
+                    gene_bounds[gene] = (int(start), int(end), strand, seqid)
             elif feature in {"mRNA", "transcript"}:
                 gene = normalize_gene_id(attrs.get("Parent", "") or name or feature_id)
                 if gene not in allowed_genes and name:
@@ -285,7 +289,7 @@ def parse_gff_gene_structures(gff_path: Path, species_id: str, allowed_genes: se
                         {
                             "species_id": species_id,
                             "gene_id": gene,
-                            "feature": "UTR" if "UTR" in feature else feature,
+                            "feature": feature,
                             "start": start,
                             "end": end,
                             "strand": strand,
@@ -298,15 +302,29 @@ def parse_gff_gene_structures(gff_path: Path, species_id: str, allowed_genes: se
         by_gene.setdefault(row["gene_id"], []).append(row)
     scaled: list[dict[str, str]] = []
     for gene_id, rows in by_gene.items():
-        starts = [int(row["start"]) for row in rows]
-        ends = [int(row["end"]) for row in rows]
-        strand = rows[0]["strand"]
+        if gene_id in gene_bounds:
+            gene_start, gene_end, strand, seqid = gene_bounds[gene_id]
+        else:
+            starts = [int(row["start"]) for row in rows]
+            ends = [int(row["end"]) for row in rows]
+            gene_start, gene_end, strand, seqid = min(starts), max(ends), rows[0]["strand"], rows[0]["seqid"]
+        gene_length = gene_end - gene_start
+        gene_row = {
+            "species_id": species_id,
+            "gene_id": gene_id,
+            "feature": "gene",
+            "start": "0",
+            "end": str(gene_length),
+            "strand": strand,
+            "seqid": seqid,
+        }
+        scaled.append(gene_row)
         if strand == "-":
-            anchor = max(ends)
+            anchor = gene_end
             for row in rows:
                 scaled.append({**row, "start": str(anchor - int(row["end"])), "end": str(anchor - int(row["start"]))})
         else:
-            anchor = min(starts)
+            anchor = gene_start
             for row in rows:
                 scaled.append({**row, "start": str(int(row["start"]) - anchor), "end": str(int(row["end"]) - anchor)})
     return scaled
@@ -383,6 +401,7 @@ def run_module(**kwargs) -> Path:
     species_by_gene = {row["gene_id"]: row["species_id"] for row in clean_rows}
     allowed_genes = set(species_by_gene)
 
+    length_rows = [{"gene_id": row["gene_id"], "species_id": row["species_id"], "protein_length": row["protein_length"]} for row in clean_rows]
     commands.append(run_meme(clean_fasta, meme_dir, kwargs["meme_executable"], kwargs["nmotifs"], kwargs["minw"], kwargs["maxw"], logs_dir))
     motif_rows = [row for row in parse_meme_locations(meme_dir) if row["gene_id"] in allowed_genes]
     domain_rows = normalize_domain_rows(read_tsv(kwargs["domains"]), allowed_genes)
@@ -391,9 +410,11 @@ def run_module(**kwargs) -> Path:
     motif_path = tables_dir / "motif_locations.tsv"
     domain_path = tables_dir / "domain_locations.tsv"
     structure_path = tables_dir / "gene_structure_tracks.tsv"
+    length_path = tables_dir / "sequence_lengths.tsv"
     write_tsv(motif_rows, motif_path, MOTIF_FIELDS)
     write_tsv(domain_rows, domain_path, DOMAIN_FIELDS)
     write_tsv(structure_rows, structure_path, STRUCTURE_FIELDS)
+    write_tsv(length_rows, length_path, LENGTH_FIELDS)
 
     commands.append(run_plot(kwargs["treefile"], kwargs["label_map"], motif_path, domain_path, structure_path, outdir, kwargs["r_bin"], logs_dir))
     write_tsv(commands, tables_dir / "domain_motif_genestructure_commands.tsv", COMMAND_FIELDS)
@@ -407,7 +428,9 @@ def run_module(**kwargs) -> Path:
         f"- Motif locations: `{motif_path}` ({len(motif_rows)} rows)",
         f"- Domain locations: `{domain_path}` ({len(domain_rows)} rows)",
         f"- Gene structure tracks: `{structure_path}` ({len(structure_rows)} rows)",
+        f"- Sequence lengths: `{length_path}` ({len(length_rows)} rows)",
         f"- Composite plot: `{outdir / 'plots/tree_domain_motif_genestructure.pdf'}`",
+        f"- Full-length composite plot: `{outdir / 'plots/tree_domain_motif_genestructure_full_length.pdf'}`",
         f"- MEME command: `{commands[0]['command']}`",
         f"- Plot command: `{commands[1]['command']}`",
     ]
