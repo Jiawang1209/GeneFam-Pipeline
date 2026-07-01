@@ -34,6 +34,41 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-01 10:09 - Refine species property plot axis labels
+
+Context:
+- User approved the restored beeswarm-style protein-property plot and requested italic species names.
+- User also requested y-axis species labels only on the left side of the faceted plot.
+
+Decisions:
+- Keep the restored `ggbeeswarm::geom_quasirandom` point style unchanged.
+- Use `facet_wrap(scales = "free_x")` so each property keeps an independent x scale while the shared species y axis is drawn only on the left.
+- Render y-axis species names in italic.
+
+Added:
+- none
+
+Modified:
+- `scripts/plot_gene_family_info.R`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_gene_family_info_smoke.py tests/test_run_genefamily_info_module.py -q` passed with 2 tests.
+- Real 05 plot rerun passed:
+  `python bin/genefam/run_genefamily_info_module.py --config projects/GDSL_2026/project.yaml --plot`
+- Visually inspected `projects/GDSL_2026/results/05_genefamily_info/plots/protein_properties_by_species.png`; species labels are italic and only shown on the left facet axis.
+
+Commit:
+- hash: c0191fd
+- message: fix: refine protein property plot labels
+- files: 05 protein-property plot axis label refinement
+
+Next:
+- Continue using Reference visual style as the first priority for 05 plot polish.
+
 ## 2026-07-01 10:04 - Restore beeswarm property plot style
 
 Context:
