@@ -34,6 +34,41 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-01 10:24 - Increase protein property plot axis text
+
+Context:
+- User said the protein-property plot details were good but the axis text was still too small.
+
+Decisions:
+- Keep the adaptive layout and approved beeswarm style unchanged.
+- Increase adaptive y-axis species label size and x-axis tick label size.
+- For the current 12-species GDSL plot, the automatic y-axis text size increases from 7.92 to 9.24 and x-axis text from 9 to 10.
+
+Added:
+- none
+
+Modified:
+- `scripts/plot_gene_family_info.R`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_gene_family_info_smoke.py tests/test_run_genefamily_info_module.py -q` passed with 2 tests.
+- Real 05 plot rerun passed:
+  `python bin/genefam/run_genefamily_info_module.py --config projects/GDSL_2026/project.yaml --plot`
+- Real layout metadata now records y-axis text size 9.24 and x-axis text size 10 for 12 plotted species.
+- Visually inspected `projects/GDSL_2026/results/05_genefamily_info/plots/protein_properties_by_species.png`; axis labels are clearer without overlap.
+
+Commit:
+- hash: c1e995d
+- message: fix: increase protein property plot axis text
+- files: increase 05 protein-property plot axis text
+
+Next:
+- Continue final figure polish only if additional typography issues appear on larger species sets.
+
 ## 2026-07-01 10:20 - Add adaptive protein property plot layout
 
 Context:
