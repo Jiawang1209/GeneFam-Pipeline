@@ -68,8 +68,10 @@ def write_fake_tools(bin_dir: Path) -> None:
         "import sys\n"
         "from pathlib import Path\n"
         "out = Path(sys.argv[sys.argv.index('-out') + 1])\n"
+        "alignment = Path(sys.argv[-1])\n"
+        "labels = [line[1:].strip().split()[0] for line in alignment.read_text(encoding='utf-8').splitlines() if line.startswith('>')]\n"
         "out.parent.mkdir(parents=True, exist_ok=True)\n"
-        "out.write_text('(Species_a|GeneA:0.1,(Species_b|GeneB:0.2,Species_c|GeneC:0.3)0.9:0.4);\\n', encoding='utf-8')\n"
+        "out.write_text(f'({labels[0]}:0.1,({labels[1]}:0.2,{labels[2]}:0.3)0.9:0.4);\\n', encoding='utf-8')\n"
         "sys.stderr.write('fake fasttree\\n')\n",
         encoding="utf-8",
     )
@@ -113,9 +115,15 @@ def test_run_phylogeny_module_builds_alignment_tree_and_manifests(tmp_path):
     outdir = tmp_path / "projects/GDSL_2026/results/06_phylogeny"
     assert (outdir / "alignment/GDSL.mafft.aln.faa").exists()
     assert (outdir / "phylogeny/GDSL.fasttree.treefile").exists()
+    assert (outdir / "inputs/GDSL.phylogeny_input.fa").exists()
+    assert (outdir / "tables/phylogeny_label_map.tsv").exists()
+    tree_text = (outdir / "phylogeny/GDSL.fasttree.treefile").read_text(encoding="utf-8")
+    assert "Species_a|" not in tree_text
+    assert "GeneA" in tree_text
     alignment_manifest = read_tsv(outdir / "tables/alignment_manifest.tsv")
     assert alignment_manifest[0]["aligner"] == "mafft"
     assert alignment_manifest[0]["sequence_count"] == "3"
+    assert alignment_manifest[0]["input_fasta"].endswith("inputs/GDSL.phylogeny_input.fa")
     assert alignment_manifest[0]["raw_alignment"].endswith("alignment/GDSL.mafft.aln.faa")
     phylogeny_manifest = read_tsv(outdir / "tables/phylogeny_manifest.tsv")
     assert phylogeny_manifest[0]["tree_builder"] == "fasttree"
@@ -136,6 +144,10 @@ def test_run_phylogeny_module_builds_alignment_tree_and_manifests(tmp_path):
     assert (outdir / "plots/tree_subfamily.png").exists()
     assert (outdir / "plots/tree_subfamily_species_stats.pdf").exists()
     assert (outdir / "plots/tree_subfamily_species_stats.png").exists()
+    label_map = read_tsv(outdir / "tables/phylogeny_label_map.tsv")
+    assert label_map[0]["original_id"] == "Species_a|GeneA"
+    assert label_map[0]["tree_label"] == "GeneA"
+    assert label_map[0]["species_id"] == "Species_a"
 
 
 def test_plot_tree_subfamilies_r_script_assigns_groups_and_stats(tmp_path):
@@ -145,13 +157,25 @@ def test_plot_tree_subfamilies_r_script_assigns_groups_and_stats(tmp_path):
     assert "geom_strip" in script_text
     assert "geom_tippoint" in script_text
     assert "geom_nodepoint" in script_text
+    assert "ggplot2::aes(label = gene_id, color = subfamily)" in script_text
+    assert "label_map_file" in script_text
     assert "ggplot2::ggplot" in script_text
     assert "strip_offset <- 1.2" in script_text
     assert "tip_label_offset <- 0.35" in script_text
     tree = tmp_path / "tree.nwk"
     tree.write_text(
-        "((Arabidopsis_thaliana|AT1G14410:0.1,Arabidopsis_thaliana|AT1G71260:0.1)0.9:0.2,"
-        "(Oryza_sativa|LOC_Os02g06370:0.1,(Zea_mays|Zm00001:0.1,Zea_mays|Zm00002:0.1)0.8:0.1)0.9:0.2);\n",
+        "((AT1G14410:0.1,AT1G71260:0.1)0.9:0.2,"
+        "(LOC_Os02g06370:0.1,(Zm00001:0.1,Zm00002:0.1)0.8:0.1)0.9:0.2);\n",
+        encoding="utf-8",
+    )
+    label_map = tmp_path / "label_map.tsv"
+    label_map.write_text(
+        "original_id\ttree_label\tgene_id\tspecies_id\n"
+        "Arabidopsis_thaliana|AT1G14410\tAT1G14410\tAT1G14410\tArabidopsis_thaliana\n"
+        "Arabidopsis_thaliana|AT1G71260\tAT1G71260\tAT1G71260\tArabidopsis_thaliana\n"
+        "Oryza_sativa|LOC_Os02g06370\tLOC_Os02g06370\tLOC_Os02g06370\tOryza_sativa\n"
+        "Zea_mays|Zm00001\tZm00001\tZm00001\tZea_mays\n"
+        "Zea_mays|Zm00002\tZm00002\tZm00002\tZea_mays\n",
         encoding="utf-8",
     )
     outdir = tmp_path / "subfamily"
@@ -169,6 +193,7 @@ def test_plot_tree_subfamilies_r_script_assigns_groups_and_stats(tmp_path):
             "Whirly",
             "2",
             "4",
+            str(label_map),
         ],
         check=False,
         capture_output=True,

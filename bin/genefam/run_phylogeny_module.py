@@ -28,6 +28,7 @@ ALIGNMENT_FIELDS = ["family_name", "aligner", "sequence_count", "input_fasta", "
 PHYLOGENY_FIELDS = ["family_name", "tree_builder", "alignment", "treefile", "support_file"]
 COMMAND_FIELDS = ["step", "tool", "command", "stdout", "stderr", "status"]
 TREE_SUBFAMILY_SCRIPT = REPO_ROOT / "scripts/plot_tree_subfamilies.R"
+LABEL_MAP_FIELDS = ["original_id", "tree_label", "gene_id", "species_id"]
 
 
 def load_project_config(path: Path | None) -> dict:
@@ -95,6 +96,41 @@ def resolve_tree_executable(tree_builder: str) -> str:
 
 def shell_join(command: list[str]) -> str:
     return " ".join(shlex.quote(part) for part in command)
+
+
+def split_member_id(identifier: str) -> tuple[str, str]:
+    clean = identifier.split()[0]
+    if "|" in clean:
+        species_id, gene_id = clean.split("|", 1)
+        return species_id, gene_id
+    return "Unknown", clean
+
+
+def prepare_phylogeny_fasta(input_fasta: Path, output_fasta: Path, label_map: Path) -> Path:
+    output_fasta.parent.mkdir(parents=True, exist_ok=True)
+    label_map.parent.mkdir(parents=True, exist_ok=True)
+    seen: dict[str, int] = {}
+    rows: list[dict[str, str]] = []
+    with input_fasta.open("r", encoding="utf-8") as source, output_fasta.open("w", encoding="utf-8") as fasta_out:
+        for line in source:
+            if line.startswith(">"):
+                original_id = line[1:].strip().split()[0]
+                species_id, gene_id = split_member_id(original_id)
+                seen[gene_id] = seen.get(gene_id, 0) + 1
+                tree_label = gene_id if seen[gene_id] == 1 else f"{gene_id}_dup{seen[gene_id]}"
+                rows.append(
+                    {
+                        "original_id": original_id,
+                        "tree_label": tree_label,
+                        "gene_id": gene_id,
+                        "species_id": species_id,
+                    }
+                )
+                fasta_out.write(f">{tree_label}\n")
+            else:
+                fasta_out.write(line)
+    write_tsv(rows, label_map, LABEL_MAP_FIELDS)
+    return output_fasta
 
 
 def run_mafft(input_fasta: Path, output_alignment: Path, options: list[str], log_dir: Path) -> dict[str, str]:
@@ -199,6 +235,7 @@ def run_tree_subfamilies(
     r_bin: str,
     min_size: int,
     max_groups: int,
+    label_map: Path,
     log_dir: Path,
 ) -> dict[str, str]:
     executable = ensure_command(r_bin)
@@ -216,6 +253,7 @@ def run_tree_subfamilies(
             family_name,
             str(min_size),
             str(max_groups),
+            str(label_map),
         ]
     else:
         command = [
@@ -226,6 +264,7 @@ def run_tree_subfamilies(
             family_name,
             str(min_size),
             str(max_groups),
+            str(label_map),
         ]
     stdout_path = log_dir / "tree_subfamily.stdout.log"
     stderr_path = log_dir / "tree_subfamily.stderr.log"
@@ -295,16 +334,20 @@ def run_module(**kwargs) -> Path:
     alignment_dir = outdir / "alignment"
     phylogeny_dir = outdir / "phylogeny"
     logs_dir = outdir / "logs"
+    inputs_dir = outdir / "inputs"
     input_fasta: Path = kwargs["input_fasta"]
     if not input_fasta.exists():
         raise ValueError(f"Input FASTA does not exist: {input_fasta}")
+    phylogeny_input = inputs_dir / f"{kwargs['family_name']}.phylogeny_input.fa"
+    label_map = tables_dir / "phylogeny_label_map.tsv"
+    prepare_phylogeny_fasta(input_fasta, phylogeny_input, label_map)
 
-    alignment_rows = prepare_alignment_manifest(kwargs["family_name"], input_fasta, alignment_dir, kwargs["aligner"])
+    alignment_rows = prepare_alignment_manifest(kwargs["family_name"], phylogeny_input, alignment_dir, kwargs["aligner"])
     raw_alignment = Path(alignment_rows[0]["raw_alignment"])
     if kwargs["aligner"] == "mafft":
-        alignment_command = run_mafft(input_fasta, raw_alignment, kwargs["aligner_options"], logs_dir)
+        alignment_command = run_mafft(phylogeny_input, raw_alignment, kwargs["aligner_options"], logs_dir)
     else:
-        alignment_command = run_muscle(input_fasta, raw_alignment, kwargs["aligner_options"], logs_dir)
+        alignment_command = run_muscle(phylogeny_input, raw_alignment, kwargs["aligner_options"], logs_dir)
     alignment_rows[0]["trimmed_alignment"] = ""
 
     phylogeny_rows = prepare_phylogeny_manifest(alignment_rows, phylogeny_dir, kwargs["tree_builder"])
@@ -338,6 +381,7 @@ def run_module(**kwargs) -> Path:
             kwargs["subfamily_r_bin"],
             kwargs["subfamily_min_size"],
             kwargs["subfamily_max_groups"],
+            label_map,
             logs_dir,
         )
         command_rows.append(subfamily_command)
@@ -349,6 +393,8 @@ def run_module(**kwargs) -> Path:
         "# 06_phylogeny Summary",
         "",
         f"- Input FASTA: `{input_fasta}`",
+        f"- Phylogeny FASTA: `{phylogeny_input}`",
+        f"- Phylogeny label map: `{label_map}`",
         f"- Family: `{kwargs['family_name']}`",
         f"- Sequence count: {alignment_rows[0]['sequence_count']}",
         f"- Aligner: `{kwargs['aligner']}`",

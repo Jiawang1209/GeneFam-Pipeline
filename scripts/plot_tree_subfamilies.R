@@ -1,6 +1,6 @@
 args <- commandArgs(trailingOnly = TRUE)
-if (length(args) != 5) {
-  stop("Usage: R --vanilla --slave -f plot_tree_subfamilies.R --args <treefile> <outdir> <family_name> <min_size> <max_groups>")
+if (length(args) < 5 || length(args) > 6) {
+  stop("Usage: R --vanilla --slave -f plot_tree_subfamilies.R --args <treefile> <outdir> <family_name> <min_size> <max_groups> [label_map.tsv]")
 }
 
 treefile <- args[[1]]
@@ -14,6 +14,7 @@ if (is.na(min_size) || min_size < 1) {
 if (is.na(max_groups) || max_groups < 1) {
   max_groups <- 8
 }
+label_map_file <- if (length(args) >= 6) args[[6]] else ""
 
 required_packages <- c("ape", "treeio", "ggtree", "tidytree", "ggplot2", "ggnewscale", "aplot")
 missing_packages <- required_packages[!vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)]
@@ -40,21 +41,6 @@ if (is.null(tree_ape$tip.label) || length(tree_ape$tip.label) == 0) {
 
 tip_labels <- tree_ape$tip.label
 n_tips <- length(tip_labels)
-
-parse_species <- function(label) {
-  if (grepl("\\|", label)) {
-    return(strsplit(label, "\\|")[[1]][1])
-  }
-  "Unknown"
-}
-
-parse_gene <- function(label) {
-  if (grepl("\\|", label)) {
-    parts <- strsplit(label, "\\|")[[1]]
-    return(parts[length(parts)])
-  }
-  label
-}
 
 choose_group_count <- function(n, min_size, max_groups) {
   if (n < min_size * 2) {
@@ -90,12 +76,23 @@ assign_subfamilies <- function(tree, min_size, max_groups) {
 subfamilies <- assign_subfamilies(tree_ape, min_size, max_groups)
 assignments <- data.frame(
   tree_label = tip_labels,
-  gene_id = vapply(tip_labels, parse_gene, character(1)),
-  species_id = vapply(tip_labels, parse_species, character(1)),
+  gene_id = tip_labels,
+  species_id = "Unknown",
   subfamily = subfamilies,
   tree_order = seq_along(tip_labels),
   stringsAsFactors = FALSE
 )
+if (nzchar(label_map_file) && file.exists(label_map_file)) {
+  label_map <- read.delim(label_map_file, check.names = FALSE, stringsAsFactors = FALSE)
+  required_map_cols <- c("tree_label", "gene_id", "species_id")
+  missing_map_cols <- setdiff(required_map_cols, names(label_map))
+  if (length(missing_map_cols) > 0) {
+    stop(paste("Label map missing required columns:", paste(missing_map_cols, collapse = ", ")))
+  }
+  matched <- match(assignments$tree_label, label_map$tree_label)
+  assignments$gene_id <- ifelse(is.na(matched), assignments$tree_label, label_map$gene_id[matched])
+  assignments$species_id <- ifelse(is.na(matched), "Unknown", label_map$species_id[matched])
+}
 
 stats <- as.data.frame(table(assignments$species_id, assignments$subfamily), stringsAsFactors = FALSE)
 names(stats) <- c("species_id", "subfamily", "count")
@@ -184,7 +181,7 @@ plot_tree <- function() {
     ggnewscale::new_scale_fill() +
     ggtree::geom_tippoint(ggplot2::aes(fill = species_id), shape = 21, size = 2.1, stroke = 0.25) +
     ggplot2::scale_fill_manual(values = species_cols, name = "Species") +
-    ggtree::geom_tiplab(ggplot2::aes(color = subfamily), size = 2.2, offset = tip_label_offset, show.legend = FALSE) +
+    ggtree::geom_tiplab(ggplot2::aes(label = gene_id, color = subfamily), size = 2.2, offset = tip_label_offset, show.legend = FALSE) +
     ggplot2::scale_color_manual(values = subfamily_cols, name = "Subfamily") +
     ggtree::geom_tree(size = 0.12, color = "#969696") +
     ggplot2::theme(
