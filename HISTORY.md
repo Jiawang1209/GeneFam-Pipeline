@@ -18289,6 +18289,61 @@ Commit:
 
 Next:
 - Continue final MVP handoff polish; Docker/Apptainer runtime execution remains the intentionally deferred final packaging stage.
+## 2026-07-01 - Add automatic phylogeny subfamily visualization
+
+Timestamp:
+- 2026-07-01 16:35 CST
+
+Context:
+- The 06 phylogeny module already generated MUSCLE/MAFFT alignments and FastTree/IQ-TREE tree files.
+- The Reference script `Reference/Long_Weixiong_20240323_1_GDSL/R/6.tree.R` used manually supplied clade/group information for tree annotation and downstream subfamily statistics.
+- The new requirement is to infer reasonable subfamilies directly from the tree topology without requiring an external group table, then visualize the grouped tree and summarize subfamily copy numbers by species.
+
+Decisions:
+- Add automatic topology-based subfamily classification to `06_phylogeny`.
+- Use R package `ape` plus base R plotting for a robust default visualization path that does not require users to preinstall or configure external group files.
+- Keep the method configurable under `phylogeny.subfamily` with `enabled`, `method`, `min_size`, `max_groups`, and `r_bin`.
+- Keep the first implementation conservative: `auto_topology` cuts the tree using pairwise phylogenetic distances, chooses a bounded group count, and reduces the number of groups if a cut would create groups smaller than `min_size`.
+
+Added:
+- `scripts/plot_tree_subfamilies.R`
+- `projects/Whirly_2026/project.yaml` subfamily configuration
+- Tests for 06 subfamily command integration and the R plotting script
+
+Modified:
+- `bin/genefam/run_phylogeny_module.py`
+- `tests/test_run_phylogeny_module.py`
+- `projects/Whirly_2026/project.yaml`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Outputs:
+- `tables/tree_subfamily_assignments.tsv`
+- `tables/tree_subfamily_stats.tsv`
+- `plots/tree_subfamily.pdf`
+- `plots/tree_subfamily.png`
+- `plots/tree_subfamily_species_stats.pdf`
+- `plots/tree_subfamily_species_stats.png`
+- Updated `report/phylogeny_summary.md` entries for subfamily method, parameters, tables, plots, and reproducibility command.
+
+Verification:
+- `python -m pytest tests/test_run_phylogeny_module.py -q` first failed because `run_phylogeny_module.py` did not yet write subfamily summary entries and `scripts/plot_tree_subfamilies.R` did not exist.
+- `python -m pytest tests/test_run_phylogeny_module.py -q` passed after implementation with 2 tests.
+- `python -m pytest tests/test_run_phylogeny_module.py tests/test_run_tree_feature_smoke.py tests/test_reference_plotting_reuse.py -q` passed with 4 tests.
+- `conda run -n GeneFamilyFlow python bin/genefam/run_phylogeny_module.py --config projects/Whirly_2026/project.yaml` completed successfully.
+- Whirly real-run verification reported `FAILED_CHECKS=NONE` for subfamily assignment table, statistics table, PDF/PNG tree plots, PDF/PNG species-statistics plots, and phylogeny report.
+- Whirly real-run assignment table contains 36 members; the species-by-subfamily statistics table contains 72 rows.
+
+Commit:
+- hash: a97114df1f1df24217fac72e85cba8e1a0759bde
+- message: feat: add phylogeny subfamily visualization
+- files: `run_phylogeny_module.py`, `plot_tree_subfamilies.R`, Whirly project config, phylogeny module tests
+
+Next:
+- Review whether the circular tree should later be upgraded from base `ape` plotting to a full `ggtree`/`geom_hilight` implementation for publication figures once the grouping behavior is accepted.
+
 ## 2026-07-01 - Switch smoke-test project from GDSL to Whirly
 
 Timestamp:
