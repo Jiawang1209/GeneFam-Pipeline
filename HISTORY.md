@@ -34,6 +34,46 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-01 10:20 - Add adaptive protein property plot layout
+
+Context:
+- User asked whether the protein-property visualization can become smarter when the number of species changes.
+
+Decisions:
+- Make `protein_properties_by_species.pdf/png` adapt to the number of species actually plotted.
+- Compute plot width, height, point size, y-axis species label size, x-axis label size, strip-label size, and facet spacing from `n_species`.
+- Keep the current 12-species GDSL plot visually close to the previously approved compact layout.
+- Write `protein_properties_by_species.layout.tsv` so each run records the automatically selected plotting parameters.
+
+Added:
+- `protein_properties_by_species.layout.tsv`
+- Smoke-test assertions for adaptive layout metadata.
+
+Modified:
+- `scripts/plot_gene_family_info.R`
+- `bin/genefam/run_gene_family_info_smoke.py`
+- `tests/test_run_gene_family_info_smoke.py`
+- `docs/module_usage.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_gene_family_info_smoke.py tests/test_run_genefamily_info_module.py -q` passed with 2 tests.
+- Real 05 plot rerun passed:
+  `python bin/genefam/run_genefamily_info_module.py --config projects/GDSL_2026/project.yaml --plot`
+- Real layout metadata for GDSL_2026 recorded 12 plotted species with width 13.92 and height 7.16.
+- Visually inspected `projects/GDSL_2026/results/05_genefamily_info/plots/protein_properties_by_species.png`; it remains close to the approved compact version.
+
+Commit:
+- hash: 3a6e6b0
+- message: feat: adapt protein property plot layout
+- files: adaptive 05 protein-property plot layout
+
+Next:
+- If the workflow later supports very large species sets in one figure, consider adding optional pagination or clade-split plotting.
+
 ## 2026-07-01 10:14 - Compact protein property plot layout
 
 Context:
