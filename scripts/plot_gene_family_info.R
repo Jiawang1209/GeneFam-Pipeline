@@ -227,8 +227,7 @@ draw_species_property_plot <- function() {
       shape = 21,
       size = 2.4,
       alpha = 0.7,
-      varwidth = TRUE,
-      orientation = "x"
+      varwidth = TRUE
     )
   } else {
     ggplot2::geom_jitter(
