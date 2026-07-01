@@ -77,12 +77,12 @@ Verification:
 - `plots/gene_family_info_summary.pdf` and `plots/gene_family_info_summary.png` were generated.
 
 Commit:
-- hash: not created in this session
-- message: none
+- hash: 628d20e
+- message: feat: add gene family info module
 - files: 05_genefamily_info runner, tests, project config, docs, history
 
 Next:
-- Commit `05_genefamily_info` as its own module-level commit.
+- Continue with the next module using the module-level test, history, and commit workflow.
 
 ## 2026-07-01 00:13 - Commit project modules through identification
 
