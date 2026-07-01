@@ -225,7 +225,7 @@ draw_species_property_plot <- function() {
     ggbeeswarm::geom_quasirandom(
       ggplot2::aes(x = Value, y = Species, fill = Species, group = Species),
       shape = 21,
-      size = 2.4,
+      size = 2.15,
       alpha = 0.7,
       varwidth = TRUE
     )
@@ -233,7 +233,7 @@ draw_species_property_plot <- function() {
     ggplot2::geom_jitter(
       ggplot2::aes(x = Value, y = Species, fill = Species, group = Species),
       shape = 21,
-      size = 2.2,
+      size = 2,
       alpha = 0.65,
       width = 0,
       height = 0.18
@@ -249,15 +249,17 @@ draw_species_property_plot <- function() {
     ggplot2::theme(
       panel.grid = ggplot2::element_blank(),
       axis.text = ggplot2::element_text(color = "#000000", size = 10),
+      axis.text.x = ggplot2::element_text(color = "#000000", size = 9),
       panel.border = ggplot2::element_rect(linewidth = 1),
-      strip.text = ggplot2::element_text(color = "#000000", size = 13),
+      strip.text = ggplot2::element_text(color = "#000000", size = 12),
       strip.background = ggplot2::element_rect(linewidth = 1),
       axis.text.y = ggplot2::element_text(color = "#000000", size = 8, face = "italic"),
       axis.ticks.y = ggplot2::element_line(color = "#000000"),
+      panel.spacing.x = grid::unit(0.9, "lines"),
       legend.position = "none"
     )
-  ggplot2::ggsave(file.path(outdir, "protein_properties_by_species.pdf"), plot = p_stat, height = 7.5, width = 17)
-  ggplot2::ggsave(file.path(outdir, "protein_properties_by_species.png"), plot = p_stat, height = 7.5, width = 17, dpi = 160)
+  ggplot2::ggsave(file.path(outdir, "protein_properties_by_species.pdf"), plot = p_stat, height = 7.2, width = 14)
+  ggplot2::ggsave(file.path(outdir, "protein_properties_by_species.png"), plot = p_stat, height = 7.2, width = 14, dpi = 160)
   TRUE
 }
 
