@@ -18,6 +18,7 @@ modules:
   genefamily_info: true
   phylogeny: true
   domain_motif_genestructure: true
+  jcvi: true
 
 hmm:
   hmm_dir: projects/Whirly_2026/config/hmm_profiles
@@ -94,3 +95,10 @@ domain_motif_genestructure:
   nmotifs: 10
   minw: 6
   maxw: 80
+
+jcvi:
+  python_bin: python
+  run: false
+  minspan: 30
+  figsize: 14x12
+  chrstyle: roundrect

@@ -34,6 +34,50 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-02 00:34 - Add 08_jcvi module
+
+Context:
+- User requested Reference-faithful development of `08_jcvi` before continuing later synteny/promoter/PPI/report modules.
+- Reference Step8 prepares JCVI BED/peptide inputs, runs pairwise JCVI ortholog/synteny commands, builds `seqids` and `layout`, and plots JCVI Ka/Ks when Ka/Ks tables are available.
+
+Decisions:
+- Add a dedicated project-level `08_jcvi` runner instead of relying on older generic synteny smoke scripts.
+- Keep `jcvi.run: false` in `projects/Whirly_2026/project.yaml` for now so real Whirly execution prepares inputs and command scripts without launching heavy JCVI jobs.
+- Make the module compatible with both `pep` and `protein` manifest column names.
+- Add a Reference-style `plot_jcvi_kaks.R` script using boxplot, quasirandom points, Ka/Ks=1 dashed line, and Ka/Ks metric facets.
+
+Added:
+- `bin/genefam/run_jcvi_module.py`
+- `scripts/plot_jcvi_kaks.R`
+- `tests/test_run_jcvi_module.py`
+- Real Whirly outputs under `projects/Whirly_2026/results/08_jcvi/`
+
+Modified:
+- `projects/Whirly_2026/project.yaml`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Red test first failed because `bin/genefam/run_jcvi_module.py` did not exist:
+  `python -m pytest tests/test_run_jcvi_module.py -q`
+- Second red test failed because `scripts/plot_jcvi_kaks.R` did not exist.
+- `python -m pytest tests/test_run_jcvi_module.py -q` passed with 2 tests.
+- `python -m pytest tests/test_run_jcvi_module.py tests/test_run_phylogeny_module.py tests/test_run_domain_motif_genestructure_module.py tests/test_reference_plotting_reuse.py -q` passed with 7 tests.
+- Real Whirly run completed:
+  `conda run -n GeneFamilyFlow python bin/genefam/run_jcvi_module.py --config projects/Whirly_2026/project.yaml`
+- Real Whirly `08_jcvi` produced 12 species BED/peptide input sets, 11 adjacent species pairs, 24 OK input-status rows, `inputs/seqids`, `inputs/layout`, `logs/jcvi_commands.sh`, and `report/jcvi_summary.md`.
+- `projects/Whirly_2026/results/08_jcvi/logs/jcvi_run_status.tsv` records `planned` with 23 prepared commands because `jcvi.run` is currently false.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: 08_jcvi runner, JCVI Ka/Ks plotting script, tests, Whirly config, Whirly 08 outputs
+
+Next:
+- Continue with `09_mcscanx`: MCScanX self input/run status, duplicate-pair tables, circlize Reference plot, and MCScanX Ka/Ks plot.
+
 ## 2026-07-02 00:30 - Plan Reference modules 08-12
 
 Context:
