@@ -34,6 +34,40 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-01 10:04 - Restore beeswarm property plot style
+
+Context:
+- User noticed that the protein-property beeswarm plot changed after the previous refinement.
+- The change was caused by forcing `ggbeeswarm::geom_quasirandom(orientation = "x")` only to suppress an informational message.
+
+Decisions:
+- Preserve the Reference-like beeswarm/quasirandom appearance over a cleaner R log.
+- Allow the harmless `ggbeeswarm` orientation inference message during plotting.
+
+Added:
+- none
+
+Modified:
+- `scripts/plot_gene_family_info.R`
+- `HISTORY.md`
+
+Deleted:
+- Removed the forced `orientation = "x"` argument from the quasirandom point layer.
+
+Verification:
+- `python -m pytest tests/test_run_gene_family_info_smoke.py tests/test_run_genefamily_info_module.py -q` passed with 2 tests.
+- Real 05 plot rerun passed:
+  `python bin/genefam/run_genefamily_info_module.py --config projects/GDSL_2026/project.yaml --plot`
+- Regenerated `plots/protein_properties_by_species.pdf` and `plots/protein_properties_by_species.png` with the original beeswarm-style point spread.
+
+Commit:
+- hash: ff9baf0
+- message: fix: restore gene family beeswarm plot style
+- files: restore 05 protein-property beeswarm plot style
+
+Next:
+- Keep visual fidelity to the Reference scripts as the priority when log cleanliness and plotting style conflict.
+
 ## 2026-07-01 09:59 - Refine 05_genefamily_info outputs and property plot
 
 Context:
