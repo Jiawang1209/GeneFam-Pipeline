@@ -17,6 +17,7 @@ modules:
   identification: true
   genefamily_info: true
   phylogeny: true
+  domain_motif_genestructure: true
 
 hmm:
   hmm_dir: projects/Whirly_2026/config/hmm_profiles
@@ -85,3 +86,11 @@ phylogeny:
       plot_height: 18
       legend_x: 0.54
       legend_y: 0.48
+
+domain_motif_genestructure:
+  family_name: Whirly
+  meme_executable: meme
+  r_bin: /usr/local/bin/R
+  nmotifs: 10
+  minw: 6
+  maxw: 80
