@@ -156,6 +156,8 @@ strip_df <- do.call(rbind, run_rows)
 
 tree_info <- assignments[, c("tree_label", "gene_id", "species_id", "subfamily")]
 names(tree_info)[1] <- "label"
+tip_label_offset <- 0.35
+strip_offset <- 1.2
 
 plot_tree <- function() {
   p <- ggtree::ggtree(
@@ -182,7 +184,7 @@ plot_tree <- function() {
     ggnewscale::new_scale_fill() +
     ggtree::geom_tippoint(ggplot2::aes(fill = species_id), shape = 21, size = 2.1, stroke = 0.25) +
     ggplot2::scale_fill_manual(values = species_cols, name = "Species") +
-    ggtree::geom_tiplab(ggplot2::aes(color = subfamily), size = 2.2, offset = 0.35, show.legend = FALSE) +
+    ggtree::geom_tiplab(ggplot2::aes(color = subfamily), size = 2.2, offset = tip_label_offset, show.legend = FALSE) +
     ggplot2::scale_color_manual(values = subfamily_cols, name = "Subfamily") +
     ggtree::geom_tree(size = 0.12, color = "#969696") +
     ggplot2::theme(
@@ -201,7 +203,7 @@ plot_tree <- function() {
         row$end,
         barsize = 1.6,
         color = subfamily_cols[[row$subfamily]],
-        offset = 0.1,
+        offset = strip_offset,
         label = row$subfamily,
         fontsize = 4,
         offset.text = 0.5,
@@ -210,7 +212,8 @@ plot_tree <- function() {
       )
     }
   }
-  p + ggplot2::ggtitle(paste0(family_name, " phylogeny with auto subfamilies"))
+  p + ggtree::xlim_tree(strip_offset + 1.4) +
+    ggplot2::ggtitle(paste0(family_name, " phylogeny with auto subfamilies"))
 }
 
 plot_bubble <- function() {
