@@ -1,10 +1,10 @@
 project:
-  name: GDSL_2026
-  root: projects/GDSL_2026
-  outdir: projects/GDSL_2026/results
+  name: Whirly_2026
+  root: projects/Whirly_2026
+  outdir: projects/Whirly_2026/results
 
 database:
-  species_clean_bank: projects/GDSL_2026/results/01_preprocess/species_clean_bank
+  species_clean_bank: projects/Whirly_2026/results/01_preprocess/species_clean_bank
 
 species:
   include: []
@@ -19,17 +19,17 @@ modules:
   phylogeny: true
 
 hmm:
-  hmm_dir: projects/GDSL_2026/config/hmm_profiles
+  hmm_dir: projects/Whirly_2026/config/hmm_profiles
   combine_rule: any
   evalue: 1.0e-10
   min_bitscore: 0.0
   min_domain_coverage: 0.0
   rebuild_hmm: true
-  family_name: GDSL
+  family_name: Whirly
 
 blastp:
   domain_terms:
-    - PF00657
+    - PF08536
   reference_sources: configs/03_blastp/reference_sources.tsv
   evalue: 1.0e-10
   num_threads: 10
@@ -39,7 +39,7 @@ identification:
   final_rule: intersection
   domain_method: hmmsearch
   domain_terms:
-    - PF00657
+    - PF08536
   domain_evalue: 1.0e-5
   pfam_scan_executable: pfam_scan.pl
   pfam_scan_dir: ""
@@ -49,7 +49,7 @@ genefamily_info:
   r_bin: /usr/local/bin/R
 
 phylogeny:
-  family_name: GDSL
+  family_name: Whirly
   aligner: muscle
   aligner_options:
     - -super5
