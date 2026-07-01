@@ -18799,3 +18799,69 @@ Commit:
 Next:
 - Later connect this Python module into the formal workflow runner/Nextflow branch when the remaining standalone modules settle.
 - Consider exposing composite plot sizing and panel widths in YAML if further publication-style tuning is needed.
+
+## 2026-07-01 22:27 - Add full-length domain/motif/gene-structure composite plot
+
+Context:
+- User clarified that the requested additional version should apply the full-length "gene backbone + feature rectangles" style to all three tracks: domain, motif, and gene structure.
+- The intent is to make sequence/gene lengths visually obvious while still showing domain, motif, UTR, and CDS positions.
+
+Decisions:
+- Keep the original `tree_domain_motif_genestructure.pdf/png` output unchanged.
+- Add a second version:
+  - `tree_domain_motif_genestructure_full_length.pdf`
+  - `tree_domain_motif_genestructure_full_length.png`
+- Draw domain and motif panels on protein full length using `sequence_lengths.tsv`.
+- Draw gene-structure panel on gene relative bp length using the true `gene` GFF3 feature when available.
+- Preserve distinct GFF3 feature types instead of collapsing UTRs:
+  - `gene`
+  - `five_prime_UTR`
+  - `three_prime_UTR`
+  - `exon`
+  - `CDS`
+
+Added:
+- `tables/sequence_lengths.tsv` in 07 results.
+- Full-length composite plot generation in `scripts/plot_domain_motif_genestructure.R`.
+- Tests for the second plot version, sequence-length table, and full GFF feature preservation.
+
+Modified:
+- `bin/genefam/run_domain_motif_genestructure_module.py`
+  - Records protein sequence lengths from cleaned family FASTA.
+  - Uses GFF3 `gene` feature boundaries for full gene backbone length.
+  - Keeps `five_prime_UTR` and `three_prime_UTR` separately.
+  - Reports the full-length composite plot in the module summary.
+- `scripts/plot_domain_motif_genestructure.R`
+  - Adds full-length domain/motif/gene-structure panels using `geom_segment()` and `geom_rect()`.
+  - Uses gray sequence/gene backbones, blue/pink UTR rectangles, and orange CDS rectangles.
+- `tests/test_run_domain_motif_genestructure_module.py`
+  - Verifies the second plot output and the additional sequence-length and structure-track fields.
+
+Deleted:
+- None.
+
+Outputs:
+- Real Whirly run produced:
+  - `projects/Whirly_2026/results/07_domain_motif_genestructure/tables/sequence_lengths.tsv`
+  - `projects/Whirly_2026/results/07_domain_motif_genestructure/plots/tree_domain_motif_genestructure_full_length.pdf`
+  - `projects/Whirly_2026/results/07_domain_motif_genestructure/plots/tree_domain_motif_genestructure_full_length.png`
+
+Verification:
+- `python -m pytest tests/test_run_domain_motif_genestructure_module.py -q` first failed because the second plot version and sequence-length table were not implemented.
+- `python -m pytest tests/test_run_domain_motif_genestructure_module.py -q` passed after implementation with 2 tests.
+- `conda run -n GeneFamilyFlow python bin/genefam/run_domain_motif_genestructure_module.py --config projects/Whirly_2026/project.yaml` completed successfully.
+- Real Whirly output table sizes:
+  - `motif_locations.tsv`: 234 rows plus header.
+  - `domain_locations.tsv`: 39 rows plus header.
+  - `gene_structure_tracks.tsv`: 393 rows plus header.
+  - `sequence_lengths.tsv`: 36 rows plus header.
+- Visual inspection confirmed that the full-length plot shows domain and motif on protein-length backbones and gene structure on gene-length backbones.
+- `python -m pytest tests/test_run_domain_motif_genestructure_module.py tests/test_run_phylogeny_module.py tests/test_reference_plotting_reuse.py -q` passed with 5 tests.
+
+Commit:
+- hash: 5cba9a3
+- message: feat: add full-length feature composite plot
+- files: `run_domain_motif_genestructure_module.py`, `plot_domain_motif_genestructure.R`, `test_run_domain_motif_genestructure_module.py`, `HISTORY.md`
+
+Next:
+- If the full-length version becomes preferred, make it the primary report figure while keeping the original arrow-track plot as an alternate view.
