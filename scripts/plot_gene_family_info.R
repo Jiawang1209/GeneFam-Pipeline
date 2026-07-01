@@ -243,7 +243,7 @@ draw_species_property_plot <- function() {
     ggplot2::geom_boxplot(ggplot2::aes(x = Value, y = Species, fill = Species), outlier.shape = NA, linewidth = 0.35) +
     point_layer +
     ggplot2::scale_fill_manual(values = fill_values) +
-    ggplot2::facet_wrap(~Kind, scales = "free", nrow = 1) +
+    ggplot2::facet_wrap(~Kind, scales = "free_x", nrow = 1) +
     ggplot2::labs(x = "", y = "") +
     ggplot2::theme_bw() +
     ggplot2::theme(
@@ -252,7 +252,7 @@ draw_species_property_plot <- function() {
       panel.border = ggplot2::element_rect(linewidth = 1),
       strip.text = ggplot2::element_text(color = "#000000", size = 13),
       strip.background = ggplot2::element_rect(linewidth = 1),
-      axis.text.y = ggplot2::element_text(color = "#000000", size = 8),
+      axis.text.y = ggplot2::element_text(color = "#000000", size = 8, face = "italic"),
       axis.ticks.y = ggplot2::element_line(color = "#000000"),
       legend.position = "none"
     )
