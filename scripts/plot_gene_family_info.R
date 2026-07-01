@@ -225,8 +225,8 @@ draw_species_property_plot <- function() {
   plot_height <- min(26, max(4.8, 3.8 + 0.28 * n_species))
   point_size <- max(0.9, min(2.15, 2.45 - 0.025 * n_species))
   jitter_size <- max(0.85, point_size - 0.15)
-  y_text_size <- max(4.8, min(8, 9 - 0.09 * n_species))
-  x_text_size <- if (n_species > 30) 8 else 9
+  y_text_size <- max(5.5, min(9.5, 10.2 - 0.08 * n_species))
+  x_text_size <- if (n_species > 30) 9 else 10
   strip_text_size <- if (n_species > 30) 11 else 12
   panel_spacing <- if (n_species > 30) 0.55 else 0.9
   fill_values <- stats::setNames(rep(palette, length.out = length(species_values)), species_values)
