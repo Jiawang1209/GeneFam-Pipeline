@@ -15,35 +15,41 @@ if (is.na(max_groups) || max_groups < 1) {
   max_groups <- 8
 }
 
-if (!requireNamespace("ape", quietly = TRUE)) {
-  stop("R package 'ape' is required for tree subfamily plotting")
+required_packages <- c("ape", "treeio", "ggtree", "tidytree", "ggplot2", "ggnewscale", "aplot")
+missing_packages <- required_packages[!vapply(required_packages, requireNamespace, logical(1), quietly = TRUE)]
+if (length(missing_packages) > 0) {
+  stop(paste("Missing required R packages:", paste(missing_packages, collapse = ", ")))
 }
+suppressPackageStartupMessages({
+  library(ggtree)
+  library(ggplot2)
+  library(ggnewscale)
+  library(aplot)
+})
 
 tables_dir <- file.path(outdir, "tables")
 plots_dir <- file.path(outdir, "plots")
 dir.create(tables_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(plots_dir, recursive = TRUE, showWarnings = FALSE)
 
-tree <- ape::read.tree(treefile)
-if (is.null(tree$tip.label) || length(tree$tip.label) == 0) {
+tree_ape <- ape::read.tree(treefile)
+tree_plot <- treeio::read.newick(treefile, node.label = "support")
+if (is.null(tree_ape$tip.label) || length(tree_ape$tip.label) == 0) {
   stop("Tree has no tip labels")
 }
 
-tip_labels <- tree$tip.label
+tip_labels <- tree_ape$tip.label
 n_tips <- length(tip_labels)
 
 parse_species <- function(label) {
-  if (grepl("\\|", label, fixed = FALSE)) {
+  if (grepl("\\|", label)) {
     return(strsplit(label, "\\|")[[1]][1])
-  }
-  if (grepl("_", label, fixed = TRUE)) {
-    return(sub("\\|.*$", "", label))
   }
   "Unknown"
 }
 
 parse_gene <- function(label) {
-  if (grepl("\\|", label, fixed = FALSE)) {
+  if (grepl("\\|", label)) {
     parts <- strsplit(label, "\\|")[[1]]
     return(parts[length(parts)])
   }
@@ -68,21 +74,20 @@ assign_subfamilies <- function(tree, min_size, max_groups) {
   }
 
   distances <- ape::cophenetic.phylo(tree)
-  hc <- hclust(as.dist(distances), method = "average")
+  hc <- stats::hclust(stats::as.dist(distances), method = "average")
   k <- target_k
-  groups <- cutree(hc, k = k)
+  groups <- stats::cutree(hc, k = k)
   while (k > 1 && min(table(groups)) < min_size) {
     k <- k - 1
-    groups <- cutree(hc, k = k)
+    groups <- stats::cutree(hc, k = k)
   }
 
-  tree_order <- tree$tip.label
-  group_order <- unique(groups[match(tree_order, names(groups))])
-  group_labels <- setNames(paste0("C", seq_along(group_order)), group_order)
+  group_order <- unique(groups[tree$tip.label])
+  group_labels <- stats::setNames(paste0("C", seq_along(group_order)), group_order)
   unname(group_labels[as.character(groups[tree$tip.label])])
 }
 
-subfamilies <- assign_subfamilies(tree, min_size, max_groups)
+subfamilies <- assign_subfamilies(tree_ape, min_size, max_groups)
 assignments <- data.frame(
   tree_label = tip_labels,
   gene_id = vapply(tip_labels, parse_gene, character(1)),
@@ -91,12 +96,8 @@ assignments <- data.frame(
   tree_order = seq_along(tip_labels),
   stringsAsFactors = FALSE
 )
-assignments <- assignments[order(assignments$tree_order), ]
 
-stats <- as.data.frame(
-  table(assignments$species_id, assignments$subfamily),
-  stringsAsFactors = FALSE
-)
+stats <- as.data.frame(table(assignments$species_id, assignments$subfamily), stringsAsFactors = FALSE)
 names(stats) <- c("species_id", "subfamily", "count")
 stats$count <- as.integer(stats$count)
 stats <- stats[order(stats$species_id, stats$subfamily), ]
@@ -118,89 +119,180 @@ write.table(
 
 subfamily_levels <- sort(unique(assignments$subfamily))
 species_levels <- sort(unique(assignments$species_id))
-palette <- c("#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", "#e6ab02", "#a6761d", "#1f78b4")
-subfamily_cols <- setNames(rep(palette, length.out = length(subfamily_levels)), subfamily_levels)
-tip_cols <- subfamily_cols[assignments$subfamily[match(tree$tip.label, assignments$tree_label)]]
+subfamily_palette <- c("#807dba", "#ec7014", "#fcc5c0", "#dd3497", "#78c679", "#4eb3d3", "#fdb863", "#1b9e77")
+species_palette <- c(
+  "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99", "#e31a1c",
+  "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a", "#ffff99", "#b15928",
+  "#8dd3c7", "#bebada", "#80b1d3", "#b3de69"
+)
+subfamily_cols <- stats::setNames(rep(subfamily_palette, length.out = length(subfamily_levels)), subfamily_levels)
+species_cols <- stats::setNames(rep(species_palette, length.out = length(species_levels)), species_levels)
+
+plot_base <- ggtree::ggtree(tree_plot, branch.length = "none", layout = "circular", size = 0.15, color = "#969696")
+tip_order <- plot_base$data[plot_base$data$isTip, c("label", "y")]
+tip_order <- tip_order[order(tip_order$y), , drop = FALSE]
+assignments$plot_y <- tip_order$y[match(assignments$tree_label, tip_order$label)]
+
+run_rows <- list()
+for (group in subfamily_levels) {
+  group_tips <- assignments[assignments$subfamily == group, , drop = FALSE]
+  group_tips <- group_tips[order(group_tips$plot_y), , drop = FALSE]
+  if (nrow(group_tips) == 0) {
+    next
+  }
+  run_id <- cumsum(c(TRUE, diff(group_tips$plot_y) > 1.5))
+  for (run in unique(run_id)) {
+    run_tips <- group_tips[run_id == run, , drop = FALSE]
+    run_rows[[length(run_rows) + 1]] <- data.frame(
+      subfamily = group,
+      start = run_tips$tree_label[1],
+      end = run_tips$tree_label[nrow(run_tips)],
+      size = nrow(run_tips),
+      stringsAsFactors = FALSE
+    )
+  }
+}
+strip_df <- do.call(rbind, run_rows)
+
+tree_info <- assignments[, c("tree_label", "gene_id", "species_id", "subfamily")]
+names(tree_info)[1] <- "label"
 
 plot_tree <- function() {
-  old_par <- par(no.readonly = TRUE)
-  on.exit(par(old_par), add = TRUE)
-  par(mar = c(1, 1, 4, 1))
-  ape::plot.phylo(
-    tree,
-    type = "fan",
-    show.tip.label = TRUE,
-    tip.color = tip_cols,
-    cex = max(0.45, min(0.9, 18 / n_tips)),
-    edge.color = "#8c8c8c",
-    no.margin = TRUE,
-    main = paste0(family_name, " phylogeny with auto subfamilies")
-  )
-  legend(
-    "topleft",
-    legend = names(subfamily_cols),
-    col = subfamily_cols,
-    lwd = 4,
-    bty = "n",
-    title = "Subfamily",
-    cex = 0.85
-  )
-}
+  p <- ggtree::ggtree(
+    tree_plot,
+    branch.length = "none",
+    layout = "circular",
+    size = 0.12,
+    color = "#969696"
+  ) %<+% tree_info +
+    ggtree::geom_nodepoint(
+      ggplot2::aes(fill = cut(ifelse(as.numeric(support) <= 1, as.numeric(support) * 100, as.numeric(support)), c(0, 45, 75, 100))),
+      shape = 21,
+      size = 0.7,
+      stroke = 0.2,
+      na.rm = TRUE
+    ) +
+    ggplot2::scale_fill_manual(
+      values = c("black", "grey70", "white"),
+      name = "Bootstrap Percentage(BP)",
+      breaks = c("(75,100]", "(45,75]", "(0,45]"),
+      labels = c("BP >= 75", "45 <= BP < 75", "BP < 45"),
+      guide = ggplot2::guide_legend(override.aes = list(size = 3))
+    ) +
+    ggnewscale::new_scale_fill() +
+    ggtree::geom_tippoint(ggplot2::aes(fill = species_id), shape = 21, size = 2.1, stroke = 0.25) +
+    ggplot2::scale_fill_manual(values = species_cols, name = "Species") +
+    ggtree::geom_tiplab(ggplot2::aes(color = subfamily), size = 2.2, offset = 0.35, show.legend = FALSE) +
+    ggplot2::scale_color_manual(values = subfamily_cols, name = "Subfamily") +
+    ggtree::geom_tree(size = 0.12, color = "#969696") +
+    ggplot2::theme(
+      legend.position = c(0.58, 0.48),
+      legend.background = ggplot2::element_blank(),
+      legend.key.size = ggplot2::unit(0.35, "cm"),
+      legend.text = ggplot2::element_text(size = 7),
+      legend.title = ggplot2::element_text(size = 8)
+    )
 
-plot_stats <- function() {
-  old_par <- par(no.readonly = TRUE)
-  on.exit(par(old_par), add = TRUE)
-  mat <- xtabs(count ~ species_id + subfamily, stats)
-  mat <- mat[rev(rownames(mat)), , drop = FALSE]
-  max_count <- max(mat)
-  if (max_count == 0) {
-    max_count <- 1
-  }
-  par(mar = c(5, 12, 6, 2))
-  plot(
-    NA,
-    xlim = c(0.5, ncol(mat) + 0.5),
-    ylim = c(0.5, nrow(mat) + 0.5),
-    xlab = "",
-    ylab = "",
-    xaxt = "n",
-    yaxt = "n",
-    main = ""
-  )
-  title(main = paste0(family_name, " subfamily copy number"), line = 3.5)
-  axis(3, at = seq_len(ncol(mat)), labels = colnames(mat), las = 1, line = 0.5)
-  axis(2, at = seq_len(nrow(mat)), labels = rownames(mat), las = 1, font = 3)
-  abline(h = seq_len(nrow(mat)), col = "#eeeeee")
-  abline(v = seq_len(ncol(mat)), col = "#eeeeee")
-  for (i in seq_len(nrow(mat))) {
-    for (j in seq_len(ncol(mat))) {
-      value <- mat[i, j]
-      if (value > 0) {
-        points(j, i, pch = 21, bg = subfamily_cols[colnames(mat)[j]], col = "#333333", cex = 1.2 + 2.8 * value / max_count)
-        text(j, i, labels = value, cex = 0.8)
-      }
+  if (!is.null(strip_df) && nrow(strip_df) > 0) {
+    for (i in seq_len(nrow(strip_df))) {
+      row <- strip_df[i, ]
+      p <- p + ggtree::geom_strip(
+        row$start,
+        row$end,
+        barsize = 1.6,
+        color = subfamily_cols[[row$subfamily]],
+        offset = 0.1,
+        label = row$subfamily,
+        fontsize = 4,
+        offset.text = 0.5,
+        extend = 0.35,
+        alpha = 0.2
+      )
     }
   }
-  box()
+  p + ggplot2::ggtitle(paste0(family_name, " phylogeny with auto subfamilies"))
 }
 
-pdf(file.path(plots_dir, "tree_subfamily.pdf"), width = 10, height = 10)
-plot_tree()
-dev.off()
+plot_bubble <- function() {
+  stats_nonzero <- stats[stats$count > 0, , drop = FALSE]
+  stats_nonzero$species_id <- factor(stats_nonzero$species_id, levels = rev(species_levels), ordered = TRUE)
+  stats_nonzero$subfamily <- factor(stats_nonzero$subfamily, levels = subfamily_levels, ordered = TRUE)
+  ggplot2::ggplot(stats_nonzero, ggplot2::aes(x = subfamily, y = species_id)) +
+    ggplot2::geom_point(ggplot2::aes(fill = subfamily, size = count), shape = 21, color = "#000000", alpha = 0.9) +
+    ggplot2::geom_text(ggplot2::aes(label = count), size = 3) +
+    ggplot2::scale_x_discrete(position = "top") +
+    ggplot2::scale_size(range = c(4, 10), guide = "none") +
+    ggplot2::scale_fill_manual(values = subfamily_cols, guide = "none") +
+    ggplot2::labs(x = "", y = "") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(
+      panel.grid = ggplot2::element_line(color = "#eeeeee"),
+      panel.border = ggplot2::element_rect(color = "#000000", linewidth = 0.75),
+      axis.text.y = ggplot2::element_text(color = "#000000", face = "italic", size = 10),
+      axis.text.x = ggplot2::element_text(color = "#000000", size = 11),
+      plot.background = ggplot2::element_blank(),
+      plot.margin = ggplot2::margin(5, 20, 5, 5)
+    )
+}
 
-png(file.path(plots_dir, "tree_subfamily.png"), width = 1800, height = 1800, res = 180)
-plot_tree()
-dev.off()
+plot_bar <- function() {
+  stats_nonzero <- stats[stats$count > 0, , drop = FALSE]
+  stats_nonzero$species_id <- factor(stats_nonzero$species_id, levels = rev(species_levels), ordered = TRUE)
+  stats_nonzero$subfamily <- factor(stats_nonzero$subfamily, levels = subfamily_levels, ordered = TRUE)
+  ggplot2::ggplot(stats_nonzero, ggplot2::aes(x = count, y = species_id, fill = subfamily)) +
+    ggplot2::geom_bar(stat = "identity", position = "fill", width = 0.52, color = "#000000", linewidth = 0.25) +
+    ggplot2::scale_x_continuous(
+      position = "top",
+      expand = ggplot2::expansion(mult = c(0, 0)),
+      breaks = c(0, 0.25, 0.5, 0.75, 1),
+      labels = c("0%", "25%", "50%", "75%", "100%")
+    ) +
+    ggplot2::scale_fill_manual(values = subfamily_cols, name = "Subfamily") +
+    ggplot2::labs(x = "", y = "") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(
+      panel.grid = ggplot2::element_blank(),
+      panel.border = ggplot2::element_rect(color = "#000000", linewidth = 0.75),
+      axis.text.y = ggplot2::element_blank(),
+      axis.ticks.y = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(color = "#000000", size = 10),
+      plot.background = ggplot2::element_blank(),
+      plot.margin = ggplot2::margin(5, 5, 5, 10)
+    )
+}
 
-pdf(file.path(plots_dir, "tree_subfamily_species_stats.pdf"), width = max(6, 1.1 * length(subfamily_levels) + 4), height = max(5, 0.45 * length(species_levels) + 2.5))
-plot_stats()
-dev.off()
+p_tree <- plot_tree()
+p_bubble <- plot_bubble()
+p_bar <- plot_bar()
+p_stats <- aplot::insert_right(p_bubble, p_bar, width = 1.15)
 
-png(
-  file.path(plots_dir, "tree_subfamily_species_stats.png"),
-  width = max(1000, 180 * length(subfamily_levels) + 800),
-  height = max(900, 90 * length(species_levels) + 500),
-  res = 160
+ggplot2::ggsave(
+  filename = file.path(plots_dir, "tree_subfamily.pdf"),
+  plot = p_tree,
+  width = 14,
+  height = 14,
+  limitsize = FALSE
 )
-plot_stats()
-dev.off()
+ggplot2::ggsave(
+  filename = file.path(plots_dir, "tree_subfamily.png"),
+  plot = p_tree,
+  width = 14,
+  height = 14,
+  dpi = 180,
+  limitsize = FALSE
+)
+ggplot2::ggsave(
+  filename = file.path(plots_dir, "tree_subfamily_species_stats.pdf"),
+  plot = p_stats,
+  width = max(9, 0.8 * length(subfamily_levels) + 6),
+  height = max(6, 0.45 * length(species_levels) + 2.5),
+  limitsize = FALSE
+)
+ggplot2::ggsave(
+  filename = file.path(plots_dir, "tree_subfamily_species_stats.png"),
+  plot = p_stats,
+  width = max(9, 0.8 * length(subfamily_levels) + 6),
+  height = max(6, 0.45 * length(species_levels) + 2.5),
+  dpi = 180,
+  limitsize = FALSE
+)

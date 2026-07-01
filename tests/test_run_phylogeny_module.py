@@ -140,6 +140,12 @@ def test_run_phylogeny_module_builds_alignment_tree_and_manifests(tmp_path):
 
 def test_plot_tree_subfamilies_r_script_assigns_groups_and_stats(tmp_path):
     script = Path(__file__).resolve().parents[1] / "scripts/plot_tree_subfamilies.R"
+    script_text = script.read_text(encoding="utf-8")
+    assert "ggtree::ggtree" in script_text
+    assert "geom_strip" in script_text
+    assert "geom_tippoint" in script_text
+    assert "geom_nodepoint" in script_text
+    assert "ggplot2::ggplot" in script_text
     tree = tmp_path / "tree.nwk"
     tree.write_text(
         "((Arabidopsis_thaliana|AT1G14410:0.1,Arabidopsis_thaliana|AT1G71260:0.1)0.9:0.2,"
