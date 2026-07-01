@@ -21,6 +21,7 @@ modules:
   jcvi: true
   mcscanx: true
   promoter: true
+  ppi: true
 
 hmm:
   hmm_dir: projects/Whirly_2026/config/hmm_profiles
@@ -115,4 +116,10 @@ promoter:
   family_name: Whirly
   upstream_bp: 2000
   split_records: 100
+  r_bin: /usr/local/bin/R
+
+ppi:
+  aranet: data/config/AraNet.txt
+  run_blast: false
+  min_weight: 4
   r_bin: /usr/local/bin/R

@@ -34,6 +34,50 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-02 00:47 - Add 11_ppi module
+
+Context:
+- User required PPI to use ggNetView and clarified that AraNet is an Arabidopsis reference network, not a direct target-species PPI file.
+- Reference Step11 builds family peptide sets, maps family proteins to Arabidopsis and back to species, transfers AraNet edges, annotates nodes, and plots with ggNetView.
+
+Decisions:
+- Add a dedicated `11_ppi` module that prepares family peptide FASTA per species and uses AraNet as reference evidence.
+- Configure Whirly with `run_blast: false` for now, so the module extracts the direct Arabidopsis family subnetwork from AraNet without launching reciprocal BLAST transfer yet.
+- Keep the report explicit that reciprocal BLAST transfer was not requested in the current run.
+- Add `plot_ppi_ggnetview_reference.R` as the primary PPI visualization path, preserving Reference parameters: `module.method = "Fast_greedy"`, `layout = "diamond"`, `layout.module = "adjacent"`, `fill.by = "Type"`, `seed = 1115`, and patchwork combination.
+
+Added:
+- `bin/genefam/run_ppi_module.py`
+- `scripts/plot_ppi_ggnetview_reference.R`
+- `tests/test_run_ppi_module.py`
+- Real Whirly outputs under `projects/Whirly_2026/results/11_ppi/`
+
+Modified:
+- `projects/Whirly_2026/project.yaml`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Red test first failed because `bin/genefam/run_ppi_module.py` and `scripts/plot_ppi_ggnetview_reference.R` did not exist:
+  `python -m pytest tests/test_run_ppi_module.py -q`
+- `python -m pytest tests/test_run_ppi_module.py -q` passed with 2 tests.
+- Real Whirly run completed:
+  `conda run -n GeneFamilyFlow python bin/genefam/run_ppi_module.py --config projects/Whirly_2026/project.yaml`
+- Real Whirly `11_ppi` produced 12 species family peptide FASTA files, `ppi_edges.tsv`, `ppi_nodes.tsv`, `node_annotation.tsv`, `species_ppi_annotation.tsv`, `ppi_hubs.tsv`, `ppi_transfer_evidence.tsv`, `ppi_network_qc.tsv`, and `report/ppi_summary.md`.
+- ggNetView plotting succeeded with detected `ggNetView 0.1.0`, producing `plots/ppi_ggnetview.pdf/png` and Reference aliases `plots/ppi.pdf/png`.
+- Visual inspection of `projects/Whirly_2026/results/11_ppi/plots/ppi_ggnetview.png` showed a sparse but nonblank Arabidopsis-only network, consistent with current `run_blast: false` and two retained AraNet edges.
+- `python -m pytest tests/test_run_jcvi_module.py tests/test_run_mcscanx_module.py tests/test_run_promoter_module.py tests/test_run_ppi_module.py tests/test_run_phylogeny_module.py tests/test_run_domain_motif_genestructure_module.py tests/test_reference_plotting_reuse.py -q` passed with 13 tests.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: 11_ppi runner, ggNetView Reference plot script, tests, Whirly config, Whirly 11 outputs
+
+Next:
+- Continue with `12_full_bioinformatics_report`: collect module statuses, software versions, plots, and figure-by-figure interpretation into a complete Markdown bioinformatics report.
+
 ## 2026-07-02 00:44 - Add 10_promoter module
 
 Context:
