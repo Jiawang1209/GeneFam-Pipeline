@@ -18659,3 +18659,70 @@ Commit:
 
 Next:
 - If labels still feel too small in the exported PDF, increase the large-tree value again or expose it as a project-level `phylogeny.subfamily.tip_label_size` option.
+
+## 2026-07-01 17:44 - Add YAML-controlled phylogeny tree styling
+
+Context:
+- User clarified that for small gene families the circular phylogeny tree should look more polished by using shorter-looking and thicker branches.
+- User also requested these visual parameters to be configurable from the 06 module YAML instead of hard-coded in the plotting script.
+
+Decisions:
+- Add a `phylogeny.subfamily.plot` configuration block for tree-plot styling.
+- Keep all tip labels and legends visible.
+- Pass plot parameters from Python to R through a reproducible TSV file under the 06 results directory.
+- Use `tree_scale` to control the apparent circular tree radius and `branch_size` to control branch thickness.
+
+Added:
+- `tree_subfamily_plot_config.tsv` output in `06_phylogeny/tables`.
+- YAML-driven plot parameters:
+  - `tree_scale`
+  - `branch_size`
+  - `tip_label_size`
+  - `tip_label_offset`
+  - `tip_point_size`
+  - `strip_offset`
+  - `strip_bar_size`
+  - `plot_width`
+  - `plot_height`
+  - `legend_x`
+  - `legend_y`
+- Tests for the plot-config table, command propagation, report entry, and R-side config parsing.
+
+Modified:
+- `bin/genefam/run_phylogeny_module.py`
+  - Reads `phylogeny.subfamily.plot` from `project.yaml`.
+  - Writes `tables/tree_subfamily_plot_config.tsv`.
+  - Passes the plot-config TSV to `scripts/plot_tree_subfamilies.R`.
+  - Records the plot-config path in `report/phylogeny_summary.md`.
+- `scripts/plot_tree_subfamilies.R`
+  - Accepts optional `[plot_config.tsv]`.
+  - Reads numeric plot parameters with defaults.
+  - Applies configurable `branch_size`, `tree_scale`, label offsets, label sizes, strip settings, plot size, and legend position.
+- `projects/Whirly_2026/project.yaml`
+  - Added a tuned `phylogeny.subfamily.plot` block for a smaller, thicker circular tree.
+
+Deleted:
+- None.
+
+Outputs:
+- Re-rendered Whirly 06 tree:
+  - `projects/Whirly_2026/results/06_phylogeny/plots/tree_subfamily.png`
+  - `projects/Whirly_2026/results/06_phylogeny/plots/tree_subfamily.pdf`
+- New plot configuration record:
+  - `projects/Whirly_2026/results/06_phylogeny/tables/tree_subfamily_plot_config.tsv`
+
+Verification:
+- `python -m pytest tests/test_run_phylogeny_module.py -q` first failed because plot config writing and R parsing were not implemented.
+- `python -m pytest tests/test_run_phylogeny_module.py -q` passed after implementation with 2 tests.
+- `conda run -n GeneFamilyFlow python bin/genefam/run_phylogeny_module.py --config projects/Whirly_2026/project.yaml` completed successfully.
+- `column -t -s $'\t' projects/Whirly_2026/results/06_phylogeny/tables/tree_subfamily_plot_config.tsv` confirmed `tree_scale=0.5` and `branch_size=0.36`.
+- `python -m pytest tests/test_run_phylogeny_module.py tests/test_run_tree_feature_smoke.py tests/test_reference_plotting_reuse.py -q` passed with 4 tests.
+- Visual inspection confirmed that the Whirly circular tree uses thicker branches while keeping labels and legends visible.
+
+Commit:
+- hash: 608577b
+- message: feat: configure phylogeny tree plot styling
+- files: `bin/genefam/run_phylogeny_module.py`, `scripts/plot_tree_subfamilies.R`, `tests/test_run_phylogeny_module.py`, `projects/Whirly_2026/project.yaml`, `HISTORY.md`
+
+Next:
+- If the visual balance still needs refinement, tune only the project YAML values first; the plotting script no longer needs code edits for these style knobs.
