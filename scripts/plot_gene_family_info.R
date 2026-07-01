@@ -220,12 +220,21 @@ draw_species_property_plot <- function() {
     "#fdb462", "#b3de69", "#fccde5", "#bc80bd", "#ccebc5"
   )
   species_values <- levels(droplevels(long_data$Species))
+  n_species <- length(species_values)
+  plot_width <- min(18, max(11.5, 12 + 0.16 * n_species))
+  plot_height <- min(26, max(4.8, 3.8 + 0.28 * n_species))
+  point_size <- max(0.9, min(2.15, 2.45 - 0.025 * n_species))
+  jitter_size <- max(0.85, point_size - 0.15)
+  y_text_size <- max(4.8, min(8, 9 - 0.09 * n_species))
+  x_text_size <- if (n_species > 30) 8 else 9
+  strip_text_size <- if (n_species > 30) 11 else 12
+  panel_spacing <- if (n_species > 30) 0.55 else 0.9
   fill_values <- stats::setNames(rep(palette, length.out = length(species_values)), species_values)
   point_layer <- if (requireNamespace("ggbeeswarm", quietly = TRUE)) {
     ggbeeswarm::geom_quasirandom(
       ggplot2::aes(x = Value, y = Species, fill = Species, group = Species),
       shape = 21,
-      size = 2.15,
+      size = point_size,
       alpha = 0.7,
       varwidth = TRUE
     )
@@ -233,7 +242,7 @@ draw_species_property_plot <- function() {
     ggplot2::geom_jitter(
       ggplot2::aes(x = Value, y = Species, fill = Species, group = Species),
       shape = 21,
-      size = 2,
+      size = jitter_size,
       alpha = 0.65,
       width = 0,
       height = 0.18
@@ -249,17 +258,35 @@ draw_species_property_plot <- function() {
     ggplot2::theme(
       panel.grid = ggplot2::element_blank(),
       axis.text = ggplot2::element_text(color = "#000000", size = 10),
-      axis.text.x = ggplot2::element_text(color = "#000000", size = 9),
+      axis.text.x = ggplot2::element_text(color = "#000000", size = x_text_size),
       panel.border = ggplot2::element_rect(linewidth = 1),
-      strip.text = ggplot2::element_text(color = "#000000", size = 12),
+      strip.text = ggplot2::element_text(color = "#000000", size = strip_text_size),
       strip.background = ggplot2::element_rect(linewidth = 1),
-      axis.text.y = ggplot2::element_text(color = "#000000", size = 8, face = "italic"),
+      axis.text.y = ggplot2::element_text(color = "#000000", size = y_text_size, face = "italic"),
       axis.ticks.y = ggplot2::element_line(color = "#000000"),
-      panel.spacing.x = grid::unit(0.9, "lines"),
+      panel.spacing.x = grid::unit(panel_spacing, "lines"),
       legend.position = "none"
     )
-  ggplot2::ggsave(file.path(outdir, "protein_properties_by_species.pdf"), plot = p_stat, height = 7.2, width = 14)
-  ggplot2::ggsave(file.path(outdir, "protein_properties_by_species.png"), plot = p_stat, height = 7.2, width = 14, dpi = 160)
+  layout_info <- data.frame(
+    n_species = n_species,
+    width = plot_width,
+    height = plot_height,
+    point_size = point_size,
+    y_text_size = y_text_size,
+    x_text_size = x_text_size,
+    strip_text_size = strip_text_size,
+    panel_spacing = panel_spacing,
+    check.names = FALSE
+  )
+  utils::write.table(
+    layout_info,
+    file = file.path(outdir, "protein_properties_by_species.layout.tsv"),
+    sep = "\t",
+    quote = FALSE,
+    row.names = FALSE
+  )
+  ggplot2::ggsave(file.path(outdir, "protein_properties_by_species.pdf"), plot = p_stat, height = plot_height, width = plot_width)
+  ggplot2::ggsave(file.path(outdir, "protein_properties_by_species.png"), plot = p_stat, height = plot_height, width = plot_width, dpi = 160)
   TRUE
 }
 

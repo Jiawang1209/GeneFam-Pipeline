@@ -692,6 +692,8 @@ PF00657/domain-confirmed final members: 1958
 - 输出 `Gene_Information_stat.tsv/xlsx`
 - 输出拷贝数、扩张/收缩、pangenome presence 等统计表
 - 可选调用 `/usr/local/bin/R` 生成 `gene_family_info_summary.pdf/png`
+- 生成物种级蛋白理化性质蜂窝/箱线图 `protein_properties_by_species.pdf/png`
+- 根据物种数量自动调整理化性质图的画布宽高、点大小和物种名字号，并记录到 `protein_properties_by_species.layout.tsv`
 
 ### 最简命令
 
@@ -755,6 +757,9 @@ projects/GDSL_2026/results/05_genefamily_info/
   plots/
     gene_family_info_summary.pdf
     gene_family_info_summary.png
+    protein_properties_by_species.pdf
+    protein_properties_by_species.png
+    protein_properties_by_species.layout.tsv
   report/
     genefamily_info_summary.md
 ```

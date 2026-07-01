@@ -93,6 +93,7 @@ def run_gene_family_info_smoke(r_bin: str, outdir: Path) -> dict[str, Path]:
     outputs["gene_family_info_png"] = plot_dir / "gene_family_info_summary.png"
     outputs["protein_properties_by_species_pdf"] = plot_dir / "protein_properties_by_species.pdf"
     outputs["protein_properties_by_species_png"] = plot_dir / "protein_properties_by_species.png"
+    outputs["protein_properties_by_species_layout"] = plot_dir / "protein_properties_by_species.layout.tsv"
     summary = outdir / "gene_family_info_smoke.md"
     summary.write_text(
         "\n".join(
@@ -110,6 +111,7 @@ def run_gene_family_info_smoke(r_bin: str, outdir: Path) -> dict[str, Path]:
                 f"PNG plot: `{outputs['gene_family_info_png']}`",
                 f"Protein properties by species PDF: `{outputs['protein_properties_by_species_pdf']}`",
                 f"Protein properties by species PNG: `{outputs['protein_properties_by_species_png']}`",
+                f"Protein properties by species layout: `{outputs['protein_properties_by_species_layout']}`",
                 "",
             ]
         ),

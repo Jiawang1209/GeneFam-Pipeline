@@ -31,6 +31,12 @@ def test_run_gene_family_info_smoke_writes_tables_and_plots(tmp_path):
     assert (outdir / "plots/gene_family_info_summary.png").exists()
     assert (outdir / "plots/protein_properties_by_species.pdf").exists()
     assert (outdir / "plots/protein_properties_by_species.png").exists()
+    layout = outdir / "plots/protein_properties_by_species.layout.tsv"
+    assert layout.exists()
+    with layout.open(encoding="utf-8") as handle:
+        layout_rows = list(csv.DictReader(handle, delimiter="\t"))
+    assert layout_rows[0]["n_species"] == "3"
+    assert float(layout_rows[0]["height"]) < 7.2
     with (outdir / "tables/gene_family_species_order.tsv").open(encoding="utf-8") as handle:
         order_rows = list(csv.DictReader(handle, delimiter="\t"))
     assert [row["species_id"] for row in order_rows] == ["Osa", "Ath", "Bra", "Bna"]
@@ -45,3 +51,4 @@ def test_run_gene_family_info_smoke_writes_tables_and_plots(tmp_path):
     assert "gene_family_pangenome_summary.tsv" in summary
     assert "gene_family_info_summary.pdf" in summary
     assert "protein_properties_by_species.pdf" in summary
+    assert "protein_properties_by_species.layout.tsv" in summary
