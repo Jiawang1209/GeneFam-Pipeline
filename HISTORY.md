@@ -18524,3 +18524,51 @@ Commit:
 
 Next:
 - Continue module-by-module development using `Whirly_2026` as the fast end-to-end smoke-test project before returning to larger gene families.
+
+## 2026-07-01 17:01 - Make dense phylogeny tree plots adaptive
+
+Context:
+- User reported that the 06 phylogeny circular tree was still visually poor for the Whirly smoke-test project.
+- The Whirly tree has 36 tips across 12 species, so drawing every gene label and a full species legend inside the tree made the plot cluttered.
+
+Decisions:
+- Treat the circular tree as the main subfamily overview figure, closer to the Reference `6.tree.R` final tree style.
+- Hide tip gene labels automatically when the tree has more than 24 tips.
+- Hide the species legend automatically when more than 10 species are present; species-level details remain available in the companion subfamily statistics plot and assignment table.
+- Remove the automatic main title from the circular tree to reduce visual noise.
+
+Added:
+- Regression checks for adaptive label and species-legend thresholds in `tests/test_run_phylogeny_module.py`.
+
+Modified:
+- `scripts/plot_tree_subfamilies.R`
+  - Added `label_show_threshold <- 24` and `show_tip_labels`.
+  - Added `species_legend_threshold <- 10` and `show_species_legend`.
+  - Made `geom_tiplab()` conditional.
+  - Made the species legend conditional.
+  - Removed the circular tree title.
+
+Deleted:
+- None.
+
+Outputs:
+- Re-rendered Whirly 06 tree:
+  - `projects/Whirly_2026/results/06_phylogeny/plots/tree_subfamily.png`
+  - `projects/Whirly_2026/results/06_phylogeny/plots/tree_subfamily.pdf`
+- Re-rendered companion statistics plot:
+  - `projects/Whirly_2026/results/06_phylogeny/plots/tree_subfamily_species_stats.png`
+  - `projects/Whirly_2026/results/06_phylogeny/plots/tree_subfamily_species_stats.pdf`
+
+Verification:
+- `python -m pytest tests/test_run_phylogeny_module.py::test_plot_tree_subfamilies_r_script_assigns_groups_and_stats -q` passed with 1 test.
+- `conda run -n GeneFamilyFlow python bin/genefam/run_phylogeny_module.py --config projects/Whirly_2026/project.yaml` completed successfully.
+- `python -m pytest tests/test_run_phylogeny_module.py tests/test_run_tree_feature_smoke.py tests/test_reference_plotting_reuse.py -q` passed with 4 tests.
+- Visual inspection confirmed that the 36-tip Whirly tree no longer draws dense gene labels or the 12-species legend inside the circular tree.
+
+Commit:
+- hash: 21aa874
+- message: style: adapt dense phylogeny tree labels
+- files: `scripts/plot_tree_subfamilies.R`, `tests/test_run_phylogeny_module.py`
+
+Next:
+- If the user wants an even more publication-like final layout, combine the circular tree and the subfamily statistics panel into one exported composite figure in a later 06_phylogeny iteration.
