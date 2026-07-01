@@ -225,8 +225,9 @@ draw_species_property_plot <- function() {
   plot_height <- min(26, max(4.8, 3.8 + 0.28 * n_species))
   point_size <- max(0.9, min(2.15, 2.45 - 0.025 * n_species))
   jitter_size <- max(0.85, point_size - 0.15)
-  y_text_size <- max(5.5, min(9.5, 10.2 - 0.08 * n_species))
-  x_text_size <- if (n_species > 30) 9 else 10
+  axis_text_size <- max(8, min(11, 11.2 - 0.04 * n_species))
+  y_text_size <- max(5.5, min(10.2, 10.8 - 0.06 * n_species))
+  x_text_size <- max(8, min(10.8, 11 - 0.05 * n_species))
   strip_text_size <- if (n_species > 30) 11 else 12
   panel_spacing <- if (n_species > 30) 0.55 else 0.9
   fill_values <- stats::setNames(rep(palette, length.out = length(species_values)), species_values)
@@ -257,7 +258,7 @@ draw_species_property_plot <- function() {
     ggplot2::theme_bw() +
     ggplot2::theme(
       panel.grid = ggplot2::element_blank(),
-      axis.text = ggplot2::element_text(color = "#000000", size = 10),
+      axis.text = ggplot2::element_text(color = "#000000", size = axis_text_size),
       axis.text.x = ggplot2::element_text(color = "#000000", size = x_text_size),
       panel.border = ggplot2::element_rect(linewidth = 1),
       strip.text = ggplot2::element_text(color = "#000000", size = strip_text_size),
@@ -272,6 +273,7 @@ draw_species_property_plot <- function() {
     width = plot_width,
     height = plot_height,
     point_size = point_size,
+    axis_text_size = axis_text_size,
     y_text_size = y_text_size,
     x_text_size = x_text_size,
     strip_text_size = strip_text_size,

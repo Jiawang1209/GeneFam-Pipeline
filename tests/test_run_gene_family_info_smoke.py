@@ -37,6 +37,9 @@ def test_run_gene_family_info_smoke_writes_tables_and_plots(tmp_path):
         layout_rows = list(csv.DictReader(handle, delimiter="\t"))
     assert layout_rows[0]["n_species"] == "3"
     assert float(layout_rows[0]["height"]) < 7.2
+    assert float(layout_rows[0]["axis_text_size"]) > 10
+    assert float(layout_rows[0]["x_text_size"]) > 10
+    assert float(layout_rows[0]["y_text_size"]) > 9.24
     with (outdir / "tables/gene_family_species_order.tsv").open(encoding="utf-8") as handle:
         order_rows = list(csv.DictReader(handle, delimiter="\t"))
     assert [row["species_id"] for row in order_rows] == ["Osa", "Ath", "Bra", "Bna"]
