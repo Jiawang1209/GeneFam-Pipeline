@@ -34,6 +34,44 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-01 10:31 - Make property plot axis text fully adaptive
+
+Context:
+- User asked whether axis-label sizes can also change intelligently with the number of analyzed species.
+
+Decisions:
+- Make general `axis.text`, x-axis tick text, and y-axis species labels all use continuous species-count-aware sizing.
+- Record `axis_text_size` in `protein_properties_by_species.layout.tsv` alongside x/y text sizes.
+- Keep the current approved beeswarm layout and plot dimensions unchanged.
+
+Added:
+- `axis_text_size` column in `protein_properties_by_species.layout.tsv`.
+- Regression assertions that small plotted species sets receive larger adaptive axis text.
+
+Modified:
+- `scripts/plot_gene_family_info.R`
+- `tests/test_run_gene_family_info_smoke.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_gene_family_info_smoke.py -q` first failed with `KeyError: 'axis_text_size'`, confirming the new regression test caught missing adaptive metadata.
+- `python -m pytest tests/test_run_gene_family_info_smoke.py tests/test_run_genefamily_info_module.py -q` passed with 2 tests after implementation.
+- Real 05 plot rerun passed:
+  `python bin/genefam/run_genefamily_info_module.py --config projects/GDSL_2026/project.yaml --plot`
+- Real layout metadata now records 12 plotted species with `axis_text_size=10.72`, `y_text_size=10.08`, and `x_text_size=10.4`.
+- Visually inspected `projects/GDSL_2026/results/05_genefamily_info/plots/protein_properties_by_species.png`; axis labels are clearer without overlap.
+
+Commit:
+- hash: 0470d49
+- message: feat: adapt property plot axis text
+- files: adaptive 05 protein-property plot axis text
+
+Next:
+- For very large species sets, consider adding clade pagination rather than continuing to shrink text indefinitely.
+
 ## 2026-07-01 10:24 - Increase protein property plot axis text
 
 Context:
