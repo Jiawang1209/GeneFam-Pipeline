@@ -18618,3 +18618,44 @@ Commit:
 
 Next:
 - Continue fine-tuning the 06 phylogeny plot dimensions if the user wants the circular tree to be smaller or the labels to be larger in the next visual pass.
+
+## 2026-07-01 17:27 - Enlarge phylogeny tip labels
+
+Context:
+- User reported that `geom_tiplab` text in the 06 phylogeny circular tree was still too small.
+
+Decisions:
+- Keep all gene labels and legends visible.
+- Increase `geom_tiplab` size while preserving the current smaller-tree layout.
+- Use adaptive sizes: larger trees use `3.0`; smaller trees use `3.4`.
+
+Added:
+- Regression expectation for the new adaptive `tip_label_size` value in `tests/test_run_phylogeny_module.py`.
+
+Modified:
+- `scripts/plot_tree_subfamilies.R`
+  - Changed `tip_label_size` from `ifelse(n_tips > 24, 2.6, 3.0)` to `ifelse(n_tips > 24, 3.0, 3.4)`.
+- `tests/test_run_phylogeny_module.py`
+  - Updated the expected plotting-script label size.
+
+Deleted:
+- None.
+
+Outputs:
+- Re-rendered Whirly 06 tree with larger tip labels:
+  - `projects/Whirly_2026/results/06_phylogeny/plots/tree_subfamily.png`
+  - `projects/Whirly_2026/results/06_phylogeny/plots/tree_subfamily.pdf`
+
+Verification:
+- `python -m pytest tests/test_run_phylogeny_module.py::test_plot_tree_subfamilies_r_script_assigns_groups_and_stats -q` passed with 1 test.
+- `conda run -n GeneFamilyFlow python bin/genefam/run_phylogeny_module.py --config projects/Whirly_2026/project.yaml` completed successfully.
+- `python -m pytest tests/test_run_phylogeny_module.py tests/test_run_tree_feature_smoke.py tests/test_reference_plotting_reuse.py -q` passed with 4 tests.
+- Visual inspection confirmed that Whirly tip labels are larger in the regenerated circular tree.
+
+Commit:
+- hash: 6373f30
+- message: style: enlarge phylogeny tip labels
+- files: `scripts/plot_tree_subfamilies.R`, `tests/test_run_phylogeny_module.py`
+
+Next:
+- If labels still feel too small in the exported PDF, increase the large-tree value again or expose it as a project-level `phylogeny.subfamily.tip_label_size` option.
