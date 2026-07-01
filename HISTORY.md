@@ -34,6 +34,41 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-01 10:14 - Compact protein property plot layout
+
+Context:
+- User said the species protein-property plot looked good but each facet was too wide.
+
+Decisions:
+- Keep the restored beeswarm/quasirandom point style.
+- Reduce the saved plot width from 17 to 14 inches and height from 7.5 to 7.2 inches.
+- Slightly reduce point and strip-label sizes for a more compact paper-style panel.
+- Add controlled horizontal panel spacing to avoid boundary tick-label overlap while keeping the figure narrower than the Reference default.
+
+Added:
+- none
+
+Modified:
+- `scripts/plot_gene_family_info.R`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Real 05 plot rerun passed:
+  `python bin/genefam/run_genefamily_info_module.py --config projects/GDSL_2026/project.yaml --plot`
+- Visually inspected `projects/GDSL_2026/results/05_genefamily_info/plots/protein_properties_by_species.png`; the plot is narrower, species labels remain italic and left-only, and facet boundary tick labels no longer touch.
+- `python -m pytest tests/test_run_gene_family_info_smoke.py tests/test_run_genefamily_info_module.py -q` passed with 2 tests.
+
+Commit:
+- hash: 0406d28
+- message: fix: compact protein property plot layout
+- files: compact 05 protein-property plot layout
+
+Next:
+- If many more species are added, consider making plot width/height configurable from `project.yaml`.
+
 ## 2026-07-01 10:09 - Refine species property plot axis labels
 
 Context:
