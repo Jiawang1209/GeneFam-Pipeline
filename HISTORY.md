@@ -18289,6 +18289,59 @@ Commit:
 
 Next:
 - Continue final MVP handoff polish; Docker/Apptainer runtime execution remains the intentionally deferred final packaging stage.
+## 2026-07-01 - Correct phylogeny tree labels and subfamily strip placement
+
+Timestamp:
+- 2026-07-01 16:53 CST
+
+Context:
+- The ggtree-based subfamily plot improved the visual style but still had two correctness/polish problems.
+- `geom_strip()` was inside or overlapping the tip label ring; the user requested the strip arcs to be outside `geom_tiplab()`.
+- The Newick tree tips still carried `Species|GeneID` labels from the upstream family FASTA. This is biologically and visually undesirable for the phylogeny tree; species should be annotation metadata, not part of the tree tip names.
+
+Decisions:
+- Keep upstream `04_identification/fasta/identify.ID.fa` unchanged because it is useful as a species-aware member FASTA.
+- In `06_phylogeny`, write a dedicated gene-only FASTA before alignment/tree building: `inputs/<family>.phylogeny_input.fa`.
+- Write `tables/phylogeny_label_map.tsv` to preserve `original_id`, `tree_label`, `gene_id`, and `species_id`.
+- Build MUSCLE/MAFFT and FastTree/IQ-TREE from the gene-only FASTA so Newick tree tips do not contain species names or `|`.
+- Let `plot_tree_subfamilies.R` read the label map to recover species annotations for tip points and statistics.
+- Move `geom_strip()` outside `geom_tiplab()` by using `tip_label_offset <- 0.35` and `strip_offset <- 1.2`, with additional tree x-limit space.
+
+Added:
+- `phylogeny_label_map.tsv` output from the 06 module.
+- Tests asserting gene-only tree labels and label-map contents.
+- Tests asserting strip offset is outside tip label offset.
+
+Modified:
+- `bin/genefam/run_phylogeny_module.py`
+- `scripts/plot_tree_subfamilies.R`
+- `tests/test_run_phylogeny_module.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- `python -m pytest tests/test_run_phylogeny_module.py::test_plot_tree_subfamilies_r_script_assigns_groups_and_stats -q` first failed before the strip-offset guard was added to the script.
+- `python -m pytest tests/test_run_phylogeny_module.py -q` passed after placing `geom_strip()` outside the tip-label ring.
+- `python -m pytest tests/test_run_phylogeny_module.py -q` then failed again after adding gene-only tree expectations because the alignment command still used the original species-aware FASTA.
+- After fixing the alignment input to use `inputs/<family>.phylogeny_input.fa`, `python -m pytest tests/test_run_phylogeny_module.py -q` passed with 2 tests.
+- `conda run -n GeneFamilyFlow python bin/genefam/run_phylogeny_module.py --config projects/Whirly_2026/project.yaml` completed successfully.
+- Whirly real-run tree verification reported `contains_pipe=False`; `Arabidopsis_thaliana|`, `Oryza_sativa|`, and `Triticum_aestivum|` were absent from `Whirly.fasttree.treefile`.
+- `python -m pytest tests/test_run_phylogeny_module.py tests/test_run_tree_feature_smoke.py tests/test_reference_plotting_reuse.py -q` passed with 4 tests.
+- Real Whirly artifact verification reported `FAILED_CHECKS=NONE` for gene-only FASTA, label map, treefile, subfamily plots, and statistics plots.
+
+Commits:
+- hash: 5ceaf780a6df1879400bc3d22ba3b40fdf70cbd4
+- message: fix: place subfamily strips outside tree labels
+- files: subfamily plotting script and phylogeny module tests
+- hash: 692fb21dc92f0f30415a60af56eae1fc8ce8f9de
+- message: fix: use gene-only labels for phylogeny trees
+- files: 06 phylogeny module, subfamily plotting script, and phylogeny module tests
+
+Next:
+- Keep species labels out of all future tree-building inputs; species should be carried through mapping/annotation tables only.
+
 ## 2026-07-01 - Rework subfamily tree plots with ggtree
 
 Timestamp:
