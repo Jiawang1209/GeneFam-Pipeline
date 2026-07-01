@@ -27,6 +27,7 @@ from bin.genefam.prepare_phylogeny_inputs import prepare_phylogeny_manifest
 ALIGNMENT_FIELDS = ["family_name", "aligner", "sequence_count", "input_fasta", "raw_alignment", "trimmed_alignment"]
 PHYLOGENY_FIELDS = ["family_name", "tree_builder", "alignment", "treefile", "support_file"]
 COMMAND_FIELDS = ["step", "tool", "command", "stdout", "stderr", "status"]
+TREE_SUBFAMILY_SCRIPT = REPO_ROOT / "scripts/plot_tree_subfamilies.R"
 
 
 def load_project_config(path: Path | None) -> dict:
@@ -191,11 +192,62 @@ def run_iqtree(alignment: Path, treefile: Path, options: list[str], model: str, 
     }
 
 
+def run_tree_subfamilies(
+    treefile: Path,
+    outdir: Path,
+    family_name: str,
+    r_bin: str,
+    min_size: int,
+    max_groups: int,
+    log_dir: Path,
+) -> dict[str, str]:
+    executable = ensure_command(r_bin)
+    log_dir.mkdir(parents=True, exist_ok=True)
+    if Path(executable).name == "R":
+        command = [
+            executable,
+            "--vanilla",
+            "--slave",
+            "-f",
+            str(TREE_SUBFAMILY_SCRIPT),
+            "--args",
+            str(treefile),
+            str(outdir),
+            family_name,
+            str(min_size),
+            str(max_groups),
+        ]
+    else:
+        command = [
+            executable,
+            str(TREE_SUBFAMILY_SCRIPT),
+            str(treefile),
+            str(outdir),
+            family_name,
+            str(min_size),
+            str(max_groups),
+        ]
+    stdout_path = log_dir / "tree_subfamily.stdout.log"
+    stderr_path = log_dir / "tree_subfamily.stderr.log"
+    with stdout_path.open("w", encoding="utf-8") as stdout, stderr_path.open("w", encoding="utf-8") as stderr:
+        subprocess.run(command, check=True, stdout=stdout, stderr=stderr, text=True)
+    return {
+        "step": "tree_subfamily",
+        "tool": Path(executable).name,
+        "command": shell_join(command),
+        "stdout": str(stdout_path),
+        "stderr": str(stderr_path),
+        "status": "completed",
+    }
+
+
 def resolve_args(args: argparse.Namespace) -> dict:
     config = load_project_config(args.config)
     config_dir = args.config.parent if args.config else Path.cwd()
     project_config = config.get("project", {}) or {}
     phylogeny_config = config.get("phylogeny", {}) or {}
+    genefamily_info_config = config.get("genefamily_info", {}) or {}
+    subfamily_config = phylogeny_config.get("subfamily", {}) or {}
     project_outdir = config_path(project_config.get("outdir"), config_dir) or Path("results")
     family_name = args.family_name or phylogeny_config.get("family_name") or project_config.get("family_name") or "family"
     input_fasta = args.input_fasta or config_path(phylogeny_config.get("input_fasta"), config_dir) or project_outdir / "04_identification/fasta/identify.ID.fa"
@@ -229,6 +281,11 @@ def resolve_args(args: argparse.Namespace) -> dict:
         if args.iqtree_bootstrap is not None
         else int(phylogeny_config.get("iqtree_bootstrap", 1000)),
         "threads": str(args.threads or phylogeny_config.get("threads", "AUTO")),
+        "subfamily_enabled": bool(subfamily_config.get("enabled", True)),
+        "subfamily_method": str(subfamily_config.get("method", "auto_topology")),
+        "subfamily_min_size": int(subfamily_config.get("min_size", 2)),
+        "subfamily_max_groups": int(subfamily_config.get("max_groups", 8)),
+        "subfamily_r_bin": str(subfamily_config.get("r_bin") or genefamily_info_config.get("r_bin") or "/usr/local/bin/R"),
     }
 
 
@@ -265,10 +322,29 @@ def run_module(**kwargs) -> Path:
             kwargs["threads"],
             logs_dir,
         )
+    command_rows = [alignment_command, tree_command]
+    subfamily_command = None
+    subfamily_assignments = outdir / "tables/tree_subfamily_assignments.tsv"
+    subfamily_stats = outdir / "tables/tree_subfamily_stats.tsv"
+    subfamily_tree_plot = outdir / "plots/tree_subfamily.pdf"
+    subfamily_stats_plot = outdir / "plots/tree_subfamily_species_stats.pdf"
+    if kwargs["subfamily_enabled"]:
+        if kwargs["subfamily_method"] != "auto_topology":
+            raise ValueError("phylogeny.subfamily.method currently supports only auto_topology")
+        subfamily_command = run_tree_subfamilies(
+            treefile,
+            outdir,
+            kwargs["family_name"],
+            kwargs["subfamily_r_bin"],
+            kwargs["subfamily_min_size"],
+            kwargs["subfamily_max_groups"],
+            logs_dir,
+        )
+        command_rows.append(subfamily_command)
 
     write_tsv(alignment_rows, tables_dir / "alignment_manifest.tsv", ALIGNMENT_FIELDS)
     write_tsv(phylogeny_rows, tables_dir / "phylogeny_manifest.tsv", PHYLOGENY_FIELDS)
-    write_tsv([alignment_command, tree_command], tables_dir / "phylogeny_commands.tsv", COMMAND_FIELDS)
+    write_tsv(command_rows, tables_dir / "phylogeny_commands.tsv", COMMAND_FIELDS)
     report = [
         "# 06_phylogeny Summary",
         "",
@@ -282,6 +358,21 @@ def run_module(**kwargs) -> Path:
         f"- Alignment command: `{alignment_command['command']}`",
         f"- Tree command: `{tree_command['command']}`",
     ]
+    if kwargs["subfamily_enabled"]:
+        report.extend(
+            [
+                f"- Subfamily method: `{kwargs['subfamily_method']}`",
+                f"- Subfamily minimum size: {kwargs['subfamily_min_size']}",
+                f"- Subfamily maximum groups: {kwargs['subfamily_max_groups']}",
+                f"- Subfamily assignments: `{subfamily_assignments}`",
+                f"- Subfamily statistics: `{subfamily_stats}`",
+                f"- Subfamily tree plot: `{subfamily_tree_plot}`",
+                f"- Subfamily species statistics plot: `{subfamily_stats_plot}`",
+                f"- Subfamily command: `{subfamily_command['command'] if subfamily_command else ''}`",
+            ]
+        )
+    else:
+        report.append("- Subfamily classification: disabled")
     (outdir / "report").mkdir(parents=True, exist_ok=True)
     (outdir / "report/phylogeny_summary.md").write_text("\n".join(report) + "\n", encoding="utf-8")
     return outdir

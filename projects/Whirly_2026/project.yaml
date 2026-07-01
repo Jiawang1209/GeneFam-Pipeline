@@ -67,3 +67,9 @@ phylogeny:
     - -cmax
     - "15"
     - -redo
+  subfamily:
+    enabled: true
+    method: auto_topology
+    min_size: 2
+    max_groups: 8
+    r_bin: /usr/local/bin/R
