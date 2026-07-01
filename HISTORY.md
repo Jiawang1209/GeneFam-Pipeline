@@ -34,6 +34,43 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-02 00:30 - Plan Reference modules 08-12
+
+Context:
+- User requested a strict `/goal` and immediate development for modules `08_jcvi`, `09_mcscanx`, `10_promoter`, `11_ppi`, and `12_full_bioinformatics_report`.
+- User required all module development to begin from Reference md/R/Python scripts, not from invented generic workflows.
+
+Decisions:
+- Keep the active `/goal` as the governing objective for 08-12.
+- Save a detailed task plan under `docs/superpowers/plans/`.
+- Add a durable Reference-to-Pipeline mapping document as a development contract before implementing module code.
+- Module outputs must follow `inputs/`, `tables/`, `plots/`, `report/`, and `logs/` where applicable.
+- Primary visualizations must first replicate the Reference graphical logic: JCVI Ka/Ks boxplot/quasirandom facets, MCScanX circlize tracks, promoter nested heatmaps, and ggNetView PPI.
+
+Added:
+- `docs/superpowers/plans/2026-07-02-reference-modules-08-12.md`
+- `docs/reference_to_pipeline/08_12_reference_module_mapping.md`
+
+Modified:
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Read Reference Step8, Step8.1, Step10, and Step11 from `Reference/Long_Weixiong_20240323_1_GDSL/Evolution_LWX_GDSL_2024.md`.
+- Read the key Reference plotting scripts: `R/8.collinearity_kaks.R`, `R/9.Circos_AT.R`, `R/9.mcscanx_KaKs.R`, `R/10.promoter.R`, and `R/11.ppi.R`.
+- Verified the mapping covers all requested module names with:
+  `rg -n "08_jcvi|09_mcscanx|10_promoter|11_ppi|12_full_bioinformatics_report" docs/reference_to_pipeline/08_12_reference_module_mapping.md`
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: Reference module plan and mapping docs
+
+Next:
+- Write the failing `08_jcvi` module test, implement the runner, run Whirly, update HISTORY, and commit the module.
+
 ## 2026-07-01 15:29 - Add 06_phylogeny module
 
 Context:
