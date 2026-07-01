@@ -34,6 +34,54 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-01 09:59 - Refine 05_genefamily_info outputs and property plot
+
+Context:
+- User pointed out that `species_10.bed` is not a valid output name for a workflow that may analyze any number of species.
+- User requested a species-level physicochemical property visualization modeled after `Reference/Long_Weixiong_20240323_1_GDSL/R/5.GeneFamily_Info.R`.
+
+Decisions:
+- Rename the all-species GFF-derived BED output to `all_species_gene.bed`.
+- Actively remove stale legacy `species_10.bed` from the 05 output directory when rerunning the module.
+- Keep `gene_family_info_summary.pdf/png`.
+- Add a Reference-style `protein_properties_by_species.pdf/png` plot with species-wise boxplots and quasirandom points for Length, MW, hydrophobicity, and pI.
+- Use `ggbeeswarm::geom_quasirandom` when available and fall back to `ggplot2::geom_jitter` otherwise.
+
+Added:
+- `protein_properties_by_species.pdf`
+- `protein_properties_by_species.png`
+- Regression tests for `all_species_gene.bed`, stale legacy BED cleanup, and the new protein-property plot outputs.
+
+Modified:
+- `bin/genefam/run_genefamily_info_module.py`
+- `scripts/plot_gene_family_info.R`
+- `bin/genefam/run_gene_family_info_smoke.py`
+- `tests/test_run_genefamily_info_module.py`
+- `tests/test_run_gene_family_info_smoke.py`
+- `docs/module_usage.zh-CN.md`
+- `HISTORY.md`
+
+Deleted:
+- Generated stale `projects/GDSL_2026/results/05_genefamily_info/tables/species_10.bed` during the real rerun.
+
+Verification:
+- `python -m pytest tests/test_run_genefamily_info_module.py tests/test_run_gene_family_info_smoke.py -q` first failed because `all_species_gene.bed` and `protein_properties_by_species.pdf/png` did not exist yet.
+- The focused tests then failed once because `stats::droplevels` was not exported; replacing it with `droplevels()` fixed the R compatibility issue.
+- `python -m pytest tests/test_run_genefamily_info_module.py tests/test_run_gene_family_info_smoke.py tests/test_build_gene_family_info.py -q` passed with 5 tests.
+- Real run passed:
+  `python bin/genefam/run_genefamily_info_module.py --config projects/GDSL_2026/project.yaml --plot`
+- Real output now contains `tables/all_species_gene.bed` with 547058 GFF gene rows plus header.
+- Real output no longer contains `tables/species_10.bed`.
+- Real output contains `plots/protein_properties_by_species.pdf` and `plots/protein_properties_by_species.png`.
+
+Commit:
+- hash: 859a6f8
+- message: fix: refine gene family info outputs
+- files: 05 generalized BED output, species physicochemical property plot, tests, docs
+
+Next:
+- Continue refining 05 visualization only if the user wants the exact tree-left + property-panel composition from the Reference R script.
+
 ## 2026-07-01 09:50 - Add 05_genefamily_info module
 
 Context:
