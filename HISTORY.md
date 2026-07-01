@@ -34,6 +34,50 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-02 00:38 - Add 09_mcscanx module
+
+Context:
+- User clarified that MCScanX self is required for intra-species duplication analysis, and circlize should draw intra-species chromosome/circos plots.
+- Reference Step9 prepares MCScanX self outputs, family BED files, tandem/WGD duplicate pairs, sliding-window density tracks, duplicate-type tracks, and circlize plots.
+
+Decisions:
+- Add a dedicated `09_mcscanx` module with `execute: false` by default for Whirly so it prepares commands and inputs without starting heavy self BLAST/MCScanX jobs.
+- Preserve Reference plot semantics in `plot_mcscanx_circlize_reference.R`: chromosome ring, gene labels, sliding-window density, gene type track, tandem/WGD links, and legends.
+- Preserve Reference MCScanX Ka/Ks visual grammar in `plot_mcscanx_kaks_reference.R`: boxplot, quasirandom points, Ka/Ks=1 dashed line, duplicate-type by metric facets.
+- Use cleaned preprocessing manifest paths and chromosome length tables from `01_preprocess`.
+
+Added:
+- `bin/genefam/run_mcscanx_module.py`
+- `scripts/plot_mcscanx_circlize_reference.R`
+- `scripts/plot_mcscanx_kaks_reference.R`
+- `tests/test_run_mcscanx_module.py`
+- Real Whirly outputs under `projects/Whirly_2026/results/09_mcscanx/`
+
+Modified:
+- `projects/Whirly_2026/project.yaml`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Red test first failed because `bin/genefam/run_mcscanx_module.py` and the Reference plot scripts did not exist:
+  `python -m pytest tests/test_run_mcscanx_module.py -q`
+- `python -m pytest tests/test_run_mcscanx_module.py -q` passed with 2 tests.
+- Real Whirly run completed:
+  `conda run -n GeneFamilyFlow python bin/genefam/run_mcscanx_module.py --config projects/Whirly_2026/project.yaml`
+- Real Whirly `09_mcscanx` produced 12 family BED files, 12 MCScanX `.gff` files, `logs/mcscanx_self_commands.sh`, `tables/circlize_chromosomes.tsv`, `tables/circlize_gene_density.tsv`, `tables/circlize_gene_types.tsv`, and `report/mcscanx_summary.md`.
+- `projects/Whirly_2026/results/09_mcscanx/logs/mcscanx_execution_status.tsv` records `ready_not_executed` because `mcscanx.execute` is currently false.
+- `python -m pytest tests/test_run_jcvi_module.py tests/test_run_mcscanx_module.py tests/test_run_phylogeny_module.py tests/test_run_domain_motif_genestructure_module.py tests/test_reference_plotting_reuse.py -q` passed with 9 tests.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: 09_mcscanx runner, Reference circlize/KaKs plot scripts, tests, Whirly config, Whirly 09 outputs
+
+Next:
+- Continue with `10_promoter`: promoter BED/FASTA extraction, PlantCARE submission splits, cis-element table integration, and Reference promoter heatmaps.
+
 ## 2026-07-02 00:34 - Add 08_jcvi module
 
 Context:
