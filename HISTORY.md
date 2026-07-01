@@ -18289,6 +18289,48 @@ Commit:
 
 Next:
 - Continue final MVP handoff polish; Docker/Apptainer runtime execution remains the intentionally deferred final packaging stage.
+## 2026-07-01 - Rework subfamily tree plots with ggtree
+
+Timestamp:
+- 2026-07-01 16:44 CST
+
+Context:
+- The first automatic subfamily visualization was functionally correct but used base R/ape plotting, which did not match the visual level of `Reference/Long_Weixiong_20240323_1_GDSL/R/6.tree.R`.
+- The user explicitly requested that the tree visualization imitate the Reference R script more closely and use `ggtree`, while statistics should use `ggplot2`.
+
+Decisions:
+- Rework `scripts/plot_tree_subfamilies.R` to use `treeio`, `ggtree`, `ggnewscale`, `aplot`, and `ggplot2`.
+- Keep the existing automatic topology-based subfamily assignment and stable output filenames.
+- Use `ggtree::geom_strip()` to show subfamily arcs, `ggtree::geom_tippoint()` for species points, `ggtree::geom_nodepoint()` for bootstrap/support points, and `ggplot2` for the species-by-subfamily bubble and proportional bar statistics.
+- Normalize FastTree support values from 0-1 to 0-100 before support binning.
+
+Added:
+- Test assertions that the subfamily plotting script uses `ggtree::ggtree`, `geom_strip`, `geom_tippoint`, `geom_nodepoint`, and `ggplot2::ggplot`.
+
+Modified:
+- `scripts/plot_tree_subfamilies.R`
+- `tests/test_run_phylogeny_module.py`
+- `HISTORY.md`
+
+Deleted:
+- Base R/ape plotting implementation for the rendered subfamily tree and statistics plots.
+
+Verification:
+- `python -m pytest tests/test_run_phylogeny_module.py::test_plot_tree_subfamilies_r_script_assigns_groups_and_stats -q` first failed because the script still used base R plotting and did not contain `ggtree::ggtree`.
+- The same focused test passed after the ggtree rewrite.
+- `python -m pytest tests/test_run_phylogeny_module.py -q` passed with 2 tests.
+- `conda run -n GeneFamilyFlow python bin/genefam/run_phylogeny_module.py --config projects/Whirly_2026/project.yaml` completed successfully and regenerated the Whirly 06 plots.
+- `python -m pytest tests/test_run_phylogeny_module.py tests/test_run_tree_feature_smoke.py tests/test_reference_plotting_reuse.py -q` passed with 4 tests.
+- Real Whirly artifact verification reported `FAILED_CHECKS=NONE` for `tree_subfamily.pdf/png`, `tree_subfamily_species_stats.pdf/png`, `tree_subfamily_assignments.tsv`, and `tree_subfamily_stats.tsv`.
+
+Commit:
+- hash: 51699ede439879cd95ed04b67304043310ac6fd5
+- message: feat: render subfamily trees with ggtree
+- files: ggtree subfamily plotting script and phylogeny module tests
+
+Next:
+- If manuscript-level polish is needed later, tune `geom_strip` offsets and legend placement per family size after viewing the actual project figure.
+
 ## 2026-07-01 - Add automatic phylogeny subfamily visualization
 
 Timestamp:
