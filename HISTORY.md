@@ -34,6 +34,48 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-02 00:50 - Add 12 full bioinformatics report module
+
+Context:
+- User requested a final Markdown report covering the whole workflow as a complete bioinformatics analysis, including methods, software versions, parameters, results, and figure-by-figure close reading.
+- This module closes the current 08-12 Reference-style development pass.
+
+Decisions:
+- Add `12_full_bioinformatics_report` to collect module summaries, module statuses, software versions, plot files, and figure interpretations.
+- Write detected and missing software rows for Python, R, JCVI, MCScanX, DIAMOND, BLASTP, seqkit, and ggNetView.
+- Add a figure interpretation index table so each detected plot has an explicit close-reading statement.
+- Truncate very long module summaries at a natural line break and point readers back to the module report for full command details.
+
+Added:
+- `bin/genefam/run_full_bioinformatics_report.py`
+- `tests/test_run_full_report_module.py`
+- Real Whirly outputs under `projects/Whirly_2026/results/12_full_bioinformatics_report/`
+
+Modified:
+- `projects/Whirly_2026/project.yaml`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Red test first failed because `bin/genefam/run_full_bioinformatics_report.py` did not exist:
+  `python -m pytest tests/test_run_full_report_module.py -q`
+- `python -m pytest tests/test_run_full_report_module.py -q` passed after implementation.
+- Real Whirly report run completed:
+  `conda run -n GeneFamilyFlow python bin/genefam/run_full_bioinformatics_report.py --config projects/Whirly_2026/project.yaml`
+- Real Whirly report generated `report/full_bioinformatics_report.md`, `tables/software_versions.tsv`, `tables/module_status_overview.tsv`, `tables/figure_interpretation_index.tsv`, and `logs/report_build_status.tsv`.
+- Real Whirly report build status records 11 modules and 16 figure files.
+- `python -m pytest tests/test_run_jcvi_module.py tests/test_run_mcscanx_module.py tests/test_run_promoter_module.py tests/test_run_ppi_module.py tests/test_run_full_report_module.py tests/test_run_phylogeny_module.py tests/test_run_domain_motif_genestructure_module.py tests/test_reference_plotting_reuse.py -q` passed with 14 tests.
+
+Commit:
+- hash: not created in this session
+- message: not created in this session
+- files: full report runner, report test, Whirly config, Whirly 12 outputs
+
+Next:
+- If the user wants biological final evidence instead of prepared/planned evidence, enable and run heavy external steps: `jcvi.run: true`, `mcscanx.execute: true`, PlantCARE cis-element table import, and `ppi.run_blast: true`.
+
 ## 2026-07-02 00:47 - Add 11_ppi module
 
 Context:

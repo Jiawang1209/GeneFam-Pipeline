@@ -123,3 +123,6 @@ ppi:
   run_blast: false
   min_weight: 4
   r_bin: /usr/local/bin/R
+
+report:
+  r_bin: /usr/local/bin/R
