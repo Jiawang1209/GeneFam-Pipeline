@@ -322,7 +322,10 @@ def run_module(**kwargs) -> Path:
     info_rows, stat_rows, bed_rows, fasta_records = build_gene_information(kwargs["members_fasta"], kwargs["clean_bank"])
     write_tsv(info_rows, GENE_INFO_FIELDS, tables_dir / "Gene_Information.tsv")
     write_tsv(stat_rows, GENE_INFO_STAT_FIELDS, tables_dir / "Gene_Information_stat.tsv")
-    write_tsv(bed_rows, BED_FIELDS, tables_dir / "species_10.bed")
+    write_tsv(bed_rows, BED_FIELDS, tables_dir / "all_species_gene.bed")
+    legacy_bed = tables_dir / "species_10.bed"
+    if legacy_bed.exists():
+        legacy_bed.unlink()
     write_xlsx(info_rows, GENE_INFO_FIELDS, tables_dir / "Gene_Information.xlsx")
     write_xlsx(stat_rows, GENE_INFO_STAT_FIELDS, tables_dir / "Gene_Information_stat.xlsx")
 

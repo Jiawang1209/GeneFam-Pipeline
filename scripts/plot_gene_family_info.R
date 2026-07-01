@@ -182,3 +182,84 @@ dev.off()
 png(file.path(outdir, "gene_family_info_summary.png"), width = 1800, height = 1100, res = 160)
 draw_plot()
 dev.off()
+
+draw_species_property_plot <- function() {
+  if (!requireNamespace("ggplot2", quietly = TRUE)) {
+    return(FALSE)
+  }
+  if (nrow(protein_properties) == 0) {
+    return(FALSE)
+  }
+  plot_data <- data.frame(
+    Species = protein_properties$species_id,
+    Length = suppressWarnings(as.numeric(protein_properties$protein_length)),
+    MW = suppressWarnings(as.numeric(protein_properties$molecular_weight_kda)),
+    hydrophobicity = suppressWarnings(as.numeric(protein_properties$gravy)),
+    pI = suppressWarnings(as.numeric(protein_properties$isoelectric_point)),
+    check.names = FALSE
+  )
+  species_levels <- unique(copy_number$species_id)
+  plot_data$Species <- factor(plot_data$Species, levels = rev(species_levels), ordered = TRUE)
+  long_data <- stats::reshape(
+    plot_data,
+    varying = c("Length", "MW", "hydrophobicity", "pI"),
+    v.names = "Value",
+    timevar = "Kind",
+    times = c("Length", "MW", "hydrophobicity", "pI"),
+    direction = "long"
+  )
+  long_data$Kind <- factor(long_data$Kind, levels = c("Length", "MW", "hydrophobicity", "pI"), ordered = TRUE)
+  long_data <- long_data[is.finite(long_data$Value) & !is.na(long_data$Species), ]
+  if (nrow(long_data) == 0) {
+    return(FALSE)
+  }
+  palette <- c(
+    "#a6cee3", "#1f78b4", "#b2df8a", "#33a02c", "#fb9a99",
+    "#e31a1c", "#fdbf6f", "#ff7f00", "#cab2d6", "#6a3d9a",
+    "#ffff99", "#b15928", "#8dd3c7", "#bebada", "#80b1d3",
+    "#fdb462", "#b3de69", "#fccde5", "#bc80bd", "#ccebc5"
+  )
+  species_values <- levels(droplevels(long_data$Species))
+  fill_values <- stats::setNames(rep(palette, length.out = length(species_values)), species_values)
+  point_layer <- if (requireNamespace("ggbeeswarm", quietly = TRUE)) {
+    ggbeeswarm::geom_quasirandom(
+      ggplot2::aes(x = Value, y = Species, fill = Species, group = Species),
+      shape = 21,
+      size = 2.4,
+      alpha = 0.7,
+      varwidth = TRUE,
+      orientation = "x"
+    )
+  } else {
+    ggplot2::geom_jitter(
+      ggplot2::aes(x = Value, y = Species, fill = Species, group = Species),
+      shape = 21,
+      size = 2.2,
+      alpha = 0.65,
+      width = 0,
+      height = 0.18
+    )
+  }
+  p_stat <- ggplot2::ggplot(long_data) +
+    ggplot2::geom_boxplot(ggplot2::aes(x = Value, y = Species, fill = Species), outlier.shape = NA, linewidth = 0.35) +
+    point_layer +
+    ggplot2::scale_fill_manual(values = fill_values) +
+    ggplot2::facet_wrap(~Kind, scales = "free", nrow = 1) +
+    ggplot2::labs(x = "", y = "") +
+    ggplot2::theme_bw() +
+    ggplot2::theme(
+      panel.grid = ggplot2::element_blank(),
+      axis.text = ggplot2::element_text(color = "#000000", size = 10),
+      panel.border = ggplot2::element_rect(linewidth = 1),
+      strip.text = ggplot2::element_text(color = "#000000", size = 13),
+      strip.background = ggplot2::element_rect(linewidth = 1),
+      axis.text.y = ggplot2::element_text(color = "#000000", size = 8),
+      axis.ticks.y = ggplot2::element_line(color = "#000000"),
+      legend.position = "none"
+    )
+  ggplot2::ggsave(file.path(outdir, "protein_properties_by_species.pdf"), plot = p_stat, height = 7.5, width = 17)
+  ggplot2::ggsave(file.path(outdir, "protein_properties_by_species.png"), plot = p_stat, height = 7.5, width = 17, dpi = 160)
+  TRUE
+}
+
+draw_species_property_plot()

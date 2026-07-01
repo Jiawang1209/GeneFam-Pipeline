@@ -53,6 +53,9 @@ def write_project_inputs(root: Path) -> Path:
 
 def test_run_genefamily_info_module_builds_physical_and_protein_tables(tmp_path):
     config = write_project_inputs(tmp_path)
+    legacy_bed = tmp_path / "projects/GDSL_2026/results/05_genefamily_info/tables/species_10.bed"
+    legacy_bed.parent.mkdir(parents=True, exist_ok=True)
+    legacy_bed.write_text("stale legacy bed\n", encoding="utf-8")
 
     completed = subprocess.run(
         [sys.executable, str(SCRIPT), "--config", str(config), "--skip-plot"],
@@ -84,6 +87,7 @@ def test_run_genefamily_info_module_builds_physical_and_protein_tables(tmp_path)
         "Arabidopsis_thaliana": "1",
         "Brassica_rapa": "1",
     }
-    assert (outdir / "tables/species_10.bed").exists()
+    assert (outdir / "tables/all_species_gene.bed").exists()
+    assert not (outdir / "tables/species_10.bed").exists()
     assert (outdir / "tables/Gene_Information.xlsx").exists()
     assert (outdir / "tables/Gene_Information_stat.xlsx").exists()

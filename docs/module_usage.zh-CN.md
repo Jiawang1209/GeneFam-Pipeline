@@ -685,7 +685,7 @@ PF00657/domain-confirmed final members: 1958
 
 - 读取 `identify.ID.fa`
 - 解析 `01_preprocess` clean bank 中每个物种的 clean GFF3
-- 生成全基因 BED 表 `species_10.bed`
+- 生成全基因 BED 表 `all_species_gene.bed`
 - 为最终家族成员匹配染色体、起止坐标、链方向
 - 计算蛋白质理化性质：长度、分子量、疏水性/GRAVY、等电点 pI
 - 输出 `Gene_Information.tsv/xlsx`
@@ -745,7 +745,7 @@ projects/GDSL_2026/results/05_genefamily_info/
     Gene_Information.xlsx
     Gene_Information_stat.tsv
     Gene_Information_stat.xlsx
-    species_10.bed
+    all_species_gene.bed
     gene_family_copy_number.tsv
     gene_family_copy_number_summary.tsv
     gene_family_species_order.tsv
