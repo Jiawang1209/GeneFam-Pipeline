@@ -772,3 +772,135 @@ Members matched to GFF coordinates: 1958
 Species with members: 12
 GFF gene BED rows: 547058
 ```
+
+## 06_phylogeny
+
+### 作用
+
+`06_phylogeny` 对齐 Reference Step6，基于 `04_identification` 得到的最终家族成员蛋白序列：
+
+- 使用 `MAFFT` 或 `MUSCLE` 进行多序列比对
+- 使用 `FastTree` 或 `IQ-TREE` 构建系统发育树
+- 将比对软件、建树软件、参数、真实运行命令全部写入结果目录
+- 默认推荐 `muscle -super5 + fasttree`，适合大规模多物种基因家族快速建树
+- 如需复刻 Reference 命令，可改为 `muscle + iqtree`
+
+Reference 原始思路：
+
+```bash
+muscle -in ../4.identification/identify.ID.fa -out identify.ID.muscle
+iqtree -s identify.ID.muscle -m MFP -bb 1000 -bnni -nt AUTO -cmax 15 -redo
+```
+
+当前通用流程默认更适合大数据：
+
+```bash
+muscle -super5 identify.ID.fa -output GDSL.muscle.aln.faa
+FastTree -lg -out GDSL.fasttree.treefile GDSL.muscle.aln.faa
+```
+
+### 最简命令
+
+```bash
+python bin/genefam/run_phylogeny_module.py \
+  --config projects/GDSL_2026/project.yaml
+```
+
+默认读取：
+
+```text
+projects/GDSL_2026/results/04_identification/fasta/identify.ID.fa
+```
+
+默认输出：
+
+```text
+projects/GDSL_2026/results/06_phylogeny
+```
+
+### 主要参数
+
+| 参数 | 默认值 | 说明 |
+| --- | --- | --- |
+| `--config` | 空 | 项目级 `project.yaml` |
+| `--input-fasta` | `<project.outdir>/04_identification/fasta/identify.ID.fa` | 最终家族成员蛋白 FASTA |
+| `--outdir` | `<project.outdir>/06_phylogeny` | 06 模块输出目录 |
+| `--family-name` | `phylogeny.family_name` 或 `family` | 输出文件名前缀 |
+| `--aligner` | `mafft` | 可选 `mafft` 或 `muscle` |
+| `--tree-builder` | `fasttree` | 可选 `fasttree` 或 `iqtree` |
+| `--aligner-options` | YAML 中配置 | 命令行字符串形式传入比对参数 |
+| `--tree-options` | YAML 中配置 | 命令行字符串形式传入建树参数 |
+| `--iqtree-model` | `MFP` | IQ-TREE 模型选择 |
+| `--iqtree-bootstrap` | `1000` | IQ-TREE ultrafast bootstrap 次数 |
+| `--threads` | `AUTO` | IQ-TREE 线程参数 |
+
+项目配置：
+
+```yaml
+modules:
+  phylogeny: true
+
+phylogeny:
+  family_name: GDSL
+  aligner: muscle
+  aligner_options:
+    - -super5
+    - "{input}"
+    - -output
+    - "{output}"
+  tree_builder: fasttree
+  fasttree_options:
+    - -lg
+  threads: AUTO
+  iqtree_model: MFP
+  iqtree_bootstrap: 1000
+  iqtree_options:
+    - -bnni
+    - -cmax
+    - "15"
+    - -redo
+```
+
+如果希望更接近 Reference：
+
+```yaml
+phylogeny:
+  family_name: GDSL
+  aligner: muscle
+  aligner_options:
+    - -align
+    - "{input}"
+    - -output
+    - "{output}"
+  tree_builder: iqtree
+  iqtree_model: MFP
+  iqtree_bootstrap: 1000
+  threads: AUTO
+  iqtree_options:
+    - -bnni
+    - -cmax
+    - "15"
+    - -redo
+```
+
+注意：Reference 使用的是旧版 MUSCLE 的 `-in/-out` 风格；当前 `GeneFamilyFlow` 环境中的 MUSCLE 5 使用 `-align/-output`。
+
+### 默认输出
+
+```text
+projects/GDSL_2026/results/06_phylogeny/
+  alignment/
+    GDSL.mafft.aln.faa
+  phylogeny/
+    GDSL.fasttree.treefile
+  tables/
+    alignment_manifest.tsv
+    phylogeny_manifest.tsv
+    phylogeny_commands.tsv
+  logs/
+    mafft.stderr.log
+    fasttree.stdout.log
+    fasttree.stderr.log
+  report/
+    phylogeny_summary.md
+```

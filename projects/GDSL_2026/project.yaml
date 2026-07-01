@@ -16,6 +16,7 @@ modules:
   blastp: true
   identification: true
   genefamily_info: true
+  phylogeny: true
 
 hmm:
   hmm_dir: projects/GDSL_2026/config/hmm_profiles
@@ -46,3 +47,23 @@ identification:
 genefamily_info:
   plot: true
   r_bin: /usr/local/bin/R
+
+phylogeny:
+  family_name: GDSL
+  aligner: muscle
+  aligner_options:
+    - -super5
+    - "{input}"
+    - -output
+    - "{output}"
+  tree_builder: fasttree
+  fasttree_options:
+    - -lg
+  threads: AUTO
+  iqtree_model: MFP
+  iqtree_bootstrap: 1000
+  iqtree_options:
+    - -bnni
+    - -cmax
+    - "15"
+    - -redo
