@@ -159,11 +159,9 @@ tree_outer_padding <- 2.4
 tip_label_size <- 1.8
 tip_point_size <- 1.6
 strip_bar_size <- 1.1
-label_show_threshold <- 24
-show_tip_labels <- n_tips <= label_show_threshold
-n_species <- length(species_levels)
-species_legend_threshold <- 10
-show_species_legend <- n_species <= species_legend_threshold
+tree_scale <- ifelse(n_tips > 24, 0.78, 0.92)
+plot_width <- max(14, ifelse(n_tips > 24, 18, 14))
+plot_height <- max(14, ifelse(n_tips > 24, 18, 14))
 
 plot_tree <- function() {
   p <- ggtree::ggtree(
@@ -189,15 +187,9 @@ plot_tree <- function() {
     ) +
     ggnewscale::new_scale_fill() +
     ggtree::geom_tippoint(ggplot2::aes(fill = species_id), shape = 21, size = tip_point_size, stroke = 0.2) +
-    ggplot2::scale_fill_manual(
-      values = species_cols,
-      name = "Species",
-      guide = if (show_species_legend) {
-        ggplot2::guide_legend(override.aes = list(size = 2.2))
-      } else {
-        "none"
-      }
-    ) +
+    ggplot2::scale_fill_manual(values = species_cols, name = "Species") +
+    ggtree::geom_tiplab(ggplot2::aes(label = gene_id, color = subfamily), size = tip_label_size, offset = tip_label_offset, show.legend = FALSE) +
+    ggplot2::scale_color_manual(values = subfamily_cols, name = "Subfamily") +
     ggtree::geom_tree(size = 0.12, color = "#969696") +
     ggplot2::theme(
       legend.position = c(0.54, 0.48),
@@ -206,17 +198,6 @@ plot_tree <- function() {
       legend.text = ggplot2::element_text(size = 7),
       legend.title = ggplot2::element_text(size = 8)
     )
-
-  if (show_tip_labels) {
-    p <- p +
-      ggtree::geom_tiplab(
-        ggplot2::aes(label = gene_id, color = subfamily),
-        size = tip_label_size,
-        offset = tip_label_offset,
-        show.legend = FALSE
-      ) +
-      ggplot2::scale_color_manual(values = subfamily_cols, name = "Subfamily")
-  }
 
   if (!is.null(strip_df) && nrow(strip_df) > 0) {
     for (i in seq_len(nrow(strip_df))) {
@@ -235,7 +216,7 @@ plot_tree <- function() {
       )
     }
   }
-  p + ggtree::xlim_tree(strip_offset + tree_outer_padding)
+  p + ggtree::xlim_tree((strip_offset + tree_outer_padding) / tree_scale)
 }
 
 plot_bubble <- function() {
@@ -294,15 +275,15 @@ p_stats <- aplot::insert_right(p_bubble, p_bar, width = 1.15)
 ggplot2::ggsave(
   filename = file.path(plots_dir, "tree_subfamily.pdf"),
   plot = p_tree,
-  width = 14,
-  height = 14,
+  width = plot_width,
+  height = plot_height,
   limitsize = FALSE
 )
 ggplot2::ggsave(
   filename = file.path(plots_dir, "tree_subfamily.png"),
   plot = p_tree,
-  width = 14,
-  height = 14,
+  width = plot_width,
+  height = plot_height,
   dpi = 180,
   limitsize = FALSE
 )

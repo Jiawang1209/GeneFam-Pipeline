@@ -157,12 +157,13 @@ def test_plot_tree_subfamilies_r_script_assigns_groups_and_stats(tmp_path):
     assert "geom_strip" in script_text
     assert "geom_tippoint" in script_text
     assert "geom_nodepoint" in script_text
-    assert "label_show_threshold <- 24" in script_text
-    assert "show_tip_labels <- n_tips <= label_show_threshold" in script_text
-    assert "if (show_tip_labels)" in script_text
-    assert "species_legend_threshold <- 10" in script_text
-    assert "show_species_legend <- n_species <= species_legend_threshold" in script_text
+    assert "tree_scale <- ifelse(n_tips > 24, 0.78, 0.92)" in script_text
+    assert "plot_width <- max(14, ifelse(n_tips > 24, 18, 14))" in script_text
+    assert "plot_height <- max(14, ifelse(n_tips > 24, 18, 14))" in script_text
     assert "ggplot2::aes(label = gene_id, color = subfamily)" in script_text
+    assert "ggplot2::scale_fill_manual(values = species_cols, name = \"Species\")" in script_text
+    assert "show_tip_labels" not in script_text
+    assert "show_species_legend" not in script_text
     assert "label_map_file" in script_text
     assert "ggplot2::ggplot" in script_text
     assert "strip_offset <- 1.2" in script_text
