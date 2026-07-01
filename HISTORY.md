@@ -18289,3 +18289,45 @@ Commit:
 
 Next:
 - Continue final MVP handoff polish; Docker/Apptainer runtime execution remains the intentionally deferred final packaging stage.
+## 2026-07-01 - Switch smoke-test project from GDSL to Whirly
+
+Timestamp:
+- 2026-07-01 16:26 CST
+
+Context:
+- The previous `GDSL_2026` and `WOX_2026` projects were not ideal for fast end-to-end smoke testing: GDSL was the original reference family, while WOX used `PF00046/Homeodomain` and produced more than 1000 final-scale candidates.
+- A smaller Whirly transcription factor domain was selected for development testing because `PF08536` has 3 Arabidopsis seed genes and 2 rice seed genes in the configured domain annotation sources.
+- The new project `projects/Whirly_2026` was run through modules `01_preprocess` to `06_phylogeny`.
+
+Decisions:
+- Use `PF08536` as the small-family smoke-test HMM profile.
+- Keep project results under `projects/Whirly_2026/results`, which remains ignored by git through the repository `results/` ignore rule.
+- Keep only reusable project configuration and the HMM profile in git; do not commit generated result files.
+
+Added:
+- `projects/Whirly_2026/config/hmm_profiles/PF08536.hmm`
+- `projects/Whirly_2026/project.yaml`
+
+Modified:
+- Replaced the tracked demo project configuration from `projects/GDSL_2026` with `projects/Whirly_2026`.
+
+Deleted:
+- `projects/GDSL_2026/config/hmm_profiles/PF00657.hmm`
+- `projects/GDSL_2026/project.yaml`
+
+Verification:
+- `python bin/genefam/build_species_clean_bank.py --raw-root data/species_bank --outdir projects/Whirly_2026/results/01_preprocess --out-root projects/Whirly_2026/results/01_preprocess/species_clean_bank --large-file-mode symlink` built a clean bank for 12 species.
+- `conda run -n GeneFamilyFlow python bin/genefam/run_hmm_module.py --config projects/Whirly_2026/project.yaml` completed with 36 HMM candidates.
+- `conda run -n GeneFamilyFlow python bin/genefam/run_blastp_module.py --config projects/Whirly_2026/project.yaml` completed with 37 BLASTP candidates; Arabidopsis seed count was 3, rice seed count was 2, and missing seed IDs were 0 for both.
+- `conda run -n GeneFamilyFlow python bin/genefam/run_identification_module.py --config projects/Whirly_2026/project.yaml` completed with 36 domain-confirmed final members.
+- `python bin/genefam/run_genefamily_info_module.py --config projects/Whirly_2026/project.yaml --plot` generated `Gene_Information.tsv`, protein-property tables, and summary plots.
+- `conda run -n GeneFamilyFlow python bin/genefam/run_phylogeny_module.py --config projects/Whirly_2026/project.yaml` completed MUSCLE alignment and FastTree tree construction for 36 sequences.
+- Final artifact verification reported `FAILED_CHECKS=NONE` for module summaries, gene information table, protein-property plot, alignment, treefile, and phylogeny report.
+
+Commit:
+- hash: 6f4dd35958ac83e50bab7ad1d5b2938f184509fc
+- message: chore: switch demo project to Whirly
+- files: Whirly project configuration, `PF08536.hmm`, removal of the previous tracked GDSL demo project files
+
+Next:
+- Continue module-by-module development using `Whirly_2026` as the fast end-to-end smoke-test project before returning to larger gene families.
