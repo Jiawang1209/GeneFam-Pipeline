@@ -18572,3 +18572,49 @@ Commit:
 
 Next:
 - If the user wants an even more publication-like final layout, combine the circular tree and the subfamily statistics panel into one exported composite figure in a later 06_phylogeny iteration.
+
+## 2026-07-01 17:15 - Restore full phylogeny labels and legends
+
+Context:
+- User clarified that the previous adaptive hiding strategy was not desired.
+- The expected behavior is to keep all gene labels and the species legend, while making the circular tree itself smaller so the complete information remains visible.
+
+Decisions:
+- Do not hide tip labels for larger trees.
+- Do not hide the species legend for multi-species trees.
+- Shrink the circular tree by expanding the tree plotting range with `tree_scale` and increasing the exported tree canvas for larger gene families.
+
+Added:
+- Regression checks that the tree plotting script keeps `geom_tiplab()` and the species legend instead of using hidden-label or hidden-legend switches.
+
+Modified:
+- `scripts/plot_tree_subfamilies.R`
+  - Removed the conditional `show_tip_labels` behavior.
+  - Removed the conditional `show_species_legend` behavior.
+  - Added `tree_scale`, `plot_width`, and `plot_height` to make larger circular trees render with more whitespace.
+  - Restored unconditional `geom_tiplab()` and species legend rendering.
+- `tests/test_run_phylogeny_module.py`
+  - Updated expectations to match the full-label, full-legend plotting strategy.
+
+Deleted:
+- None.
+
+Outputs:
+- Re-rendered Whirly 06 tree with all gene labels and the species legend:
+  - `projects/Whirly_2026/results/06_phylogeny/plots/tree_subfamily.png`
+  - `projects/Whirly_2026/results/06_phylogeny/plots/tree_subfamily.pdf`
+
+Verification:
+- `python -m pytest tests/test_run_phylogeny_module.py::test_plot_tree_subfamilies_r_script_assigns_groups_and_stats -q` first failed because `tree_scale` was not implemented yet.
+- `python -m pytest tests/test_run_phylogeny_module.py::test_plot_tree_subfamilies_r_script_assigns_groups_and_stats -q` passed after implementation with 1 test.
+- `conda run -n GeneFamilyFlow python bin/genefam/run_phylogeny_module.py --config projects/Whirly_2026/project.yaml` completed successfully.
+- `python -m pytest tests/test_run_phylogeny_module.py tests/test_run_tree_feature_smoke.py tests/test_reference_plotting_reuse.py -q` passed with 4 tests.
+- Visual inspection confirmed that labels and the species legend are both present in the regenerated Whirly tree.
+
+Commit:
+- hash: bcbc0eb
+- message: style: keep labels in phylogeny tree plots
+- files: `scripts/plot_tree_subfamilies.R`, `tests/test_run_phylogeny_module.py`
+
+Next:
+- Continue fine-tuning the 06 phylogeny plot dimensions if the user wants the circular tree to be smaller or the labels to be larger in the next visual pass.
