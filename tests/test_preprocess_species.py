@@ -149,6 +149,79 @@ def test_clean_sequence_records_matches_ensembl_colon_transcript_attributes(tmp_
     assert warnings == []
 
 
+def test_clean_sequence_records_strips_tu_compound_transcript_and_protein_suffixes(tmp_path):
+    pep = tmp_path / "tu.pep.fa"
+    pep.write_text(
+        ">TuG1812G0100000533.01.P01\nMAAA\n"
+        ">TuG1812G0100000533.02.P01\nMAAAAA\n",
+        encoding="utf-8",
+    )
+    cds = tmp_path / "tu.cds.fa"
+    cds.write_text(
+        ">TuG1812G0100000533.01.T01\nATGGCTGCTGCT\n"
+        ">TuG1812G0100000533.02.T01\nATGGCTGCTGCTGCTGCT\n",
+        encoding="utf-8",
+    )
+
+    cleaned_pep, cleaned_cds, transcript_rows, representative_rows, warnings = clean_sequence_records(
+        species_id="Triticum_urartu",
+        pep_records=read_fasta_records(pep),
+        cds_records=read_fasta_records(cds),
+        transcript_gene_map={},
+    )
+
+    assert cleaned_pep == [("TuG1812G0100000533", "MAAAAA")]
+    assert cleaned_cds == [("TuG1812G0100000533", "ATGGCTGCTGCTGCTGCT")]
+    assert {row["gene_id"] for row in transcript_rows} == {"TuG1812G0100000533"}
+    assert representative_rows[0]["selected_transcript_id"] == "TuG1812G0100000533.02.P01"
+    assert warnings == []
+
+
+def test_clean_sequence_records_preserves_tu_style_gff3_gene_ids(tmp_path):
+    pep = tmp_path / "tu.pep.fa"
+    pep.write_text(
+        ">TuG1812G0100000533.01.P01\nMAAA\n"
+        ">TuG1812G0100000533.02.P01\nMAAAAA\n",
+        encoding="utf-8",
+    )
+    cds = tmp_path / "tu.cds.fa"
+    cds.write_text(
+        ">TuG1812G0100000533.01.T01\nATGGCTGCTGCT\n"
+        ">TuG1812G0100000533.02.T01\nATGGCTGCTGCTGCTGCT\n",
+        encoding="utf-8",
+    )
+    gff3 = tmp_path / "tu.gff3"
+    gff3.write_text(
+        "Tu1\tIGDB_Final\tgene\t1\t900\t.\t+\t.\tID=TuG1812G0100000533.01;Name=TuG1812G0100000533.01\n"
+        "Tu1\tIGDB_Final\tmRNA\t1\t900\t.\t+\t.\tID=TuG1812G0100000533.01.T01;Name=TuG1812G0100000533.01.T01;Parent=TuG1812G0100000533.01\n"
+        "Tu1\tIGDB_Final\tgene\t1000\t1800\t.\t+\t.\tID=TuG1812G0100000533.02;Name=TuG1812G0100000533.02\n"
+        "Tu1\tIGDB_Final\tmRNA\t1000\t1800\t.\t+\t.\tID=TuG1812G0100000533.02.T01;Name=TuG1812G0100000533.02.T01;Parent=TuG1812G0100000533.02\n",
+        encoding="utf-8",
+    )
+
+    cleaned_pep, cleaned_cds, transcript_rows, representative_rows, warnings = clean_sequence_records(
+        species_id="Triticum_urartu",
+        pep_records=read_fasta_records(pep),
+        cds_records=read_fasta_records(cds),
+        transcript_gene_map=parse_gff3_transcript_gene_map(gff3),
+    )
+
+    assert cleaned_pep == [
+        ("TuG1812G0100000533.01", "MAAA"),
+        ("TuG1812G0100000533.02", "MAAAAA"),
+    ]
+    assert cleaned_cds == [
+        ("TuG1812G0100000533.01", "ATGGCTGCTGCT"),
+        ("TuG1812G0100000533.02", "ATGGCTGCTGCTGCTGCT"),
+    ]
+    assert {row["source"] for row in transcript_rows} == {"gff3"}
+    assert [row["selected_transcript_id"] for row in representative_rows] == [
+        "TuG1812G0100000533.01.P01",
+        "TuG1812G0100000533.02.P01",
+    ]
+    assert warnings == []
+
+
 def test_preprocess_species_cli_writes_clean_manifest_and_audit_tables(tmp_path):
     species_dir = tmp_path / "species_bank" / "Demo_species"
     species_dir.mkdir(parents=True)

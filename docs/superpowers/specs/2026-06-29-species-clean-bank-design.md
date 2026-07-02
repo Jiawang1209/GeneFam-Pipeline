@@ -71,10 +71,11 @@ The module should resolve protein and CDS records to gene IDs using this priorit
 
 1. FASTA header attributes such as `locus`, `gene`, `gene_id`, `transcript`, and `polypeptide`.
 2. GFF3 transcript-to-gene mapping using transcript feature aliases from `ID`, `Name`, `Alias`, `transcript_id`, `protein_id`, and related attributes.
-3. Common transcript suffix inference, including `.1`, `.t1`, `-RA`, `_T001`, `.p1`, and related variants.
-4. Self ID fallback only when no safer mapping exists.
+3. Per-species GFF3-aware ID-rule inference. The module samples peptide headers, tries transcript/product aliases such as `.P01` to `.T01`, and checks whether they match real GFF3 transcript IDs.
+4. Common transcript suffix inference, including `.1`, `.01`, `.t1`, `.T01`, `.P01`, `-RA`, `_T001`, `.p1`, `.cds1`, and related variants.
+5. Self ID fallback only when no safer mapping exists.
 
-The selected output FASTA ID is the cleaned gene ID. The selected transcript ID remains traceable in the audit tables.
+When GFF3 mapping succeeds, the selected output FASTA ID must preserve the GFF3 gene ID exactly. Suffix stripping is only a fallback behavior for records that cannot be mapped to GFF3. The selected transcript ID remains traceable in the audit tables.
 
 ## Representative Transcript Rule
 
@@ -92,6 +93,7 @@ The rule must be recorded as `longest_pep` in the representative transcript tabl
 Each species should write:
 
 - `gene_id_map.tsv`: raw transcript ID, cleaned transcript ID, gene ID, mapping source, and useful aliases.
+- `id_resolution_rules.tsv`: per-species GFF3 matching rate, whether GFF3 gene IDs were preserved, and suffix-like diagnostics for unmapped/fallback troubleshooting.
 - `representative_transcripts.tsv`: gene ID, selected transcript ID, protein length, CDS length, and rule.
 - `preprocess_qc.tsv`: raw counts, clean counts, mapping rates, CDS match rate, terminal stop removals, warning counts, and status.
 - `preprocess_warnings.tsv`: row-level warnings for missing CDS, ambiguous IDs, duplicate outputs, or low-confidence fallback.
@@ -175,4 +177,3 @@ Acceptance criteria for this set:
 - QC tables report mapping source counts and match rates;
 - clean-bank manifest points to clean files under `data/species_clean_bank/`;
 - raw files are preserved under each species `raw/` directory.
-

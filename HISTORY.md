@@ -34,6 +34,54 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-02 08:07 - Make 01_preprocess preserve GFF3 gene IDs
+
+Context:
+- User clarified that Tu and other species should use the real GFF3 gene IDs when GFF3 mapping is available, rather than forcibly stripping suffixes such as `.01`.
+- `Triticum_urartu` peptide headers such as `TuG1812G0100000533.01.P01` need to map through GFF3 transcript IDs such as `TuG1812G0100000533.01.T01` and preserve the GFF3 gene ID `TuG1812G0100000533.01`.
+
+Decisions:
+- Treat GFF3 as the authoritative ID source whenever transcript-to-gene mapping succeeds.
+- Use suffix stripping only as a fallback for records that cannot be mapped to GFF3.
+- Add per-species ID-resolution audit output so future species can be inspected without guessing which rule was applied.
+- Make CDS matching priority ordered so `.01.T01` and `.02.T01` do not collide through a broad fallback gene alias.
+
+Added:
+- Per-species `id_resolution_rules.tsv` audit output and manifest path.
+- Tests for Tu-style `.P01` protein headers, `.T01` CDS/GFF3 transcript IDs, and preservation of GFF3 gene IDs.
+
+Modified:
+- `bin/genefam/preprocess_species.py`
+- `bin/genefam/build_species_clean_bank.py`
+- `tests/test_preprocess_species.py`
+- `tests/test_build_species_clean_bank.py`
+- `docs/superpowers/specs/2026-06-29-species-clean-bank-design.md`
+
+Deleted:
+- none
+
+Verification:
+- Red Tu GFF3-preservation test first failed because the previous implementation merged `TuG...01` and `TuG...02` into the stripped gene ID.
+- `python -m pytest tests/test_preprocess_species.py tests/test_build_species_clean_bank.py -q` passed with 16 tests.
+- Rebuilt Whirly clean bank:
+  `python bin/genefam/build_species_clean_bank.py --raw-root data/species_bank --outdir projects/Whirly_2026/results/01_preprocess --out-root projects/Whirly_2026/results/01_preprocess/species_clean_bank --large-file-mode symlink`
+- Real Tu audit reports `gff3_match_rate=1.0000`, `preserve_gff3_gene_ids=TRUE`, and `strip_gff3_gene_suffix=FALSE`.
+- Real Tu clean FASTA now starts with GFF3 IDs such as `TuG1812G0100000001.01`, and no `.P01/.T01` product suffix remains in clean IDs.
+- Refreshed Whirly modules 02-05:
+  `conda run -n GeneFamilyFlow python bin/genefam/run_hmm_module.py --config projects/Whirly_2026/project.yaml`
+  `conda run -n GeneFamilyFlow python bin/genefam/run_blastp_module.py --config projects/Whirly_2026/project.yaml`
+  `conda run -n GeneFamilyFlow python bin/genefam/run_identification_module.py --config projects/Whirly_2026/project.yaml`
+  `python bin/genefam/run_genefamily_info_module.py --config projects/Whirly_2026/project.yaml --plot`
+- Refreshed Whirly 02/03/04/05 tables all retain Tu IDs such as `TuG1812G0600001387.01` and `TuG1812G0700001025.01`.
+
+Commit:
+- hash: current commit; use `git log -1 --oneline` for the final self-referential hash
+- message: fix: preserve gff3 gene ids in preprocess
+- files: 01_preprocess ID mapping, clean-bank manifest audit, tests, design note, history
+
+Next:
+- Refresh 06-07 before using Whirly figures if phylogeny/domain-motif plots need to reflect the updated GFF3-preserved IDs.
+
 ## 2026-07-02 00:50 - Add 12 full bioinformatics report module
 
 Context:

@@ -21,6 +21,16 @@ REPRESENTATIVE_FIELDS = [
     "rule",
 ]
 WARNING_FIELDS = ["species_id", "gene_id", "transcript_id", "warning"]
+ID_RULE_FIELDS = [
+    "species_id",
+    "transcript_records_sampled",
+    "gff3_matched_records",
+    "gff3_match_rate",
+    "gff3_gene_suffix_stripped_records",
+    "gff3_gene_suffix_strip_rate",
+    "preserve_gff3_gene_ids",
+    "strip_gff3_gene_suffix",
+]
 
 
 def read_fasta_records(path: Path) -> list[tuple[str, str]]:
@@ -157,30 +167,119 @@ def parse_gff3_transcript_gene_map(path: Path | str | None) -> dict[str, str]:
     return transcript_to_gene
 
 
-def fallback_gene_id(clean_transcript_id: str) -> tuple[str, str]:
+def transcript_product_stem(clean_transcript_id: str) -> str:
     patterns = [
-        (r"^(?P<gene>.+?)\.\d+[A-Za-z]*$", "auto_suffix"),
-        (r"^(?P<gene>.+?)\.t\d+$", "auto_suffix"),
-        (r"^(?P<gene>.+?)-R[A-Za-z]+$", "auto_suffix"),
-        (r"^(?P<gene>.+?)_T\d+$", "auto_suffix"),
-        (r"^(?P<gene>.+?)\.p\d+$", "auto_suffix"),
+        r"^(?P<transcript>.+?)\.[PT]\d+$",
+        r"^(?P<transcript>.+?)\.cds\d+$",
+        r"^(?P<transcript>.+?)\.p$",
     ]
-    for pattern, source in patterns:
+    for pattern in patterns:
         match = re.match(pattern, clean_transcript_id, flags=re.IGNORECASE)
         if match:
-            return match.group("gene"), source
+            return match.group("transcript")
+    return clean_transcript_id
+
+
+def transcript_lookup_candidates(clean_transcript_id: str) -> list[str]:
+    candidates = [clean_transcript_id, transcript_product_stem(clean_transcript_id)]
+    product_match = re.match(r"^(?P<stem>.+?)\.P(?P<number>\d+)$", clean_transcript_id, flags=re.IGNORECASE)
+    if product_match:
+        candidates.append(f"{product_match.group('stem')}.T{product_match.group('number')}")
+        candidates.append(f"{product_match.group('stem')}.t{product_match.group('number')}")
+    seen: set[str] = set()
+    unique: list[str] = []
+    for candidate in candidates:
+        if candidate and candidate not in seen:
+            unique.append(candidate)
+            seen.add(candidate)
+    return unique
+
+
+def gff3_gene_for_transcript(clean_transcript_id: str, transcript_gene_map: dict[str, str]) -> str:
+    for candidate in transcript_lookup_candidates(clean_transcript_id):
+        if candidate in transcript_gene_map:
+            return transcript_gene_map[candidate]
+        if f"{candidate}.v1.1" in transcript_gene_map:
+            return transcript_gene_map[f"{candidate}.v1.1"]
+    return ""
+
+
+def fallback_gene_id(clean_transcript_id: str) -> tuple[str, str]:
+    patterns = [
+        r"^(?P<gene>.+?)\.[PT]\d+$",
+        r"^(?P<gene>.+?)\.cds\d+$",
+        r"^(?P<gene>.+?)\.\d+[A-Za-z]*$",
+        r"^(?P<gene>.+?)\.t\d+$",
+        r"^(?P<gene>.+?)-R[A-Za-z]+$",
+        r"^(?P<gene>.+?)_T\d+$",
+        r"^(?P<gene>.+?)\.p\d*$",
+    ]
+    gene_id = clean_transcript_id
+    stripped = False
+    while True:
+        for pattern in patterns:
+            match = re.match(pattern, gene_id, flags=re.IGNORECASE)
+            if match:
+                gene_id = match.group("gene")
+                stripped = True
+                break
+        else:
+            break
+    if stripped:
+        return gene_id, "auto_suffix"
     return clean_transcript_id, "self"
 
 
+def infer_species_id_rule(
+    species_id: str,
+    pep_records: list[tuple[str, str]],
+    transcript_gene_map: dict[str, str],
+    max_records: int = 5000,
+) -> dict[str, str]:
+    sampled = 0
+    gff3_matched = 0
+    suffix_stripped = 0
+    for raw_id, _sequence in pep_records[:max_records]:
+        clean_transcript_id = clean_header_id(raw_id)
+        gff3_gene = gff3_gene_for_transcript(clean_transcript_id, transcript_gene_map)
+        if not gff3_gene:
+            continue
+        sampled += 1
+        gff3_matched += 1
+        fallback_gene, fallback_source = fallback_gene_id(clean_transcript_id)
+        canonical_gff3_gene, canonical_source = fallback_gene_id(gff3_gene)
+        if fallback_source == "auto_suffix" and canonical_source == "auto_suffix" and canonical_gff3_gene == fallback_gene:
+            suffix_stripped += 1
+    gff3_match_rate = gff3_matched / len(pep_records[:max_records]) if pep_records[:max_records] else 0
+    suffix_strip_rate = suffix_stripped / gff3_matched if gff3_matched else 0
+    return {
+        "species_id": species_id,
+        "transcript_records_sampled": str(len(pep_records[:max_records])),
+        "gff3_matched_records": str(gff3_matched),
+        "gff3_match_rate": f"{gff3_match_rate:.4f}",
+        "gff3_gene_suffix_stripped_records": str(suffix_stripped),
+        "gff3_gene_suffix_strip_rate": f"{suffix_strip_rate:.4f}",
+        "preserve_gff3_gene_ids": "TRUE",
+        "strip_gff3_gene_suffix": "FALSE",
+    }
+
+
 def infer_gene_id(raw_transcript_id: str, transcript_gene_map: dict[str, str]) -> tuple[str, str, str]:
+    return infer_gene_id_with_rule(raw_transcript_id, transcript_gene_map, {})
+
+
+def infer_gene_id_with_rule(
+    raw_transcript_id: str,
+    transcript_gene_map: dict[str, str],
+    id_rule: dict[str, str],
+) -> tuple[str, str, str]:
     attributes = parse_fasta_header_attributes(raw_transcript_id)
     clean_transcript_id = clean_header_id(attributes.get("transcript", "")) or clean_header_id(raw_transcript_id)
     if attributes.get("locus"):
         return clean_transcript_id, clean_header_id(attributes["locus"]), "fasta_locus"
-    if clean_transcript_id in transcript_gene_map:
-        return clean_transcript_id, transcript_gene_map[clean_transcript_id], "gff3"
-    if f"{clean_transcript_id}.v1.1" in transcript_gene_map:
-        return clean_transcript_id, transcript_gene_map[f"{clean_transcript_id}.v1.1"], "gff3"
+    gff3_gene = gff3_gene_for_transcript(clean_transcript_id, transcript_gene_map)
+    if gff3_gene:
+        return clean_transcript_id, gff3_gene, "gff3"
     gene_id, source = fallback_gene_id(clean_transcript_id)
     return clean_transcript_id, gene_id, source
 
@@ -189,15 +288,27 @@ def _strip_terminal_stop(sequence: str) -> str:
     return sequence[:-1] if sequence.endswith("*") else sequence
 
 
-def _record_aliases(record_id: str) -> set[str]:
+def _record_alias_candidates(record_id: str) -> list[str]:
     clean_id = clean_header_id(record_id)
     gene_id, _source = fallback_gene_id(clean_id)
     attributes = parse_fasta_header_attributes(record_id)
-    aliases = {record_id, clean_id, gene_id}
+    aliases = [record_id, clean_id, transcript_product_stem(clean_id)]
     for key in ("transcript", "polypeptide", "locus", "ID"):
         if attributes.get(key):
-            aliases.add(clean_header_id(attributes[key]))
-    return aliases
+            clean_attribute = clean_header_id(attributes[key])
+            aliases.extend([clean_attribute, transcript_product_stem(clean_attribute)])
+    aliases.append(gene_id)
+    seen: set[str] = set()
+    unique: list[str] = []
+    for alias in aliases:
+        if alias and alias not in seen:
+            unique.append(alias)
+            seen.add(alias)
+    return unique
+
+
+def _record_aliases(record_id: str) -> set[str]:
+    return set(_record_alias_candidates(record_id))
 
 
 def clean_sequence_records(
@@ -209,9 +320,10 @@ def clean_sequence_records(
     transcript_rows: list[dict[str, str]] = []
     warnings: list[dict[str, str]] = []
     pep_by_gene: dict[str, list[dict[str, str | int]]] = defaultdict(list)
+    id_rule = infer_species_id_rule(species_id, pep_records, transcript_gene_map)
 
     for raw_id, sequence in pep_records:
-        clean_transcript_id, gene_id, source = infer_gene_id(raw_id, transcript_gene_map)
+        clean_transcript_id, gene_id, source = infer_gene_id_with_rule(raw_id, transcript_gene_map, id_rule)
         clean_sequence = _strip_terminal_stop(sequence)
         transcript_rows.append(
             {
@@ -233,8 +345,8 @@ def clean_sequence_records(
 
     cds_by_alias: dict[str, tuple[str, str]] = {}
     for raw_id, sequence in cds_records:
-        for alias in _record_aliases(raw_id):
-            cds_by_alias[alias] = (raw_id, sequence)
+        for alias in _record_alias_candidates(raw_id):
+            cds_by_alias.setdefault(alias, (raw_id, sequence))
 
     cleaned_pep: list[tuple[str, str]] = []
     cleaned_cds: list[tuple[str, str]] = []
@@ -250,7 +362,12 @@ def clean_sequence_records(
         cleaned_pep.append((gene_id, pep_sequence))
 
         cds_length = ""
-        cds_match = cds_by_alias.get(str(selected["raw_id"])) or cds_by_alias.get(selected_transcript) or cds_by_alias.get(gene_id)
+        cds_match = None
+        query_aliases = _record_alias_candidates(str(selected["raw_id"])) + _record_alias_candidates(selected_transcript) + [gene_id]
+        for alias in query_aliases:
+            cds_match = cds_by_alias.get(alias)
+            if cds_match:
+                break
         if cds_match:
             _cds_raw_id, cds_sequence = cds_match
             cds_length = str(len(cds_sequence))

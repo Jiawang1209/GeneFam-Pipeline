@@ -17,11 +17,13 @@ if str(REPO_ROOT) not in sys.path:
 
 from bin.genefam.discover_species import FILE_TYPES, discover_species
 from bin.genefam.preprocess_species import (
+    ID_RULE_FIELDS,
     REPRESENTATIVE_FIELDS,
     TRANSCRIPT_FIELDS,
     WARNING_FIELDS,
     clean_header_id,
     clean_sequence_records,
+    infer_species_id_rule,
     parse_gff3_transcript_gene_map,
     read_fasta_records,
     write_fasta,
@@ -49,6 +51,7 @@ MANIFEST_FIELDS = [
     "raw_genome",
     "raw_gff3",
     "gene_id_map",
+    "id_resolution_rules",
     "representative_transcripts",
     "preprocess_qc",
     "preprocess_warnings",
@@ -372,6 +375,7 @@ def build_species_clean_bank(
                     "raw_genome": row.get("genome", ""),
                     "raw_gff3": row.get("gff3", ""),
                     "gene_id_map": "",
+                    "id_resolution_rules": "",
                     "representative_transcripts": "",
                     "preprocess_qc": "",
                     "preprocess_warnings": "",
@@ -394,6 +398,7 @@ def build_species_clean_bank(
                 cds_records=cds_records,
                 transcript_gene_map=transcript_gene_map,
             )
+            id_rule = infer_species_id_rule(species_id, pep_records, transcript_gene_map)
 
             protein_clean = clean_dir / f"{species_id}.protein.clean.fa"
             cds_clean = clean_dir / f"{species_id}.cds.clean.fa"
@@ -402,6 +407,7 @@ def build_species_clean_bank(
             genome_lengths = audit_dir / f"{species_id}.genome.lengths.tsv"
             chromosome_lengths = clean_dir / f"{species_id}.chromosome.lengths.tsv"
             gene_id_map = audit_dir / f"{species_id}.gene_id_map.tsv"
+            id_resolution_rules = audit_dir / f"{species_id}.id_resolution_rules.tsv"
             representative_tsv = audit_dir / f"{species_id}.representative_transcripts.tsv"
             warnings_tsv = audit_dir / f"{species_id}.preprocess_warnings.tsv"
             qc_tsv = audit_dir / f"{species_id}.preprocess_qc.tsv"
@@ -422,6 +428,7 @@ def build_species_clean_bank(
             write_rows(genome_lengths, GENOME_LENGTH_FIELDS, genome_length_rows)
             write_rows(chromosome_lengths, CHROMOSOME_LENGTH_FIELDS, chromosome_length_rows)
             write_tsv(transcript_rows, TRANSCRIPT_FIELDS, gene_id_map)
+            write_tsv([id_rule], ID_RULE_FIELDS, id_resolution_rules)
             write_tsv(representative_rows, REPRESENTATIVE_FIELDS, representative_tsv)
             write_tsv(warnings, WARNING_FIELDS, warnings_tsv)
 
@@ -476,6 +483,7 @@ def build_species_clean_bank(
                     "raw_genome": raw_genome,
                     "raw_gff3": raw_gff3,
                     "gene_id_map": str(gene_id_map.resolve()),
+                    "id_resolution_rules": str(id_resolution_rules.resolve()),
                     "representative_transcripts": str(representative_tsv.resolve()),
                     "preprocess_qc": str(qc_tsv.resolve()),
                     "preprocess_warnings": str(warnings_tsv.resolve()),

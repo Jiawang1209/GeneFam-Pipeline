@@ -124,6 +124,7 @@ def test_build_species_clean_bank_writes_raw_clean_audit_and_global_tables(tmp_p
     assert (species_root / "clean/Demo_species.gff3").is_symlink()
     assert (species_root / "clean/Demo_species.chromosome.lengths.tsv").exists()
     assert (species_root / "audit/Demo_species.gene_id_map.tsv").exists()
+    assert (species_root / "audit/Demo_species.id_resolution_rules.tsv").exists()
     assert (species_root / "audit/Demo_species.genome.lengths.tsv").exists()
     assert (species_root / "audit/Demo_species.representative_transcripts.tsv").exists()
     assert (species_root / "audit/Demo_species.preprocess_qc.tsv").exists()
@@ -142,6 +143,7 @@ def test_build_species_clean_bank_writes_raw_clean_audit_and_global_tables(tmp_p
     assert manifest_rows[0]["gff3"].endswith("clean/Demo_species.gff3")
     assert manifest_rows[0]["genome_lengths"].endswith("audit/Demo_species.genome.lengths.tsv")
     assert manifest_rows[0]["chromosome_lengths"].endswith("clean/Demo_species.chromosome.lengths.tsv")
+    assert manifest_rows[0]["id_resolution_rules"].endswith("audit/Demo_species.id_resolution_rules.tsv")
 
     qc_rows = read_tsv(qc)
     assert qc_rows[0]["raw_pep_count"] == "3"
