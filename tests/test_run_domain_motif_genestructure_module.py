@@ -26,7 +26,13 @@ def write_fake_project(root: Path) -> Path:
     clean.mkdir(parents=True)
 
     (results / "04_identification/fasta/identify.ID.fa").write_text(
-        ">Species_a|GeneA\nMKKLLVVAA\n>Species_a|GeneB\nMKKLLVVTT\n",
+        ">GeneA\nMKKLLVVAA\n>GeneB\nMKKLLVVTT\n",
+        encoding="utf-8",
+    )
+    (results / "04_identification/tables/identify_sequence_map.tsv").write_text(
+        "fasta_id\tspecies_id\tgene_id\ttracking_id\n"
+        "GeneA\tSpecies_a\tGeneA\tSpecies_a|GeneA\n"
+        "GeneB\tSpecies_a\tGeneB\tSpecies_a|GeneB\n",
         encoding="utf-8",
     )
     (results / "04_identification/tables/family_candidates.tsv").write_text(

@@ -74,6 +74,11 @@ def write_tsv(rows: list[dict[str, str]], path: Path, fieldnames: list[str]) -> 
         writer.writerows(rows)
 
 
+def read_tsv(path: Path) -> list[dict[str, str]]:
+    with path.open("r", encoding="utf-8", newline="") as handle:
+        return list(csv.DictReader(handle, delimiter="\t"))
+
+
 def normalize_plot_config(config: object) -> dict[str, str]:
     if config is None:
         return {}
@@ -126,16 +131,34 @@ def split_member_id(identifier: str) -> tuple[str, str]:
     return "Unknown", clean
 
 
+def default_sequence_map_path(input_fasta: Path) -> Path:
+    return input_fasta.parents[1] / "tables/identify_sequence_map.tsv"
+
+
+def load_sequence_map(input_fasta: Path) -> dict[str, dict[str, str]]:
+    map_path = default_sequence_map_path(input_fasta)
+    if not map_path.exists():
+        return {}
+    rows = read_tsv(map_path)
+    return {row.get("fasta_id", ""): row for row in rows if row.get("fasta_id")}
+
+
 def prepare_phylogeny_fasta(input_fasta: Path, output_fasta: Path, label_map: Path) -> Path:
     output_fasta.parent.mkdir(parents=True, exist_ok=True)
     label_map.parent.mkdir(parents=True, exist_ok=True)
     seen: dict[str, int] = {}
     rows: list[dict[str, str]] = []
+    sequence_map = load_sequence_map(input_fasta)
     with input_fasta.open("r", encoding="utf-8") as source, output_fasta.open("w", encoding="utf-8") as fasta_out:
         for line in source:
             if line.startswith(">"):
                 original_id = line[1:].strip().split()[0]
-                species_id, gene_id = split_member_id(original_id)
+                mapped = sequence_map.get(original_id, {})
+                if mapped:
+                    species_id = mapped.get("species_id", "Unknown")
+                    gene_id = mapped.get("gene_id", original_id)
+                else:
+                    species_id, gene_id = split_member_id(original_id)
                 seen[gene_id] = seen.get(gene_id, 0) + 1
                 tree_label = gene_id if seen[gene_id] == 1 else f"{gene_id}_dup{seen[gene_id]}"
                 rows.append(

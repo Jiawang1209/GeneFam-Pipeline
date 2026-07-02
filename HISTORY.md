@@ -34,6 +34,51 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-02 08:14 - Make downstream protein FASTA headers gene-only
+
+Context:
+- User noticed `04_identification/fasta/identify.ID.fa` still used headers such as `Species|Gene`.
+- User clarified that 06 and later steps should not receive protein FASTA headers containing species names; species-to-gene relationships should be stored in tables instead.
+
+Decisions:
+- Keep species-prefixed FASTA IDs only for the internal domain-confirmation handoff where `(species_id, gene_id)` tracking is required.
+- Make the public final `04_identification/fasta/identify.ID.fa` gene-only.
+- Add `04_identification/tables/identify_sequence_map.tsv` as the explicit species/gene/tracking map.
+- Teach 06 and 07 to consume gene-only FASTA while recovering species information from `identify_sequence_map.tsv`.
+
+Added:
+- `identify_sequence_map.tsv` output from 04 with `fasta_id`, `species_id`, `gene_id`, and `tracking_id`.
+
+Modified:
+- `bin/genefam/run_identification_module.py`
+- `bin/genefam/run_phylogeny_module.py`
+- `bin/genefam/run_domain_motif_genestructure_module.py`
+- `tests/test_run_identification_module.py`
+- `tests/test_run_phylogeny_module.py`
+- `tests/test_run_domain_motif_genestructure_module.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Red tests first failed because 04 still wrote `Species|Gene`, 06 reported `species_id=Unknown` for gene-only FASTA, and 07 could not recover gene structures from gene-only FASTA.
+- `python -m pytest tests/test_run_identification_module.py tests/test_run_phylogeny_module.py tests/test_run_domain_motif_genestructure_module.py -q` passed with 7 tests.
+- Refreshed real Whirly modules:
+  `conda run -n GeneFamilyFlow python bin/genefam/run_identification_module.py --config projects/Whirly_2026/project.yaml`
+  `conda run -n GeneFamilyFlow python bin/genefam/run_phylogeny_module.py --config projects/Whirly_2026/project.yaml`
+  `conda run -n GeneFamilyFlow python bin/genefam/run_domain_motif_genestructure_module.py --config projects/Whirly_2026/project.yaml`
+- Verified real Whirly `04_identification/fasta/identify.ID.fa`, `06_phylogeny/inputs/Whirly.phylogeny_input.fa`, `06_phylogeny/phylogeny/Whirly.fasttree.treefile`, and `07_domain_motif_genestructure/inputs/identify.ID.clean.fa` contain no `|`.
+- Verified real Whirly label/species tables retain species information through `identify_sequence_map.tsv`, `phylogeny_label_map.tsv`, `sequence_lengths.tsv`, and `05_genefamily_info/tables/Gene_Information.tsv`.
+
+Commit:
+- hash: current commit; use `git log -1 --oneline` for the final self-referential hash
+- message: pending
+- files: 04 gene-only FASTA output, 06/07 sequence-map consumption, tests, history
+
+Next:
+- Keep internal tracking FASTA names explicit if we later split `inter.ID.fa` into public and domain-confirmation variants.
+
 ## 2026-07-02 08:07 - Make 01_preprocess preserve GFF3 gene IDs
 
 Context:

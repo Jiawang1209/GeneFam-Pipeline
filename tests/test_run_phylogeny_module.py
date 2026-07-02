@@ -17,9 +17,18 @@ def write_project(root: Path) -> Path:
     identify = root / "projects/GDSL_2026/results/04_identification/fasta/identify.ID.fa"
     identify.parent.mkdir(parents=True)
     identify.write_text(
-        ">Species_a|GeneA\nMAAA\n"
-        ">Species_b|GeneB\nMAAT\n"
-        ">Species_c|GeneC\nMATA\n",
+        ">GeneA\nMAAA\n"
+        ">GeneB\nMAAT\n"
+        ">GeneC\nMATA\n",
+        encoding="utf-8",
+    )
+    map_path = root / "projects/GDSL_2026/results/04_identification/tables/identify_sequence_map.tsv"
+    map_path.parent.mkdir(parents=True, exist_ok=True)
+    map_path.write_text(
+        "fasta_id\tspecies_id\tgene_id\ttracking_id\n"
+        "GeneA\tSpecies_a\tGeneA\tSpecies_a|GeneA\n"
+        "GeneB\tSpecies_b\tGeneB\tSpecies_b|GeneB\n"
+        "GeneC\tSpecies_c\tGeneC\tSpecies_c|GeneC\n",
         encoding="utf-8",
     )
     config = root / "projects/GDSL_2026/project.yaml"
@@ -157,7 +166,7 @@ def test_run_phylogeny_module_builds_alignment_tree_and_manifests(tmp_path):
     assert (outdir / "plots/tree_subfamily_species_stats.pdf").exists()
     assert (outdir / "plots/tree_subfamily_species_stats.png").exists()
     label_map = read_tsv(outdir / "tables/phylogeny_label_map.tsv")
-    assert label_map[0]["original_id"] == "Species_a|GeneA"
+    assert label_map[0]["original_id"] == "GeneA"
     assert label_map[0]["tree_label"] == "GeneA"
     assert label_map[0]["species_id"] == "Species_a"
     plot_config = read_tsv(outdir / "tables/tree_subfamily_plot_config.tsv")

@@ -46,6 +46,7 @@ SUMMARY_FIELDS = [
     "domain_status",
     "note",
 ]
+SEQUENCE_MAP_FIELDS = ["fasta_id", "species_id", "gene_id", "tracking_id"]
 
 
 def read_tsv(path: Path) -> list[dict[str, str]]:
@@ -188,11 +189,19 @@ def discover_species_peptides(clean_bank: Path) -> dict[str, Path]:
     return paths
 
 
-def extract_records(rows: list[dict[str, str]], species_peptides: dict[str, Path], out_path: Path) -> int:
+def extract_records(
+    rows: list[dict[str, str]],
+    species_peptides: dict[str, Path],
+    out_path: Path,
+    *,
+    include_species_prefix: bool = True,
+    sequence_map_path: Path | None = None,
+) -> int:
     wanted_by_species: dict[str, set[str]] = defaultdict(set)
     for row in rows:
         wanted_by_species[row["species_id"]].add(row["gene_id"])
     records: list[tuple[str, str]] = []
+    sequence_map_rows: list[dict[str, str]] = []
     for species_id, wanted in sorted(wanted_by_species.items()):
         pep = species_peptides.get(species_id)
         if not pep:
@@ -200,8 +209,20 @@ def extract_records(rows: list[dict[str, str]], species_peptides: dict[str, Path
         for record_id, sequence in read_fasta_records(pep):
             clean_id = record_id.split()[0]
             if clean_id in wanted:
-                records.append((f"{species_id}|{clean_id}", sequence))
+                tracking_id = f"{species_id}|{clean_id}"
+                fasta_id = tracking_id if include_species_prefix else clean_id
+                records.append((fasta_id, sequence))
+                sequence_map_rows.append(
+                    {
+                        "fasta_id": fasta_id,
+                        "species_id": species_id,
+                        "gene_id": clean_id,
+                        "tracking_id": tracking_id,
+                    }
+                )
     write_fasta(records, out_path)
+    if sequence_map_path is not None:
+        write_tsv(sequence_map_rows, sequence_map_path, SEQUENCE_MAP_FIELDS)
     return len(records)
 
 
@@ -325,7 +346,13 @@ def run_module(**kwargs) -> Path:
         domain_status = "empty"
         note = "No candidates passed domain confirmation"
     write_ids(sorted({row["gene_id"] for row in confirmed_rows}), outdir / "tables/domain_confirmed.id")
-    extract_records(confirmed_rows, species_peptides, outdir / "fasta/identify.ID.fa")
+    extract_records(
+        confirmed_rows,
+        species_peptides,
+        outdir / "fasta/identify.ID.fa",
+        include_species_prefix=False,
+        sequence_map_path=outdir / "tables/identify_sequence_map.tsv",
+    )
     write_summary(
         outdir,
         {

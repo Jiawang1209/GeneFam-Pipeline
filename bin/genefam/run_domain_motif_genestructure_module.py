@@ -99,12 +99,30 @@ def split_member_id(identifier: str) -> tuple[str, str]:
     return "Unknown", identifier
 
 
+def default_sequence_map_path(input_fasta: Path) -> Path:
+    return input_fasta.parents[1] / "tables/identify_sequence_map.tsv"
+
+
+def load_sequence_map(input_fasta: Path) -> dict[str, dict[str, str]]:
+    map_path = default_sequence_map_path(input_fasta)
+    if not map_path.exists():
+        return {}
+    rows = read_tsv(map_path)
+    return {row.get("fasta_id", ""): row for row in rows if row.get("fasta_id")}
+
+
 def write_clean_fasta(input_fasta: Path, output_fasta: Path) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
+    sequence_map = load_sequence_map(input_fasta)
     output_fasta.parent.mkdir(parents=True, exist_ok=True)
     with output_fasta.open("w", encoding="utf-8") as out:
         for original_id, sequence in fasta_records(input_fasta):
-            species_id, gene_id = split_member_id(original_id)
+            mapped = sequence_map.get(original_id, {})
+            if mapped:
+                species_id = mapped.get("species_id", "Unknown")
+                gene_id = mapped.get("gene_id", original_id)
+            else:
+                species_id, gene_id = split_member_id(original_id)
             rows.append({"original_id": original_id, "species_id": species_id, "gene_id": gene_id, "protein_length": str(len(sequence))})
             out.write(f">{gene_id}\n{sequence}\n")
     return rows

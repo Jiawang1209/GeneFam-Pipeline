@@ -131,7 +131,16 @@ def test_run_identification_module_uses_hmm_blastp_intersection_and_domain_confi
     assert (outdir / "tables/inter.ID").read_text(encoding="utf-8") == "AT1G00010\n"
     assert (outdir / "tables/domain_confirmed.id").read_text(encoding="utf-8") == "AT1G00010\n"
     assert (outdir / "fasta/inter.ID.fa").read_text(encoding="utf-8") == ">Arabidopsis_thaliana|AT1G00010\nMAAA\n"
-    assert (outdir / "fasta/identify.ID.fa").read_text(encoding="utf-8") == ">Arabidopsis_thaliana|AT1G00010\nMAAA\n"
+    assert (outdir / "fasta/identify.ID.fa").read_text(encoding="utf-8") == ">AT1G00010\nMAAA\n"
+    sequence_map = read_tsv(outdir / "tables/identify_sequence_map.tsv")
+    assert sequence_map == [
+        {
+            "fasta_id": "AT1G00010",
+            "species_id": "Arabidopsis_thaliana",
+            "gene_id": "AT1G00010",
+            "tracking_id": "Arabidopsis_thaliana|AT1G00010",
+        }
+    ]
     summary = read_tsv(outdir / "report/identification_summary.tsv")
     assert summary[0]["hmm_candidate_count"] == "2"
     assert summary[0]["blastp_candidate_count"] == "2"
@@ -201,6 +210,6 @@ def test_run_identification_module_can_confirm_domains_with_pfam_scan(tmp_path):
     outdir = tmp_path / "projects/GDSL_2026/results/04_identification"
     assert (outdir / "domain_confirmation/Pfam_scan.out").exists()
     assert (outdir / "tables/domain_confirmed.id").read_text(encoding="utf-8") == "AT1G00010\n"
-    assert (outdir / "fasta/identify.ID.fa").read_text(encoding="utf-8") == ">Arabidopsis_thaliana|AT1G00010\nMAAA\n"
+    assert (outdir / "fasta/identify.ID.fa").read_text(encoding="utf-8") == ">AT1G00010\nMAAA\n"
     summary = read_tsv(outdir / "report/identification_summary.tsv")
     assert summary[0]["domain_method"] == "pfam_scan"
