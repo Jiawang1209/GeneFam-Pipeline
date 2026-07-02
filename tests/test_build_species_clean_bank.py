@@ -77,6 +77,8 @@ def test_build_species_clean_bank_writes_raw_clean_audit_and_global_tables(tmp_p
     qc_excel = tmp_path / "species_clean_bank_qc.xlsx"
     failed = tmp_path / "species_clean_bank_failed.tsv"
     summary = tmp_path / "species_clean_bank_summary.md"
+    species_info_txt = tmp_path / "species_info.txt"
+    species_info_tsv = tmp_path / "species_info.tsv"
 
     completed = subprocess.run(
         [
@@ -96,6 +98,10 @@ def test_build_species_clean_bank_writes_raw_clean_audit_and_global_tables(tmp_p
             str(failed),
             "--summary",
             str(summary),
+            "--species-info-txt",
+            str(species_info_txt),
+            "--species-info-tsv",
+            str(species_info_tsv),
         ],
         check=False,
         capture_output=True,
@@ -192,6 +198,8 @@ def test_build_species_clean_bank_writes_raw_clean_audit_and_global_tables(tmp_p
     ]
     assert read_tsv(failed) == []
     assert "Species Clean Bank Summary" in summary.read_text(encoding="utf-8")
+    assert species_info_txt.read_text(encoding="utf-8") == "Demo species\n"
+    assert read_tsv(species_info_tsv) == [{"species_id": "Demo_species", "latin_name": "Demo species"}]
 
 
 def test_build_species_clean_bank_defaults_to_results_outdir(tmp_path):
@@ -219,6 +227,8 @@ def test_build_species_clean_bank_defaults_to_results_outdir(tmp_path):
     assert (tmp_path / "results/species_clean_bank_qc.xlsx").exists()
     assert (tmp_path / "results/species_clean_bank_failed.tsv").exists()
     assert (tmp_path / "results/species_clean_bank_summary.md").exists()
+    assert (tmp_path / "results/species_info.txt").read_text(encoding="utf-8") == "Demo species\n"
+    assert (tmp_path / "results/species_info.tsv").exists()
 
 
 def test_build_species_clean_bank_accepts_custom_outdir(tmp_path):
@@ -328,3 +338,70 @@ def test_build_species_clean_bank_records_incomplete_species_without_stopping(tm
             "reason": "missing required input file(s): pep, cds, genome, gff3",
         }
     ]
+
+
+def test_build_species_clean_bank_can_copy_user_species_tree(tmp_path):
+    raw_root = tmp_path / "species_bank"
+    write_demo_species(raw_root)
+    user_tree = tmp_path / "species_tree.nwk"
+    user_tree.write_text("(Demo species:1);\n", encoding="utf-8")
+    outdir = tmp_path / "results"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--raw-root",
+            str(raw_root),
+            "--outdir",
+            str(outdir),
+            "--species-tree-source",
+            "user",
+            "--species-tree-user-tree",
+            str(user_tree),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert (outdir / "species_tree/species_tree.nwk").read_text(encoding="utf-8") == "(Demo species:1);\n"
+    assert read_tsv(outdir / "species_tree/species_tree_status.tsv") == [
+        {
+            "source": "user",
+            "status": "available",
+            "species_count": "1",
+            "tree": str((outdir / "species_tree/species_tree.nwk").resolve()),
+            "note": "Copied user-provided Newick tree",
+        }
+    ]
+
+
+def test_build_species_clean_bank_writes_timetree_inputs_without_blocking_when_automation_unavailable(tmp_path):
+    raw_root = tmp_path / "species_bank"
+    write_demo_species(raw_root)
+    outdir = tmp_path / "results"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--raw-root",
+            str(raw_root),
+            "--outdir",
+            str(outdir),
+            "--species-tree-source",
+            "timetree",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert (outdir / "species_tree/timetree_species_input.txt").read_text(encoding="utf-8") == "Demo species\n"
+    status = read_tsv(outdir / "species_tree/species_tree_status.tsv")
+    assert status[0]["source"] == "timetree"
+    assert status[0]["species_count"] == "1"
+    assert status[0]["status"] in {"pending_manual_upload", "available"}

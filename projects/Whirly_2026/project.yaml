@@ -23,6 +23,14 @@ modules:
   promoter: true
   ppi: true
 
+preprocess:
+  species_tree:
+    enabled: true
+    source: timetree
+    user_tree: ""
+    timetree:
+      run_browser: false
+
 hmm:
   hmm_dir: projects/Whirly_2026/config/hmm_profiles
   combine_rule: any

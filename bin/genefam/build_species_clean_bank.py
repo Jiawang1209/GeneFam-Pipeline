@@ -7,6 +7,7 @@ import argparse
 import csv
 import re
 import shutil
+import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
@@ -83,6 +84,8 @@ QC_FIELDS = [
 FAILED_FIELDS = ["species_id", "status", "reason"]
 GENOME_LENGTH_FIELDS = ["SeqID", "Start", "End", "Length", "SeqType", "Header"]
 CHROMOSOME_LENGTH_FIELDS = ["Chr", "Start", "End"]
+SPECIES_INFO_FIELDS = ["species_id", "latin_name"]
+SPECIES_TREE_STATUS_FIELDS = ["source", "status", "species_count", "tree", "note"]
 
 
 def iter_fasta_lengths(path: Path | str) -> list[tuple[str, str, int]]:
@@ -181,6 +184,122 @@ def write_rows(path: Path, fieldnames: list[str], rows: list[dict[str, str]]) ->
         writer = csv.DictWriter(handle, fieldnames=fieldnames, delimiter="\t")
         writer.writeheader()
         writer.writerows(rows)
+
+
+def latin_name(species_id: str) -> str:
+    return species_id.replace("_", " ")
+
+
+def successful_species_rows(qc_rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    return [
+        {"species_id": row["species_id"], "latin_name": latin_name(row["species_id"])}
+        for row in sorted(qc_rows, key=lambda item: item["species_id"])
+        if row.get("status") in {"pass", "warning"}
+    ]
+
+
+def write_species_info(txt_path: Path, tsv_path: Path, qc_rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    rows = successful_species_rows(qc_rows)
+    txt_path.parent.mkdir(parents=True, exist_ok=True)
+    txt_path.write_text("".join(f"{row['latin_name']}\n" for row in rows), encoding="utf-8")
+    write_rows(tsv_path, SPECIES_INFO_FIELDS, rows)
+    return rows
+
+
+def write_species_tree_status(path: Path, row: dict[str, str]) -> None:
+    write_rows(path, SPECIES_TREE_STATUS_FIELDS, [row])
+
+
+def prepare_species_tree_outputs(
+    *,
+    source: str,
+    user_tree: Path | None,
+    species_rows: list[dict[str, str]],
+    tree_dir: Path,
+    timetree_run: bool = False,
+) -> None:
+    tree_dir.mkdir(parents=True, exist_ok=True)
+    status_path = tree_dir / "species_tree_status.tsv"
+    species_count = str(len(species_rows))
+    if source == "none":
+        return
+    if source == "user":
+        if user_tree is None or not user_tree.exists():
+            write_species_tree_status(
+                status_path,
+                {
+                    "source": "user",
+                    "status": "missing_input",
+                    "species_count": species_count,
+                    "tree": "",
+                    "note": "User species tree was not provided or does not exist",
+                },
+            )
+            return
+        destination = tree_dir / "species_tree.nwk"
+        shutil.copy2(user_tree, destination)
+        write_species_tree_status(
+            status_path,
+            {
+                "source": "user",
+                "status": "available",
+                "species_count": species_count,
+                "tree": str(destination.resolve()),
+                "note": "Copied user-provided Newick tree",
+            },
+        )
+        return
+    if source == "timetree":
+        species_input = tree_dir / "timetree_species_input.txt"
+        species_input.write_text("".join(f"{row['latin_name']}\n" for row in species_rows), encoding="utf-8")
+        if not timetree_run:
+            write_species_tree_status(
+                status_path,
+                {
+                    "source": "timetree",
+                    "status": "pending_manual_upload",
+                    "species_count": species_count,
+                    "tree": "",
+                    "note": "TimeTree input file is ready. Upload timetree_species_input.txt to https://timetree.org/ manually, or rerun with --species-tree-timetree-run to try browser automation.",
+                },
+            )
+            return
+        script = REPO_ROOT / "bin/genefam/fetch_timetree_species_tree.py"
+        tree_path = tree_dir / "species_tree.nwk"
+        if script.exists():
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(script),
+                    "--species-list",
+                    str(species_input),
+                    "--out-tree",
+                    str(tree_path),
+                    "--status",
+                    str(status_path),
+                ],
+                check=False,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+            )
+            if status_path.exists():
+                return
+            note = completed.stdout.strip()[:500] if completed.stdout else "TimeTree automation did not write a status file"
+        else:
+            note = "TimeTree automation helper is not available"
+        write_species_tree_status(
+            status_path,
+            {
+                "source": "timetree",
+                "status": "pending_manual_upload",
+                "species_count": species_count,
+                "tree": "",
+                "note": f"Upload timetree_species_input.txt to https://timetree.org/ manually. {note}",
+            },
+        )
+        return
+    raise ValueError(f"Unsupported species tree source: {source}")
 
 
 def write_qc_excel(path: Path, qc_rows: list[dict[str, str]]) -> None:
@@ -570,6 +689,9 @@ def resolve_output_paths(args: argparse.Namespace) -> dict[str, Path]:
         "qc_excel": args.qc_excel or outdir / "species_clean_bank_qc.xlsx",
         "failed": args.failed or outdir / "species_clean_bank_failed.tsv",
         "summary": args.summary or outdir / "species_clean_bank_summary.md",
+        "species_info_txt": args.species_info_txt or outdir / "species_info.txt",
+        "species_info_tsv": args.species_info_tsv or outdir / "species_info.tsv",
+        "species_tree_dir": args.species_tree_dir or outdir / "species_tree",
     }
 
 
@@ -583,6 +705,12 @@ def main() -> None:
     parser.add_argument("--qc-excel", default=None, type=Path)
     parser.add_argument("--failed", default=None, type=Path)
     parser.add_argument("--summary", default=None, type=Path)
+    parser.add_argument("--species-info-txt", default=None, type=Path)
+    parser.add_argument("--species-info-tsv", default=None, type=Path)
+    parser.add_argument("--species-tree-dir", default=None, type=Path)
+    parser.add_argument("--species-tree-source", choices=["none", "user", "timetree"], default="none")
+    parser.add_argument("--species-tree-user-tree", default=None, type=Path)
+    parser.add_argument("--species-tree-timetree-run", action="store_true")
     parser.add_argument("--include", default="all")
     parser.add_argument("--exclude", default="")
     parser.add_argument("--require-cds", action="store_true")
@@ -620,6 +748,14 @@ def main() -> None:
     write_qc_excel(paths["qc_excel"], qc_rows)
     write_rows(paths["failed"], FAILED_FIELDS, failed_rows)
     write_summary(paths["summary"], qc_rows, failed_rows)
+    species_rows = write_species_info(paths["species_info_txt"], paths["species_info_tsv"], qc_rows)
+    prepare_species_tree_outputs(
+        source=args.species_tree_source,
+        user_tree=args.species_tree_user_tree,
+        species_rows=species_rows,
+        tree_dir=paths["species_tree_dir"],
+        timetree_run=args.species_tree_timetree_run,
+    )
     print(f"Built species clean bank for {len(qc_rows)} species at {paths['out_root']}")
 
 

@@ -34,6 +34,51 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-02 08:25 - Add 01 species info and species-tree handoff
+
+Context:
+- User requested that `01_preprocess` summarize successfully cleaned species names and convert folder-style species IDs such as `Arabidopsis_thaliana` into Latin names such as `Arabidopsis thaliana`.
+- User also requested optional TimeTree integration so the successful species list can be uploaded to `https://timetree.org/` to obtain a Newick species tree, while also allowing a user-provided `.nwk` species tree.
+
+Decisions:
+- Always write `species_info.txt` and `species_info.tsv` from successful species only.
+- Keep TimeTree browser automation opt-in because TimeTree is an external interactive website and can be slow or change its UI.
+- In `source=timetree` default mode, write `species_tree/timetree_species_input.txt` and a `pending_manual_upload` status without blocking clean-bank construction.
+- In `source=user` mode, copy the provided Newick tree to `species_tree/species_tree.nwk`.
+- Add a separate `fetch_timetree_species_tree.py` helper that can attempt Playwright automation when explicitly requested.
+
+Added:
+- `bin/genefam/fetch_timetree_species_tree.py`
+- `docs/superpowers/plans/2026-07-02-01-preprocess-species-tree.md`
+- `species_info.txt`, `species_info.tsv`, and `species_tree/` outputs from `01_preprocess`.
+
+Modified:
+- `bin/genefam/build_species_clean_bank.py`
+- `tests/test_build_species_clean_bank.py`
+- `docs/superpowers/specs/2026-06-29-species-clean-bank-design.md`
+- `projects/Whirly_2026/project.yaml`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Red tests first failed because `--species-info-txt`, `--species-info-tsv`, `--species-tree-source`, and `--species-tree-user-tree` did not exist.
+- `python -m pytest tests/test_build_species_clean_bank.py tests/test_preprocess_species.py -q` passed with 18 tests.
+- Rebuilt real Whirly 01:
+  `python bin/genefam/build_species_clean_bank.py --raw-root data/species_bank --outdir projects/Whirly_2026/results/01_preprocess --out-root projects/Whirly_2026/results/01_preprocess/species_clean_bank --large-file-mode symlink --species-tree-source timetree`
+- Real Whirly `species_info.txt` contains 12 successful species Latin names with no underscores.
+- Real Whirly `species_tree/timetree_species_input.txt` contains the same 12 Latin names for TimeTree upload.
+- Real Whirly `species_tree/species_tree_status.tsv` records `source=timetree`, `status=pending_manual_upload`, and `species_count=12`.
+
+Commit:
+- hash: current commit; use `git log -1 --oneline` for the final self-referential hash
+- message: pending
+- files: 01 species info/species tree handoff, optional TimeTree helper, tests, docs, history
+
+Next:
+- If automatic TimeTree export is needed, run the helper with browser automation and inspect the resulting Newick; otherwise upload `timetree_species_input.txt` manually and place the exported `.nwk` under `species_tree/species_tree.nwk`.
+
 ## 2026-07-02 08:14 - Make downstream protein FASTA headers gene-only
 
 Context:
