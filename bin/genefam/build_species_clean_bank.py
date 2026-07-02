@@ -7,7 +7,6 @@ import argparse
 import csv
 import re
 import shutil
-import subprocess
 import sys
 from collections import Counter
 from pathlib import Path
@@ -86,6 +85,11 @@ GENOME_LENGTH_FIELDS = ["SeqID", "Start", "End", "Length", "SeqType", "Header"]
 CHROMOSOME_LENGTH_FIELDS = ["Chr", "Start", "End"]
 SPECIES_INFO_FIELDS = ["species_id", "latin_name"]
 SPECIES_TREE_STATUS_FIELDS = ["source", "status", "species_count", "tree", "note"]
+MANAGED_SPECIES_TREE_FILES = [
+    "species_tree.nwk",
+    "timetree_species_input.txt",
+    "timetree_species_validation.tsv",
+]
 
 
 def iter_fasta_lengths(path: Path | str) -> list[tuple[str, str, int]]:
@@ -192,7 +196,10 @@ def latin_name(species_id: str) -> str:
 
 def successful_species_rows(qc_rows: list[dict[str, str]]) -> list[dict[str, str]]:
     return [
-        {"species_id": row["species_id"], "latin_name": latin_name(row["species_id"])}
+        {
+            "species_id": row["species_id"],
+            "latin_name": latin_name(row["species_id"]),
+        }
         for row in sorted(qc_rows, key=lambda item: item["species_id"])
         if row.get("status") in {"pass", "warning"}
     ]
@@ -210,18 +217,35 @@ def write_species_tree_status(path: Path, row: dict[str, str]) -> None:
     write_rows(path, SPECIES_TREE_STATUS_FIELDS, [row])
 
 
+def remove_managed_species_tree_outputs(tree_dir: Path) -> None:
+    for filename in MANAGED_SPECIES_TREE_FILES:
+        path = tree_dir / filename
+        if path.exists() or path.is_symlink():
+            path.unlink()
+
+
 def prepare_species_tree_outputs(
     *,
     source: str,
     user_tree: Path | None,
     species_rows: list[dict[str, str]],
     tree_dir: Path,
-    timetree_run: bool = False,
 ) -> None:
     tree_dir.mkdir(parents=True, exist_ok=True)
     status_path = tree_dir / "species_tree_status.tsv"
     species_count = str(len(species_rows))
     if source == "none":
+        remove_managed_species_tree_outputs(tree_dir)
+        write_species_tree_status(
+            status_path,
+            {
+                "source": "none",
+                "status": "disabled",
+                "species_count": species_count,
+                "tree": "",
+                "note": "No species tree configured; downstream species-tree panels should be skipped.",
+            },
+        )
         return
     if source == "user":
         if user_tree is None or not user_tree.exists():
@@ -232,7 +256,7 @@ def prepare_species_tree_outputs(
                     "status": "missing_input",
                     "species_count": species_count,
                     "tree": "",
-                    "note": "User species tree was not provided or does not exist",
+                    "note": "User species tree was not provided or does not exist; downstream species-tree panels should be skipped.",
                 },
             )
             return
@@ -246,56 +270,6 @@ def prepare_species_tree_outputs(
                 "species_count": species_count,
                 "tree": str(destination.resolve()),
                 "note": "Copied user-provided Newick tree",
-            },
-        )
-        return
-    if source == "timetree":
-        species_input = tree_dir / "timetree_species_input.txt"
-        species_input.write_text("".join(f"{row['latin_name']}\n" for row in species_rows), encoding="utf-8")
-        if not timetree_run:
-            write_species_tree_status(
-                status_path,
-                {
-                    "source": "timetree",
-                    "status": "pending_manual_upload",
-                    "species_count": species_count,
-                    "tree": "",
-                    "note": "TimeTree input file is ready. Upload timetree_species_input.txt to https://timetree.org/ manually, or rerun with --species-tree-timetree-run to try browser automation.",
-                },
-            )
-            return
-        script = REPO_ROOT / "bin/genefam/fetch_timetree_species_tree.py"
-        tree_path = tree_dir / "species_tree.nwk"
-        if script.exists():
-            completed = subprocess.run(
-                [
-                    sys.executable,
-                    str(script),
-                    "--species-list",
-                    str(species_input),
-                    "--out-tree",
-                    str(tree_path),
-                    "--status",
-                    str(status_path),
-                ],
-                check=False,
-                text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-            )
-            if status_path.exists():
-                return
-            note = completed.stdout.strip()[:500] if completed.stdout else "TimeTree automation did not write a status file"
-        else:
-            note = "TimeTree automation helper is not available"
-        write_species_tree_status(
-            status_path,
-            {
-                "source": "timetree",
-                "status": "pending_manual_upload",
-                "species_count": species_count,
-                "tree": "",
-                "note": f"Upload timetree_species_input.txt to https://timetree.org/ manually. {note}",
             },
         )
         return
@@ -708,9 +682,8 @@ def main() -> None:
     parser.add_argument("--species-info-txt", default=None, type=Path)
     parser.add_argument("--species-info-tsv", default=None, type=Path)
     parser.add_argument("--species-tree-dir", default=None, type=Path)
-    parser.add_argument("--species-tree-source", choices=["none", "user", "timetree"], default="none")
+    parser.add_argument("--species-tree-source", choices=["none", "user"], default="none")
     parser.add_argument("--species-tree-user-tree", default=None, type=Path)
-    parser.add_argument("--species-tree-timetree-run", action="store_true")
     parser.add_argument("--include", default="all")
     parser.add_argument("--exclude", default="")
     parser.add_argument("--require-cds", action="store_true")
@@ -754,7 +727,6 @@ def main() -> None:
         user_tree=args.species_tree_user_tree,
         species_rows=species_rows,
         tree_dir=paths["species_tree_dir"],
-        timetree_run=args.species_tree_timetree_run,
     )
     print(f"Built species clean bank for {len(qc_rows)} species at {paths['out_root']}")
 

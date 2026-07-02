@@ -34,6 +34,53 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-02 08:54 - Remove TimeTree automation from 01 preprocess
+
+Context:
+- User reconsidered the species-tree design and requested removing all TimeTree upload/automation behavior.
+- `01_preprocess` should still summarize species names and Latin names, but species tree usage should be controlled only by an explicit user-provided Newick path in YAML/CLI.
+- If a species tree is missing or disabled, the workflow must not stop; downstream species-tree visual panels should be skipped.
+
+Decisions:
+- Keep `species_info.txt` and `species_info.tsv` as the stable species-name handoff.
+- Limit `--species-tree-source` to `none` or `user`.
+- In `source=none`, write `species_tree_status.tsv` with `status=disabled` and remove stale managed species-tree outputs so old exploratory trees are not reused accidentally.
+- In `source=user`, copy the provided `.nwk`; if the path is missing, write `status=missing_input` and continue successfully.
+
+Added:
+- Regression coverage for disabled species-tree mode removing stale managed outputs.
+- Regression coverage for missing user species-tree input continuing successfully.
+
+Modified:
+- `bin/genefam/build_species_clean_bank.py`
+- `tests/test_build_species_clean_bank.py`
+- `docs/superpowers/specs/2026-06-29-species-clean-bank-design.md`
+- `docs/superpowers/plans/2026-07-02-01-preprocess-species-tree.md`
+- `projects/Whirly_2026/project.yaml`
+- `HISTORY.md`
+
+Deleted:
+- `bin/genefam/fetch_timetree_species_tree.py`
+- `tests/test_fetch_timetree_species_tree.py`
+- TimeTree source mode and `timetree_name` field from `species_info.tsv`.
+
+Verification:
+- Red tests first failed because `species_info.tsv` still contained `timetree_name`, missing user trees used the old note, and stale `species_tree.nwk` was not removed.
+- `python -m pytest tests/test_build_species_clean_bank.py tests/test_preprocess_species.py -q` passed with 19 tests.
+- Rebuilt real Whirly 01:
+  `python bin/genefam/build_species_clean_bank.py --raw-root data/species_bank --outdir projects/Whirly_2026/results/01_preprocess --out-root projects/Whirly_2026/results/01_preprocess/species_clean_bank --large-file-mode symlink --species-tree-source none`
+- Real Whirly `species_info.tsv` now has only `species_id` and `latin_name`.
+- Real Whirly `species_tree/species_tree_status.tsv` records `source=none`, `status=disabled`, and `species_count=12`.
+- Real Whirly `species_tree/` now contains only `species_tree_status.tsv`.
+
+Commit:
+- hash: pending
+- message: pending
+- files: 01 species-tree simplification, tests, docs, Whirly config, history
+
+Next:
+- When the user has a trusted species tree, set `preprocess.species_tree.source: user` and `preprocess.species_tree.user_tree: <path/to/species_tree.nwk>`; if empty, downstream species-tree panels should skip.
+
 ## 2026-07-02 08:37 - Validate TimeTree Newick downloads
 
 Context:

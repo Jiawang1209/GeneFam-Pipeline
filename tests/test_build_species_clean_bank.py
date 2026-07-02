@@ -378,10 +378,15 @@ def test_build_species_clean_bank_can_copy_user_species_tree(tmp_path):
     ]
 
 
-def test_build_species_clean_bank_writes_timetree_inputs_without_blocking_when_automation_unavailable(tmp_path):
+def test_build_species_clean_bank_disables_species_tree_and_removes_stale_managed_outputs(tmp_path):
     raw_root = tmp_path / "species_bank"
     write_demo_species(raw_root)
     outdir = tmp_path / "results"
+    stale_dir = outdir / "species_tree"
+    stale_dir.mkdir(parents=True)
+    (stale_dir / "species_tree.nwk").write_text("(Old_species:1);\n", encoding="utf-8")
+    (stale_dir / "timetree_species_input.txt").write_text("Old species\n", encoding="utf-8")
+    (stale_dir / "timetree_species_validation.tsv").write_text("old\n", encoding="utf-8")
 
     completed = subprocess.run(
         [
@@ -392,7 +397,7 @@ def test_build_species_clean_bank_writes_timetree_inputs_without_blocking_when_a
             "--outdir",
             str(outdir),
             "--species-tree-source",
-            "timetree",
+            "none",
         ],
         check=False,
         capture_output=True,
@@ -400,8 +405,52 @@ def test_build_species_clean_bank_writes_timetree_inputs_without_blocking_when_a
     )
 
     assert completed.returncode == 0, completed.stderr
-    assert (outdir / "species_tree/timetree_species_input.txt").read_text(encoding="utf-8") == "Demo species\n"
+    assert not (stale_dir / "species_tree.nwk").exists()
+    assert not (stale_dir / "timetree_species_input.txt").exists()
+    assert not (stale_dir / "timetree_species_validation.tsv").exists()
+    assert read_tsv(stale_dir / "species_tree_status.tsv") == [
+        {
+            "source": "none",
+            "status": "disabled",
+            "species_count": "1",
+            "tree": "",
+            "note": "No species tree configured; downstream species-tree panels should be skipped.",
+        }
+    ]
+
+
+def test_build_species_clean_bank_records_missing_user_species_tree_without_stopping(tmp_path):
+    raw_root = tmp_path / "species_bank"
+    write_demo_species(raw_root)
+    outdir = tmp_path / "results"
+    missing_tree = tmp_path / "missing_species_tree.nwk"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPT),
+            "--raw-root",
+            str(raw_root),
+            "--outdir",
+            str(outdir),
+            "--species-tree-source",
+            "user",
+            "--species-tree-user-tree",
+            str(missing_tree),
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
     status = read_tsv(outdir / "species_tree/species_tree_status.tsv")
-    assert status[0]["source"] == "timetree"
-    assert status[0]["species_count"] == "1"
-    assert status[0]["status"] in {"pending_manual_upload", "available"}
+    assert status == [
+        {
+            "source": "user",
+            "status": "missing_input",
+            "species_count": "1",
+            "tree": "",
+            "note": "User species tree was not provided or does not exist; downstream species-tree panels should be skipped.",
+        }
+    ]

@@ -53,7 +53,6 @@ data/species_clean_bank_summary.md
 data/species_info.txt
 data/species_info.tsv
 data/species_tree/
-  timetree_species_input.txt
   species_tree.nwk
   species_tree_status.tsv
 ```
@@ -110,7 +109,7 @@ Global tables aggregate all species:
 - `species_clean_bank_qc.tsv`: one QC row per species.
 - `species_clean_bank_failed.tsv`: failed species and reasons.
 - `species_clean_bank_summary.md`: human-readable summary of pass/warning/fail counts and common issues.
-- `species_info.txt`: successful species Latin names, one per line, with underscores converted to spaces for TimeTree upload.
+- `species_info.txt`: successful species Latin names, one per line, with underscores converted to spaces.
 - `species_info.tsv`: successful species mapping table with `species_id` and `latin_name`.
 - `species_tree/species_tree_status.tsv`: species-tree source, status, species count, output tree path, and notes.
 
@@ -124,15 +123,13 @@ Recommended YAML:
 preprocess:
   species_tree:
     enabled: true
-    source: timetree   # none, user, or timetree
+    source: user       # none or user
     user_tree: ""      # required when source is user
-    timetree:
-      run_browser: false
 ```
 
-When `source: user`, the module copies a provided Newick tree to `species_tree/species_tree.nwk`.
+When `source: user`, the module copies a provided Newick tree to `species_tree/species_tree.nwk`. If the path is empty or missing, `01_preprocess` writes `species_tree_status.tsv` with `status=missing_input` and exits successfully; downstream species-tree panels should be skipped.
 
-When `source: timetree`, the module writes `species_tree/timetree_species_input.txt`. Browser automation is opt-in only because TimeTree is an external interactive website; the default behavior is to write `pending_manual_upload` status without blocking clean-bank construction. If browser automation is explicitly enabled, failures are recorded in `species_tree_status.tsv` and do not fail the main preprocessing step.
+When `source: none`, the module writes `status=disabled`, removes stale managed species-tree outputs from this module, and continues. This keeps old exploratory trees from being reused accidentally in later visualization steps.
 
 ## Status Policy
 

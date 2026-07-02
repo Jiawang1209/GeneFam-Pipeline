@@ -4,9 +4,11 @@
 
 **Goal:** Add species-list and optional species-tree preparation outputs to `01_preprocess`.
 
-**Architecture:** `build_species_clean_bank.py` remains the stable 01 entrypoint. It writes successful species names as Latin names, supports copying a user-provided Newick tree, and can optionally call a separate TimeTree automation helper that writes status instead of failing the clean bank.
+**Superseded decision, 2026-07-02:** TimeTree automation was removed. `01_preprocess` now only writes species Latin-name tables and optionally copies a user-provided Newick tree. Missing or disabled species trees are recorded in `species_tree_status.tsv` and must not stop preprocessing or later modules.
 
-**Tech Stack:** Python standard library, optional Playwright for TimeTree browser automation, pytest.
+**Architecture:** `build_species_clean_bank.py` remains the stable 01 entrypoint. It writes successful species names as Latin names and supports copying a user-provided Newick tree.
+
+**Tech Stack:** Python standard library, pytest.
 
 ---
 
@@ -30,16 +32,14 @@
 - [ ] Copy the user tree to `species_tree/species_tree.nwk` and write `species_tree/species_tree_status.tsv`.
 - [ ] Run `python -m pytest tests/test_build_species_clean_bank.py -q`.
 
-### Task 3: TimeTree Optional Helper
+### Task 3: Disabled/Missing Tree Mode
 
 **Files:**
-- Create: `bin/genefam/fetch_timetree_species_tree.py`
 - Modify: `bin/genefam/build_species_clean_bank.py`
 - Test: `tests/test_build_species_clean_bank.py`
 
-- [ ] Write a failing test that `--species-tree-source timetree` writes `species_tree/timetree_species_input.txt` and a status row without failing 01 if automation is unavailable.
-- [ ] Add the helper script with optional Playwright import and clear status output.
-- [ ] Wire the helper through `subprocess.run(..., check=False)`.
+- [ ] Write a failing test that `--species-tree-source none` writes a disabled status and removes stale managed species-tree outputs.
+- [ ] Write a failing test that `--species-tree-source user` with a missing tree records `missing_input` and exits successfully.
 - [ ] Run 01 tests.
 
 ### Task 4: Docs, Whirly, History, Commit
