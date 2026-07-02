@@ -9,6 +9,7 @@ from pathlib import Path
 
 
 STATUS_FIELDS = ["source", "status", "species_count", "tree", "note"]
+VALIDATION_FIELDS = ["latin_name", "newick_label", "status"]
 
 
 def read_species(path: Path) -> list[str]:
@@ -29,6 +30,35 @@ def write_status(path: Path, *, status: str, species_count: int, tree: Path | No
                 "note": note,
             }
         )
+
+
+def newick_label(latin_name: str) -> str:
+    return latin_name.replace(" ", "_")
+
+
+def validate_downloaded_tree(species: list[str], tree: Path, validation: Path) -> tuple[str, str]:
+    tree_text = tree.read_text(encoding="utf-8") if tree.exists() else ""
+    rows: list[dict[str, str]] = []
+    missing: list[str] = []
+    for latin_name in species:
+        label = newick_label(latin_name)
+        found = latin_name in tree_text or label in tree_text
+        rows.append({"latin_name": latin_name, "newick_label": label, "status": "found" if found else "missing"})
+        if not found:
+            missing.append(latin_name)
+
+    validation.parent.mkdir(parents=True, exist_ok=True)
+    with validation.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=VALIDATION_FIELDS, delimiter="\t")
+        writer.writeheader()
+        writer.writerows(rows)
+
+    if missing:
+        return (
+            "available_with_missing_taxa",
+            f"Downloaded Newick tree is missing {len(missing)} of {len(species)} submitted species: {', '.join(missing)}",
+        )
+    return "available", "Downloaded Newick species tree from TimeTree with all submitted species represented."
 
 
 def run_timetree_upload(species_list: Path, out_tree: Path, status: Path, *, timeout_ms: int, headless: bool) -> int:
@@ -83,12 +113,14 @@ def run_timetree_upload(species_list: Path, out_tree: Path, status: Path, *, tim
         )
         return 0
 
+    validation = out_tree.parent / "timetree_species_validation.tsv"
+    status_value, note = validate_downloaded_tree(species, out_tree, validation)
     write_status(
         status,
-        status="available",
+        status=status_value,
         species_count=len(species),
         tree=out_tree,
-        note="Downloaded Newick species tree from TimeTree.",
+        note=note,
     )
     return 0
 

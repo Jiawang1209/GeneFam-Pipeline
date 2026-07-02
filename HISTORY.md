@@ -34,6 +34,45 @@ Next:
 - Follow-up items or open questions.
 ```
 
+## 2026-07-02 08:37 - Validate TimeTree Newick downloads
+
+Context:
+- User clarified that the goal of TimeTree integration is to download the species evolutionary relationship for the submitted species.
+- A real TimeTree automation run downloaded a Newick tree, but validation showed that one submitted species, `Triticum aestivum`, was absent from the returned Newick.
+
+Decisions:
+- Keep the TimeTree browser automation helper optional.
+- Validate downloaded Newick files against the submitted species list.
+- Mark downloaded trees as `available_with_missing_taxa` when TimeTree returns a tree but omits submitted taxa.
+- Write a per-species validation table so missing taxa are visible instead of silently accepting an incomplete tree.
+
+Added:
+- `tests/test_fetch_timetree_species_tree.py`
+- `timetree_species_validation.tsv` output from the TimeTree helper.
+
+Modified:
+- `bin/genefam/fetch_timetree_species_tree.py`
+- `HISTORY.md`
+
+Deleted:
+- none
+
+Verification:
+- Real TimeTree helper run:
+  `python bin/genefam/fetch_timetree_species_tree.py --species-list projects/Whirly_2026/results/01_preprocess/species_tree/timetree_species_input.txt --out-tree projects/Whirly_2026/results/01_preprocess/species_tree/species_tree.nwk --status projects/Whirly_2026/results/01_preprocess/species_tree/species_tree_status.tsv --timeout-ms 30000`
+- Real Whirly `species_tree/species_tree.nwk` was downloaded from TimeTree.
+- Real Whirly `species_tree/species_tree_status.tsv` now records `available_with_missing_taxa`.
+- Real Whirly `species_tree/timetree_species_validation.tsv` reports 11 found species and 1 missing species: `Triticum aestivum`.
+- `python -m pytest tests/test_fetch_timetree_species_tree.py tests/test_build_species_clean_bank.py tests/test_preprocess_species.py -q` passed with 20 tests.
+
+Commit:
+- hash: current commit; use `git log -1 --oneline` for the final self-referential hash
+- message: pending
+- files: TimeTree helper validation, tests, history
+
+Next:
+- Add a `timetree_name_override` option if TimeTree requires alternative names or manual ambiguity resolution for species such as `Triticum aestivum`.
+
 ## 2026-07-02 08:25 - Add 01 species info and species-tree handoff
 
 Context:
